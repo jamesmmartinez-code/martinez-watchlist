@@ -1326,13 +1326,20 @@ const SVC_CLASS = {
   "Discovery+": "svc-Discovery"
 };
 // =============================================================
-// SERVICE_URLS — deep-link search URLs that open the native app on
-// mobile (via Universal Links) or the web player on desktop.
+// SERVICE_URLS — deep-link URLs that open the native app on mobile
+// (via Universal Links) or the web player on desktop. We prefer
+// direct-title URLs when TMDB gives us a slug; otherwise search.
 // =============================================================
+function slugify(title) {
+  return (title || "").toLowerCase().replace(/[':!,.&]/g, "").replace(/[\s/]+/g, "-").replace(/-+/g, "-");
+}
 const SERVICE_URLS = {
-  "Disney+":       (t) => `https://www.disneyplus.com/search?q=${encodeURIComponent(t)}`,
+  // For each service, prefer direct-title URLs where the slug pattern is reliable
+  "Disney+":       (t, show) => show?.tmdbCache?.id
+    ? `https://www.disneyplus.com/${show.type === "show" ? "series" : "movies"}/${slugify(t)}`
+    : `https://www.disneyplus.com/search?q=${encodeURIComponent(t)}`,
   "Netflix":       (t) => `https://www.netflix.com/search?q=${encodeURIComponent(t)}`,
-  "Hulu":          (t) => `https://www.hulu.com/search?q=${encodeURIComponent(t)}`,
+  "Hulu":          (t, show) => `https://www.hulu.com/${show?.type === "show" ? "series" : "movie"}/${slugify(t)}`,
   "Amazon Prime":  (t) => `https://www.amazon.com/s?k=${encodeURIComponent(t)}&i=instant-video`,
   "Apple TV+":     (t) => `https://tv.apple.com/search?term=${encodeURIComponent(t)}`,
   "Max":           (t) => `https://play.max.com/search?q=${encodeURIComponent(t)}`,
@@ -1344,9 +1351,21 @@ const SERVICE_URLS = {
   "The Chosen App":(t) => `https://watch.thechosen.tv/`,
   "Discovery+":    (t) => `https://www.discoveryplus.com/search?q=${encodeURIComponent(t)}`
 };
-function watchUrl(svc, title) {
+function watchUrl(svc, title, show) {
   const fn = SERVICE_URLS[svc];
-  return fn ? fn(title) : null;
+  return fn ? fn(title, show) : null;
+}
+// Apple TV unified launcher — opens THE Apple TV app, which knows
+// what services you have and routes to the right one (Disney+, Hulu,
+// Apple TV+, Paramount+, Max, Amazon, etc.) WITHOUT each kid having
+// to think about what platform a show lives on.
+function appleTvUrl(title) {
+  return `https://tv.apple.com/search?term=${encodeURIComponent(title)}`;
+}
+// Detect if the user is on an Apple device — show Apple TV launcher prominently
+function isAppleDevice() {
+  const ua = navigator.userAgent;
+  return /iPad|iPhone|iPod|Macintosh/.test(ua);
 }
 
 function svcChip(name) {
@@ -3564,16 +3583,27 @@ function openModal(s) {
     <p style="margin-top:14px; font-style:italic; color:var(--gold); font-family:'Fraunces',serif; font-size:15px;">"${escapeHtml(s.why)}"</p>
     ${overviewBlock}
     ${trailerBlock}
-    ${available.length ? `<div class="watch-row">${available.map(svc => {
-      const url = watchUrl(svc, s.t);
-      if (!url) return svcChip(svc);
-      const cls = SVC_CLASS[svc] || "svc-Default";
-      const logo = (state.providerLogos || {})[svc];
-      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="watch-btn ${cls}">
-        ${logo ? `<img src="${escapeHtml(logo)}" alt="">` : `<span class="play-icon">▶</span>`}
-        <span>Watch on ${escapeHtml(svc)}</span>
-      </a>`;
-    }).join("")}</div>` : ""}
+    ${available.length ? `
+      <div style="margin: 14px 0 6px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+        ${isAppleDevice() ? `
+          <a href="${escapeHtml(appleTvUrl(s.t))}" target="_blank" rel="noopener" class="watch-btn" style="background:linear-gradient(135deg, #1a1a1a, #333); color:white; border:1px solid rgba(255,255,255,.18); padding:14px 22px; font-size:15px; box-shadow:0 4px 14px rgba(0,0,0,.4);">
+            <span style="font-size:18px;"></span>
+            <span>Open in Apple TV</span>
+          </a>
+          <span style="font-size:11px; color:var(--ink-dim);">— shows all your services</span>
+        ` : ""}
+      </div>
+      <div class="watch-row">${available.map(svc => {
+        const url = watchUrl(svc, s.t, s);
+        if (!url) return svcChip(svc);
+        const cls = SVC_CLASS[svc] || "svc-Default";
+        const logo = (state.providerLogos || {})[svc];
+        return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="watch-btn ${cls}">
+          ${logo ? `<img src="${escapeHtml(logo)}" alt="">` : `<span class="play-icon">▶</span>`}
+          <span>Watch on ${escapeHtml(svc)}</span>
+        </a>`;
+      }).join("")}</div>
+    ` : ""}
     ${!available.length && elsewhere.length ? `<div class="where-line unavailable"><span class="label">Not on a service we have</span>${elsewhere.map(svcChip).join("")}</div>` : ""}
 
     <div class="modal-actions">
