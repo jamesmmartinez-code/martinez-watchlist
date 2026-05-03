@@ -828,6 +828,23 @@ button.danger {
   border: 1px solid var(--border);
 }
 
+/* ===== PWA install nudge ===== */
+.pwa-nudge {
+  position: fixed; left: 16px; right: 16px; bottom: 16px;
+  background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--gold); border-radius: 16px;
+  padding: 14px 16px; z-index: 200; max-width: 480px; margin: 0 auto;
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
+  display: flex; align-items: center; gap: 12px;
+  animation: slideUp .4s ease;
+}
+@keyframes slideUp { from { transform: translateY(120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.pwa-nudge .pwa-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), var(--rose)); display: grid; place-items: center; font-size: 22px; flex-shrink: 0; }
+.pwa-nudge .pwa-text { flex: 1; min-width: 0; }
+.pwa-nudge .pwa-title { font-weight: 700; font-size: 14px; }
+.pwa-nudge .pwa-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.pwa-nudge .pwa-close { background: rgba(255,255,255,.06); border: 0; color: var(--ink-soft); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; flex-shrink: 0; font-size: 16px; }
+
 /* ===== Welcome banner ===== */
 .welcome-banner {
   display: flex; align-items: center; gap: 18px; padding: 18px 22px;
@@ -978,17 +995,51 @@ footer {
 }
 
 @media (max-width: 720px) {
-  .header-inner { padding: 12px 16px; }
-  main { padding: 16px; }
+  .header-inner { padding: 12px 16px; min-height: 76px; }
+  header.app { min-height: 76px; }
+  main { padding: 14px; }
+  .hero { min-height: 360px; margin-bottom: 24px; }
   .hero-slide { grid-template-columns: 1fr; padding: 24px; }
   .hero-cover { display: none; }
-  .hero-title { font-size: 30px; }
-  .search-result { grid-template-columns: 100px 1fr; padding: 16px; gap: 16px; }
+  .hero-title { font-size: 26px; }
+  .hero-slide .text { padding: 18px; }
+  .hero-why { font-size: 14px; }
+  .search-result { grid-template-columns: 90px 1fr; padding: 14px; gap: 14px; }
+  .search-result h3 { font-size: 20px; }
   .modal { grid-template-columns: 1fr; max-height: 92vh; }
   .modal .cover { aspect-ratio: 2/3; max-height: 280px; }
+  .modal .info { padding: 20px; }
+  .modal h2 { font-size: 24px; }
   .rubric-form .row { grid-template-columns: 1fr; }
-  .filter-rail { padding: 12px; gap: 10px 16px; }
-  .section-title h2 { font-size: 22px; }
+  .filter-rail { padding: 12px; gap: 10px 14px; }
+  .section-title h2 { font-size: 20px; }
+  .grid { gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .card h3 { font-size: 14px; }
+  .card .why { font-size: 12px; }
+  .tab-row button { padding: 10px 12px; font-size: 13px; }
+  .tab-row button .count-pill { display: none; }
+  .welcome-greet { font-size: 18px; }
+  .welcome-banner { padding: 14px; gap: 12px; }
+  .welcome-avatar { width: 44px; height: 44px; font-size: 24px; }
+  .mood-cta { padding: 12px 14px; }
+  .mood-cta .mood-title { font-size: 14px; }
+  .mood-cta .mood-sub { font-size: 12px; }
+  .mood-cta .mood-icon { font-size: 22px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .badge-grid { grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); }
+  .watch-btn { padding: 10px 14px; font-size: 13px; }
+  .watch-row { gap: 6px; }
+  .pwa-nudge { left: 8px; right: 8px; bottom: 8px; padding: 10px 12px; gap: 10px; }
+  .login-greet { font-size: 28px; }
+  .profile-picker { gap: 12px; }
+  .profile-card { padding: 18px 14px 14px; }
+  .profile-avatar { width: 64px; height: 64px; font-size: 32px; border-radius: 18px; }
+}
+@media (max-width: 480px) {
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .hero-title { font-size: 22px; }
+  .filter-rail { font-size: 12px; }
+  .chip { font-size: 12px; padding: 6px 10px; }
 }
 </style>
 </head>
@@ -4502,6 +4553,67 @@ function renderWhatsNew() {
   });
 }
 
+function renderEmptyState() {
+  const u = getCurrentUser();
+  const profile = u ? state.profiles[u] : null;
+  const name = profile?.name || "you";
+  let icon, headline, body, ctaText, ctaAction;
+  if (activeTab === "favorites") {
+    icon = "♥";
+    headline = `${name}, your favorites are waiting`;
+    body = `Tap the ♥ on any show card to save it here. Your favorites are private — only you see them.`;
+    ctaText = "Browse the library";
+    ctaAction = "library";
+  } else if (activeTab === "watched") {
+    icon = "🎬";
+    headline = `Nothing watched yet`;
+    body = `After you watch a show together, open it and tap "We watched it" — it'll show up here with your rating. Track every family memory.`;
+    ctaText = "Pick something tonight";
+    ctaAction = "library";
+  } else if (activeTab === "bucket") {
+    icon = "🎯";
+    headline = `Big Family Movies`;
+    body = `30 must-watch-together classics. The list shows here once you adjust your streaming services to match what's available.`;
+    ctaText = "Back to the library";
+    ctaAction = "library";
+  } else if (activeTab === "recommended") {
+    icon = "✨";
+    headline = `Heart a few shows so we can learn your taste`;
+    body = `Once you've hearted ~3 shows or rated something 5 stars, this tab fills with picks Claude thinks ${name} would love.`;
+    ctaText = "Browse the library";
+    ctaAction = "library";
+  } else {
+    icon = "🔍";
+    headline = `No matches with these filters`;
+    body = `Try a different mood, service, or type — or tap the dice for a random pick.`;
+    ctaText = "Reset filters";
+    ctaAction = "reset";
+  }
+  // Defer click binding until DOM is updated
+  setTimeout(() => {
+    const btn = document.getElementById("emptyStateCta");
+    if (btn) btn.onclick = () => {
+      if (ctaAction === "library") {
+        activeTab = "library";
+        document.querySelectorAll("#tabRow button").forEach(b => b.classList.toggle("active", b.dataset.tab === "library"));
+        renderGrid();
+      } else if (ctaAction === "reset") {
+        kidFilter = { who: kidFilter.who, cat: "All", services: null, type: "all" };
+        renderCatChips(); renderServiceChips();
+        document.querySelectorAll("#typeChips .chip").forEach(c => c.classList.toggle("active", c.dataset.type === "all"));
+        renderGrid();
+      }
+    };
+  }, 50);
+  return `
+    <div style="max-width:380px; margin:0 auto;">
+      <div style="font-size:64px; margin-bottom:12px; opacity:.7;">${icon}</div>
+      <h3 style="font-family:'Fraunces',serif; font-size:22px; margin:0 0 10px;">${escapeHtml(headline)}</h3>
+      <p style="color:var(--ink-soft); font-size:14px; line-height:1.5; margin:0 0 20px;">${escapeHtml(body)}</p>
+      <button class="primary" id="emptyStateCta" style="padding:12px 24px;">${escapeHtml(ctaText)}</button>
+    </div>`;
+}
+
 function renderGrid() {
   renderMovieNightVotePrompt();
   renderWelcomeBanner();
@@ -4545,10 +4657,7 @@ function renderGrid() {
   $("#listHeading").textContent = heading;
   $("#listCount").textContent = `${filtered.length} option${filtered.length===1?"":"s"}`;
   if (filtered.length === 0) {
-    let msg = "No matches with these filters. Try a different mood or service.";
-    if (activeTab === "favorites") msg = "No favorites yet. Tap the ♥ on any show card to add it here.";
-    else if (activeTab === "watched") msg = "Nothing watched yet. Open a show and tap 'We watched it' after you do.";
-    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--ink-dim);">${msg}</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:60px 20px; text-align:center;">${renderEmptyState()}</div>`;
     return;
   }
   filtered.sort((a,b) => {
@@ -6149,6 +6258,72 @@ renderRedList();
 buildHero();
 renderApprovalCount();
 updateTabCounts();
+
+// =============================================================
+// PWA INSTALL NUDGE — prompt to "Add to Home Screen" on mobile,
+// only shown after they've used the app a few times.
+// =============================================================
+let _deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+});
+function maybeShowPwaNudge() {
+  // Skip if already installed
+  if (window.matchMedia("(display-mode: standalone)").matches) return;
+  if (window.navigator.standalone) return; // iOS
+  if (localStorage.getItem("pwa_nudge_dismissed_v1")) return;
+  // Only show after at least 3 visits to give the kids time to enjoy the app
+  const visits = parseInt(localStorage.getItem("visit_count") || "0") + 1;
+  localStorage.setItem("visit_count", visits);
+  if (visits < 3) return;
+  // Detect platform
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+  if (!isIOS && !isAndroid && !_deferredInstallPrompt) return; // desktop only if Chrome supports install
+  setTimeout(() => {
+    const nudge = document.createElement("div");
+    nudge.className = "pwa-nudge";
+    let title, sub;
+    if (isIOS) {
+      title = "Add Watchlist to your home screen";
+      sub = "Tap Share ⬆ then 'Add to Home Screen'";
+    } else if (isAndroid && _deferredInstallPrompt) {
+      title = "Install the Watchlist app";
+      sub = "Tap Install — opens fullscreen, no browser bar";
+    } else if (_deferredInstallPrompt) {
+      title = "Install the Watchlist";
+      sub = "Get a real app icon on your device";
+    }
+    if (!title) return;
+    nudge.innerHTML = `
+      <div class="pwa-icon">📱</div>
+      <div class="pwa-text">
+        <div class="pwa-title">${title}</div>
+        <div class="pwa-sub">${sub}</div>
+      </div>
+      ${_deferredInstallPrompt ? '<button class="primary" id="pwaInstallBtn" style="padding:8px 14px; font-size:13px;">Install</button>' : ''}
+      <button class="pwa-close" id="pwaCloseBtn">×</button>`;
+    document.body.appendChild(nudge);
+    document.getElementById("pwaCloseBtn").onclick = () => {
+      localStorage.setItem("pwa_nudge_dismissed_v1", "1");
+      nudge.remove();
+    };
+    const installBtn = document.getElementById("pwaInstallBtn");
+    if (installBtn && _deferredInstallPrompt) {
+      installBtn.onclick = async () => {
+        _deferredInstallPrompt.prompt();
+        const result = await _deferredInstallPrompt.userChoice;
+        if (result.outcome === "accepted") {
+          localStorage.setItem("pwa_nudge_dismissed_v1", "1");
+          nudge.remove();
+        }
+      };
+    }
+  }, 4000); // give the page time to load before nudging
+}
+maybeShowPwaNudge();
 
 // On every open: top up missing data immediately, then validate anything older than 24h.
 if (state.tmdbKey) {
