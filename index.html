@@ -642,11 +642,35 @@ button.danger {
 }
 .trailer-wrapper iframe { width: 100%; height: 100%; border: 0; display: block; }
 .trailer-close {
-  position: absolute; top: 8px; right: 8px; z-index: 5;
+  position: absolute; top: 8px; right: 8px; z-index: 10;
   background: rgba(0,0,0,.7); border: 1px solid rgba(255,255,255,.25);
   width: 32px; height: 32px; border-radius: 50%;
   color: white; font-size: 16px; cursor: pointer;
   display: grid; place-items: center;
+}
+/* Pause overlay — covers ALL YouTube UI when video is paused or buffering, so kids never see clickable links */
+.trailer-overlay {
+  position: absolute; inset: 0; z-index: 8;
+  background: rgba(8,9,14,.92);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 14px; padding: 24px;
+  backdrop-filter: blur(8px);
+}
+.trailer-overlay.show { display: flex; }
+.trailer-overlay .pause-title { font-size: 22px; font-weight: 700; color: white; font-family: 'Fraunces', serif; }
+.trailer-overlay .pause-sub { font-size: 13px; color: var(--ink-soft); }
+.trailer-overlay button {
+  background: var(--gold); color: #1a1209;
+  border: 0; padding: 12px 24px; border-radius: 999px;
+  font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.trailer-overlay button.secondary { background: rgba(255,255,255,.1); color: white; border: 1px solid rgba(255,255,255,.25); }
+.trailer-overlay .btn-row { display: flex; gap: 10px; }
+/* Block-clicks shield while playing — invisible click absorber on top edge where the YouTube title appears */
+.trailer-shield-top {
+  position: absolute; top: 0; left: 0; right: 0; height: 50px;
+  z-index: 6; cursor: default;
 }
 .trailer-ended {
   background: var(--bg-2); border: 1px solid var(--border);
@@ -879,6 +903,8 @@ footer {
       <button class="active" data-tab="library">Library</button>
       <button data-tab="favorites">Favorites <span class="count-pill" id="favCount">0</span></button>
       <button data-tab="watched">Watched <span class="count-pill" id="watchedCount">0</span></button>
+      <button data-tab="bucket">🎬 Bucket List <span class="count-pill" id="bucketCount">0/30</span></button>
+      <button data-tab="recommended" id="recTab" style="display:none;">✨ For You</button>
     </div>
 
     <div class="section-title">
@@ -1119,6 +1145,26 @@ footer {
             <span id="famChangeMsg" style="font-size:13px; color:var(--ink-soft);"></span>
           </div>
         </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Date night mode</h2>
+        <p class="help">When on, the kids' library swaps to a parent-only filter — tasteful adult films (PG-13+, but smart, clean and meaningful). Auto-turns off at 6am.</p>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:10px 0;">
+          <input type="checkbox" id="dateNightToggle" style="width:18px; height:18px;">
+          <span style="font-size:14px;">Enable date night filter (parents only)</span>
+        </label>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Backup & restore</h2>
+        <p class="help">Save your family's data (favorites, watched, custom shows, profiles, photos, settings) to a file. Restore it on any device.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button class="primary" id="backupBtn">⬇ Download backup</button>
+          <input type="file" id="restoreInput" accept=".json" style="display:none;">
+          <button class="secondary" id="restoreBtn">⬆ Restore from backup</button>
+        </div>
+        <p id="backupStatus" style="font-size:13px; color:var(--ink-soft); margin-top:10px;"></p>
       </div>
 
       <div class="parent-panel">
@@ -2164,7 +2210,19 @@ function defaultState() {
     autoDiscover: true,
     lastDiscoveryAt: null,
     rejectedTitles: [],
-    discoveryLog: []
+    discoveryLog: [],
+    // Big Family Movies bucket list — 30 must-watch-together titles
+    bucketList: [
+      "Toy Story","The Princess Bride","Up","The Sandlot","E.T. the Extra-Extraterrestrial",
+      "The Sound of Music","Mary Poppins","The Lion King","The Iron Giant","The Goonies",
+      "Charlotte's Web","Old Yeller","Hook","Finding Nemo","Apollo 13",
+      "October Sky","The Chronicles of Narnia: The Lion, The Witch & The Wardrobe",
+      "Star Wars: A New Hope","The Empire Strikes Back","Return of the Jedi",
+      "Field of Dreams","Hoosiers","Remember the Titans","Anne of Green Gables",
+      "A Little Princess","The Incredibles","Coco","Moana","Inside Out","Wonder"
+    ],
+    // Date-night mode (parent-only filter)
+    dateNightMode: false
   };
 }
 function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
@@ -2189,6 +2247,10 @@ if (!state.familyPhotos) state.familyPhotos = [];
 // Force-set the parent PIN if it doesn't already match user's preferred value
 if (state.pin === null || state.pin === undefined) { state.pin = "100811"; saveState(); }
 if (state.familyPassword === undefined) { state.familyPassword = "martinez"; saveState(); }
+if (!state.bucketList) {
+  state.bucketList = defaultState().bucketList;
+  saveState();
+}
 // Icon migration: update Alden→frog, Owen→McLaren Senna once
 if (!state.iconVersion || state.iconVersion < 2) {
   if (state.profiles?.alden) {
@@ -2726,6 +2788,13 @@ function renderWhoChips() {
   $$("#whoChips .chip").forEach(b => b.onclick = () => {
     kidFilter.who = b.dataset.who;
     renderWhoChips(); renderGrid();
+    // Show/hide "For You" tab based on who's watching
+    const recTab = document.getElementById("recTab");
+    if (recTab) {
+      recTab.style.display = (kidFilter.who === "alden" || kidFilter.who === "owen") ? "" : "none";
+      const profile = state.profiles[kidFilter.who];
+      if (profile) recTab.innerHTML = `✨ For ${escapeHtml(profile.name)}`;
+    }
   });
 }
 
@@ -2760,6 +2829,11 @@ function updateTabCounts() {
   const seen = state.watched.length;
   if ($("#favCount")) $("#favCount").textContent = favs;
   if ($("#watchedCount")) $("#watchedCount").textContent = seen;
+  if ($("#bucketCount")) {
+    const watchedTitles = new Set(state.watched.map(w => w.title));
+    const done = state.bucketList.filter(t => watchedTitles.has(t)).length;
+    $("#bucketCount").textContent = `${done}/${state.bucketList.length}`;
+  }
 }
 
 /* =============================================================
@@ -3048,6 +3122,118 @@ async function runMoodChat() {
   });
 }
 
+// =============================================================
+// PERSONAL RECOMMENDATIONS — Claude reads each kid's history and
+// suggests 3 picks tailored to their tastes.
+// =============================================================
+let _recCache = {}; // { who: { picks, generatedAt } }
+async function generateRecommendations(forKid) {
+  if (!state.anthropicKey) return null;
+  if (forKid !== "alden" && forKid !== "owen") return null;
+  const kidName = state.profiles[forKid].name;
+  // Build the kid's "taste profile" from favorites + 5★ watches
+  const favs = (state.favorites[forKid] || []).map(t => `- ${t}`).join("\n") || "(none)";
+  const topRated = state.watched.filter(w => w.stars >= 4).map(w => `- ${w.title} (${w.stars}★)`).join("\n") || "(none)";
+  const recentlyWatched = state.watched.slice(-8).map(w => `- ${w.title}`).join("\n") || "(none)";
+  // Available green-rated shows in the library
+  const available = allShows().filter(s => {
+    const min = Math.min(...[s.score[0], s.score[2], s.score[3], s.score[4]]);
+    const avg = (s.score[0]+s.score[2]+s.score[3]+s.score[4])/4;
+    return min >= 4 && avg >= 4.5;
+  });
+  // Skip already-watched
+  const seen = new Set(state.watched.map(w => w.title));
+  const unwatched = available.filter(s => !seen.has(s.t));
+  const lib = unwatched.map(s => `- ${s.t} (${s.type}, ${s.cat}): ${s.why}`).join("\n");
+
+  const sys = `You are recommending shows specifically for ${kidName}, age ${state.profiles[forKid].age}, in the Martinez family. Family values: kids acting like kids, no snark, wholesome family.
+
+Pick exactly 3 shows from the AVAILABLE LIBRARY that ${kidName} would love based on their taste profile. Vary the picks — don't pick 3 of the same category. Prioritize shows that match what they've loved before.
+
+Return ONLY JSON:
+{"picks":[{"title":"exact title from library","reason":"one warm sentence specifically connecting to their taste"}, ...]}`;
+
+  const user = `${kidName}'s FAVORITE shows (hearted):
+${favs}
+
+${kidName}'s TOP-RATED shows (4-5 stars):
+${topRated}
+
+${kidName}'s recently watched (so they don't see the same picks):
+${recentlyWatched}
+
+AVAILABLE LIBRARY (only pick from these):
+${lib}`;
+
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": state.anthropicKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        system: sys,
+        messages: [{ role: "user", content: user }]
+      })
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const text = j.content?.[0]?.text || "";
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    const parsed = JSON.parse(m[0]);
+    return parsed.picks || null;
+  } catch (e) { console.warn("Rec error:", e); return null; }
+}
+
+async function renderRecommendations() {
+  const grid = $("#grid");
+  const who = kidFilter.who;
+  if (who === "both" || (who !== "alden" && who !== "owen")) {
+    $("#listHeading").textContent = "✨ For You";
+    $("#listCount").textContent = "";
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:30px; text-align:center; color:var(--ink-soft);">Pick "Just Alden" or "Just Owen" in the Watching filter above to see personal picks.</div>`;
+    return;
+  }
+  const kidName = state.profiles[who].name;
+  $("#listHeading").textContent = `✨ For ${kidName}`;
+  $("#listCount").textContent = "AI picks";
+  // Cached?
+  const cache = _recCache[who];
+  if (cache && Date.now() - cache.generatedAt < 60*60*1000) {
+    return renderRecCards(cache.picks);
+  }
+  grid.innerHTML = `<div style="grid-column:1/-1; padding:50px; text-align:center; color:var(--mint);">🔮 Reading ${kidName}'s taste, picking 3 shows just for them…</div>`;
+  const picks = await generateRecommendations(who);
+  if (!picks || !picks.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1; padding:30px; text-align:center; color:var(--ink-soft);">Couldn't generate picks right now. Try again in a moment, or heart a few shows so we know your taste.</div>`;
+    return;
+  }
+  _recCache[who] = { picks, generatedAt: Date.now() };
+  renderRecCards(picks);
+}
+
+function renderRecCards(picks) {
+  const grid = $("#grid");
+  grid.innerHTML = "";
+  picks.forEach(pick => {
+    const show = allShows().find(s => s.t.toLowerCase() === (pick.title||"").toLowerCase());
+    if (!show) return;
+    const card = renderCard(show);
+    // Add a "Why this for you" reason banner
+    const reasonDiv = document.createElement("div");
+    reasonDiv.style.cssText = "padding:10px 16px; background: linear-gradient(90deg, rgba(127,212,168,.12), transparent); border-top: 1px solid var(--border); font-size: 12px; color: var(--mint); font-style: italic; line-height: 1.5;";
+    reasonDiv.textContent = `✨ ${pick.reason || ""}`;
+    card.appendChild(reasonDiv);
+    grid.appendChild(card);
+  });
+}
+
 function pickForUs() {
   const candidates = allShows().filter(s => {
     if (!showMatchesFilter(s)) return false;
@@ -3186,6 +3372,14 @@ function renderGrid() {
     const seen = new Set(state.watched.map(w => w.title));
     pool = pool.filter(s => seen.has(s.t));
     heading = "Watched together";
+  } else if (activeTab === "bucket") {
+    const watchedTitles = new Set(state.watched.map(w => w.title));
+    const bucketSet = new Set(state.bucketList);
+    pool = pool.filter(s => bucketSet.has(s.t));
+    heading = `🎬 Big Family Movies — ${pool.filter(s => watchedTitles.has(s.t)).length} of ${state.bucketList.length} watched`;
+  } else if (activeTab === "recommended") {
+    // Recommendations rendered separately
+    return renderRecommendations();
   }
   // Time-of-day sort boost on the library tab
   if (activeTab === "library") {
@@ -3341,6 +3535,22 @@ function loadYouTubeAPI() {
   });
   return _ytApiPromise;
 }
+function showTrailerOverlay(title, sub) {
+  const o = document.getElementById("trailerOverlay");
+  if (!o) return;
+  const t = document.getElementById("overlayTitle");
+  const s = document.getElementById("overlaySub");
+  if (t) t.textContent = title || "Paused";
+  if (s) s.textContent = sub || "";
+  // Hide buttons on Loading state
+  const btnRow = o.querySelector(".btn-row");
+  if (btnRow) btnRow.style.display = (title && title.toLowerCase().includes("loading")) ? "none" : "flex";
+  o.classList.add("show");
+}
+function hideTrailerOverlay() {
+  const o = document.getElementById("trailerOverlay");
+  if (o) o.classList.remove("show");
+}
 function destroyTrailerPlayer() {
   if (_trailerEndPoll) { clearInterval(_trailerEndPoll); _trailerEndPoll = null; }
   if (_trailerPlayer && _trailerPlayer.destroy) {
@@ -3356,9 +3566,24 @@ async function startTrailer(videoKey) {
   section.innerHTML = `
     <div class="trailer-wrapper">
       <button class="trailer-close" id="trailerCloseBtn" aria-label="Close trailer">×</button>
+      <div class="trailer-shield-top"></div>
       <div id="trailerPlayerEl"></div>
+      <div class="trailer-overlay" id="trailerOverlay">
+        <div class="pause-title" id="overlayTitle">Paused</div>
+        <div class="pause-sub" id="overlaySub">Tap a button to continue.</div>
+        <div class="btn-row">
+          <button id="trailerResumeBtn">▶ Continue</button>
+          <button class="secondary" id="trailerStopBtn">✕ Stop watching</button>
+        </div>
+      </div>
     </div>`;
   document.getElementById("trailerCloseBtn").onclick = endTrailer;
+  document.getElementById("trailerResumeBtn").onclick = () => {
+    if (_trailerPlayer && _trailerPlayer.playVideo) _trailerPlayer.playVideo();
+  };
+  document.getElementById("trailerStopBtn").onclick = endTrailer;
+  // Show "loading" overlay immediately while video buffers
+  showTrailerOverlay("Loading…", "");
   await loadYouTubeAPI();
   _trailerPlayer = new YT.Player('trailerPlayerEl', {
     videoId: videoKey,
@@ -3392,8 +3617,16 @@ async function startTrailer(videoKey) {
         }, 200);
       },
       onStateChange: (e) => {
-        if (e.data === 0) { // ENDED — backup
+        if (e.data === 1) { // PLAYING
+          hideTrailerOverlay();
+        } else if (e.data === 2) { // PAUSED — block all YT UI
+          showTrailerOverlay("Paused", "Tap Continue to keep watching, or Stop to end the trailer.");
+        } else if (e.data === 3) { // BUFFERING
+          showTrailerOverlay("Loading…", "");
+        } else if (e.data === 0) { // ENDED
           endTrailer();
+        } else if (e.data === 5 || e.data === -1) { // CUED / UNSTARTED
+          showTrailerOverlay("Loading…", "");
         }
       },
       onError: () => {
@@ -3760,6 +3993,59 @@ $("#pinSubmit").onclick = () => {
 };
 // PIN reset is only available from inside unlocked parent panel (Security panel below).
 $("#lockBtn").onclick = () => { sessionStorage.removeItem("parent_unlocked"); renderParent(); };
+
+// Backup/restore
+const _backupBtn = document.getElementById("backupBtn");
+if (_backupBtn) _backupBtn.onclick = () => {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `martinez-watchlist-backup-${new Date().toISOString().split("T")[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  $("#backupStatus").textContent = `✓ Downloaded backup with ${Object.keys(state).length} settings.`;
+};
+const _restoreBtn = document.getElementById("restoreBtn");
+if (_restoreBtn) _restoreBtn.onclick = () => $("#restoreInput").click();
+const _restoreInput = document.getElementById("restoreInput");
+if (_restoreInput) _restoreInput.onchange = (e) => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  if (!confirm(`Restore from "${f.name}"? This will overwrite the current data on this device.`)) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const restored = JSON.parse(reader.result);
+      Object.assign(state, restored);
+      saveState();
+      $("#backupStatus").textContent = "✓ Restored. Reloading…";
+      setTimeout(() => location.reload(), 800);
+    } catch (err) {
+      $("#backupStatus").textContent = "❌ Couldn't read that file. Make sure it's a valid backup.";
+    }
+  };
+  reader.readAsText(f);
+};
+// Date night toggle
+const _dateNightToggle = document.getElementById("dateNightToggle");
+if (_dateNightToggle) {
+  _dateNightToggle.checked = !!state.dateNightMode;
+  _dateNightToggle.onchange = () => {
+    state.dateNightMode = _dateNightToggle.checked;
+    saveState();
+    renderGrid();
+  };
+}
+// Auto-disable date-night at 6am
+if (state.dateNightMode) {
+  const now = new Date();
+  if (now.getHours() >= 6 && now.getHours() < 20) {
+    state.dateNightMode = false;
+    saveState();
+  }
+}
 
 // PIN change (requires current pin)
 const _pinChange = document.getElementById("pinChangeBtn");
