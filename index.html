@@ -619,6 +619,48 @@ button.danger {
 .modal-actions button.faved { background: rgba(236,111,122,.2); color: var(--rose); border-color: rgba(236,111,122,.4); }
 .modal-actions button.watched { background: rgba(127,212,168,.2); color: var(--mint); border-color: rgba(127,212,168,.4); }
 
+/* ===== Trailer player (inline, no YouTube exposure) ===== */
+.trailer-section { margin: 14px 0; }
+.trailer-play-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 22px; border-radius: 12px;
+  background: linear-gradient(135deg, #b81d24, #ff3a47);
+  color: white; font-weight: 700; font-size: 15px;
+  border: 0; cursor: pointer; font-family: inherit;
+  box-shadow: 0 4px 14px rgba(184,29,36,.4);
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+.trailer-play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(184,29,36,.55); }
+.trailer-play-btn .icon { font-size: 18px; }
+.trailer-wrapper {
+  aspect-ratio: 16/9;
+  background: black;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0,0,0,.5);
+}
+.trailer-wrapper iframe { width: 100%; height: 100%; border: 0; display: block; }
+.trailer-close {
+  position: absolute; top: 8px; right: 8px; z-index: 5;
+  background: rgba(0,0,0,.7); border: 1px solid rgba(255,255,255,.25);
+  width: 32px; height: 32px; border-radius: 50%;
+  color: white; font-size: 16px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.trailer-ended {
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 22px; text-align: center; border-radius: 14px;
+  display: flex; flex-direction: column; gap: 10px; align-items: center;
+}
+.trailer-ended .ended-title { font-size: 16px; font-weight: 600; color: var(--mint); }
+.trailer-ended .ended-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+.trailer-replay-btn {
+  background: rgba(255,255,255,.08); border: 1px solid var(--border-strong);
+  color: var(--ink); padding: 10px 18px; border-radius: 10px;
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+
 .prompts-card {
   margin: 18px 0 4px; padding: 16px; border-radius: 14px;
   background: linear-gradient(135deg, rgba(233,183,88,.08), rgba(236,111,122,.06));
@@ -3216,7 +3258,10 @@ function openModal(s) {
   if (cached.voteAverage) metaBits.push(`★ ${cached.voteAverage.toFixed(1)} TMDB`);
   const castLine = (cached.cast && cached.cast.length) ? `<div class="meta" style="margin-top:8px;"><b style="color:var(--ink);">Cast:</b> ${cached.cast.slice(0,4).map(c => escapeHtml(c.name)).join(", ")}</div>` : "";
   const overviewBlock = cached.overview ? `<p style="margin-top:14px; color:var(--ink); line-height:1.6;">${escapeHtml(cached.overview)}</p>` : "";
-  const trailerBlock = cached.trailerKey ? `<a href="https://www.youtube.com/watch?v=${cached.trailerKey}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:8px 14px; border-radius:8px; background:rgba(255,0,0,.15); color:#ff8484; text-decoration:none; font-size:13px; font-weight:600;">▶ Watch trailer on YouTube</a>` : "";
+  const trailerBlock = cached.trailerKey ? `
+    <div class="trailer-section" id="trailerSection" data-key="${escapeHtml(cached.trailerKey)}">
+      <button class="trailer-play-btn" id="trailerPlayBtn"><span class="icon">▶</span>Play trailer</button>
+    </div>` : "";
   $("#modalInfo").innerHTML = `
     <span class="verdict ${badge.cls}">${verdictWord}</span>
     <h2>${escapeHtml(s.t)}${s.custom?' ★':''}</h2>
@@ -3265,9 +3310,119 @@ function openModal(s) {
     markWatched(s.t, kidFilter.who, valid);
     openModal(s);
   };
+  // Wire up trailer play button if the show has a trailer
+  const trailerBtn = document.getElementById("trailerPlayBtn");
+  if (trailerBtn && cached.trailerKey) {
+    trailerBtn.onclick = () => startTrailer(cached.trailerKey);
+  }
   $("#modalBack").classList.add("show");
 }
-function closeModal() { $("#modalBack").classList.remove("show"); }
+function closeModal() {
+  destroyTrailerPlayer();
+  $("#modalBack").classList.remove("show");
+}
+
+// =============================================================
+// Inline trailer player — kids never leave the app, video stops
+// itself the moment it ends, no related videos, no end screen.
+// =============================================================
+let _ytApiPromise = null;
+let _trailerPlayer = null;
+let _trailerEndPoll = null;
+function loadYouTubeAPI() {
+  if (window.YT && window.YT.Player) return Promise.resolve();
+  if (_ytApiPromise) return _ytApiPromise;
+  _ytApiPromise = new Promise(resolve => {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); resolve(); };
+  });
+  return _ytApiPromise;
+}
+function destroyTrailerPlayer() {
+  if (_trailerEndPoll) { clearInterval(_trailerEndPoll); _trailerEndPoll = null; }
+  if (_trailerPlayer && _trailerPlayer.destroy) {
+    try { _trailerPlayer.stopVideo(); } catch(e){}
+    try { _trailerPlayer.destroy(); } catch(e){}
+  }
+  _trailerPlayer = null;
+}
+async function startTrailer(videoKey) {
+  destroyTrailerPlayer();
+  const section = document.getElementById("trailerSection");
+  if (!section) return;
+  section.innerHTML = `
+    <div class="trailer-wrapper">
+      <button class="trailer-close" id="trailerCloseBtn" aria-label="Close trailer">×</button>
+      <div id="trailerPlayerEl"></div>
+    </div>`;
+  document.getElementById("trailerCloseBtn").onclick = endTrailer;
+  await loadYouTubeAPI();
+  _trailerPlayer = new YT.Player('trailerPlayerEl', {
+    videoId: videoKey,
+    width: '100%',
+    height: '100%',
+    host: 'https://www.youtube-nocookie.com',
+    playerVars: {
+      autoplay: 1,
+      rel: 0,
+      modestbranding: 1,
+      iv_load_policy: 3,
+      controls: 1,
+      fs: 1,
+      playsinline: 1,
+      cc_load_policy: 0,
+      disablekb: 0
+    },
+    events: {
+      onReady: (e) => {
+        // Poll to catch the end BEFORE YouTube shows its end screen / suggestions
+        _trailerEndPoll = setInterval(() => {
+          if (!_trailerPlayer || !_trailerPlayer.getCurrentTime) return;
+          try {
+            const cur = _trailerPlayer.getCurrentTime();
+            const dur = _trailerPlayer.getDuration();
+            if (dur > 0 && cur >= dur - 0.4) {
+              clearInterval(_trailerEndPoll); _trailerEndPoll = null;
+              endTrailer();
+            }
+          } catch(err) {}
+        }, 200);
+      },
+      onStateChange: (e) => {
+        if (e.data === 0) { // ENDED — backup
+          endTrailer();
+        }
+      },
+      onError: () => {
+        // Trailer not embeddable — graceful fallback message
+        const section = document.getElementById("trailerSection");
+        if (section) {
+          section.innerHTML = `<div class="trailer-ended">
+            <div class="ended-title">Trailer not available</div>
+            <div class="ended-sub">This studio doesn't allow embedded playback. Skip the trailer for now.</div>
+          </div>`;
+        }
+        destroyTrailerPlayer();
+      }
+    }
+  });
+}
+function endTrailer() {
+  destroyTrailerPlayer();
+  const section = document.getElementById("trailerSection");
+  if (!section) return;
+  const key = section.dataset.key;
+  section.innerHTML = `
+    <div class="trailer-ended">
+      <div class="ended-title">✓ Trailer finished</div>
+      <div class="ended-sub">No more YouTube — go pick something to watch!</div>
+      <button class="trailer-replay-btn" id="trailerReplayBtn">↻ Watch the trailer again</button>
+    </div>`;
+  document.getElementById("trailerReplayBtn").onclick = () => startTrailer(key);
+}
 
 /* =============================================================
    SEARCH
