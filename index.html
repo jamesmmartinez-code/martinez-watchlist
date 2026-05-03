@@ -755,6 +755,32 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Welcome banner ===== */
+.welcome-banner {
+  display: flex; align-items: center; gap: 18px; padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(127,212,168,.1), rgba(233,183,88,.06));
+  border: 1px solid rgba(127,212,168,.2); border-radius: 18px;
+  margin-bottom: 18px;
+}
+.welcome-avatar {
+  width: 56px; height: 56px; border-radius: 18px;
+  display: grid; place-items: center; font-size: 32px; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.welcome-text { flex: 1; min-width: 0; }
+.welcome-greet { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; line-height: 1.1; }
+.welcome-sub { font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
+.welcome-stat { font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
+.welcome-cta {
+  background: var(--gold); color: #1a1209; border: 0;
+  padding: 10px 16px; border-radius: 999px; font-family: inherit;
+  font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .welcome-banner { flex-wrap: wrap; }
+  .welcome-cta { width: 100%; }
+}
+
 /* ===== Login splash (Netflix-style profile picker) ===== */
 #loginSplash {
   position: fixed; inset: 0; z-index: 9500;
@@ -968,7 +994,9 @@ footer {
       </div>
     </div>
 
+    <div id="welcomeBanner" style="display:none;"></div>
     <div id="whatsNewBanner" style="display:none;"></div>
+    <div id="picksOfWeekBanner" style="display:none;"></div>
 
     <div class="mood-cta" id="moodCta">
       <div class="mood-text">
@@ -1239,6 +1267,47 @@ footer {
           <input type="checkbox" id="dateNightToggle" style="width:18px; height:18px;">
           <span style="font-size:14px;">Enable date night filter (parents only)</span>
         </label>
+      </div>
+
+      <div class="parent-panel">
+        <h2>🍿 Family Movie Night</h2>
+        <p class="help">Pick 3-4 candidates. Each kid votes from their device. Winner shows up on everyone's home screen until you replace it.</p>
+        <div id="movieNightSetup">
+          <div style="margin: 14px 0;">
+            <input type="text" id="mnCandidate" placeholder="Type a show title to add as a candidate" style="width:calc(100% - 100px); padding:10px 12px; border-radius:8px; background:var(--bg-2); color:var(--ink); border:1px solid var(--border-strong); font-family:inherit;">
+            <button class="primary" id="mnAddBtn" style="padding:10px 14px; margin-left:6px;">+ Add</button>
+          </div>
+          <div id="mnCandidates"></div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <button class="primary" id="mnStartBtn" style="background:linear-gradient(135deg, var(--mint), #5fc09e); color:#0e2218;">Start vote</button>
+            <button class="secondary" id="mnEndBtn">End vote / clear</button>
+            <span id="mnStatus" style="font-size:13px; color:var(--ink-soft);"></span>
+          </div>
+          <div id="mnResults" style="margin-top:14px;"></div>
+        </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>⭐ Pick of the Week</h2>
+        <p class="help">Each parent can spotlight one show per week. Featured prominently on every kid's home screen.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+          <div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.1em; margin-bottom:6px;">
+              <span class="avatar" style="background:#ec6f7a; width:24px; height:24px; font-size:14px;">👩</span> Mom's Pick
+            </label>
+            <input type="text" id="momPickInput" placeholder="Show title (or leave blank)" style="width:100%; padding:10px 12px; border-radius:8px; background:var(--bg-2); color:var(--ink); border:1px solid var(--border-strong); font-family:inherit; font-size:14px;">
+          </div>
+          <div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.1em; margin-bottom:6px;">
+              <span class="avatar" style="background:#8aa8ff; width:24px; height:24px; font-size:14px;">👨</span> Dad's Pick
+            </label>
+            <input type="text" id="dadPickInput" placeholder="Show title (or leave blank)" style="width:100%; padding:10px 12px; border-radius:8px; background:var(--bg-2); color:var(--ink); border:1px solid var(--border-strong); font-family:inherit; font-size:14px;">
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="primary" id="savePicksBtn">Save picks of the week</button>
+          <span id="picksStatus" style="margin-left:10px; font-size:13px; color:var(--ink-soft);"></span>
+        </div>
       </div>
 
       <div class="parent-panel">
@@ -3017,7 +3086,9 @@ function defaultState() {
       "A Little Princess","The Incredibles","Coco","Moana","Inside Out","Wonder"
     ],
     // Date-night mode (parent-only filter)
-    dateNightMode: false
+    dateNightMode: false,
+    picksOfWeek: { mom: null, dad: null, setAt: null },
+    movieNight: { active: false, candidates: [], votes: {}, winner: null, startedAt: null }
   };
 }
 function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
@@ -3053,6 +3124,8 @@ if (!state.bucketList) {
   state.bucketList = defaultState().bucketList;
   saveState();
 }
+if (!state.picksOfWeek) state.picksOfWeek = { mom: null, dad: null, setAt: null };
+if (!state.movieNight) state.movieNight = { active: false, candidates: [], votes: {}, winner: null, startedAt: null };
 // Icon migration: update Alden→frog, Owen→McLaren Senna once
 if (!state.iconVersion || state.iconVersion < 2) {
   if (state.profiles?.alden) {
@@ -4165,6 +4238,149 @@ function renderCard(s) {
   return div;
 }
 
+function renderMovieNightVotePrompt() {
+  // Vote prompt at top of kids' view when an active vote is happening
+  const banner = document.getElementById("welcomeBanner");
+  if (!banner) return;
+  const u = getCurrentUser();
+  if (!u) return;
+  const mn = state.movieNight;
+  if (!mn || !mn.active || !mn.candidates || mn.candidates.length < 2) return;
+  // If user has already voted, show waiting state
+  const myVote = mn.votes[u];
+  if (myVote) {
+    // Already voted — show "thanks, waiting for others"
+    return; // Welcome banner will still render below
+  }
+  // Render vote prompt INSTEAD of welcome banner
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div style="background:linear-gradient(135deg, var(--rose), #c54b56); border-radius:18px; padding:24px; margin-bottom:18px; color:white;">
+      <div style="font-family:'Fraunces',serif; font-size:24px; font-weight:700; margin-bottom:6px;">🍿 Family Movie Night Vote</div>
+      <div style="font-size:14px; opacity:.9; margin-bottom:14px;">Mom & Dad want to know — which one?</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${mn.candidates.map(c => `
+          <button class="mn-vote-btn" data-vote="${escapeHtml(c)}" style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.35); color:white; padding:14px 18px; border-radius:12px; font-family:inherit; font-size:16px; font-weight:600; cursor:pointer; text-align:left;">
+            ${escapeHtml(c)}
+          </button>`).join("")}
+      </div>
+    </div>`;
+  banner.querySelectorAll(".mn-vote-btn").forEach(b => b.onclick = () => {
+    state.movieNight.votes[u] = b.dataset.vote;
+    saveState();
+    logActivity("voted", b.dataset.vote);
+    banner.innerHTML = `<div style="background:rgba(127,212,168,.15); border:1px solid rgba(127,212,168,.4); color:var(--mint); padding:18px; border-radius:14px; margin-bottom:18px; text-align:center; font-weight:600;">✓ Vote in! Waiting for the rest of the family.</div>`;
+  });
+  return true; // signal that we took over the banner
+}
+
+function renderWelcomeBanner() {
+  // Skip if movie night vote prompt is showing (it took over the banner)
+  const mn = state.movieNight;
+  const u = getCurrentUser();
+  if (mn && mn.active && u && !mn.votes[u] && mn.candidates && mn.candidates.length >= 2) return;
+  const banner = document.getElementById("welcomeBanner");
+  if (!banner) return;
+  if (!u || (state.dateNightMode && isCurrentUserParent())) { banner.style.display = "none"; return; }
+  const profile = state.profiles[u];
+  if (!profile) { banner.style.display = "none"; return; }
+
+  const ctx = timeContext();
+  const hour = new Date().getHours();
+  const isWeekend = [0,6].includes(new Date().getDay());
+
+  // Stats
+  const watchedThisWeek = state.watched.filter(w => {
+    if (w.who !== u && u !== "mom" && u !== "dad") return false;
+    const d = new Date(w.date);
+    return (Date.now() - d.getTime()) < 7*24*60*60*1000;
+  }).length;
+  const totalWatched = profile.isParent ? state.watched.length : state.watched.filter(w => w.who === u).length;
+  const favCount = (state.favorites[u] || []).length;
+
+  // Personalized greeting
+  let greeting;
+  if (hour < 11) greeting = `Good morning, ${profile.name}`;
+  else if (hour < 17) greeting = `Hey ${profile.name}`;
+  else if (hour < 20) greeting = `Good evening, ${profile.name}`;
+  else greeting = `Tonight, ${profile.name}`;
+
+  // Suggestion based on time
+  let suggestionText;
+  if (hour >= 20) suggestionText = "Something gentle before bed?";
+  else if (hour >= 17 && isWeekend) suggestionText = "Family movie night is here.";
+  else if (hour >= 17) suggestionText = "Time to wind down.";
+  else if (hour < 11 && isWeekend) suggestionText = "Saturday morning energy — time for adventure.";
+  else if (hour < 11) suggestionText = "Quick something before the day gets going?";
+  else suggestionText = "What sounds good?";
+
+  let statBlurb = "";
+  if (totalWatched === 0) {
+    statBlurb = `<div class="welcome-stat">First time here. Tap a show to see if it's a yes for our family — and use the ♥ to save your favorites.</div>`;
+  } else if (watchedThisWeek > 0) {
+    statBlurb = `<div class="welcome-stat">You've watched ${watchedThisWeek} ${watchedThisWeek === 1 ? "show" : "shows"} this week • ${totalWatched} total • ${favCount} favorites</div>`;
+  } else {
+    statBlurb = `<div class="welcome-stat">You've watched ${totalWatched} ${totalWatched === 1 ? "show" : "shows"} • ${favCount} favorites</div>`;
+  }
+
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div class="welcome-banner">
+      <div class="welcome-avatar" style="background:${profile.color};">${profile.animal}</div>
+      <div class="welcome-text">
+        <div class="welcome-greet">${escapeHtml(greeting)}</div>
+        <div class="welcome-sub">${escapeHtml(suggestionText)}</div>
+        ${statBlurb}
+      </div>
+      ${ctx.prefer ? `<button class="welcome-cta" data-cat="${escapeHtml(ctx.prefer)}">${escapeHtml(ctx.prefer)} →</button>` : ''}
+    </div>`;
+
+  banner.querySelector(".welcome-cta")?.addEventListener("click", (e) => {
+    kidFilter.cat = e.target.dataset.cat;
+    renderCatChips(); renderGrid();
+  });
+}
+
+function renderPicksOfWeek() {
+  const banner = document.getElementById("picksOfWeekBanner");
+  if (!banner) return;
+  if (!state.picksOfWeek) state.picksOfWeek = {};
+  if (state.dateNightMode && isCurrentUserParent()) { banner.style.display = "none"; return; }
+
+  // Get current week's parent picks
+  const momPick = state.picksOfWeek.mom;
+  const dadPick = state.picksOfWeek.dad;
+  const items = [];
+  if (momPick) {
+    const show = allShows().find(s => s.t === momPick);
+    if (show) items.push({ pick: "Mom's Pick", profile: state.profiles.mom, show });
+  }
+  if (dadPick) {
+    const show = allShows().find(s => s.t === dadPick);
+    if (show) items.push({ pick: "Dad's Pick", profile: state.profiles.dad, show });
+  }
+  if (!items.length) { banner.style.display = "none"; return; }
+
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
+      ${items.map(it => `
+        <button class="pick-of-week-card" data-title="${escapeHtml(it.show.t)}" style="flex:1; min-width:200px; background: linear-gradient(135deg, ${it.profile.color}33, transparent); border: 1px solid ${it.profile.color}66; border-radius: 14px; padding: 14px 16px; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span class="avatar" style="background:${it.profile.color}; width:32px; height:32px; font-size:18px;">${it.profile.animal}</span>
+            <span style="font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:${it.profile.color};">${it.pick} this week</span>
+          </div>
+          <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:600;">${escapeHtml(it.show.t)}</div>
+          <div style="font-size:12px; color:var(--ink-soft); margin-top:4px;">${escapeHtml(it.show.cat)} • Tap to learn more</div>
+        </button>
+      `).join("")}
+    </div>`;
+  banner.querySelectorAll(".pick-of-week-card").forEach(b => b.onclick = () => {
+    const show = allShows().find(s => s.t === b.dataset.title);
+    if (show) openModal(show);
+  });
+}
+
 function renderWhatsNew() {
   const banner = document.getElementById("whatsNewBanner");
   if (!banner) return;
@@ -4199,6 +4415,9 @@ function renderWhatsNew() {
 }
 
 function renderGrid() {
+  renderMovieNightVotePrompt();
+  renderWelcomeBanner();
+  renderPicksOfWeek();
   renderWhatsNew();
   const grid = $("#grid");
   grid.innerHTML = "";
@@ -4700,6 +4919,10 @@ function renderParent() {
     renderDiscoveryStatus();
     if (typeof renderPhotoGrid === "function") renderPhotoGrid();
     if (typeof renderActivityLog === "function") renderActivityLog();
+    if (typeof renderMovieNight === "function") renderMovieNight();
+    // Pre-fill pick inputs
+    if ($("#momPickInput")) $("#momPickInput").value = state.picksOfWeek?.mom || "";
+    if ($("#dadPickInput")) $("#dadPickInput").value = state.picksOfWeek?.dad || "";
   }
 }
 
@@ -4876,6 +5099,91 @@ $("#pinSubmit").onclick = () => {
 };
 // PIN reset is only available from inside unlocked parent panel (Security panel below).
 $("#lockBtn").onclick = () => { sessionStorage.removeItem("parent_unlocked"); renderParent(); };
+
+// =============================================================
+// FAMILY MOVIE NIGHT VOTING (parent panel)
+// =============================================================
+function renderMovieNight() {
+  const wrap = document.getElementById("mnCandidates");
+  const status = document.getElementById("mnStatus");
+  const results = document.getElementById("mnResults");
+  if (!wrap) return;
+  const mn = state.movieNight;
+  wrap.innerHTML = (mn.candidates || []).map(c => `
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; background:var(--bg-2); border-radius:8px; margin-bottom:6px;">
+      <span style="font-weight:600;">${escapeHtml(c)}</span>
+      <button class="danger" data-mn-remove="${escapeHtml(c)}">Remove</button>
+    </div>`).join("");
+  wrap.querySelectorAll("[data-mn-remove]").forEach(b => b.onclick = () => {
+    state.movieNight.candidates = state.movieNight.candidates.filter(c => c !== b.dataset.mnRemove);
+    saveState(); renderMovieNight();
+  });
+  if (mn.active) {
+    status.innerHTML = `🟢 Voting open — ${Object.keys(mn.votes).length} ${Object.keys(mn.votes).length === 1 ? "vote" : "votes"} in`;
+  } else if (mn.winner) {
+    status.innerHTML = `🏆 Last winner: <b>${escapeHtml(mn.winner)}</b>`;
+  } else {
+    status.textContent = "";
+  }
+  // Vote tally
+  if (Object.keys(mn.votes).length) {
+    const counts = {};
+    Object.values(mn.votes).forEach(t => counts[t] = (counts[t]||0)+1);
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    results.innerHTML = `<div style="margin-top:14px; padding:14px; background:var(--bg-2); border-radius:10px;">
+      <div style="font-size:11px; font-weight:700; color:var(--ink-soft); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px;">Live tally</div>
+      ${sorted.map(([t,c]) => `<div style="display:flex; justify-content:space-between; padding:4px 0;"><span>${escapeHtml(t)}</span><span><b>${c}</b> ${c === 1 ? "vote" : "votes"}</span></div>`).join("")}
+      ${mn.active ? "" : `<button class="primary" id="mnDeclareBtn" style="margin-top:10px;">Declare ${escapeHtml(sorted[0][0])} winner</button>`}
+    </div>`;
+    if (!mn.active) {
+      document.getElementById("mnDeclareBtn").onclick = () => {
+        state.movieNight.winner = sorted[0][0];
+        state.movieNight.candidates = []; state.movieNight.votes = {};
+        saveState(); renderMovieNight();
+      };
+    }
+  } else {
+    results.innerHTML = "";
+  }
+}
+
+const _mnAddBtn = document.getElementById("mnAddBtn");
+if (_mnAddBtn) _mnAddBtn.onclick = () => {
+  const v = $("#mnCandidate").value.trim();
+  if (!v) return;
+  if (!state.movieNight) state.movieNight = { active: false, candidates: [], votes: {}, winner: null };
+  if (!state.movieNight.candidates.includes(v)) state.movieNight.candidates.push(v);
+  $("#mnCandidate").value = "";
+  saveState(); renderMovieNight();
+};
+const _mnStartBtn = document.getElementById("mnStartBtn");
+if (_mnStartBtn) _mnStartBtn.onclick = () => {
+  if (!state.movieNight.candidates.length) { alert("Add at least 2 candidates first."); return; }
+  state.movieNight.active = true;
+  state.movieNight.votes = {};
+  state.movieNight.startedAt = Date.now();
+  state.movieNight.winner = null;
+  saveState(); renderMovieNight();
+  alert("Voting is open! Each kid will see the vote screen on their device.");
+};
+const _mnEndBtn = document.getElementById("mnEndBtn");
+if (_mnEndBtn) _mnEndBtn.onclick = () => {
+  if (!confirm("End voting and clear everything?")) return;
+  state.movieNight = { active: false, candidates: [], votes: {}, winner: null, startedAt: null };
+  saveState(); renderMovieNight();
+};
+
+// Pick of the week save
+const _savePicksBtn = document.getElementById("savePicksBtn");
+if (_savePicksBtn) _savePicksBtn.onclick = () => {
+  if (!state.picksOfWeek) state.picksOfWeek = { mom: null, dad: null };
+  state.picksOfWeek.mom = $("#momPickInput").value.trim() || null;
+  state.picksOfWeek.dad = $("#dadPickInput").value.trim() || null;
+  state.picksOfWeek.setAt = Date.now();
+  saveState();
+  $("#picksStatus").textContent = "✓ Picks saved. Now showing on the kids' home screen.";
+  $("#picksStatus").style.color = "var(--mint)";
+};
 
 // Backup/restore
 const _backupBtn = document.getElementById("backupBtn");
