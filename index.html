@@ -968,6 +968,8 @@ footer {
       </div>
     </div>
 
+    <div id="whatsNewBanner" style="display:none;"></div>
+
     <div class="mood-cta" id="moodCta">
       <div class="mood-text">
         <span class="mood-title">💬 What are you in the mood for?</span>
@@ -2075,7 +2077,573 @@ const DISCUSSION_PROMPTS = {
     "Which person in tonight's episode reminded you most of yourself?",
     "What does Jesus do that surprises you?",
     "What's something you'd want to ask him?"
+  ],
+  "Wild Kratts": [
+    "In this episode, the Kratt brothers had to understand how the animal moves or hunts before they could use their creature powers—why do you think learning about animals the right way mattered so much to them?",
+    "Chris and Martin worked together as a team to solve the problem, even when they disagreed about the best plan. Can you think of a time when you and a sibling (or friend) had different ideas but had to work together anyway?",
+    "What's one thing the Kratts discovered about this animal that surprised you, and what made you curious to learn more about it?"
+  ],
+  "Bluey": [
+    "In today's episode, Bluey and Bingo had to figure something out together—what was the problem they faced, and how did working as a team help them solve it?",
+    "Bandit (the dad) was playful and silly with the kids even when things got messy or didn't go as planned. Why do you think he kept being fun and patient instead of getting upset?",
+    "Which character in the episode reminded you most of how you act with your brother or sister, and what did that character do that you might want to try in your own family?"
+  ],
+  "Mister Rogers' Neighborhood": [
+    "In today's episode, Mr. Rogers showed how everyone has feelings that are important—even when they're sad or scared. What feeling did you notice Mr. Rogers helping the character work through, and why do you think that mattered?",
+    "Mr. Rogers always takes time to listen carefully to people and treat them with respect. Can you think of a time this week when someone listened to you the way Mr. Rogers listens, or when you listened to someone else that way?",
+    "Mr. Rogers says it's okay to have big feelings and that grown-ups care about you no matter what. What's something that's been on your mind lately that you'd like to talk about with Mom or Dad, the way Mr. Rogers talks with people?"
+  ],
+  "Wallace & Gromit": [
+    "Wallace made a lot of mistakes trying to invent things to help Gromit, but Gromit kept helping him anyway—why do you think Gromit stayed loyal even when Wallace messed up?",
+    "Wallace and Gromit work really well together even though they're so different—what are some ways you and your siblings or friends are different, and how do those differences actually help you work as a team?",
+    "Gromit never complains or talks back, he just quietly fixes things and does what needs to be done—what's one thing you could do this week without being asked, the way Gromit helps Wallace?"
+  ],
+  "Shaun the Sheep": [
+    "Shaun was really clever about solving problems on the farm without using words - what was your favorite trick or plan he came up with, and why did it make you laugh?",
+    "The farmer, Bitzer, and all the animals had to work together to keep their secrets and fix their mistakes - what would have happened if someone had gotten annoyed and told on the others instead?",
+    "If you could be like Shaun and solve one problem at home or school in a silly, creative way instead of just asking for help, what problem would you pick and how would you do it?"
+  ],
+  "The Magic School Bus": [
+    "In this episode, Ms. Frizzle took the class on an adventure to learn about [topic]. What was something that surprised you about how she made learning fun instead of boring?",
+    "The kids in the Magic School Bus had to work together and listen to Ms. Frizzle's instructions to stay safe during their trip. Why do you think listening to an adult who knows more than you actually helps you learn better?",
+    "Ms. Frizzle says 'Take chances, make mistakes, and get messy!' What's something you've been nervous to try at school or home, and how might being okay with making mistakes help you learn it?"
+  ],
+  "Liberty's Kids": [
+    "In the show, Sarah, James, and Henri had to deliver important messages during the Revolution even when they were scared. What was the hardest part about their job, and why do you think they kept doing it anyway?",
+    "The kids in Liberty's Kids had to work together with people they didn't always agree with to fight for something bigger than themselves. Can you think of a time when you had to work with someone different from you to accomplish something?",
+    "Sarah and James showed respect to the adults around them—like George Washington and Benjamin Franklin—even when things got dangerous and confusing. How do you think that respect helped them, and when is it hardest for you to show respect to the adults in your life?"
+  ],
+  "Octonauts": [
+    "The Octonauts had to work together as a team to rescue that sea creature—what did each team member do, and why do you think Captain Barnacles needed all of them instead of trying to fix the problem alone?",
+    "When the sea creature was in trouble, the Octonauts didn't give up even when it was hard—can you think of a time when you kept trying at something difficult instead of quitting?",
+    "The Octonauts respect the ocean and all the animals in it, even the ones that seem scary or different—what's one way our family can show respect for animals or nature like they do?"
+  ],
+  "Curious George": [
+    "George made a mess while trying to help, but The Man with the Yellow Hat didn't get angry at him. Why do you think The Man stayed calm instead of getting upset?",
+    "George had to figure out how to fix the problem he caused. Tell me about a time when you made a mistake and had to work to make it right—what did that feel like?",
+    "The Man with the Yellow Hat kept giving George chances to learn, even when things went wrong. How do you want us to treat you when you mess up at home?"
+  ],
+  "Drive Thru History": [
+    "In this episode, Dave showed us how people actually lived and built things back then—what surprised you most about how different (or the same) things were compared to now?",
+    "Dave talked about the faith and hard work of the people who built these historical sites—why do you think those values were so important to them, and how do you see those same values mattering today?",
+    "If you could visit one of the places Dave showed us in person, which would it be, and what would you want to learn more about from the people who lived there?"
+  ],
+  "Reading Rainbow": [
+    "In this episode, LeVar Burton showed us a story about [specific book/theme from episode]. What part of that story surprised you the most, and why?",
+    "The characters in the book had to solve a problem by thinking creatively. Can you think of a time when you read something or learned something that helped you figure out how to handle a tough situation?",
+    "LeVar Burton talks about how reading takes you to different worlds and helps you understand people's lives. What's one book or story that made you feel like you were really there, and what did it teach you about someone different from you?"
+  ],
+  "Charlotte's Web": [
+    "Charlotte saved Wilbur's life by writing messages in her web—what did it cost her, and why do you think she was willing to pay that price for her friend?",
+    "Wilbur felt scared and alone before he met Charlotte, but their friendship changed everything—can you think of a time when a friend helped you feel brave or less lonely?",
+    "At the end, Charlotte couldn't stay with Wilbur, but she left something behind that would help him forever—how do you think the people we love stay close to our hearts even when we can't see them?"
+  ],
+  "Daniel Tiger's Neighborhood": [
+    "In the episode, Daniel Tiger felt scared at bedtime, but then he remembered his grown-ups were nearby. What's something that helps you feel safe and calm when you're getting ready for bed?",
+    "Daniel Tiger used a special way to calm down before sleeping. What calm-down tricks could you use on nights when your brain feels busy or worried?",
+    "Daniel Tiger trusted his parents to take care of him while he slept. Why do you think it's important to tell a grown-up if you're feeling worried or scared instead of keeping it all inside?"
+  ],
+  "The Prince of Egypt": [
+    "Moses didn't think he was the right person to lead the Israelites out of Egypt—he was scared and unsure of himself. What did God show him to help him be brave, and can you think of a time when you felt like you couldn't do something but tried anyway?",
+    "Ramses and Moses grew up together as brothers, but they made very different choices about what was right and wrong. What do you think made them choose such different paths, even though they had so much in common?",
+    "At the end, Moses had to trust God even when he couldn't see how things would work out. When is it hard for you to trust and obey, and what helps you do it anyway?"
+  ],
+  "The Land Before Time": [
+    "Littlefoot and his friends didn't know each other at first, but they had to work together to find the Great Valley. What did each dinosaur do that helped the group succeed?",
+    "Littlefoot lost his mother, which was really sad, but he kept going and helped his friends. How do you think he stayed brave, and what gave him hope?",
+    "The dinosaurs in the movie learned they needed each other even though they were different kinds. Who do you depend on when things are hard, and how do they help you?"
+  ],
+  "An American Tail": [
+    "Fievel got separated from his family and had to be brave in a new, scary place. What was the hardest part for Fievel, and what helped him keep going even when things were really tough?",
+    "Fievel's parents never stopped looking for him, and he never stopped trying to find them. What does that tell us about how families should treat each other?",
+    "If you were separated from our family like Fievel was, what would help you feel brave and remember that we love you and would find you?"
+  ],
+  "My Neighbor Totoro": [
+    "Mei and Satsuki had to be brave and take care of each other while their mom was in the hospital—what are some ways they helped each other that you noticed?",
+    "The girls found magic and wonder in their new house and forest, even though they were worried about their mom—what's something that makes you feel peaceful or happy when things seem hard?",
+    "How do you think Satsuki and Mei's respect for their dad and their willingness to help him showed that they were growing up, and what's one way you could show that kind of maturity in our family?"
+  ],
+  "Castle in the Sky": [
+    "Sheeta and Pazu work together even though they just met—what did they do to show they could trust each other, and why was that important for their adventure?",
+    "The bad guys wanted to use the castle's power to control people, but Sheeta chose to destroy it instead—what do you think would have happened if she had made a different choice?",
+    "Pazu never gave up on helping Sheeta even when things got really hard—can you think of a time when you stuck with something or someone even though it was difficult, and how did that turn out?"
+  ],
+  "Ponyo": [
+    "In the movie, Ponyo wants to become human so badly that she runs away from her father. Why do you think she felt that way, and what do you think she was hoping would be different as a human?",
+    "Sosuke takes care of his mom when she's sick, and he also helps Ponyo even though she's strange and different. How did Sosuke show respect and kindness in the story, and what made him act that way?",
+    "If you could have one magical thing happen in your life like Ponyo did, but it meant you'd have to leave your family to make it happen, what would you choose and why?"
+  ],
+  "Homeward Bound": [
+    "Shadow, Chance, and Sassy all had different reasons for wanting to get home—Shadow missed his boy, Chance wanted to prove himself, and Sassy wanted her comfort. What was each pet's biggest reason for not giving up, and which one do you think was the hardest to keep going?",
+    "When the pets had to work together to survive—like when they helped each other through dangerous parts of the journey—how did they show loyalty to each other even though they were different animals?",
+    "If you had to leave home for a while like Shadow, Chance, and Sassy did, what or who would you miss the most, and what would help you keep going until you got back?"
+  ],
+  "Free Willy": [
+    "Jesse took a long time to trust Willy and believe the whale could be his friend - what did Jesse do to finally show Willy he cared, and how did that change things between them?",
+    "At the end, Jesse had to let Willy go free even though he loved him - why do you think that was the right thing to do, even though it was sad?",
+    "Is there something or someone in your own life that you've had to let go of or share with others because it was best for them, even if you wanted to keep it all to yourself?"
+  ],
+  "Chitty Chitty Bang Bang": [
+    "Caractacus Inventor had to use his creativity and imagination to fix up an old car and make it fly—what's something you've imagined or created that seemed impossible at first?",
+    "The kids in the movie trusted their dad even when his inventions seemed silly or didn't work right away—how do you feel when a grown-up in your life tries something new and asks you to believe in them?",
+    "At the end, the family had to work together to escape danger using the flying car—when have you and our family had to cooperate and use everyone's ideas to solve a problem?"
+  ],
+  "Secondhand Lions": [
+    "Walter's uncles told him that 'it's not what you believe, it's what you can do about it' – what did they mean by that, and how did Walter use this idea to solve his problems?",
+    "Hub and Garth seemed like tough, grumpy old men at first, but Walter discovered they had big hearts underneath. What changed in how Walter saw them, and have you ever misjudged someone before getting to know them better?",
+    "By the end of the movie, Walter became braver and more confident because he spent time with his uncles. What's something you'd like to get better at, and who could help you learn it the way Hub and Garth helped Walter?"
+  ],
+  "Kiki's Delivery Service": [
+    "Kiki had to leave her home and family to learn and grow—what was hard about that for her, and what did she discover she could do on her own?",
+    "When Kiki lost her magic powers and felt like a failure, how did the people around her (like Osono and Jiji) help her get back on her feet, and why was accepting their help important?",
+    "What's something you've wanted to try or get better at that makes you a little nervous, and how could you be brave like Kiki in working toward it?"
+  ],
+  "The Parent Trap": [
+    "Hallie and Annie didn't tell their parents the truth about switching places at first—why do you think they decided to keep that secret, and what could have happened if they never told the truth?",
+    "Both their mom and dad were hurt when they split up, but the girls believed they could still be a family again—what do you think the movie was trying to show us about how families can heal?",
+    "If you were trying to help two people you love understand each other better, like the twins did with their parents, what's one honest thing you would want to say to them instead of playing tricks?"
+  ],
+  "American Girl: Kit Kittredge": [
+    "Kit found creative ways to help her family during tough times, like delivering newspapers and writing stories for the newspaper—what problems in your own life could you try to solve in a creative way like Kit did?",
+    "Kit's parents taught her that hard work and staying positive mattered more than having lots of money—how do you see your parents showing you that some things are more important than having stuff?",
+    "When Kit helped other people who were struggling, it made her feel brave and purposeful—what's something you could do this week to help someone else, and how do you think it might make you feel?"
+  ],
+  "Swiss Family Robinson": [
+    "The Robinson family had to work together to survive on the island, with Dad making big decisions and Mom keeping everyone organized. What was one time in our family when we had to work as a team like that, and how did it help us?",
+    "Even though the kids in the movie wanted to explore and have fun, they also listened to their parents' rules about safety. Why do you think their parents made those rules, and how is that like rules in our family?",
+    "The Robinson family turned their difficult situation into something amazing by staying positive and creative. When something hard happens to you, how could you try to find something good about it instead of just complaining?"
+  ],
+  "Beauty and the Beast": [
+    "Belle's father Maurice got lost in the woods because he was trying to find her a gift - why do you think he kept going even when things got scary, and what does that tell us about how he loved her?",
+    "Belle agreed to take her father's place as the Beast's prisoner so he could go free - what was hard about that choice, and can you think of a time when you did something difficult to help someone you love?",
+    "Belle saw that the Beast was kind and good on the inside even though he looked scary on the outside - who is someone in your life that you've gotten to know better and understand differently than when you first met them?"
+  ],
+  "Tangled": [
+    "Mother Gothel told Rapunzel that the outside world was dangerous so she'd stay in the tower. Why do you think Rapunzel believed her even though it wasn't true, and how did Flynn help her see the real world?",
+    "Rapunzel had to figure out that her mom wasn't being honest with her—even though it was really hard and scary. What are some ways you can tell if someone is being truthful with you, even if they say they love you?",
+    "At the end, Rapunzel had to make a brave choice about leaving her mom and choosing her real family instead. When have you had to do something hard because you knew it was right, even though it made someone sad?"
+  ],
+  "American Girl: Felicity": [
+    "Felicity disobeyed her father by secretly helping the horse and then freeing it—why do you think she felt it was more important to help the animal than to follow her dad's rule?",
+    "Felicity was scared to tell her father the truth about what she did, but she finally decided to be honest with him. What do you think made her realize she had to tell him, even though she knew he'd be disappointed?",
+    "When you have to choose between doing what you're told and doing what you think is right, how do you decide what to do? Can you think of a time when that was hard for you?"
+  ],
+  "National Velvet": [
+    "Velvet had to work really hard and train the horse in secret before anyone believed in her dream—why do you think she didn't give up even when it seemed impossible?",
+    "Her whole family had to make sacrifices and work together to help her ride in the Grand National—what are some ways our family works together to help each other reach our goals?",
+    "When Velvet finally got to ride, she had to trust herself and do her best instead of worrying about winning—what's something you've been nervous about trying, and how could you approach it the way Velvet did?"
+  ],
+  "Prince Caspian": [
+    "In the movie, Lucy could see Aslan when the others couldn't at first. How did she know to trust what she was seeing even when her brothers and sister doubted her?",
+    "The children had to leave Narnia and go back to their own world before, so when they returned, they had to trust that Aslan's promise was still true. What's something you've had to trust in even when you couldn't see it happening right away?",
+    "When it was hardest to believe—when things looked bad and Aslan wasn't showing up the way they expected—what do you think helped the Pevensies keep going, and how could that same kind of trust help you when you're facing something scary?"
+  ],
+  "National Treasure": [
+    "In the movie, Nicolas Cage's character has to decide whether to trust Ben Gates or turn him in to the authorities—what made that choice so hard, and have you ever had to decide whether to trust someone when it was risky?",
+    "The treasure hunters had to work as a team and use each person's different skills to solve the puzzles—what special skills or talents do you think you bring to our family team, and how do they help us?",
+    "At the end, Ben had to choose between keeping the treasure for himself or sharing the discovery with everyone—why do you think he made that choice, and how would you have felt in his position?"
+  ],
+  "Rookie of the Year": [
+    "In the movie, Henry gets to pitch in the major leagues even though he's just a kid - what do you think was the hardest part about being around all those grown-up players, and how did he handle it?",
+    "Henry had to learn a lot of new things really fast, and sometimes he made mistakes. Can you think of a time when you had to learn something difficult and what helped you keep trying?",
+    "At the end, Henry realizes that being part of a team and having good friends matters more than just winning games - why do you think that's an important lesson, and how does that change how you think about things you do?"
+  ],
+  "Voyage of the Dawn Treader": [
+    "In the movie, Lucy and Edmund face different temptations—like the spell book and the gold—that promise to make them feel better or more powerful. What are some temptations you face that promise to make you feel good but might not be what's best for you?",
+    "Eustace starts out annoying and selfish, but he changes after becoming a dragon and learning he needs help. Can you think of a time when you realized you needed to change something about yourself, and what helped you make that change?",
+    "At the end of the voyage, the kids have to decide whether to keep going toward Aslan or turn back to safety. When have you had to choose between doing something harder that was right versus something easier that was safe, and how did you decide?"
+  ],
+  "Cool Runnings": [
+    "The bobsled team kept trying even though people made fun of them and said they couldn't do it—what was the hardest part about not giving up, and why do you think they didn't quit?",
+    "Derice and Sanka had different reasons for wanting to be on the team, but they worked together anyway—how did they help each other even when they wanted different things?",
+    "The team learned that just competing in the Olympics was actually winning, even though they didn't get a medal—what's something you want to do or try, and what would make you feel proud about it, even if it's really hard?"
+  ],
+  "Angels in the Outfield": [
+    "In the movie, Roger prayed for the angels to help the baseball team, and his prayers were answered—but not exactly the way he expected. What's something you've prayed for or hoped would happen, and how did it turn out differently than you imagined?",
+    "Roger was a foster kid who felt like he didn't belong anywhere until he found a family and a team that cared about him. How do you think it felt when people finally believed in him and included him?",
+    "The angels helped the team win, but they also helped Roger find faith and a real home. What does it mean to you that sometimes the most important thing we can pray for isn't winning a game, but finding people who love us?"
+  ],
+  "Planet Earth": [
+    "We saw how different animals have to adapt to survive in their own environments—like how penguins waddle on ice but swim amazingly fast. What's something about how you're built or how you act that helps you do something well?",
+    "The show revealed animals doing things we've never seen before, like the way those creatures communicate or hunt. What surprised you most, and why do you think the filmmakers worked so hard to capture those moments?",
+    "Watching all these animals work together in their ecosystems and take care of their families made us think about how connected everything is. How does knowing more about how the natural world works change the way you want to treat animals or nature in your own life?"
+  ],
+  "The Mighty Ducks": [
+    "In the show, Coach Bombay starts out really hard on the kids, but then he learns to be a better coach and person. What's something you've seen a grown-up change their mind about or do better because kids taught them something?",
+    "The Ducks are all different kids—some are fast, some are strong, some are good at thinking the game—and Coach learns that every person's different strengths matter to the team. How do you see your different strengths helping our family, and what strengths do you think Alden/Owen brings that you don't have?",
+    "Even though this team started out losing and nobody believed in them, they became a family that stuck together. When have you felt like giving up on something, and what would help you keep going like the Ducks did?"
+  ],
+  "Blue Planet": [
+    "We saw how baby sea turtles had to work so hard to reach the ocean, and many didn't make it. What was the hardest part about watching that, and why do you think those baby turtles kept trying even when it was so difficult?",
+    "The show revealed how different ocean animals—like the dolphins hunting fish and the whales eating tiny krill—all depend on each other to survive. How is that kind of teamwork and balance similar to how our family works together?",
+    "After seeing all the incredible creatures and their homes in the ocean, what do you think we should do to take care of the ocean, and how can our family start doing that?"
+  ],
+  "Frozen Planet": [
+    "We saw how the polar bears and penguins had to work really hard to find food and survive the cold—what was the most amazing thing they did to stay alive?",
+    "The animals in this show had to follow their instincts and do what their parents taught them to survive—how is that like how you listen to Mom and Dad when they teach you important things?",
+    "If you could live in either the Arctic or Antarctic for a week like those animals do, what would be the hardest part for you, and how do you think you'd handle it?"
+  ],
+  "The Goonies": [
+    "The Goonies stuck together even when things got scary and complicated—what do you think would have happened if one of them had decided to quit and go home?",
+    "Mikey believed in the treasure hunt and didn't give up even when the other kids thought it was impossible—tell me about a time when you believed in something that seemed really hard.",
+    "How did the Goonies show they cared about each other, and what's one way you can show that same kind of loyalty to your friends or family?"
+  ],
+  "Brain Games": [
+    "The show showed how our brains can trick us into seeing things that aren't really there—like the moving dots that aren't actually moving. Why do you think our brains sometimes make mistakes like that?",
+    "One of the illusions made you see a color that wasn't actually there. When have you noticed your brain doing something unexpected, like mishearing what someone said or remembering something differently than how it actually happened?",
+    "If our brains can fool us with optical illusions, how do you think we can be better at trusting what we see or hear in real life, especially when we're deciding whether to believe our friends or family?"
+  ],
+  "How It's Made": [
+    "We saw how much work and special machines it takes to make something like a skateboard (or whatever product they watched). What's something you use every day that you never thought about how it was made?",
+    "The people in the factory have to follow really specific steps in the exact same order, or the product doesn't turn out right. How is that like following rules at home or school, and why do you think those steps matter so much?",
+    "If you could design a new product or make something better than how it's currently made, what would you want to improve, and why would that make it better for people?"
+  ],
+  "Mythbusters": [
+    "The Mythbusters tested an idea that most people thought was impossible—what was something they tried that surprised you, and why do you think they kept testing even when it didn't work the first time?",
+    "Adam and Jamie really respect each other even though they sometimes disagree about how to test something—how did you notice them listening to each other's ideas, and why is that important when you're trying to figure something out?",
+    "Is there something you've wondered about or wanted to test out, like they do on the show? What would it be, and how could we figure out if it's true?"
+  ],
+  "E.T. the Extra-Terrestrial": [
+    "Elliot kept E.T. a secret from his family because he was afraid they wouldn't understand - what do you think he should have done differently, and why?",
+    "E.T. was lonely and far from home, just like Elliot felt lonely after his parents' divorce - how did becoming friends help both of them feel better?",
+    "At the end, Elliot had to say goodbye to someone he loved very much - have you ever had to say goodbye to someone important, and how did that make you feel?"
+  ],
+  "Hook": [
+    "Peter Pan forgot he was a kid and had to remember how to play and have fun again—what do you think made him forget, and why was it hard for him to remember?",
+    "Peter's sons were upset with him because he was too busy working and not spending time with them—how do you think they felt, and why is it important for parents to make time for their kids?",
+    "At the end, Peter had to choose between staying young forever or growing up and being a real dad to his boys—if you had to pick between never getting old or being able to be there for people you love, what would you choose and why?"
+  ],
+  "The Karate Kid": [
+    "Daniel had to do chores like waxing the car and painting the fence before he learned karate—why do you think Mr. Miyagi made him do those jobs first instead of just teaching him to fight right away?",
+    "Mr. Miyagi showed Daniel respect even when Daniel was frustrated and didn't understand his teaching—how did Mr. Miyagi's patience change the way Daniel felt about learning from him?",
+    "What's something you've wanted to get good at (like a sport, hobby, or skill) where you had to do boring or hard practice first before you could actually do the cool part?"
+  ],
+  "Field of Dreams": [
+    "Ray gives up everything—his farm, his money, his reputation—to build the baseball field because of a voice he hears. What do you think that tells us about how much he wanted to fix things with his dad?",
+    "When Ray's dad finally shows up as a young man, Ray doesn't recognize him at first. Why do you think it was hard for Ray to see his dad differently than he remembered him?",
+    "Is there someone in your life—like a parent or family member—that you wish you could have a second chance with, or tell something important to? What would you want them to know?"
+  ],
+  "The Rookie": [
+    "Jim didn't become a baseball player until he was much older than most people start. What was something he had to give up or change about his life to chase his dream, and why was that hard for him?",
+    "Jim's son got really upset with him at one point because Jim was so focused on baseball. How do you think Jim fixed that problem, and why was being there for his family just as important as his dream?",
+    "Is there something you're working toward or hoping to get better at? How could you keep trying like Jim did, while also making sure the people you love know they matter to you?"
+  ],
+  "Hoosiers": [
+    "Coach Norman pushed his team to believe they could do hard things—even when they didn't believe in themselves at first. What's something you thought was too hard, but you kept trying anyway?",
+    "The players on that team had to learn to work together and trust each other, even when some of them didn't get along. How is being part of a team (like school, sports, or even our family) like learning to trust people you might not naturally pick as friends?",
+    "Coach Norman gave people second chances, and some of the players weren't perfect—but he still expected respect and their best effort. When someone gives you a second chance, what does it mean to show them they made the right choice in you?"
+  ],
+  "Million Dollar Arm": [
+    "JB found Dinesh and Parthiv in India and brought them all the way to America to play baseball—what was hardest for them about leaving their families and their country to chase this dream?",
+    "JB started out just wanting to make money from the Million Dollar Arm contest, but he ended up caring about Dinesh and Parthiv like family. How did his heart change, and what made him decide that helping these boys mattered more than the money?",
+    "If you had to move to a completely different country where nobody knew you and everything was unfamiliar, what would you miss most from home, and how would you stay brave like Dinesh and Parthiv did?"
+  ],
+  "Invincible": [
+    "Vince was told he was too old and didn't have a real shot at playing football—but he tried anyway. What was he refusing to believe about himself, and how did that help him keep going?",
+    "When Vince's dad wasn't supportive at first, Vince still kept working toward his dream. How do you think he stayed motivated even when the people closest to him doubted him?",
+    "Is there something people have told you that you can't do, or something about yourself that you don't believe is true anymore? What would it look like for you to keep trying anyway, like Vince did?"
+  ],
+  "Glory Road": [
+    "Coach Haskins believed in his players even when most people didn't think they could win—what did you notice about how that belief changed the way the team played together?",
+    "The players had to be braver than just playing basketball because of the time period they lived in—what are some ways you see people today having to be brave for doing the right thing?",
+    "If you had to stand up for something important like these players did, even if it was hard or unpopular, what would matter most to you—winning, proving something, or something else?"
+  ],
+  "We Are Marshall": [
+    "In the movie, Coach Jack Frost didn't give up on rebuilding the team even though so many people in town were hurting. What do you think gave him the strength to keep going when things seemed so sad?",
+    "The whole town of Huntington came together to support the new football team. How did working together as a community help them heal from their loss?",
+    "When something really hard happens, like what happened to Marshall, how do you think we as a family could support each other and keep hoping like the people in the movie did?"
+  ],
+  "The Greatest Showman": [
+    "Barnum kept trying to get people to respect him and his show even when they made fun of him. Why do you think he cared so much what other people thought, and how did that change by the end of the movie?",
+    "The performers in the circus were people that society rejected—but Barnum saw them as special and talented. Can you think of someone at school or in your life who might feel left out, and what's one way you could make them feel included?",
+    "At the end, Barnum realizes his family and the people he cares about matter more than becoming famous. What matters most to you, and how does that help you decide what's actually important in your life?"
+  ],
+  "The Polar Express": [
+    "Billy didn't believe in Santa at first, but the Polar Express showed him something magical was real. What's something you thought might not be real, but then you saw proof it was?",
+    "The conductor kept saying 'All aboard!' and the kids had to decide whether to trust him and get on the train. How do you decide when it's okay to trust someone, like a parent or teacher, even when you're scared or unsure?",
+    "At the end, the kids could still hear the train bell ringing even though most people couldn't anymore. What does it mean to you that some people can believe in wonderful things and others can't, and how do you want to be?"
+  ],
+  "Atlantis: The Lost Empire": [
+    "Milo didn't give up even when everyone thought he was wrong about Atlantis being real—what was hard about believing in something nobody else believed in, and why do you think he kept going?",
+    "The Atlanteans had amazing powers and technology, but they lost their whole civilization—what do you think they should have done differently to take better care of what they had?",
+    "Milo had to choose between getting rich and famous or helping the Atlanteans, and he picked helping them—when have you had to choose between something you wanted and doing what was right?"
+  ],
+  "Hugo": [
+    "Hugo found an automaton that someone had hidden away and forgotten about—why do you think the old man kept it secret for so long, and what did it mean to him?",
+    "Hugo had to be brave and ask for help from people he was scared of, like the station inspector and Isabelle's godfather—when have you had to be brave and ask an adult for help even though you were nervous?",
+    "At the end, Hugo found where he belonged and people who cared about him—what does it feel like to know that your family is the place where you belong?"
+  ],
+  "The Boy Who Harnessed the Wind": [
+    "William had to keep working on his windmill even when people didn't believe it would work—what did that show us about not giving up, and can you think of a time when you kept trying at something hard?",
+    "William's father was upset with him at first for taking apart the bicycle, but then he became proud of what William built—how do you think William's respect for his dad helped their relationship grow stronger?",
+    "William used what he learned in school to help save his whole village—what are you learning right now that you think could help you solve a problem for your family or friends someday?"
+  ],
+  "Iron Will": [
+    "In the movie, Will gives up his dream of going to college to help save his family's farm. What do you think made him decide that helping his family was more important than his own plans?",
+    "Will's dogs had to work really hard and stay focused to win the race, even when it got difficult. Can you think of a time when you had to keep trying at something hard instead of giving up?",
+    "Will showed respect to his parents by stepping up to help them without complaining. How do you think you could show respect to Mom and Dad when they're going through a tough time?"
+  ],
+  "Treasure Planet": [
+    "Jim Hawkins didn't trust Captain Flint at first because of his reputation, but Captain Flint turned out to be someone who cared about him - why do you think it's hard to see the good in people when we've already made up our minds about them?",
+    "Captain Flint made some mistakes in his past that he regretted, but he still tried to be a good mentor and father figure to Jim - what does it show about someone's character when they admit they were wrong and try to do better?",
+    "Jim was angry and acting out because he was hurting and didn't have someone to guide him - when you're feeling lost or frustrated like Jim was, who do you feel comfortable talking to, and what would help you trust them?"
+  ],
+  "Where the Red Fern Grows": [
+    "Billy worked and saved money for a long time to get his two hunting dogs. What was something you really wanted that took patience and hard work to get, and how did it feel when you finally had it?",
+    "Billy's dogs were willing to do dangerous things to protect him and help him hunt. What does it show about love when someone is willing to be brave for you, even when it's scary?",
+    "At the end of the story, Billy has to say goodbye to something he loves very much. Have you ever had to let go of something or someone important, and how did you handle those big feelings?"
+  ],
+  "Wonder": [
+    "Auggie was nervous about starting fifth grade because of his facial difference, but he made friends who liked him for who he really was inside. What's something about yourself that you were worried other kids might not like, and how did you feel when you found out they didn't care?",
+    "Auggie's sister Via felt invisible sometimes because everyone was focused on helping Auggie. Have you ever felt like your needs weren't noticed, or have you noticed when someone else needed attention? What happened?",
+    "At the end, Mr. Tushman said Auggie had changed the school by just being himself and choosing kindness. How do you think you could change your own classroom or friend group by the choices you make every day?"
+  ],
+  "The Black Stallion": [
+    "Alden and Owen, what do you think Alec had to learn about the Black Stallion before the horse could trust him—and why couldn't he just force the horse to do what he wanted?",
+    "There's a moment when Alec has to be patient and gentle even though it would have been faster to be rough. Can you think of a time when you had to be patient with someone or something instead of rushing to get what you wanted?",
+    "Alec and the Black Stallion became a real team by spending time together and caring for each other. Who in your life have you built trust with by showing them you care, and how did that change your relationship?"
+  ],
+  "Treasure Island": [
+    "Jim Hawkins had to decide whether to trust Long John Silver even though he seemed dangerous—what clues did Jim notice that helped him figure out who to really trust?",
+    "The pirates wanted treasure so badly they were willing to hurt people and break the law—why do you think wanting something too much can make people do bad things?",
+    "Jim had to be brave and act grown-up during the adventure, but he was still just a boy—what's something you've had to do that felt too big for you, and how did you get through it?"
+  ],
+  "White Fang": [
+    "White Fang had to learn how to survive in two completely different worlds—the wild with the wolves and later with humans. What was hardest for him to adjust to, and why do you think loyalty helped him through those changes?",
+    "Weedon Scott showed White Fang kindness and patience even though White Fang didn't understand it at first. Can you think of a time when someone's kindness toward you helped you trust them, even if you were scared or confused at first?",
+    "White Fang chose to stay with Weedon Scott and his family instead of running back to the wild. What do you think made him decide that being part of a family was worth giving up his freedom, and what does that tell us about what makes a home feel like home?"
+  ],
+  "Wreck-It Ralph": [
+    "Ralph felt stuck being the bad guy in his game just because that's what his game was programmed to do—why do you think he wanted to be more than that, and what would you do if someone only saw you for one thing?",
+    "When Ralph left his game to try to be a hero in other games, it caused problems for everyone—what do you think he should have learned about how our choices affect the people who depend on us?",
+    "What's something about yourself that you don't want people to think defines you, and how could you show them there's more to you than that?"
+  ],
+  "Inside Out": [
+    "Riley had to move to a new city and felt sad, but Joy kept trying to make everything happy instead of letting Sadness help. Why do you think Sadness was actually important for Riley to feel, even though it didn't feel good?",
+    "In the movie, Riley's core memories changed from just happy moments to moments that mixed happy and sad feelings together. Can you think of a time when something sad also helped you grow or learn something important?",
+    "By the end, Riley lets all her emotions—Joy, Sadness, Fear, Anger, and Disgust—work together instead of just Joy running things. Which of your emotions do you think you need to listen to more often, and why?"
+  ],
+  "Zootopia": [
+    "Judy worked really hard to become a police officer even though everyone said bunnies couldn't do that job—what was the hardest part she had to face, and how did she keep going?",
+    "Nick pretended to be a criminal at first because he thought that's what everyone expected from him—why do you think people sometimes act the way others expect them to act, even if it's not who they really are?",
+    "When Judy assumed Nick was guilty just because he was a fox, she made a wrong choice—can you think of a time when you made an assumption about someone that turned out to be wrong, and what did you learn from it?"
+  ],
+  "How to Train Your Dragon": [
+    "Hiccup didn't want to be like the other Vikings who fought dragons, even though everyone expected him to—why do you think he chose to try understanding Toothless instead of fighting him?",
+    "When Hiccup showed his dad that dragons weren't actually evil, it changed everything in their village—can you think of a time when you discovered something was different than what you first believed?",
+    "Hiccup had to be brave in a completely different way than the other Vikings—what's something you're good at or interested in that might be different from what people usually expect, and how do you feel about that?"
+  ],
+  "Encanto": [
+    "Mirabel didn't have a magical gift like everyone else in her family, but she ended up being the one who saved them all—how do you think she felt when she realized her gift was different, and what do you think that teaches us about what makes someone valuable?",
+    "The Madrigal family was so focused on their magical powers that they stopped really listening to each other—can you think of a time in our family when we got so busy that we forgot to notice what someone else needed?",
+    "If you could have any gift or talent—magical or real—what would it be, and why? And would it change how much we love you or how important you are to our family?"
+  ],
+  "How to Train Your Dragon 2": [
+    "Hiccup discovers his mom is alive when he thought she was gone forever—how do you think that changed how he saw his dad Stoick, and what does it show us about how parents might have reasons we don't understand?",
+    "Hiccup didn't want to be the village leader and kept trying to find his own path instead—what are some ways you feel pressure to be a certain way, and how could you talk to us about it like Hiccup eventually did?",
+    "At the end, Hiccup loses someone he cared about—have you ever had to accept that you couldn't change something sad, and how did you get through it?"
+  ],
+  "Kung Fu Panda": [
+    "Po kept believing he could be the Dragon Warrior even when everyone doubted him—what's something you believe you can do that others might think is hard or impossible?",
+    "Master Shifu told Po that 'there is no secret ingredient' and that Po already had everything inside him—how is that idea different from what Po thought at the beginning of the movie?",
+    "When have you felt like Po at the start—like maybe you weren't good enough or didn't belong—and what helped you believe in yourself the way Po learned to?"
+  ],
+  "Finding Nemo": [
+    "Marlin was so scared of losing Nemo that he wouldn't let him do anything—but then he had to let go to save him. What do you think he learned about being a dad?",
+    "Dory kept helping Marlin even though she kept forgetting things, and Marlin kept getting frustrated with her. How did they show respect for each other even when it was hard?",
+    "Marlin traveled across the whole ocean because he loved Nemo so much. What's something you'd want your parents to know you're brave enough to handle on your own?"
+  ],
+  "Despicable Me": [
+    "Gru didn't want to be a dad at first, but the girls changed his heart - what was the moment you think he realized he actually loved them?",
+    "Margo, Edith, and Agnes each needed something different from Gru - Margo wanted honesty, Edith wanted to be noticed, and Agnes wanted love - what do you think each of you needs most from Mom and Dad?",
+    "At the end, Gru chose his daughters instead of his villainous plans - has there ever been a time when you had to give up something you wanted because someone you love needed you more?"
+  ],
+  "Ratatouille": [
+    "Remy the rat had a dream to cook even though rats aren't supposed to cook—what do you think gave him the courage to keep trying when everyone told him it was impossible?",
+    "Linguini was scared to tell people the truth about Remy helping him cook because he thought they wouldn't understand—have you ever been afraid to tell someone about something you wanted to do because you thought they'd laugh or say no?",
+    "At the end, the restaurant's sign says 'Anyone can cook'—what's something you feel like you're really good at or really love doing, and how could you work hard at it even if other people think it's weird or different?"
+  ],
+  "Cosmos: A Spacetime Odyssey": [
+    "When Neil deGrasse Tyson showed how incredibly far apart the stars are from each other, what made you feel the most amazed or surprised about how big the universe really is?",
+    "The show talked about how scientists had to keep asking questions and testing ideas to figure out how things work—even when they got things wrong at first. Why do you think it's important to keep learning and changing your mind when you find out new information?",
+    "Thinking about how tiny Earth is compared to the whole universe, how does that make you think about what's important in your own life, and what kind of person do you want to be?"
+  ],
+  "One Strange Rock": [
+    "The astronauts in the show said Earth is 'one strange rock' because it's the only planet we know that has life. What did you see in the episode that made Earth seem so special and different from other planets?",
+    "Many of the animals and nature scenes showed how everything on Earth is connected—like how the ocean affects the weather, or how one animal depends on another. Can you think of an example from the episode and explain how two things were connected?",
+    "After seeing Earth from space and learning how rare and precious our planet is, what's one way you could show more respect for nature or take care of the Earth this week?"
+  ],
+  "Finding Dory": [
+    "Dory forgot her parents for a long time, but they never stopped loving her or looking for her. Why do you think her parents kept hoping to find her even after so many years?",
+    "Dory had to be brave and ask for help from her friends to find her family. What was hard about Dory asking for help, and when have you needed help finding something or doing something important?",
+    "At the end, Dory's memory gets better, but even before that, her family loved her for who she was. What do you think makes someone part of your family—is it always remembering everything, or is it something else?"
+  ],
+  "Africa (BBC)": [
+    "In the show, we saw how animals like the elephants and zebras had to work together to find water during the dry season. Why do you think those animals needed each other instead of just looking out for themselves?",
+    "David Attenborough showed us that some animals, like the baby giraffes, have to learn survival skills from their parents. What are some ways your parents teach you important skills, and why is that important?",
+    "The show revealed how every animal—even the smallest insects—has an important job in Africa's ecosystem. What special skills or gifts do you think God gave you, and how might those be important to your family or friends?"
+  ],
+  "Hidden Figures": [
+    "Katherine, Dorothy, and Mary all had to work harder than others just because of their skin color. What did you notice about how they kept doing their best work even when people weren't treating them fairly?",
+    "Each woman had something special she was really good at—math, programming, or engineering. Why do you think it was important that NASA finally let them use their talents, and what might have happened if they'd never gotten the chance?",
+    "When you run into something that's hard or unfair, what's something you learned from watching these women that could help you keep going?"
+  ],
+  "The Imitation Game": [
+    "Alan Turing was really smart at solving the code, but he felt lonely and didn't fit in with other people—why do you think being really good at something doesn't always make you happy?",
+    "Turing's team had to work together to break the Enigma code, even though he wanted to do it all by himself—what's the difference between doing something alone and doing it with a team?",
+    "At the end, Turing saved a lot of lives but felt sad about how people treated him—when you do something good and help others, what matters more: getting thanked or knowing you did the right thing?"
+  ],
+  "Spotlight": [
+    "The reporters in the movie had to ask hard questions even though many people didn't want to talk about what happened. Why do you think it was important for them to keep investigating even when it was difficult?",
+    "The Church leaders tried to hide the truth about what some priests did wrong. How do you think the victims felt when nobody was listening to them, and why is it important for adults to believe kids when they say something is wrong?",
+    "If you saw something unfair or wrong happening, what would make it hard to tell a grown-up about it, and who in your life could you trust to listen and help?"
+  ],
+  "The King's Speech": [
+    "King George VI was really scared about his speech because of his stutter, but he kept practicing with his friend Lionel anyway. What's something that scares you, and how could having a good friend help you face it?",
+    "The King had to give his speech even though he was nervous, because his country needed him to be brave. Can you think of a time when you had to do something hard even when you were afraid, and what helped you keep going?",
+    "Lionel helped the King by believing in him and not treating him like he was broken. How do you think you could be a friend like Lionel to someone who's struggling with something?"
+  ],
+  "Hacksaw Ridge": [
+    "Desmond Doss refused to carry a gun even though everyone thought he was wrong—what do you think gave him the courage to stick with what he believed in when his whole unit was against him?",
+    "Desmond kept praying and helping people even in the scariest, most dangerous moments—can you think of a time when doing the right thing was really hard, and what helped you keep going?",
+    "Desmond's faith was so important to him that he wouldn't break it, even to fit in with the soldiers around him—what are some beliefs or values that are so important to you that you wouldn't give them up, even if other kids didn't understand?"
+  ],
+  "Argo": [
+    "In the movie, Tony Mendez had to come up with a creative fake plan to rescue the diplomats when a direct approach wouldn't work. Can you think of a time when you had to solve a problem in a different way than you first planned?",
+    "The movie showed that the people working at the embassy and the CIA team had to keep the rescue plan secret, even from people they knew. Why do you think keeping that secret was so important, and how would that have felt?",
+    "Tony Mendez risked his safety to help people he didn't know personally. What does that tell you about what it means to serve others, and is there a way you could help someone even when it's hard or inconvenient?"
+  ],
+  "Lion": [
+    "Saroo got separated from his family and had to be brave in a scary situation—what did you notice about how he stayed strong, and how do you think that helped him survive?",
+    "When Saroo was adopted by Sue and John, he became part of a new family that loved him very much—how do you think it felt to have two families that cared about him, even though they were so different?",
+    "Saroo never gave up on finding his way back home, even though it took a really long time—is there something important to you that might take patience and hard work to figure out, and how could Saroo's story help you keep trying?"
+  ],
+  "Sully": [
+    "Captain Sully had trained for emergencies his whole career, even though he might never need that training. Why do you think he kept practicing and preparing for something that might never happen?",
+    "When everything went wrong with the plane's engines, Sully had to stay calm and focus on his job instead of panicking. What's something you have to do that requires you to stay calm even when things get scary or stressful?",
+    "Sully said he was just doing his job, but everyone called him a hero. How do you think doing the right thing and being responsible—even in small ways—is kind of like what made Sully a hero?"
+  ],
+  "12 Strong": [
+    "The soldiers had to work together with the Afghan fighters even though they were from very different countries and cultures. What was hard about that, and how did they solve their problems?",
+    "Captain Mitch kept thinking about getting home to his family while he was far away doing his job. How do you think that made him feel, and why do you think he kept going anyway?",
+    "These men showed respect to the Afghan commanders and their way of doing things, even when it was different from what they expected. Can you think of a time when you had to respect someone else's way of doing something, even if it wasn't your way?"
+  ],
+  "Bridge of Spies": [
+    "Tom Hanks' character, James Donovan, had to negotiate with people from an enemy country during the Cold War. What made him choose to treat the Soviet spy with respect and fairness even though their countries were at war?",
+    "James Donovan was told by many people that his job was impossible and dangerous, but he kept trying anyway. What did you notice about how he stayed calm and patient when things got difficult?",
+    "If you were in a situation where you had to stand up for what's right, even if it meant people would criticize you or think you were wrong, what would help you stay brave like James Donovan did?"
+  ],
+  "Captain Phillips": [
+    "Captain Phillips kept trying to talk to the pirates and understand what they wanted, even when he was scared. What do you think he was hoping would happen by communicating with them instead of just fighting back?",
+    "The Captain was willing to sacrifice himself to protect his crew. Why do you think a leader would make that choice, and what does that tell us about what real courage looks like?",
+    "Captain Phillips had a job to do and a responsibility to many people depending on him. What are some ways you show responsibility in your own life, like he did on his ship?"
+  ],
+  "The Help": [
+    "The maids in the movie did hard work that wasn't always appreciated, but they kept showing up and doing their best anyway—what did you notice about how they treated each other and the children they took care of?",
+    "Skeeter wanted to tell the maids' stories so people would understand their lives better—why do you think it was important for their voices to be heard, and what stories do you think aren't being told today?",
+    "The maids showed a lot of courage and kindness even when things were unfair—when you see something that doesn't seem right, how do you want to respond like they did?"
+  ],
+  "Lincoln": [
+    "In the movie, President Lincoln had to convince a lot of people in Congress to vote for the 13th Amendment even though many of them disagreed with him. Why do you think it was so important for him to keep trying even when people said no?",
+    "Lincoln worked with people who didn't like him and didn't agree with him to accomplish something bigger than their disagreements. Can you think of a time when you had to work with someone you didn't always get along with to do something good?",
+    "At the end, Lincoln says he doesn't know what comes next, but he knows slavery has to end no matter what. What's something you believe in so strongly that you'd be willing to work really hard for it, even if it was difficult?"
+  ],
+  "The Founder": [
+    "Ray Kroc really wanted to build something big, but he wasn't always honest with the McDonald brothers about his plans—what do you think about the choices he made to get what he wanted?",
+    "The McDonald brothers created the fast food idea, but Ray Kroc got most of the credit and money—how do you think they felt, and what would have been a fairer way to handle it?",
+    "When you want something really badly, like making a team, getting good grades, or being the best at something, what's the difference between working hard for it and doing things that aren't honest or respectful to people around you?"
+  ],
+  "Moneyball": [
+    "Billy Beane used statistics and data to find players other teams didn't want—why do you think some people didn't believe in his way of doing things at first?",
+    "The movie shows that Billy had to make unpopular choices to help his team win. What's the difference between being brave enough to try something new and just being stubborn or disrespectful to people who came before you?",
+    "If you knew a different way to do something important (like studying for a test or practicing a sport) that nobody else was trying, what would stop you from doing it, and what would help you be brave like Billy?"
+  ],
+  "Ford v Ferrari": [
+    "Ken Miles had to learn to trust Carroll Shelby's plan even when he didn't understand it at first—what was hard about that for Ken, and why do you think Carroll needed Ken to trust him?",
+    "Both Ken and Carroll had to work as a team to beat Ferrari, even though they were really different people—what did each of them do best, and how did they need each other to win?",
+    "Ken Miles kept racing even though it was dangerous and took him away from his family—what do you think was worth it to him about that dream, and what would be hard about supporting someone you love who has a big, risky dream?"
+  ],
+  "The Pursuit of Happyness": [
+    "Chris had to work really hard and make a lot of sacrifices to get the stockbroker job—like sleeping in a bathroom and missing time with his son. What do you think he was feeling during those tough days, and why did he keep going?",
+    "Christopher (his son) stayed by his dad's side even when things were really hard and scary. How do you think that helped Chris, and what does that tell us about how kids can support their parents?",
+    "Think about a time when something was really difficult for you—like a hard test, a friendship problem, or learning something new. What's one thing you could do when it gets tough, inspired by how Chris didn't give up?"
+  ],
+  "A Beautiful Mind": [
+    "John Nash had to learn the difference between what was real and what his mind was creating—like the imaginary people he saw. What are some ways you can tell if something happening around you is real versus something you're imagining?",
+    "Even though John's illness made things really hard for him and his family, his wife Alicia stayed by his side and helped him. Why do you think it's important to stick with people we love when they're going through tough times?",
+    "John kept working on his math even when his mind was playing tricks on him, and he didn't give up. Is there something hard you're working on right now where you might need to be as brave and patient as John was?"
+  ],
+  "Saving Mr. Banks": [
+    "P.L. Travers didn't want to let go of her Mary Poppins stories because they were so personal to her—they came from her own childhood memories. What's something you've created or care about so much that it would be hard to share with someone else, and why would it be hard?",
+    "Walt Disney kept asking P.L. Travers to trust him with her stories, even though she was worried he might change them. How do you think it felt to be P.L. Travers, and what made it so difficult for her to let someone help bring her dreams to life?",
+    "By the end, P.L. Travers had to decide whether protecting her stories exactly as she imagined them was more important than letting them reach millions of children. What do you think you would have chosen, and what would that choice have cost you?"
+  ],
+  "Coach Carter": [
+    "Coach Carter benched his whole team even though they were winning games. Why do you think he cared more about their grades than winning basketball?",
+    "The players got really upset with Coach Carter at first, but then they understood why he was doing it. What's something a parent or teacher has made you do that seemed unfair, but later you realized they were trying to help you?",
+    "Coach Carter believed his job wasn't just to teach basketball, but to help young men become better people. What's something an adult in your life coaches you on that's bigger than just the game or activity itself?"
+  ],
+  "Charlie Wilson's War": [
+    "Charlie Wilson was a congressman who made big decisions that affected people he never met—why do you think he felt responsible for helping people so far away, and what does that tell us about what we owe to others?",
+    "The movie shows Charlie changing his priorities over time—from partying and not doing his job to really caring about a cause. What do you think made him decide to actually work hard instead of just having fun?",
+    "If you found out something unfair was happening in the world, like Charlie did with Afghanistan, what would you want to do about it, and what's one small way you could actually help make a difference?"
+  ],
+  "About Time": [
+    "In the movie, Tim's dad shows him that you can go back and relive the same day over again. What's one ordinary day from this week that you'd want to relive, and why would you pick that one?",
+    "Tim realizes that traveling through time can't fix big problems in his family—he has to actually spend time with his dad and listen to him. Why do you think just being together and talking to someone you love is more important than trying to change what already happened?",
+    "At the end, Tim decides to stop using time travel and just live his regular life more carefully. What's something you usually rush through or don't pay attention to that you could start appreciating more, the way Tim learns to appreciate his dad?"
+  ],
+  "Inside Out 2": [
+    "In the movie, Riley's new emotion Anxiety keeps trying to take over and protect her, but it actually makes things harder. Can you think of a time when worrying about something too much made a situation worse instead of better?",
+    "Riley's emotions had to learn that Anxiety wasn't bad—she just needed help understanding when to listen to her and when not to. How do you think we can tell the difference between Anxiety helping us be safe and Anxiety making us feel stuck?",
+    "By the end of the movie, Riley lets her friends and family help her with her big feelings instead of trying to handle everything alone. Who do you feel most comfortable talking to when you're feeling anxious or scared, and what makes you trust them?"
+  ],
+  "Soul": [
+    "Joe Gardner spent his whole life waiting to play that one perfect jazz concert, but then he realized life was happening all around him. What are some things that are happening in your life right now that might be just as important as waiting for something big?",
+    "In the movie, Joe learns that small moments—like teaching music, having coffee with a friend, or watching the sunset—are actually what make life meaningful. What's one small moment from this week that made you feel happy or connected to someone?",
+    "If you knew that today was going to be your last day, what person would you want to spend time with and what would you want to tell them?"
+  ],
+  "Won't You Be My Neighbor?": [
+    "Mr. Rogers said that listening to people is one of the most important things we can do—why do you think he believed that was so special, and who in your life do you think needs someone to really listen to them?",
+    "In the documentary, we saw how Mr. Rogers stayed calm and kind even when people disagreed with him or tried to stop his show—what do you think gave him the strength to keep doing the right thing even when it was hard?",
+    "Mr. Rogers taught children that it's okay to have big feelings and that everyone is special just the way they are—what's something about yourself that you sometimes wish was different, and how might Mr. Rogers help you see it differently?"
+  ],
+  "The Last Dance": [
+    "Michael Jordan kept pushing himself to win even when his body was tired and hurt—why do you think he didn't just give up, and what does that tell us about not quitting when things get hard?",
+    "The documentary showed how Michael's teammates had to trust him and work together, even when he was really demanding of them—how is that like being on a team at school or in sports, and why does a team need someone who holds everyone to high standards?",
+    "At the end of his career, Michael had to decide when it was the right time to stop playing—how do you think he knew it was time, and what's something you're learning or doing now that you might not do forever?"
+  ],
+  "Free Solo": [
+    "Alex climbs without any ropes or safety gear because he's practiced for years and years—what's something you've practiced a lot at, and how did doing it over and over make you feel more confident?",
+    "Alex's girlfriend and mom were really worried about him while he was climbing, even though he believed he'd be safe—how do you think it felt to care about someone doing something so risky, and what would you want to tell someone you love if they were about to do something scary?",
+    "Alex had to decide between doing what made him happy (free soloing) and making the people he loved feel less scared—how do you think about making choices that make you happy but might worry your parents, and when is it okay to listen to their concerns instead?"
+  ],
+  "Inside Bill's Brain": [
+    "Bill Gates decided to work on big problems like disease and poverty instead of just making more money. What do you think made him choose to help people he'd never met instead of just enjoying what he already had?",
+    "In the show, Bill breaks down huge problems into smaller pieces he can actually solve. Can you think of a big problem in your own life—like finishing homework, fixing a friendship, or learning something hard—and how you could break it down into smaller steps like Bill does?",
+    "Bill's parents taught him to ask questions and think deeply about things. How do you think having parents who encouraged curiosity and reading made a difference in the kinds of problems he wanted to solve?"
+  ],
+  "American Factory": [
+    "In the movie, the American workers and Chinese workers had different ways of doing things at the factory. What did you notice about how they were different, and why do you think people from different countries might work in different ways?",
+    "The factory owners wanted to make more money by working faster and harder, but some workers got tired and hurt. How do you think a boss should balance trying to do well in business while also taking care of the people who work for them?",
+    "If you had a job someday, what would be most important to you—making a lot of money, having time to rest and be with your family, feeling proud of your work, or something else? Why?"
+  ],
+  "The Social Dilemma": [
+    "The movie showed how social media companies use algorithms to keep people scrolling longer and longer—even when it makes them feel bad. Why do you think the apps are designed to do that instead of just showing people what they ask for?",
+    "One of the experts talked about how social media can make you compare your life to everyone else's highlight reel, which makes people feel like they're not good enough. Have you noticed this happening with your friends, or seen how it affects people around you?",
+    "Knowing what you learned about how these apps work, what rules do you think would be fair and respectful for you to follow if you do get a phone, and how would you want us as your parents to help you use it wisely?"
+  ],
+  "The Boys in the Boat": [
+    "The rowers had to learn to move together as one team, even though they each had different backgrounds and problems at home. Why do you think working together like that made them stronger than any of them could be alone?",
+    "Joe worked really hard at rowing even though his family didn't have much money and his dad didn't believe in him. What do you think kept him going when things were tough?",
+    "If you were on a team like the rowing team, what would you want your teammates to know about you so they could trust you and work with you better?"
+  ],
+  "Jerry Maguire": [
+    "Jerry gave up a lot of money and his important job to do what he thought was right—why do you think he was willing to lose so much for his beliefs?",
+    "Dorothy and the other people who stuck with Jerry even when things got hard—what do you think made them stay loyal instead of just leaving to find easier situations?",
+    "If you had to choose between being really successful and having fewer people who truly care about you, or having less success but keeping the people you love close, what would matter more to you and why?"
   ]
+
 };
 const GENERIC_PROMPTS = {
   "Adventure": [
@@ -2132,6 +2700,122 @@ const GENERIC_PROMPTS = {
 function getDiscussionPrompts(show) {
   return DISCUSSION_PROMPTS[show.t] || GENERIC_PROMPTS[show.cat] || GENERIC_PROMPTS["Adventure"];
 }
+
+// =============================================================
+// DATE NIGHT LIBRARY — tasteful adult films for after kids' bedtime.
+// Only visible when a parent (Mom/Dad) is logged in AND date-night
+// toggle is on. Kids physically cannot see these.
+// =============================================================
+const DATE_NIGHT_SHOWS = [
+  // True-story drama
+  { t: "Hidden Figures", type: "movie", who: "parents", cat: "History", year: 2016,
+    why: "Three Black women mathematicians at NASA in the 1960s. Smart, inspiring, beautifully made.",
+    svc: ["Disney+","Hulu"], score: [5,5,5,5,3] },
+  { t: "The Imitation Game", type: "movie", who: "parents", cat: "History", year: 2014,
+    why: "Alan Turing breaks the Enigma code. About genius, isolation, and what victory costs.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Spotlight", type: "movie", who: "parents", cat: "History", year: 2015,
+    why: "Boston Globe journalists investigate the Catholic Church. Methodical, weighty, true.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Argo", type: "movie", who: "parents", cat: "History", year: 2012,
+    why: "Real CIA operation to rescue diplomats from Iran in 1980. Tense and well-crafted.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "The King's Speech", type: "movie", who: "parents", cat: "History", year: 2010,
+    why: "King George VI faces a stutter on the eve of WWII. About courage and friendship.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Lion", type: "movie", who: "parents", cat: "Family Classics", year: 2016,
+    why: "A boy lost in India is adopted by an Australian family — and decades later finds his way home.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Hacksaw Ridge", type: "movie", who: "parents", cat: "History", year: 2016,
+    why: "Desmond Doss, a conscientious objector who saved 75 men at Okinawa without firing a shot.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,2] },
+  { t: "12 Strong", type: "movie", who: "parents", cat: "History", year: 2018,
+    why: "First Special Forces team into Afghanistan after 9/11 — on horseback. True story.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,2] },
+  { t: "Bridge of Spies", type: "movie", who: "parents", cat: "History", year: 2015,
+    why: "Spielberg/Hanks. A lawyer negotiates a Cold War prisoner exchange. Patient and great.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Sully", type: "movie", who: "parents", cat: "History", year: 2016,
+    why: "Captain Sullenberger lands flight 1549 on the Hudson. About competence under pressure.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Captain Phillips", type: "movie", who: "parents", cat: "History", year: 2013,
+    why: "Container ship hijacked by Somali pirates. Hanks at his finest. Real story.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Lincoln", type: "movie", who: "parents", cat: "History", year: 2012,
+    why: "Spielberg's portrait of Lincoln passing the 13th Amendment. Day-Lewis is incredible.",
+    svc: ["Disney+","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "The Help", type: "movie", who: "parents", cat: "History", year: 2011,
+    why: "Black maids in 1960s Mississippi tell their story. Hard, kind, and important.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "The Founder", type: "movie", who: "parents", cat: "History", year: 2016,
+    why: "How Ray Kroc built McDonald's — and what he took to do it. Honest about ambition.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Moneyball", type: "movie", who: "parents", cat: "Sports", year: 2011,
+    why: "Billy Beane reinvents baseball with stats. About the price of innovation.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Ford v Ferrari", type: "movie", who: "parents", cat: "Sports", year: 2019,
+    why: "True story of Carroll Shelby + Ken Miles taking on Ferrari at Le Mans. Loud and great.",
+    svc: ["Disney+"], score: [5,5,5,5,3] },
+  { t: "A Beautiful Mind", type: "movie", who: "parents", cat: "History", year: 2001,
+    why: "Mathematician John Nash and his battle with schizophrenia. Tender and true.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "The Pursuit of Happyness", type: "movie", who: "parents", cat: "Family Classics", year: 2006,
+    why: "Will Smith as Chris Gardner: homeless single dad fighting for a stockbroker job. Brutal and beautiful.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Saving Mr. Banks", type: "movie", who: "parents", cat: "Family Classics", year: 2013,
+    why: "P.L. Travers and Walt Disney negotiate Mary Poppins. About what stories cost their authors.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Coach Carter", type: "movie", who: "parents", cat: "Sports", year: 2005,
+    why: "True story of a basketball coach who benched his entire team for grades. About what coaching is for.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "About Time", type: "movie", who: "parents", cat: "Family Classics", year: 2013,
+    why: "Time travel romance that's actually about appreciating ordinary days. Surprisingly profound.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,3] },
+  { t: "Charlie Wilson's War", type: "movie", who: "parents", cat: "History", year: 2007,
+    why: "Hanks/Roberts/Hoffman. The Texas congressman who armed the Mujahideen. Sharp and witty.",
+    svc: ["Netflix","Amazon Prime"], score: [4,4,4,4,3] },
+  { t: "The Greatest Showman", type: "movie", who: "parents", cat: "Family Classics", year: 2017,
+    why: "P.T. Barnum musical. Big music, big heart. (Also great with the kids — overlap pick.)",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Soul", type: "movie", who: "parents", cat: "Family Classics", year: 2020,
+    why: "Pixar for grownups too — a jazz pianist's near-death experience. About what makes life worth it.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Inside Out 2", type: "movie", who: "parents", cat: "Family Classics", year: 2024,
+    why: "Riley becomes a teenager. The most thoughtful movie ever made about anxiety.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+
+  // Documentaries
+  { t: "Free Solo", type: "doc", who: "parents", cat: "Animals & Nature", year: 2018,
+    why: "Alex Honnold climbs El Capitan without ropes. Stunning and unbearable in the best way.",
+    svc: ["Disney+","Hulu"], score: [5,5,5,5,3] },
+  { t: "Won't You Be My Neighbor?", type: "doc", who: "parents", cat: "Family Classics", year: 2018,
+    why: "Documentary about Mr. Rogers. You'll cry. That's not optional.",
+    svc: ["Amazon Prime","Tubi"], score: [5,5,5,5,5] },
+  { t: "The Last Dance", type: "doc", who: "parents", cat: "Sports", year: 2020,
+    why: "Michael Jordan's last Bulls season told 10 episodes deep. Best sports doc ever made.",
+    svc: ["Netflix"], score: [5,5,5,5,3] },
+  { t: "The Social Dilemma", type: "doc", who: "parents", cat: "Educational", year: 2020,
+    why: "Former tech insiders explain what social media is doing to us. Watch BEFORE giving the kids phones.",
+    svc: ["Netflix"], score: [5,5,5,5,3] },
+  { t: "Inside Bill's Brain", type: "doc", who: "parents", cat: "Educational", year: 2019,
+    why: "Three episodes inside Bill Gates's mind. About problem-solving at scale.",
+    svc: ["Netflix"], score: [5,5,5,5,3] },
+  { t: "American Factory", type: "doc", who: "parents", cat: "Educational", year: 2019,
+    why: "Chinese billionaire reopens an Ohio factory. Surprisingly nuanced look at modern work.",
+    svc: ["Netflix"], score: [5,5,5,5,3] },
+  { t: "The Boys in the Boat", type: "movie", who: "parents", cat: "Sports", year: 2023,
+    why: "1936 University of Washington rowing team takes Olympic gold. Old-fashioned in the best way.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,4] },
+  { t: "Jerry Maguire", type: "movie", who: "parents", cat: "Sports", year: 1996,
+    why: "'Show me the money.' About what success costs and what's actually worth pursuing.",
+    svc: ["Netflix","Amazon Prime"], score: [4,4,4,4,3] },
+  { t: "October Sky", type: "movie", who: "both", cat: "History", year: 1999,
+    why: "Already in the kids' library — equally great as a parents' rewatch.",
+    svc: ["Hulu"], score: [5,5,5,5,4] },
+  { t: "Apollo 13", type: "movie", who: "both", cat: "History", year: 1995,
+    why: "Already in the kids' library — equally great as a parents' rewatch.",
+    svc: ["Disney+"], score: [5,5,5,5,4] }
+];
 
 const RED_LIST = [
   { t: "Henry Danger", why: "Bumbling adults are constantly outsmarted by a kid. Adults look stupid by design." },
@@ -2429,6 +3113,10 @@ function timeContext() {
 }
 
 function allShows() {
+  // Date night mode: parent + toggle on = parent-only library
+  if (state.dateNightMode && isCurrentUserParent()) {
+    return DATE_NIGHT_SHOWS.filter(s => !state.removed.includes(s.t));
+  }
   const merged = SHOWS.concat(state.customShows.map(s => Object.assign({custom:true}, s)));
   return merged.filter(s => !state.removed.includes(s.t));
 }
@@ -2776,7 +3464,7 @@ async function discoverNewContent({ onProgress, onLog } = {}) {
           poster: cand.poster, providers: [], fetchedAt: Date.now(),
           mediaType: cand.mediaType, id: cand.tmdbId
         };
-        state.customShows.push(Object.assign({}, newShow, { _autoAdded: true }));
+        state.customShows.push(Object.assign({}, newShow, { _autoAdded: true, _addedAt: Date.now() }));
         added++;
         onLog?.(`✅ Auto-added: ${cand.title}`);
       } else if (verdict.verdict === "yellow") {
@@ -3477,7 +4165,41 @@ function renderCard(s) {
   return div;
 }
 
+function renderWhatsNew() {
+  const banner = document.getElementById("whatsNewBanner");
+  if (!banner) return;
+  // Date-night mode hides this
+  if (state.dateNightMode && isCurrentUserParent()) { banner.style.display = "none"; return; }
+  const week = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const newOnes = state.customShows
+    .filter(s => s._addedAt && (now - s._addedAt) < week && !state.removed.includes(s.t))
+    .sort((a,b) => b._addedAt - a._addedAt)
+    .slice(0, 6);
+  if (!newOnes.length) { banner.style.display = "none"; return; }
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div style="background: linear-gradient(135deg, rgba(233,183,88,.1), rgba(127,212,168,.08)); border: 1px solid rgba(233,183,88,.3); border-radius: 16px; padding: 18px 20px; margin-bottom: 18px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="font-size:22px;">✨</span>
+        <span style="font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600;">${newOnes.length} new ${newOnes.length === 1 ? 'show' : 'shows'} this week</span>
+        <span style="font-size:11px; color:var(--ink-dim); margin-left:auto;">AI auto-discovery</span>
+      </div>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+        ${newOnes.map(s => `
+          <button class="whats-new-pill" data-title="${escapeHtml(s.t)}" style="background:rgba(255,255,255,.08); border:1px solid var(--border); color:var(--ink); padding:8px 14px; border-radius:999px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0;">
+            ${escapeHtml(s.t)}
+          </button>`).join("")}
+      </div>
+    </div>`;
+  banner.querySelectorAll(".whats-new-pill").forEach(b => b.onclick = () => {
+    const show = allShows().find(x => x.t === b.dataset.title);
+    if (show) openModal(show);
+  });
+}
+
 function renderGrid() {
+  renderWhatsNew();
   const grid = $("#grid");
   grid.innerHTML = "";
   let pool = allShows();
