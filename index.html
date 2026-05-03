@@ -689,6 +689,47 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Family password splash ===== */
+#familySplash {
+  position: fixed; inset: 0; z-index: 10000;
+  background:
+    radial-gradient(800px 500px at 20% 20%, rgba(233,183,88,.18), transparent 60%),
+    radial-gradient(800px 500px at 80% 80%, rgba(236,111,122,.15), transparent 60%),
+    var(--bg-0);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; padding: 24px;
+}
+#familySplash.show { display: flex; }
+.splash-card {
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  padding: 36px 36px 28px; border-radius: 24px; max-width: 420px; width: 100%;
+  text-align: center; box-shadow: var(--shadow-lg);
+}
+.splash-card .splash-logo {
+  width: 88px; height: 88px; margin: 0 auto 18px;
+  border-radius: 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+  display: grid; place-items: center;
+  font-family: 'Fraunces', serif; font-weight: 800; color: #1a1209; font-size: 44px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.splash-card .splash-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 22px; }
+.splash-card h1 { margin: 0 0 6px; font-size: 26px; font-weight: 700; }
+.splash-card .splash-tag { font-size: 14px; color: var(--ink-soft); margin-bottom: 22px; }
+.splash-card label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 8px; text-align: left; }
+.splash-card input {
+  width: 100%; padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: 12px;
+  background: var(--bg-2); color: var(--ink); font-family: inherit; font-size: 16px; outline: 0;
+}
+.splash-card input:focus { border-color: var(--gold); }
+.splash-card .splash-actions { margin-top: 14px; }
+.splash-card button {
+  width: 100%; padding: 14px; border-radius: 12px; border: 0;
+  background: var(--gold); color: #1a1209; font-family: inherit; font-size: 16px; font-weight: 700;
+  cursor: pointer;
+}
+.splash-card .splash-msg { color: var(--bad); font-size: 13px; margin-top: 10px; min-height: 18px; }
+
 footer {
   text-align: center; font-size: 12px; color: var(--ink-dim);
   padding: 50px 24px 0; max-width: 1280px; margin: 0 auto;
@@ -710,6 +751,21 @@ footer {
 </style>
 </head>
 <body>
+
+<!-- Family password splash -->
+<div id="familySplash">
+  <div class="splash-card">
+    <div class="splash-logo" id="splashLogo">M</div>
+    <h1>The Martinez Watchlist</h1>
+    <div class="splash-tag">Stories worth your time.</div>
+    <label for="splashInput">Family password</label>
+    <input id="splashInput" type="password" autocomplete="current-password" />
+    <div class="splash-actions">
+      <button id="splashSubmit">Enter</button>
+    </div>
+    <div class="splash-msg" id="splashMsg"></div>
+  </div>
+</div>
 
 <header class="app">
   <div class="header-bg" id="headerBg"></div>
@@ -804,13 +860,13 @@ footer {
   <section id="parentView" style="display:none;">
     <div id="parentLocked" class="parent-panel">
       <h2>Parent View</h2>
-      <p class="help">Set or enter your PIN to manage the list. First time? Type a 4–6 digit PIN and tap "Set new PIN."</p>
+      <p class="help">Enter the parent PIN to manage shows, settings, and approvals.</p>
       <div class="pin-form">
-        <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" />
+        <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off" />
         <button class="primary" id="pinSubmit">Unlock</button>
-        <button class="secondary" id="pinSet">Set new PIN</button>
       </div>
       <p class="help" id="pinMsg" style="margin-top:12px;"></p>
+      <p class="help" style="margin-top:8px; font-size:12px; opacity:.7;">Forgot the PIN? It can only be reset from within the unlocked parent view.</p>
     </div>
 
     <div id="parentUnlocked" style="display:none;">
@@ -999,6 +1055,28 @@ footer {
         <h2>Manage shows</h2>
         <p class="help">Hide or restore any show. Custom-added shows are marked with a ★.</p>
         <div id="manageList"></div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Security — PIN & Family password</h2>
+        <p class="help">Change either credential here. The current values are required to make changes — protects against anyone who's physically at this device.</p>
+        <div class="rubric-form">
+          <label>Change parent PIN</label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:6px;">
+            <input id="pinOldInput" type="password" inputmode="numeric" maxlength="6" placeholder="Current PIN" style="flex:0 0 130px;" />
+            <input id="pinNewInput" type="password" inputmode="numeric" maxlength="6" placeholder="New PIN (4-6 digits)" style="flex:0 0 180px;" />
+            <button class="primary" id="pinChangeBtn">Update PIN</button>
+            <span id="pinChangeMsg" style="font-size:13px; color:var(--ink-soft);"></span>
+          </div>
+
+          <label style="margin-top:18px;">Change family password (splash screen)</label>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:6px;">
+            <input id="famOldInput" type="password" placeholder="Current password" style="flex:0 0 200px;" />
+            <input id="famNewInput" type="text" placeholder="New password (or leave blank to disable)" style="flex:1 1 220px;" />
+            <button class="primary" id="famChangeBtn">Update password</button>
+            <span id="famChangeMsg" style="font-size:13px; color:var(--ink-soft);"></span>
+          </div>
+        </div>
       </div>
 
       <div class="parent-panel">
@@ -2020,7 +2098,7 @@ function loadState() {
 }
 function defaultState() {
   return {
-    pin: null,
+    pin: "100811",
     activeServices: ["Disney+","Netflix","Amazon Prime","Hulu","Paramount+","Max","Peacock","Apple TV+","PBS Kids"],
     customShows: [],
     removed: [],
@@ -2037,6 +2115,7 @@ function defaultState() {
     watched: [],
     approvalQueue: [],
     activeKid: "both",
+    familyPassword: "martinez", // default — change in Parent View
     familyPhotos: [], // array of base64 data URLs — rotates as the icon
     // Auto-discovery + AI scoring
     anthropicKey: null,
@@ -2065,6 +2144,9 @@ if (state.familyPhoto && (!state.familyPhotos || !state.familyPhotos.length)) {
   saveState();
 }
 if (!state.familyPhotos) state.familyPhotos = [];
+// Force-set the parent PIN if it doesn't already match user's preferred value
+if (state.pin === null || state.pin === undefined) { state.pin = "100811"; saveState(); }
+if (state.familyPassword === undefined) { state.familyPassword = "martinez"; saveState(); }
 // Icon migration: update Alden→frog, Owen→McLaren Senna once
 if (!state.iconVersion || state.iconVersion < 2) {
   if (state.profiles?.alden) {
@@ -2708,7 +2790,7 @@ function renderApprovalList() {
         ${req.providers.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${req.providers.map(svcChip).join("")}</div>` : ""}
         <div class="field-label">Score it (1-5 each) ${req.aiSuggestion ? "<span style='color:var(--mint); text-transform:none; letter-spacing:0; font-weight:500;'>— pre-filled by AI, adjust if needed</span>" : ""}</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-top:6px;">
-          ${["Kids act like kids","Parents shown well","No snark","Wholesome family","Age-appropriate"].map((label,i) => {
+          ${[[0,"Kids act like kids"],[2,"No snark"],[3,"Wholesome family"],[4,"Age-appropriate"]].map(([i,label]) => {
             const preScore = req._scores?.[i] || 0;
             return `<div><div style="font-size:11px; color:var(--ink-soft); margin-bottom:2px;">${label}</div><div class="stars-row" data-idx="${idx}" data-rubric="${i}">${[1,2,3,4,5].map(n => `<button data-n="${n}" class="${n<=preScore?'on':''}">★</button>`).join("")}</div></div>`;
           }).join("")}
@@ -2740,13 +2822,19 @@ function renderApprovalList() {
     btn.onclick = () => {
       const idx = +btn.dataset.approve;
       const req = state.approvalQueue[idx];
-      const scores = req._scores || [];
-      if (scores.length !== 5 || scores.some(s => s === 0)) { alert("Score all 5 dimensions first."); return; }
+      const scores = req._scores || [0,0,0,0,0];
+      // Only require the 4 active dimensions to be set; auto-fill dim 1 (parents) with 5
+      const activeDims = [0, 2, 3, 4];
+      if (activeDims.some(i => !scores[i] || scores[i] === 0)) {
+        alert("Tap stars on all 4 dimensions first (Kids act like kids, No snark, Wholesome family, Age-appropriate).");
+        return;
+      }
+      scores[1] = 5;
       const noteEl = wrap.querySelector(`[data-note="${idx}"]`);
       const why = (noteEl?.value.trim()) || "Approved by Mom & Dad.";
       state.customShows.push({
-        t: req.title, type: "movie", who: req.requestedBy === "both" ? "both" : req.requestedBy,
-        cat: "Family Classics", why,
+        t: req.title, type: "movie", who: req.requestedBy === "both" ? "both" : req.requestedBy === "auto" ? "both" : req.requestedBy,
+        cat: req.aiSuggestion?.category || "Family Classics", why,
         svc: req.providers.length ? req.providers : ["Disney+","Netflix"],
         score: scores
       });
@@ -3515,13 +3603,39 @@ $("#pinSubmit").onclick = () => {
   if (v === state.pin) { sessionStorage.setItem("parent_unlocked","1"); $("#pinInput").value = ""; renderParent(); }
   else $("#pinMsg").textContent = "Wrong PIN.";
 };
-$("#pinSet").onclick = () => {
-  const v = $("#pinInput").value;
-  if (!/^\d{4,6}$/.test(v)) { $("#pinMsg").textContent = "PIN must be 4–6 digits."; return; }
-  state.pin = v; saveState(); sessionStorage.setItem("parent_unlocked","1");
-  $("#pinInput").value = ""; $("#pinMsg").textContent = "PIN set. You're unlocked."; renderParent();
-};
+// PIN reset is only available from inside unlocked parent panel (Security panel below).
 $("#lockBtn").onclick = () => { sessionStorage.removeItem("parent_unlocked"); renderParent(); };
+
+// PIN change (requires current pin)
+const _pinChange = document.getElementById("pinChangeBtn");
+if (_pinChange) _pinChange.onclick = () => {
+  const oldV = $("#pinOldInput").value;
+  const newV = $("#pinNewInput").value;
+  const msg = $("#pinChangeMsg");
+  if (oldV !== state.pin) { msg.textContent = "Current PIN is wrong."; msg.style.color = "var(--bad)"; return; }
+  if (!/^\d{4,6}$/.test(newV)) { msg.textContent = "New PIN must be 4–6 digits."; msg.style.color = "var(--bad)"; return; }
+  state.pin = newV; saveState();
+  $("#pinOldInput").value = ""; $("#pinNewInput").value = "";
+  msg.textContent = "✓ PIN updated."; msg.style.color = "var(--mint)";
+};
+
+// Family password change (requires current password)
+const _famChange = document.getElementById("famChangeBtn");
+if (_famChange) _famChange.onclick = () => {
+  const oldV = ($("#famOldInput").value || "").toLowerCase();
+  const newV = ($("#famNewInput").value || "").trim();
+  const msg = $("#famChangeMsg");
+  const currentLower = (state.familyPassword || "").toLowerCase();
+  if (currentLower && oldV !== currentLower) { msg.textContent = "Current password is wrong."; msg.style.color = "var(--bad)"; return; }
+  state.familyPassword = newV;
+  // Clear unlock so the new password takes effect on next session
+  localStorage.removeItem("martinez_unlocked_v1");
+  if (newV) localStorage.setItem("martinez_unlocked_v1", newV); // keep this device unlocked
+  saveState();
+  $("#famOldInput").value = ""; $("#famNewInput").value = "";
+  msg.textContent = newV ? "✓ Password updated. New devices will need it." : "✓ Password disabled. Anyone with the URL can enter.";
+  msg.style.color = "var(--mint)";
+};
 $("#saveShow").onclick = saveCustomShow;
 $("#resetForm").onclick = resetRubric;
 
@@ -3669,6 +3783,48 @@ function setLogoPhoto(dataUrl, withFade = false) {
   link.rel = "icon"; link.href = dataUrl;
   document.head.appendChild(link);
 }
+
+// =============================================================
+// Family password gate
+// =============================================================
+function checkFamilyGate() {
+  const splash = document.getElementById("familySplash");
+  if (!splash) return true;
+  if (!state.familyPassword) { splash.classList.remove("show"); return true; }
+  if (localStorage.getItem("martinez_unlocked_v1") === state.familyPassword) {
+    splash.classList.remove("show"); return true;
+  }
+  splash.classList.add("show");
+  // Show photo on splash if available
+  const logo = document.getElementById("splashLogo");
+  if (logo && state.familyPhotos && state.familyPhotos.length) {
+    const idx = Math.floor(Math.random() * state.familyPhotos.length);
+    logo.innerHTML = `<img src="${state.familyPhotos[idx]}" alt="">`;
+  }
+  setTimeout(() => document.getElementById("splashInput")?.focus(), 100);
+  return false;
+}
+function trySplashUnlock() {
+  const input = document.getElementById("splashInput");
+  const msg = document.getElementById("splashMsg");
+  if (!input) return;
+  const v = (input.value || "").trim().toLowerCase();
+  if (v === (state.familyPassword || "").toLowerCase()) {
+    localStorage.setItem("martinez_unlocked_v1", state.familyPassword);
+    document.getElementById("familySplash").classList.remove("show");
+    if (msg) msg.textContent = "";
+    input.value = "";
+  } else {
+    if (msg) msg.textContent = "Try again.";
+    input.value = "";
+    input.focus();
+  }
+}
+const _splashSubmit = document.getElementById("splashSubmit");
+if (_splashSubmit) _splashSubmit.onclick = trySplashUnlock;
+const _splashInput = document.getElementById("splashInput");
+if (_splashInput) _splashInput.addEventListener("keydown", e => { if (e.key === "Enter") trySplashUnlock(); });
+checkFamilyGate();
 
 function clearBanner() {
   const bg = $("#headerBg");
