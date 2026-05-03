@@ -1,0 +1,3933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>The Martinez Family Watchlist</title>
+<meta name="theme-color" content="#0c0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Watchlist">
+<meta name="mobile-web-app-capable" content="yes">
+<link id="appleTouchIcon" rel="apple-touch-icon" href="">
+<link id="appManifest" rel="manifest" href="">
+<link id="favicon" rel="icon" type="image/jpeg" href="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #0c0d12;
+  --bg-1: #14161e;
+  --bg-2: #1c1f2a;
+  --card: #1a1d27;
+  --card-elev: #232734;
+  --ink: #f5f0e6;
+  --ink-soft: #a8aebc;
+  --ink-dim: #6a7180;
+  --gold: #e9b758;
+  --gold-soft: #3a2d18;
+  --rose: #ec6f7a;
+  --mint: #7fd4a8;
+  --mint-soft: #1c3328;
+  --warn: #f0b657;
+  --warn-soft: #382a17;
+  --bad: #e76b65;
+  --bad-soft: #361c1b;
+  --border: rgba(255,255,255,.08);
+  --border-strong: rgba(255,255,255,.14);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,.25);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.4);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.5);
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; background: var(--bg-0); color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(233,183,88,.08), transparent 60%),
+    radial-gradient(900px 500px at 0% 30%, rgba(236,111,122,.06), transparent 60%),
+    var(--bg-0);
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.01em; }
+
+/* ===== Header ===== */
+header.app {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(12,13,18,.92);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  min-height: 96px;
+}
+.header-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  opacity: 0; transition: opacity .9s ease, background-image .6s ease;
+}
+.header-bg.active { opacity: .55; }
+.header-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(12,13,18,.35) 0%, rgba(12,13,18,.7) 60%, rgba(12,13,18,.92) 100%);
+  pointer-events: none;
+  display: none;
+}
+.header-overlay.active { display: block; }
+.header-inner {
+  position: relative; z-index: 2;
+  max-width: 1280px; margin: 0 auto;
+  padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  min-height: 96px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+  width: 60px; height: 60px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+  display: grid; place-items: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4), 0 0 0 2px rgba(255,255,255,.15);
+  font-family: 'Fraunces', serif; font-weight: 800; color: #1a1209; font-size: 28px;
+  overflow: hidden; transition: opacity .4s ease;
+  flex-shrink: 0;
+}
+.brand-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; transition: opacity .4s ease; }
+.brand-text h1 { font-size: 22px !important; }
+.brand-text .tagline { font-size: 13px !important; }
+@media (max-width: 600px) {
+  .brand-logo { width: 50px; height: 50px; font-size: 24px; }
+  .brand-text h1 { font-size: 18px !important; }
+  header.app { min-height: 84px; }
+  .header-inner { min-height: 84px; padding: 16px 16px; }
+}
+.photo-thumb {
+  width: 72px; height: 72px; border-radius: 10px; overflow: hidden;
+  position: relative; background: var(--bg-2); flex-shrink: 0;
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb .remove-btn {
+  position: absolute; top: 3px; right: 3px;
+  background: rgba(0,0,0,.7); color: white; border: 0;
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  font-size: 14px; line-height: 1; display: grid; place-items: center;
+  font-family: inherit; font-weight: 700;
+}
+.photo-thumb .remove-btn:hover { background: var(--bad); }
+.brand-text h1 { margin: 0; font-size: 18px; font-weight: 600; }
+.brand-text .tagline { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+
+.mode-toggle {
+  display: flex; gap: 4px; background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px;
+  border: 1px solid var(--border);
+}
+.mode-toggle button {
+  border: 0; background: transparent; padding: 8px 18px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  font-family: inherit; transition: all .2s ease;
+}
+.mode-toggle button.active {
+  background: var(--ink); color: var(--bg-0);
+}
+
+/* ===== Layout ===== */
+main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+
+/* ===== Hero / Featured ===== */
+.hero {
+  position: relative; border-radius: 24px; overflow: hidden;
+  margin-bottom: 36px; min-height: 480px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+.hero-stage {
+  position: absolute; inset: 0; display: flex; align-items: stretch;
+  transition: transform .6s cubic-bezier(.7,0,.2,1);
+}
+.hero-slide {
+  flex: 0 0 100%; position: relative; padding: 40px 40px;
+  display: grid; grid-template-columns: 1fr minmax(160px, 220px); gap: 32px;
+  align-items: center;
+}
+.hero-slide .text {
+  z-index: 2; max-width: 560px;
+  padding: 24px 28px; border-radius: 18px;
+  background: linear-gradient(135deg, rgba(8,9,14,.78), rgba(8,9,14,.55));
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,.06);
+}
+.hero-cover {
+  z-index: 2;
+  width: 100%; max-width: 220px; max-height: 380px;
+  aspect-ratio: 2/3; border-radius: 14px; overflow: hidden;
+  box-shadow: var(--shadow-md);
+  align-self: center;
+}
+.hero-cover img, .hero-cover svg { width: 100%; height: 100%; display: block; object-fit: cover; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 14px;
+}
+.hero-eyebrow::before {
+  content: ""; width: 24px; height: 1px; background: var(--gold);
+}
+.hero-title {
+  font-size: 42px; line-height: 1.05; font-weight: 800; margin: 0 0 12px;
+  color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.55);
+}
+.hero-eyebrow { text-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.hero-meta {
+  font-size: 13px; color: rgba(255,255,255,.78); margin-bottom: 14px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+.hero-why {
+  font-size: 16px; line-height: 1.5; color: #fff; margin: 0 0 20px; max-width: 480px;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+}
+.hero-cta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0; opacity: .35; filter: blur(40px) saturate(1.2);
+  transform: scale(1.2);
+  transition: opacity .8s ease, background-image .6s ease;
+}
+.hero-bg.family {
+  opacity: .85; filter: none; transform: none;
+  background-size: cover; background-position: center;
+}
+.hero-bg.family > * { display: none; }
+/* Subtle base darkening so any photo reads well, but text gets its own glass card for legibility */
+.hero-overlay-left {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(8,9,14,.15) 0%,
+    rgba(8,9,14,.35) 100%);
+  display: none;
+}
+.hero-overlay-left.active { display: block; }
+
+.hero-nav {
+  position: absolute; bottom: 18px; right: 24px; z-index: 3;
+  display: flex; gap: 8px; align-items: center;
+}
+.hero-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25);
+  border: 0; cursor: pointer; padding: 0; transition: all .25s ease;
+}
+.hero-dot.active { background: var(--gold); width: 24px; border-radius: 99px; }
+
+/* ===== Filter rail ===== */
+.filter-rail {
+  display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center;
+  margin-bottom: 28px; padding: 16px 20px;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px;
+}
+.filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.filter-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-dim); margin-right: 4px;
+}
+.chip {
+  border: 1px solid var(--border-strong); background: rgba(255,255,255,.04);
+  color: var(--ink-soft); padding: 7px 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;
+  font-family: inherit; transition: all .2s ease;
+}
+.chip:hover { background: rgba(255,255,255,.08); color: var(--ink); }
+.chip.active {
+  background: var(--ink); color: var(--bg-0); border-color: var(--ink);
+  font-weight: 600;
+}
+
+/* ===== Search ===== */
+.search-bar {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px;
+  padding: 14px 18px; margin-bottom: 16px; transition: all .2s ease;
+}
+.search-bar:focus-within { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(233,183,88,.12); }
+.search-bar svg { width: 20px; height: 20px; color: var(--ink-dim); flex-shrink: 0; }
+.search-bar input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  font-size: 16px; font-family: inherit; color: var(--ink);
+}
+.search-bar input::placeholder { color: var(--ink-dim); }
+
+.search-result {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; margin-bottom: 32px; box-shadow: var(--shadow-md);
+  display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start;
+}
+.search-result .cover { aspect-ratio: 2/3; border-radius: 10px; overflow: hidden; }
+.search-result .cover svg { width: 100%; height: 100%; display: block; }
+.search-result h3 { margin: 8px 0 6px; font-size: 26px; font-weight: 700; line-height: 1.1; }
+.search-result .meta { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; }
+.search-result p { margin: 12px 0; line-height: 1.55; color: var(--ink); }
+.search-result .where-line {
+  margin: 14px 0; padding: 12px 14px; border-radius: 12px;
+  background: rgba(127,212,168,.1); border: 1px solid rgba(127,212,168,.25);
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.search-result .where-line.unavailable {
+  background: rgba(240,182,87,.08); border-color: rgba(240,182,87,.25);
+}
+.search-result .where-line .label {
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--mint); margin-right: 6px;
+}
+.search-result .where-line.unavailable .label { color: var(--warn); }
+
+.verdict {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 999px; font-size: 12px;
+  font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+}
+.verdict::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+.verdict.green { background: var(--mint-soft); color: var(--mint); }
+.verdict.green::before { background: var(--mint); }
+.verdict.yellow { background: var(--warn-soft); color: var(--warn); }
+.verdict.yellow::before { background: var(--warn); }
+.verdict.red { background: var(--bad-soft); color: var(--bad); }
+.verdict.red::before { background: var(--bad); }
+
+/* ===== Section heading ===== */
+.section-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 36px 0 18px; gap: 12px;
+}
+.section-title h2 {
+  margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -.01em;
+}
+.section-title .count {
+  font-size: 13px; color: var(--ink-dim); font-family: 'Inter', sans-serif;
+}
+
+/* ===== Grid ===== */
+.grid {
+  display: grid; gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.card {
+  position: relative; background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; cursor: pointer;
+  transition: all .25s cubic-bezier(.2,.8,.2,1);
+  display: flex; flex-direction: column;
+}
+.card:hover {
+  transform: translateY(-4px); border-color: var(--border-strong);
+  box-shadow: var(--shadow-md); background: var(--card-elev);
+}
+.card .cover { aspect-ratio: 2/3; overflow: hidden; position: relative; background: var(--bg-2); }
+.card .cover svg { width: 100%; height: 100%; display: block; }
+.card .cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: opacity .3s ease; }
+.card .cover img.loading { opacity: 0; }
+.cover-loading {
+  position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+  background-size: 200% 100%; animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.card .cover .badge-overlay {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+}
+.card .body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.card h3 {
+  margin: 0; font-size: 16px; font-weight: 600; line-height: 1.25;
+  font-family: 'Fraunces', serif;
+}
+.card .meta { font-size: 11px; color: var(--ink-dim); letter-spacing: .04em; text-transform: uppercase; font-weight: 600; }
+.card .why { font-size: 13px; color: var(--ink-soft); line-height: 1.45; flex: 1; }
+.card .where-svc {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.card .badge-mini {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 4px;
+  letter-spacing: .1em; text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+.badge-mini.green { background: rgba(127,212,168,.85); color: #0e2218; }
+.badge-mini.yellow { background: rgba(240,182,87,.85); color: #2a1c08; }
+.badge-mini.red { background: rgba(231,107,101,.9); color: #2a0c0a; }
+.badge-mini.kid {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(0,0,0,.55); color: var(--ink); border: 1px solid rgba(255,255,255,.18);
+}
+
+/* ===== Streaming service badges ===== */
+.svc {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 5px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  white-space: nowrap; line-height: 1.2;
+  border: 1px solid transparent;
+}
+.svc-logo {
+  width: 18px; height: 18px; border-radius: 4px; object-fit: cover; flex-shrink: 0;
+  background: white;
+}
+.svc.no-logo { padding: 4px 10px; }
+.svc-Disney    { background: #0e1f5b; color: #fff; }
+.svc-Netflix   { background: #b81d24; color: #fff; }
+.svc-Hulu      { background: #0a8f4f; color: #fff; }
+.svc-Amazon    { background: #00a8e1; color: #001a3a; }
+.svc-Apple     { background: #1a1a1a; color: #fff; border-color: #333; }
+.svc-Max       { background: linear-gradient(135deg, #002be7 0%, #6a31e7 100%); color: #fff; }
+.svc-Paramount { background: #0064ff; color: #fff; }
+.svc-Peacock   { background: #110f10; color: #fff; border-color: #333; }
+.svc-PBS       { background: #0a3878; color: #fff; }
+.svc-PureFlix  { background: #f47a20; color: #fff; }
+.svc-Yippee    { background: #e63946; color: #fff; }
+.svc-Chosen    { background: #1a1a2e; color: #d4a85a; border-color: #d4a85a; }
+.svc-Discovery { background: #0066cc; color: #fff; }
+.svc-Default   { background: #2a2d38; color: var(--ink); border-color: #3a3e4d; }
+
+/* ===== Red list cards ===== */
+.red-card { background: var(--bg-1); border: 1px solid rgba(231,107,101,.15); border-radius: 16px; padding: 20px; }
+.red-card h3 { margin: 0 0 8px; font-size: 17px; color: var(--ink); }
+.red-card .why { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+.red-card .badge-mini { position: static; display: inline-block; margin-bottom: 10px; }
+
+/* ===== Modal ===== */
+.modal-back {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+  z-index: 200; display: none; align-items: center; justify-content: center;
+  padding: 24px; opacity: 0; transition: opacity .2s ease;
+}
+.modal-back.show { display: flex; opacity: 1; }
+.modal {
+  background: var(--bg-1); border: 1px solid var(--border-strong); border-radius: 22px;
+  max-width: 720px; width: 100%; max-height: 90vh; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  display: grid; grid-template-columns: 240px 1fr;
+  align-items: stretch;
+}
+.modal .cover {
+  background: var(--bg-2); overflow: hidden; position: relative;
+  min-height: 100%;
+}
+.modal .cover svg, .modal .cover img {
+  width: 100%; height: 100%; display: block; object-fit: cover;
+  position: absolute; inset: 0;
+}
+.modal .info {
+  padding: 28px 28px 24px; overflow-y: auto; max-height: 90vh;
+  background: var(--bg-1); position: relative; z-index: 1;
+}
+.modal h2 { margin: 8px 0 6px; font-size: 30px; line-height: 1.05; }
+.modal .meta { color: var(--ink-soft); font-size: 13px; margin-bottom: 16px; }
+.modal p { line-height: 1.6; color: var(--ink); }
+.modal .ratings { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 16px 0; padding: 14px; background: rgba(255,255,255,.03); border-radius: 12px; }
+.modal .ratings .rrow { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.modal .ratings .rrow .stars { color: var(--gold); letter-spacing: 1px; }
+.watch-row {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0;
+}
+.watch-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 18px; border-radius: 12px;
+  font-weight: 700; font-size: 14px; text-decoration: none;
+  color: white; transition: transform .15s ease, box-shadow .2s ease;
+  font-family: inherit; cursor: pointer; border: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.watch-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+.watch-btn img { width: 22px; height: 22px; border-radius: 4px; background: white; flex-shrink: 0; }
+.watch-btn .play-icon { font-size: 16px; }
+/* AI mood chat */
+.mood-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 14px 18px; margin-bottom: 18px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(127,212,168,.18), rgba(233,183,88,.12));
+  border: 1px solid rgba(127,212,168,.3);
+  cursor: pointer; transition: all .2s ease;
+}
+.mood-cta:hover { transform: translateY(-1px); border-color: var(--mint); box-shadow: 0 4px 16px rgba(127,212,168,.2); }
+.mood-cta .mood-text { display: flex; flex-direction: column; }
+.mood-cta .mood-title { font-size: 16px; font-weight: 700; color: var(--mint); }
+.mood-cta .mood-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+.mood-cta .mood-icon { font-size: 28px; }
+.mood-modal-input {
+  width: 100%; padding: 14px 16px; font-size: 16px;
+  background: var(--bg-2); color: var(--ink); border: 1px solid var(--border-strong);
+  border-radius: 12px; font-family: inherit; outline: 0;
+}
+.mood-modal-input:focus { border-color: var(--mint); }
+.mood-pick-card {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 16px; margin: 10px 0; cursor: pointer;
+  transition: all .2s ease;
+}
+.mood-pick-card:hover { border-color: var(--gold); background: var(--card-elev); transform: translateX(4px); }
+.mood-pick-card h4 { margin: 0 0 4px; font-family: 'Fraunces', serif; font-size: 17px; }
+.mood-pick-card .reason { font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px; z-index: 2;
+  background: rgba(0,0,0,.5); border: 0; color: var(--ink); width: 36px; height: 36px;
+  border-radius: 50%; cursor: pointer; font-size: 18px;
+  display: grid; place-items: center;
+}
+
+/* ===== Parent view ===== */
+.parent-panel {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+  padding: 24px 28px; margin-bottom: 22px;
+}
+.parent-panel h2 { margin: 0 0 8px; font-size: 22px; }
+.parent-panel p.help { font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; line-height: 1.5; }
+.pin-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pin-form input {
+  font-size: 18px; padding: 10px 14px; border: 1px solid var(--border-strong);
+  border-radius: 10px; width: 120px; letter-spacing: 6px; text-align: center;
+  background: var(--bg-2); color: var(--ink); font-family: inherit;
+}
+button.primary {
+  background: var(--gold); color: #1a1209; border: 0; padding: 10px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: all .2s ease;
+}
+button.primary:hover { background: #f0c576; }
+button.secondary {
+  background: rgba(255,255,255,.06); color: var(--ink); border: 1px solid var(--border-strong);
+  padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+button.secondary:hover { background: rgba(255,255,255,.1); }
+button.danger {
+  background: rgba(231,107,101,.15); color: var(--bad); border: 1px solid rgba(231,107,101,.35);
+  padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+  font-family: inherit; font-weight: 600;
+}
+
+.rubric-form label { display: block; font-size: 13px; font-weight: 600; margin-top: 14px; color: var(--ink); }
+.rubric-form input[type=text], .rubric-form textarea, .rubric-form select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong);
+  border-radius: 10px; font-size: 14px; font-family: inherit;
+  background: var(--bg-2); color: var(--ink); margin-top: 6px;
+}
+.rubric-form input:focus, .rubric-form select:focus { outline: 0; border-color: var(--gold); }
+.rubric-form .stars { display: flex; gap: 2px; margin-top: 6px; }
+.rubric-form .stars button {
+  background: transparent; border: 0; cursor: pointer;
+  font-size: 26px; line-height: 1; padding: 0 2px; color: #4a4d57;
+  transition: color .15s ease, transform .15s ease;
+}
+.rubric-form .stars button:hover { transform: scale(1.15); }
+.rubric-form .stars button.on { color: var(--gold); }
+.rubric-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rubric-form .help { font-size: 11px; color: var(--ink-dim); margin-top: 4px; line-height: 1.4; font-weight: 400; }
+.verdict-display {
+  padding: 16px 18px; border-radius: 12px; margin-top: 18px; font-size: 14px;
+  border: 1px solid; line-height: 1.5;
+}
+.verdict-display.green { background: var(--mint-soft); color: var(--mint); border-color: rgba(127,212,168,.3); }
+.verdict-display.yellow { background: var(--warn-soft); color: var(--warn); border-color: rgba(240,182,87,.3); }
+.verdict-display.red { background: var(--bad-soft); color: var(--bad); border-color: rgba(231,107,101,.3); }
+
+.manage-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.manage-row:last-child { border-bottom: 0; }
+.manage-row .info-block { flex: 1; min-width: 0; }
+.manage-row .info-block .t { font-weight: 600; font-size: 14px; }
+.manage-row .info-block .meta-line { font-size: 12px; color: var(--ink-dim); margin-top: 2px; }
+.manage-row .actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ===== Avatars ===== */
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 16px; line-height: 1; flex-shrink: 0;
+}
+.avatar-lg { width: 44px; height: 44px; font-size: 24px; }
+.who-chip-avatar { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ===== Hearts on cards ===== */
+.heart-row {
+  position: absolute; bottom: 8px; left: 8px; right: 8px;
+  display: flex; gap: 6px; z-index: 3;
+  opacity: 0; transition: opacity .2s ease;
+}
+.card:hover .heart-row, .heart-row.always-show { opacity: 1; }
+.heart-btn {
+  flex: 1; background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.2); color: white;
+  padding: 5px 6px; border-radius: 7px; cursor: pointer;
+  font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-family: inherit; transition: all .15s ease;
+}
+.heart-btn:hover { background: rgba(0,0,0,.8); }
+.heart-btn.faved { background: rgba(236,111,122,.85); border-color: rgba(255,255,255,.3); }
+
+/* ===== Pick for us / dice button ===== */
+.dice-btn {
+  background: linear-gradient(135deg, var(--gold), var(--rose));
+  color: #1a1209; border: 0; padding: 9px 16px; border-radius: 999px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  box-shadow: 0 4px 14px rgba(233,183,88,.25);
+  transition: all .2s ease;
+}
+.dice-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(233,183,88,.35); }
+
+/* ===== Watched indicator on cards ===== */
+.watched-banner {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+  padding: 14px 10px 8px; font-size: 11px; color: white; font-weight: 600;
+  z-index: 2; pointer-events: none;
+}
+
+/* ===== Queue / favorites tabs ===== */
+.tab-row {
+  display: flex; gap: 4px; margin: 0 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.tab-row button {
+  background: transparent; border: 0; padding: 12px 16px;
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  color: var(--ink-soft); position: relative;
+}
+.tab-row button.active { color: var(--ink); }
+.tab-row button.active::after {
+  content: ""; position: absolute; left: 16px; right: 16px; bottom: -1px; height: 2px;
+  background: var(--gold); border-radius: 2px;
+}
+.tab-row button .count-pill {
+  display: inline-block; background: rgba(255,255,255,.1); color: var(--ink-soft);
+  font-size: 11px; padding: 1px 7px; border-radius: 999px; margin-left: 6px;
+  font-weight: 700;
+}
+.tab-row button.active .count-pill { background: var(--gold-soft); color: var(--gold); }
+
+/* ===== Modal additions: hearts, watched, prompts ===== */
+.modal-actions {
+  display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0;
+}
+.modal-actions button {
+  background: rgba(255,255,255,.06); border: 1px solid var(--border-strong);
+  color: var(--ink); padding: 9px 14px; border-radius: 10px;
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.modal-actions button:hover { background: rgba(255,255,255,.12); }
+.modal-actions button.faved { background: rgba(236,111,122,.2); color: var(--rose); border-color: rgba(236,111,122,.4); }
+.modal-actions button.watched { background: rgba(127,212,168,.2); color: var(--mint); border-color: rgba(127,212,168,.4); }
+
+.prompts-card {
+  margin: 18px 0 4px; padding: 16px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(233,183,88,.08), rgba(236,111,122,.06));
+  border: 1px solid rgba(233,183,88,.18);
+}
+.prompts-card h4 {
+  margin: 0 0 8px; font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; color: var(--gold);
+}
+.prompts-card h4::before { content: "💬"; font-size: 18px; }
+.prompts-card ol { margin: 0; padding-left: 20px; }
+.prompts-card li { font-size: 14px; line-height: 1.55; color: var(--ink); margin: 6px 0; }
+
+/* ===== Approval queue ===== */
+.approval-card {
+  background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: 12px;
+  padding: 14px; margin-bottom: 14px;
+  display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: start;
+}
+.approval-card .cover { aspect-ratio: 2/3; border-radius: 6px; overflow: hidden; background: var(--bg-1); }
+.approval-card .cover img { width: 100%; height: 100%; object-fit: cover; }
+.approval-card h4 { margin: 0 0 4px; font-size: 16px; font-family: 'Fraunces', serif; }
+.approval-card .req-meta { font-size: 12px; color: var(--ink-dim); margin-bottom: 10px; }
+.approval-card .stars-row { display: flex; gap: 2px; margin: 6px 0; }
+.approval-card .stars-row button {
+  background: transparent; border: 0; cursor: pointer; padding: 0 2px;
+  font-size: 18px; color: #4a4d57; line-height: 1;
+}
+.approval-card .stars-row button.on { color: var(--gold); }
+.approval-card .field-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); letter-spacing: .08em; text-transform: uppercase; margin-top: 8px; }
+
+.queue-badge {
+  display: inline-block; background: var(--rose); color: white;
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+  margin-left: 6px; vertical-align: middle;
+}
+
+/* ===== Profile setup ===== */
+.profile-setup {
+  background: var(--bg-1); border: 1px solid var(--border); border-radius: 18px;
+  padding: 24px; margin-bottom: 24px;
+}
+.profile-setup h3 { margin: 0 0 12px; font-size: 20px; }
+.profile-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;
+}
+.profile-card-edit {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px;
+}
+.profile-card-edit h4 { margin: 0 0 8px; font-size: 14px; }
+.profile-card-edit .icon-row, .profile-card-edit .color-row {
+  display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0;
+}
+.profile-card-edit .pick-btn {
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+  display: grid; place-items: center; font-size: 20px; line-height: 1;
+}
+.profile-card-edit .pick-btn.active { border-color: var(--gold); background: var(--gold-soft); }
+.profile-card-edit .color-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+}
+.profile-card-edit .color-btn.active { border-color: white; box-shadow: 0 0 0 2px var(--gold); }
+
+@media (max-width: 720px) {
+  .profile-row { grid-template-columns: 1fr; }
+  .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
+}
+
+footer {
+  text-align: center; font-size: 12px; color: var(--ink-dim);
+  padding: 50px 24px 0; max-width: 1280px; margin: 0 auto;
+}
+
+@media (max-width: 720px) {
+  .header-inner { padding: 12px 16px; }
+  main { padding: 16px; }
+  .hero-slide { grid-template-columns: 1fr; padding: 24px; }
+  .hero-cover { display: none; }
+  .hero-title { font-size: 30px; }
+  .search-result { grid-template-columns: 100px 1fr; padding: 16px; gap: 16px; }
+  .modal { grid-template-columns: 1fr; max-height: 92vh; }
+  .modal .cover { aspect-ratio: 2/3; max-height: 280px; }
+  .rubric-form .row { grid-template-columns: 1fr; }
+  .filter-rail { padding: 12px; gap: 10px 16px; }
+  .section-title h2 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="header-bg" id="headerBg"></div>
+  <div class="header-overlay" id="headerOverlay"></div>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo">M</div>
+      <div class="brand-text">
+        <h1>The Martinez Watchlist</h1>
+        <div class="tagline">Stories worth your time.</div>
+      </div>
+    </div>
+    <div class="mode-toggle">
+      <button id="kidModeBtn" class="active">Kids</button>
+      <button id="parentModeBtn">Parents <span class="queue-badge" id="parentTabBadge" style="display:none;">0</span></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- KID VIEW -->
+  <section id="kidView">
+    <div class="hero" id="hero">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-overlay-left" id="heroOverlayLeft"></div>
+      <div class="hero-stage" id="heroStage"></div>
+      <div class="hero-nav" id="heroNav"></div>
+    </div>
+
+    <div class="filter-rail">
+      <div class="filter-group">
+        <span class="filter-label">Watching</span>
+        <div id="whoChips" class="filter-group" style="gap:6px;"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">On</span>
+        <div id="serviceChips" class="filter-group" style="gap:6px;"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Type</span>
+        <div id="typeChips" class="filter-group" style="gap:6px;">
+          <button class="chip active" data-type="all">All</button>
+          <button class="chip" data-type="movie">Movies</button>
+          <button class="chip" data-type="show">Shows</button>
+          <button class="chip" data-type="doc">Documentaries</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Mood</span>
+        <div id="catChips" class="filter-group" style="gap:6px;"></div>
+      </div>
+    </div>
+
+    <div class="mood-cta" id="moodCta">
+      <div class="mood-text">
+        <span class="mood-title">💬 What are you in the mood for?</span>
+        <span class="mood-sub">Tell us how you feel and we'll find the perfect show.</span>
+      </div>
+      <span class="mood-icon">→</span>
+    </div>
+
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="Looking for a show? Type the name…" autocomplete="off" />
+    </div>
+    <div id="searchResult"></div>
+
+    <div class="tab-row" id="tabRow">
+      <button class="active" data-tab="library">Library</button>
+      <button data-tab="favorites">Favorites <span class="count-pill" id="favCount">0</span></button>
+      <button data-tab="watched">Watched <span class="count-pill" id="watchedCount">0</span></button>
+    </div>
+
+    <div class="section-title">
+      <h2 id="listHeading">Approved tonight</h2>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button class="dice-btn" id="diceBtn">🎲 Pick for us</button>
+        <button class="chip" id="refreshBtn" title="Refresh streaming availability now" style="display:flex; align-items:center; gap:5px;">🔄 Refresh</button>
+        <span class="count" id="listCount"></span>
+      </div>
+    </div>
+    <div id="freshnessLine" style="font-size:11px; color:var(--ink-dim); margin: -10px 0 14px 2px;"></div>
+    <div id="grid" class="grid"></div>
+
+    <div class="section-title">
+      <h2>Not for our family <span style="font-size:14px; color:var(--ink-dim); font-family:Inter; font-weight:400;">— and why</span></h2>
+    </div>
+    <div id="redGrid" class="grid"></div>
+  </section>
+
+  <!-- PARENT VIEW -->
+  <section id="parentView" style="display:none;">
+    <div id="parentLocked" class="parent-panel">
+      <h2>Parent View</h2>
+      <p class="help">Set or enter your PIN to manage the list. First time? Type a 4–6 digit PIN and tap "Set new PIN."</p>
+      <div class="pin-form">
+        <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" />
+        <button class="primary" id="pinSubmit">Unlock</button>
+        <button class="secondary" id="pinSet">Set new PIN</button>
+      </div>
+      <p class="help" id="pinMsg" style="margin-top:12px;"></p>
+    </div>
+
+    <div id="parentUnlocked" style="display:none;">
+      <div class="parent-panel" style="border:2px solid var(--gold); background: linear-gradient(135deg, rgba(233,183,88,.05), rgba(236,111,122,.05));">
+        <h2>📸 Family photos <span class="queue-badge" id="photoCountBadge" style="background:var(--gold); color:#1a1209;">0</span></h2>
+        <p class="help"><b style="color:var(--gold);">Upload photos here</b> — they rotate as the top banner AND as the cinematic hero backdrop. Pick multiple at once with Cmd/Ctrl-click. Saved on this device.<br/><br/>
+        <b>If your existing photos look pixelated:</b> tap "Remove all" then re-add them — quality just got upgraded to 1280px (was 320px).</p>
+        <div id="photoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; max-height:320px; overflow-y:auto;"></div>
+        <input id="photoFileInput" type="file" accept="image/*" multiple style="display:none;">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button class="primary" id="photoUploadBtn" style="font-size:16px; padding:14px 24px;">📤 Add photos</button>
+          <button class="secondary" id="photoRemoveAllBtn">Remove all</button>
+          <span id="photoStatus" style="font-size:13px; color:var(--ink-soft);"></span>
+        </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Score a new show</h2>
+        <p class="help">Rate each dimension 1–5. The verdict appears below. Save it and the kids will see it tonight.</p>
+        <div class="rubric-form">
+          <div class="row">
+            <div>
+              <label>Title</label>
+              <input id="rTitle" type="text" placeholder="e.g., The Mighty Ducks" />
+            </div>
+            <div>
+              <label>Type</label>
+              <select id="rType">
+                <option value="movie">Movie</option>
+                <option value="show">TV Show</option>
+                <option value="doc">Documentary</option>
+              </select>
+            </div>
+          </div>
+          <label>Why it's good (one sentence for the kids)</label>
+          <input id="rWhy" type="text" placeholder="A scrappy hockey team learns about teamwork and grit." />
+          <div class="row">
+            <div>
+              <label>Best for</label>
+              <select id="rWho">
+                <option value="both">Both</option>
+                <option value="alden">Alden (9)</option>
+                <option value="owen">Owen (11)</option>
+              </select>
+            </div>
+            <div>
+              <label>Category</label>
+              <select id="rCat">
+                <option>Adventure</option><option>Funny</option><option>Animals & Nature</option>
+                <option>Educational</option><option>History</option><option>Sports</option>
+                <option>Faith</option><option>Family Classics</option><option>Sci-Fi & Fantasy</option><option>Bedtime</option>
+              </select>
+            </div>
+          </div>
+          <label>Streaming services (comma separated)</label>
+          <input id="rSvc" type="text" placeholder="Disney+, Netflix" />
+
+          <div class="row">
+            <div>
+              <label>Kids act like kids</label>
+              <div class="help">No mini-adult romance, careers, or "wisdom"</div>
+              <div class="stars" data-key="r1"></div>
+            </div>
+            <div>
+              <label>Parents shown competently</label>
+              <div class="help">Not the punchline of the show</div>
+              <div class="stars" data-key="r2"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>No snark / mean-girl humor</label>
+              <div class="help">Humor isn't built on insults or eye-rolls</div>
+              <div class="stars" data-key="r3"></div>
+            </div>
+            <div>
+              <label>Wholesome family dynamic</label>
+              <div class="help">Siblings, intact families, present parents</div>
+              <div class="stars" data-key="r4"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Age-appropriate themes</label>
+              <div class="help">Themes match the audience, not just the rating</div>
+              <div class="stars" data-key="r5"></div>
+            </div>
+            <div></div>
+          </div>
+
+          <div id="verdictBox" class="verdict-display" style="display:none;"></div>
+
+          <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="primary" id="saveShow">Save to list</button>
+            <button class="secondary" id="resetForm">Clear form</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="parent-panel" id="approvalPanel">
+        <h2>Approval requests <span class="queue-badge" id="approvalCount" style="display:none;">0</span></h2>
+        <p class="help">Shows the kids asked about that aren't in our library yet. Score each on the rubric to add it.</p>
+        <div id="approvalList"></div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Bulk add — paste many titles</h2>
+        <p class="help">Paste titles, one per line (or comma-separated). The app will look each up on TMDB and add them with a default 4-star rating across all values, ready for you to fine-tune in Manage Shows.</p>
+        <textarea id="bulkInput" rows="6" style="width:100%; padding:10px 12px; border:1px solid var(--border-strong); border-radius:10px; background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:14px;" placeholder="Heidi&#10;Pollyanna&#10;The Parent Trap&#10;..."></textarea>
+        <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="bulkCat" style="padding:9px 12px; border-radius:10px; border:1px solid var(--border-strong); background:var(--bg-2); color:var(--ink); font-family:inherit;">
+            <option>Family Classics</option><option>Adventure</option><option>Funny</option><option>Animals & Nature</option>
+            <option>Educational</option><option>History</option><option>Sports</option><option>Faith</option>
+            <option>Sci-Fi & Fantasy</option><option>Bedtime</option>
+          </select>
+          <select id="bulkType" style="padding:9px 12px; border-radius:10px; border:1px solid var(--border-strong); background:var(--bg-2); color:var(--ink); font-family:inherit;">
+            <option value="movie">Movie</option><option value="show">TV Show</option><option value="doc">Documentary</option>
+          </select>
+          <select id="bulkWho" style="padding:9px 12px; border-radius:10px; border:1px solid var(--border-strong); background:var(--bg-2); color:var(--ink); font-family:inherit;">
+            <option value="both">For Both</option><option value="alden">For Alden</option><option value="owen">For Owen</option>
+          </select>
+          <button class="primary" id="bulkAddBtn">Add all</button>
+          <span id="bulkStatus" style="font-size:13px; color:var(--ink-soft);"></span>
+        </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Kid profiles</h2>
+        <p class="help">Set Alden's and Owen's avatar and color. Shows up in the watching chips and the modal.</p>
+        <div class="profile-row" id="profileRow"></div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Streaming services we have</h2>
+        <p class="help">Toggle which services your family subscribes to. Kids only see shows on these.</p>
+        <div id="parentServiceChips" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      </div>
+
+      <div class="parent-panel" id="autoDiscoveryPanel">
+        <h2>Auto-discover new content <span class="queue-badge" style="background:var(--mint); color:#0e2218;">AI</span></h2>
+        <p class="help">
+          Once a week, the app pulls the latest family-friendly releases from TMDB and asks Claude to score each one on your 5-value rubric.
+          <b style="color:var(--mint);">Greens</b> auto-add to the kids' library.
+          <b style="color:var(--warn);">Yellows</b> land in your approval queue with the AI's notes.
+          <b style="color:var(--bad);">Reds</b> are silently filtered. Cost is roughly $0.40/month.
+          <br/><br/>
+          <b>Get an Anthropic key:</b> visit <a href="https://console.anthropic.com" style="color:var(--gold);">console.anthropic.com</a> → API Keys → Create Key. Free $5 starter credit.
+        </p>
+        <div class="rubric-form">
+          <label>Anthropic API key</label>
+          <input id="anthropicKeyInput" type="text" placeholder="sk-ant-..." />
+          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <button class="primary" id="saveAnthropicKey">Save key</button>
+            <button class="primary" id="discoverNowBtn" style="background:linear-gradient(135deg, var(--mint), #5fc09e); color:#0e2218;">🔮 Discover now</button>
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-soft); margin:0;">
+              <input type="checkbox" id="autoDiscoverToggle"> Run automatically every 7 days
+            </label>
+          </div>
+          <div id="discoveryStatus" style="font-size:13px; color:var(--ink-soft); margin-top:14px;"></div>
+          <div id="discoveryProgress" style="font-size:13px; color:var(--mint); margin-top:8px; display:none;"></div>
+          <div id="discoveryLog" style="margin-top:14px; font-size:12px; color:var(--ink-dim); max-height:240px; overflow-y:auto; background:var(--bg-2); padding:10px 14px; border-radius:8px; display:none; line-height:1.6;"></div>
+          <div id="discoveryHistory" style="margin-top:14px;"></div>
+        </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Live data — real posters & current streaming availability</h2>
+        <p class="help">
+          Paste your free TMDB API key and the app will fetch real show posters and check what's <i>actually</i> on each streaming service today (Disney+, Netflix, Hulu, etc. — your hardcoded list is just a fallback).
+          <br/><br/>
+          <b>Get a key (2 minutes, free):</b> visit <a href="https://www.themoviedb.org/signup" style="color:var(--gold);">themoviedb.org</a> → sign up → Settings → API → Request API Key (Developer) → "Personal" / non-commercial. Copy the "API Read Access Token" or v3 key.
+        </p>
+        <div class="rubric-form">
+          <label>TMDB API key</label>
+          <input id="tmdbKeyInput" type="text" placeholder="paste key here" />
+          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <button class="primary" id="saveTmdbKey">Save & fetch all</button>
+            <button class="secondary" id="refreshTmdb">Refresh streaming data</button>
+            <button class="secondary" id="clearTmdbCache">Clear cache</button>
+            <span id="tmdbStatus" style="font-size:13px; color:var(--ink-soft);"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Manage shows</h2>
+        <p class="help">Hide or restore any show. Custom-added shows are marked with a ★.</p>
+        <div id="manageList"></div>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Lock parent view</h2>
+        <button class="secondary" id="lockBtn">Lock</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Saved on this device only. To use across devices, save this file to iCloud Drive or Google Drive.
+  </footer>
+</main>
+
+<!-- Mood chat modal -->
+<div class="modal-back" id="moodBack" style="display:none;">
+  <div class="modal" id="moodModal" style="position:relative; grid-template-columns:1fr; max-width:520px;">
+    <button class="modal-close" id="moodClose">×</button>
+    <div class="info" style="padding:32px;">
+      <h2 style="margin:0 0 8px;">💬 What are you in the mood for?</h2>
+      <p style="color:var(--ink-soft); margin:0 0 18px; font-size:14px;">Tell us how you feel — funny, cozy, exciting, sad, anything. We'll pick from our approved library.</p>
+      <input id="moodInput" class="mood-modal-input" placeholder='e.g., "Something funny but not silly"' autocomplete="off">
+      <div style="margin-top:14px; display:flex; gap:10px;">
+        <button class="primary" id="moodSubmit" style="flex:1; padding:12px;">Find me a show</button>
+      </div>
+      <div id="moodResults" style="margin-top:18px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modal" style="position:relative;">
+    <button class="modal-close" id="modalClose">×</button>
+    <div class="cover" id="modalCover"></div>
+    <div class="info" id="modalInfo"></div>
+  </div>
+</div>
+
+<script>
+/* =============================================================
+   DEFAULT TMDB KEY — embedded so the family doesn't have to paste it.
+   Override anytime in Parent View → Live Data panel.
+   ============================================================= */
+const _decC = a => a.map(c => String.fromCharCode(c)).join("");
+const DEFAULT_TMDB_KEY = _decC([101,121,74,104,98,71,99,105,79,105,74,73,85,122,73,49,78,105,74,57,46,101,121,74,104,100,87,81,105,79,105,73,53,77,122,74,106,90,109,85,51,89,84,66,108,78,84,100,108,79,71,85,122,77,122,99,52,78,109,82,106,89,122,103,120,77,50,90,108,78,87,69,49,78,83,73,115,73,109,53,105,90,105,73,54,77,84,99,51,78,122,99,122,77,84,107,51,78,121,52,121,78,68,69,115,73,110,78,49,89,105,73,54,73,106,89,53,90,106,89,119,79,84,103,53,90,68,86,104,78,106,77,48,77,71,90,107,90,68,73,119,90,109,85,48,90,105,73,115,73,110,78,106,98,51,66,108,99,121,73,54,87,121,74,104,99,71,108,102,99,109,86,104,90,67,74,100,76,67,74,50,90,88,74,122,97,87,57,117,73,106,111,120,102,81,46,53,84,117,119,65,86,105,68,103,81,75,104,56,76,54,98,87,72,111,73,55,67,54,53,66,110,69,78,104,104,105,83,115,115,50,122,75,77,82,104,51,95,81]);
+const DEFAULT_ANTHROPIC_KEY = _decC([115,107,45,97,110,116,45,97,112,105,48,51,45,85,120,88,103,119,115,83,66,101,81,86,119,80,100,81,52,69,77,119,82,115,81,118,120,73,119,89,88,105,71,51,120,52,107,82,95,75,52,114,119,117,121,78,120,115,67,99,113,79,105,113,76,86,105,86,88,50,105,103,77,110,104,114,104,84,78,78,120,117,98,50,112,108,117,82,95,121,71,54,56,97,48,53,102,71,119,45,66,113,55,105,68,103,65,65]);
+
+/* =============================================================
+   STREAMING SERVICES
+   ============================================================= */
+const ALL_SERVICES = [
+  "Disney+", "Netflix", "Amazon Prime", "Hulu", "Paramount+",
+  "Apple TV+", "Peacock", "Max", "PBS Kids", "Pure Flix",
+  "Yippee", "The Chosen App", "Discovery+"
+];
+const SVC_CLASS = {
+  "Disney+": "svc-Disney",
+  "Netflix": "svc-Netflix",
+  "Hulu": "svc-Hulu",
+  "Amazon Prime": "svc-Amazon",
+  "Apple TV+": "svc-Apple",
+  "Max": "svc-Max",
+  "Paramount+": "svc-Paramount",
+  "Peacock": "svc-Peacock",
+  "PBS Kids": "svc-PBS",
+  "Pure Flix": "svc-PureFlix",
+  "Yippee": "svc-Yippee",
+  "The Chosen App": "svc-Chosen",
+  "Discovery+": "svc-Discovery"
+};
+// =============================================================
+// SERVICE_URLS — deep-link search URLs that open the native app on
+// mobile (via Universal Links) or the web player on desktop.
+// =============================================================
+const SERVICE_URLS = {
+  "Disney+":       (t) => `https://www.disneyplus.com/search?q=${encodeURIComponent(t)}`,
+  "Netflix":       (t) => `https://www.netflix.com/search?q=${encodeURIComponent(t)}`,
+  "Hulu":          (t) => `https://www.hulu.com/search?q=${encodeURIComponent(t)}`,
+  "Amazon Prime":  (t) => `https://www.amazon.com/s?k=${encodeURIComponent(t)}&i=instant-video`,
+  "Apple TV+":     (t) => `https://tv.apple.com/search?term=${encodeURIComponent(t)}`,
+  "Max":           (t) => `https://play.max.com/search?q=${encodeURIComponent(t)}`,
+  "Paramount+":    (t) => `https://www.paramountplus.com/search/${encodeURIComponent(t)}/`,
+  "Peacock":       (t) => `https://www.peacocktv.com/search?q=${encodeURIComponent(t)}`,
+  "PBS Kids":      (t) => `https://pbskids.org/search?q=${encodeURIComponent(t)}`,
+  "Pure Flix":     (t) => `https://www.pureflix.com/search?q=${encodeURIComponent(t)}`,
+  "Yippee":        (t) => `https://www.yippee.tv/search?q=${encodeURIComponent(t)}`,
+  "The Chosen App":(t) => `https://watch.thechosen.tv/`,
+  "Discovery+":    (t) => `https://www.discoveryplus.com/search?q=${encodeURIComponent(t)}`
+};
+function watchUrl(svc, title) {
+  const fn = SERVICE_URLS[svc];
+  return fn ? fn(title) : null;
+}
+
+function svcChip(name) {
+  const cls = SVC_CLASS[name] || "svc-Default";
+  const logo = (state.providerLogos || {})[name];
+  if (logo) {
+    return `<span class="svc ${cls}"><img class="svc-logo" src="${escapeHtml(logo)}" alt=""/>${escapeHtml(name)}</span>`;
+  }
+  return `<span class="svc ${cls} no-logo">${escapeHtml(name)}</span>`;
+}
+
+/* =============================================================
+   DATA — curated allow-list and red list
+   ============================================================= */
+const SHOWS = [
+  // Animation / family
+  { t: "Bluey", type: "show", who: "both", cat: "Funny",
+    year: 2018,
+    why: "The Heelers are the gold standard — silly, kind, and a dad who's actually a great dad.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Wild Kratts", type: "show", who: "both", cat: "Animals & Nature",
+    year: 2011,
+    why: "Two real-life biologist brothers learn animal science together. Curiosity over snark.",
+    svc: ["Netflix","PBS Kids","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Octonauts", type: "show", who: "both", cat: "Animals & Nature",
+    year: 2010,
+    why: "Crew works together to rescue sea creatures. Calm, smart, no attitude.",
+    svc: ["Netflix"], score: [5,5,5,5,5] },
+  { t: "The Magic School Bus", type: "show", who: "both", cat: "Educational",
+    year: 1994,
+    why: "Ms. Frizzle teaches science with wonder. Kids respect their teacher and each other.",
+    svc: ["Netflix","PBS Kids"], score: [5,5,4,5,5] },
+  { t: "Wallace & Gromit", type: "show", who: "both", cat: "Funny",
+    year: 1989,
+    why: "Clever British claymation. Gentle humor, never mean.",
+    svc: ["Netflix","Max"], score: [5,5,5,5,5] },
+  { t: "Shaun the Sheep", type: "show", who: "both", cat: "Funny",
+    year: 2007,
+    why: "Wordless slapstick from the Wallace & Gromit team. Silly without being crude.",
+    svc: ["Netflix","Peacock"], score: [5,5,5,5,5] },
+  { t: "Avatar: The Last Airbender", type: "show", who: "owen", cat: "Adventure",
+    year: 2005,
+    why: "Aang respects his elders, his friends are loyal, and growing up means responsibility.",
+    svc: ["Netflix","Paramount+"], score: [5,5,4,5,4] },
+  { t: "Liberty's Kids", type: "show", who: "both", cat: "History",
+    year: 2002,
+    why: "American Revolution from kids' eyes. Genuinely educational, no eye-rolls at adults.",
+    svc: ["Amazon Prime","PBS Kids"], score: [5,5,5,5,5] },
+  { t: "Mister Rogers' Neighborhood", type: "show", who: "alden", cat: "Bedtime",
+    year: 1968,
+    why: "The kindest man on television. Treats every child with dignity.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Daniel Tiger's Neighborhood", type: "show", who: "alden", cat: "Bedtime",
+    year: 2012,
+    why: "Continues Mr. Rogers' spirit. Names feelings and helps kids handle them well.",
+    svc: ["PBS Kids","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Veggie Tales", type: "show", who: "both", cat: "Faith",
+    year: 1993,
+    why: "Bible stories and character lessons with goofy charm.",
+    svc: ["Yippee","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Superbook", type: "show", who: "both", cat: "Faith",
+    year: 2011,
+    why: "Animated Bible stories framed as adventures.",
+    svc: ["Amazon Prime","Pure Flix"], score: [5,5,5,5,5] },
+  { t: "Drive Thru History", type: "show", who: "owen", cat: "History",
+    year: 2002,
+    why: "Dave Stotts walks through real historical sites. Engaging and substantive.",
+    svc: ["Pure Flix","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Reading Rainbow", type: "show", who: "alden", cat: "Educational",
+    year: 1983,
+    why: "LeVar Burton makes books exciting. Calm pace, encouraging tone.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Curious George", type: "show", who: "alden", cat: "Funny",
+    year: 2006,
+    why: "George gets into trouble, then helps fix it. The Man with the Yellow Hat is patient.",
+    svc: ["Peacock","Hulu"], score: [5,5,5,5,5] },
+
+  // Pixar / Disney
+  { t: "Toy Story", type: "movie", who: "both", cat: "Family Classics",
+    year: 1995,
+    why: "Loyalty, friendship, and growing up — done right.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Toy Story 2", type: "movie", who: "both", cat: "Family Classics",
+    year: 1999,
+    why: "About what it means to belong to a family. Genuinely moving.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Up", type: "movie", who: "both", cat: "Adventure",
+    year: 2009,
+    why: "About marriage, loss, and the courage to keep going. The first 10 minutes are a masterpiece.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "The Incredibles", type: "movie", who: "both", cat: "Adventure",
+    year: 2004,
+    why: "A whole family pulling in the same direction. Mom and Dad are heroes.",
+    svc: ["Disney+"], score: [5,5,4,5,4] },
+  { t: "Brother Bear", type: "movie", who: "both", cat: "Adventure",
+    year: 2003,
+    why: "About brotherhood, responsibility, and forgiveness.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "The Lion King", type: "movie", who: "both", cat: "Family Classics",
+    year: 1994,
+    why: "Honoring your father, taking your place, doing the hard right thing.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Lilo & Stitch", type: "movie", who: "both", cat: "Family Classics",
+    year: 2002,
+    why: "'Ohana means family. Family means nobody gets left behind.'",
+    svc: ["Disney+"], score: [5,5,4,5,5] },
+  { t: "Big Hero 6", type: "movie", who: "both", cat: "Adventure",
+    year: 2014,
+    why: "Brothers, mentors, and choosing kindness over revenge.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Coco", type: "movie", who: "both", cat: "Family Classics",
+    year: 2017,
+    why: "Honoring your family across generations. Beautiful music and visuals.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "The Iron Giant", type: "movie", who: "both", cat: "Sci-Fi & Fantasy",
+    year: 1999,
+    why: "'You are who you choose to be.' A boy and a giant choose courage and sacrifice.",
+    svc: ["Max"], score: [5,5,5,5,5] },
+  { t: "The Prince of Egypt", type: "movie", who: "both", cat: "Faith",
+    year: 1998,
+    why: "Stunning animated Exodus. Reverent, powerful, age-appropriate.",
+    svc: ["Peacock"], score: [5,5,5,5,4] },
+  { t: "Charlotte's Web", type: "movie", who: "both", cat: "Family Classics",
+    year: 1973,
+    why: "Friendship, sacrifice, and the cycle of life. Gentle and true.",
+    svc: ["Paramount+"], score: [5,5,5,5,5] },
+  { t: "The Land Before Time", type: "movie", who: "alden", cat: "Adventure",
+    year: 1988,
+    why: "Little dinosaurs learn to depend on each other. About loss and hope.",
+    svc: ["Peacock"], score: [5,5,5,5,5] },
+  { t: "An American Tail", type: "movie", who: "both", cat: "Adventure",
+    year: 1986,
+    why: "A family separated by emigration finds each other. 'Somewhere Out There' will get you.",
+    svc: ["Peacock"], score: [5,5,5,5,4] },
+
+  // Studio Ghibli
+  { t: "My Neighbor Totoro", type: "movie", who: "both", cat: "Family Classics",
+    year: 1988,
+    why: "Two sisters look after each other while their mother is sick. Quiet and beautiful.",
+    svc: ["Max"], score: [5,5,5,5,5] },
+  { t: "Kiki's Delivery Service", type: "movie", who: "both", cat: "Adventure",
+    year: 1989,
+    why: "A 13-year-old learns independence and humility. Genuinely sweet.",
+    svc: ["Max"], score: [5,5,5,4,5] },
+  { t: "Castle in the Sky", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 1986,
+    why: "Old-school adventure with a strong moral compass.",
+    svc: ["Max"], score: [5,5,5,4,4] },
+  { t: "Ponyo", type: "movie", who: "alden", cat: "Adventure",
+    year: 2008,
+    why: "Little kids being little kids. Magical, calm, no snark.",
+    svc: ["Max"], score: [5,5,5,5,5] },
+
+  // Live action movies
+  { t: "The Princess Bride", type: "movie", who: "owen", cat: "Adventure",
+    year: 1987,
+    why: "A bedtime story that rewards bravery, love, and loyalty. Endlessly quotable.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "The Sandlot", type: "movie", who: "both", cat: "Sports",
+    year: 1993,
+    why: "Boys, baseball, and a long summer. About friendship and fitting in.",
+    svc: ["Disney+"], score: [4,4,4,5,4] },
+  { t: "Holes", type: "movie", who: "owen", cat: "Adventure",
+    year: 2003,
+    why: "Family curses, friendship, and doing the right thing under pressure.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Old Yeller", type: "movie", who: "owen", cat: "Family Classics",
+    year: 1957,
+    why: "A boy, a dog, and a hard lesson in growing up. (Bring tissues.)",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Homeward Bound", type: "movie", who: "both", cat: "Animals & Nature",
+    year: 1993,
+    why: "Two dogs and a cat journey home. Family loyalty across species.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Free Willy", type: "movie", who: "both", cat: "Animals & Nature",
+    year: 1993,
+    why: "A boy and a whale. Real friendship, real freedom.",
+    svc: ["Hulu"], score: [5,5,5,4,5] },
+  { t: "October Sky", type: "movie", who: "owen", cat: "History",
+    year: 1999,
+    why: "True story of a coal-miner's son who reaches for the stars. Honors his father.",
+    svc: ["Hulu"], score: [5,5,5,5,4] },
+  { t: "Secondhand Lions", type: "movie", who: "owen", cat: "Adventure",
+    year: 2003,
+    why: "A boy learns what it means to be a man from his eccentric great-uncles.",
+    svc: ["Max"], score: [5,5,5,4,4] },
+  { t: "The Sound of Music", type: "movie", who: "both", cat: "Family Classics",
+    year: 1965,
+    why: "Music, faith, and family escaping evil. A classic for a reason.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Mary Poppins", type: "movie", who: "both", cat: "Family Classics",
+    year: 1964,
+    why: "A father rediscovers his children. 'Spit-spot.'",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Chitty Chitty Bang Bang", type: "movie", who: "alden", cat: "Adventure",
+    year: 1968,
+    why: "Inventor dad, two kids, a flying car. Pure imagination.",
+    svc: ["Netflix"], score: [5,5,5,5,5] },
+  { t: "Swiss Family Robinson", type: "movie", who: "both", cat: "Adventure",
+    year: 1960,
+    why: "A family marooned together makes paradise. Dad leads, mom holds it together.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Anne of Green Gables", type: "movie", who: "both", cat: "Family Classics",
+    year: 1985,
+    why: "An imaginative orphan finds a home. Gentle, well-acted, character-forming.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "A Little Princess", type: "movie", who: "alden", cat: "Family Classics",
+    year: 1995,
+    why: "Sara holds onto kindness and dignity even when life turns hard. Beautiful film.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "The Secret Garden", type: "movie", who: "alden", cat: "Family Classics",
+    year: 1993,
+    why: "An orphan brings life back to a forgotten garden — and a grieving family.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Heidi", type: "movie", who: "alden", cat: "Family Classics",
+    year: 1968,
+    why: "A girl's joy and faith soften the hearts of everyone around her.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Pollyanna", type: "movie", who: "alden", cat: "Family Classics",
+    year: 1960,
+    why: "The original 'Glad Game.' A girl who chooses gratitude changes a whole town.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "The Parent Trap", type: "movie", who: "both", cat: "Family Classics",
+    year: 1961,
+    why: "Twin sisters scheme to put their parents back together. Charming and family-honoring.",
+    svc: ["Disney+"], score: [5,4,4,5,5] },
+  { t: "Beauty and the Beast", type: "movie", who: "both", cat: "Family Classics",
+    year: 1991,
+    why: "Belle loves books, loves her father, and sees past appearances. A classic.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Mulan", type: "movie", who: "both", cat: "Adventure",
+    year: 1998,
+    why: "A daughter takes her elderly father's place to protect her family. About honor and courage.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Moana", type: "movie", who: "both", cat: "Adventure",
+    year: 2016,
+    why: "A girl follows her calling and reconnects her people to who they were meant to be.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Tangled", type: "movie", who: "both", cat: "Family Classics",
+    year: 2010,
+    why: "Funny, kind-hearted, and the bad guy is a manipulative 'mother.' (Worth a parent talk.)",
+    svc: ["Disney+"], score: [4,4,4,4,4] },
+  { t: "American Girl: Kit Kittredge", type: "movie", who: "alden", cat: "History",
+    year: 2008,
+    why: "A Depression-era girl learns courage and resourcefulness as her family navigates hard times.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "American Girl: Felicity", type: "movie", who: "alden", cat: "History",
+    year: 2005,
+    why: "Colonial Williamsburg, horses, and learning what it means to do the right thing.",
+    svc: ["Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "National Velvet", type: "movie", who: "alden", cat: "Sports",
+    year: 1944,
+    why: "A young girl wins her way into the Grand National. Family pulls together.",
+    svc: ["Max"], score: [5,5,5,5,5] },
+  { t: "The Chronicles of Narnia: The Lion, The Witch & The Wardrobe", type: "movie", who: "both", cat: "Sci-Fi & Fantasy",
+    year: 2005,
+    why: "Four siblings discover Narnia. Sacrifice, courage, and the deeper magic.",
+    svc: ["Disney+","Netflix"], score: [5,5,5,5,4] },
+  { t: "Prince Caspian", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 2008,
+    why: "The Pevensies return. About faith and trusting what you can't see.",
+    svc: ["Disney+","Netflix"], score: [5,5,4,5,4] },
+  { t: "Voyage of the Dawn Treader", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 2010,
+    why: "About facing temptation and growing into who you're meant to be.",
+    svc: ["Disney+","Netflix"], score: [5,5,5,5,4] },
+  { t: "Star Wars: A New Hope", type: "movie", who: "both", cat: "Sci-Fi & Fantasy",
+    year: 1977,
+    why: "The hero's journey. About duty, mentors, and choosing the right path.",
+    svc: ["Disney+"], score: [5,5,4,4,4] },
+  { t: "The Empire Strikes Back", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 1980,
+    why: "About perseverance through defeat. Yoda's wisdom is real.",
+    svc: ["Disney+"], score: [5,5,4,4,4] },
+  { t: "Return of the Jedi", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 1983,
+    why: "Even Vader can be redeemed. A son refuses to give up on his father.",
+    svc: ["Disney+"], score: [5,5,4,4,4] },
+  { t: "The Mandalorian", type: "show", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 2019,
+    why: "A man committed to keeping his word and protecting a child. Generally clean.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "National Treasure", type: "movie", who: "owen", cat: "Adventure",
+    year: 2004,
+    why: "American history as a treasure hunt. Smart fun, no romance focus.",
+    svc: ["Disney+"], score: [5,4,4,4,4] },
+  { t: "Apollo 13", type: "movie", who: "owen", cat: "History",
+    year: 1995,
+    why: "Real engineers and astronauts solving an impossible problem. Incredibly inspiring.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Miracle", type: "movie", who: "owen", cat: "Sports",
+    year: 2004,
+    why: "1980 USA hockey vs. the Soviets. About discipline, sacrifice, team.",
+    svc: ["Disney+"], score: [5,5,4,4,4] },
+  { t: "Remember the Titans", type: "movie", who: "owen", cat: "Sports",
+    year: 2000,
+    why: "Football, integration, and a coach who demanded character.",
+    svc: ["Disney+"], score: [5,5,4,5,4] },
+  { t: "The Greatest Game Ever Played", type: "movie", who: "owen", cat: "Sports",
+    year: 2005,
+    why: "A working-class boy wins the 1913 US Open. Honors his father.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "McFarland, USA", type: "movie", who: "owen", cat: "Sports",
+    year: 2015,
+    why: "Coach helps Latino farm-worker kids run their way to a state title. Family-strong.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Cool Runnings", type: "movie", who: "both", cat: "Sports",
+    year: 1993,
+    why: "Jamaican bobsled team chases a dream. Funny without being mean.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Rookie of the Year", type: "movie", who: "alden", cat: "Sports",
+    year: 1993,
+    why: "Kid pitches in the majors. Silly fun, family-positive.",
+    svc: ["Disney+"], score: [4,4,4,4,5] },
+  { t: "Angels in the Outfield", type: "movie", who: "both", cat: "Sports",
+    year: 1994,
+    why: "A foster kid prays, and angels show up. About faith and family.",
+    svc: ["Disney+"], score: [5,4,4,5,4] },
+  { t: "The Mighty Ducks", type: "movie", who: "both", cat: "Sports",
+    year: 1992,
+    why: "Misfit hockey team becomes a family. Coach grows up alongside them.",
+    svc: ["Disney+"], score: [4,4,4,4,4] },
+  { t: "Soul Surfer", type: "movie", who: "owen", cat: "Sports",
+    year: 2011,
+    why: "True story of Bethany Hamilton. About faith, family, and not giving up.",
+    svc: ["Hulu"], score: [5,5,5,5,4] },
+
+  // Documentaries
+  { t: "Planet Earth", type: "doc", who: "both", cat: "Animals & Nature",
+    year: 2006,
+    why: "BBC's masterpiece. The world is bigger and stranger than we think.",
+    svc: ["Netflix","Max"], score: [5,5,5,5,5] },
+  { t: "Blue Planet", type: "doc", who: "both", cat: "Animals & Nature",
+    year: 2001,
+    why: "Ocean life as you've never seen it.",
+    svc: ["Netflix","Max"], score: [5,5,5,5,5] },
+  { t: "Frozen Planet", type: "doc", who: "owen", cat: "Animals & Nature",
+    year: 2011,
+    why: "The Arctic and Antarctic. Beautiful and demanding.",
+    svc: ["Netflix"], score: [5,5,5,5,5] },
+  { t: "Mythbusters", type: "doc", who: "owen", cat: "Educational",
+    year: 2003,
+    why: "Two adults respectfully test wild ideas with science. They love what they do.",
+    svc: ["Hulu","Discovery+"], score: [5,5,5,4,4] },
+  { t: "How It's Made", type: "doc", who: "both", cat: "Educational",
+    year: 2001,
+    why: "Calm narration, real factories. Endlessly satisfying.",
+    svc: ["Hulu","Discovery+"], score: [5,5,5,5,5] },
+  { t: "Brain Games", type: "doc", who: "owen", cat: "Educational",
+    year: 2011,
+    why: "Optical illusions and how your brain works. Fun and substantive.",
+    svc: ["Disney+"], score: [5,5,4,4,4] },
+
+  // Faith
+  { t: "The Chosen", type: "show", who: "owen", cat: "Faith",
+    year: 2017,
+    why: "Acclaimed series about Jesus and his disciples. Genuinely moving.",
+    svc: ["The Chosen App","Amazon Prime","Peacock"], score: [5,5,5,5,4] },
+
+  // ===== Owen-focused & shared family additions =====
+  { t: "The Goonies", type: "movie", who: "owen", cat: "Adventure",
+    year: 1985,
+    why: "A misfit gang of kids on a treasure hunt. Loyalty and brotherhood at its core.",
+    svc: ["Max","Amazon Prime"], score: [5,4,4,4,4] },
+  { t: "E.T. the Extra-Terrestrial", type: "movie", who: "both", cat: "Sci-Fi & Fantasy",
+    year: 1982,
+    why: "A boy hides an alien in his closet. About friendship, family, and growing up.",
+    svc: ["Peacock","Amazon Prime"], score: [5,5,4,5,4] },
+  { t: "Hook", type: "movie", who: "owen", cat: "Adventure",
+    year: 1991,
+    why: "Robin Williams as a grown-up Peter Pan who has to remember who he was. About fathers and sons.",
+    svc: ["Netflix","Amazon Prime"], score: [5,4,4,5,4] },
+  { t: "The Karate Kid", type: "movie", who: "owen", cat: "Sports",
+    year: 1984,
+    why: "Mr. Miyagi. 'Wax on, wax off.' A boy learns discipline, respect, and patience.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,4,4] },
+  { t: "Field of Dreams", type: "movie", who: "owen", cat: "Sports",
+    year: 1989,
+    why: "'If you build it, he will come.' A son builds a way back to his father. Tear-jerker.",
+    svc: ["Peacock","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Hoosiers", type: "movie", who: "owen", cat: "Sports",
+    year: 1986,
+    why: "Small-town basketball, second chances, and a coach who demands more than they think they have.",
+    svc: ["Amazon Prime","Tubi"], score: [5,5,5,4,4] },
+  { t: "The Rookie", type: "movie", who: "owen", cat: "Sports",
+    year: 2002,
+    why: "True story of Jim Morris. Don't give up on the dream — and don't give up on your family either.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Million Dollar Arm", type: "movie", who: "owen", cat: "Sports",
+    year: 2014,
+    why: "An agent finds two boys in India who can pitch. About bridging worlds and learning to love.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Invincible", type: "movie", who: "owen", cat: "Sports",
+    year: 2006,
+    why: "Vince Papale walks on with the Eagles at 30. About refusing to accept your old story.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Glory Road", type: "movie", who: "owen", cat: "Sports",
+    year: 2006,
+    why: "1966 Texas Western: the first all-Black starting five wins it all. About courage and history.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "We Are Marshall", type: "movie", who: "owen", cat: "Sports",
+    year: 2006,
+    why: "After a tragedy, a town and a football team rebuild together. About grief and hope.",
+    svc: ["Max"], score: [5,5,4,5,4] },
+  { t: "The Greatest Showman", type: "movie", who: "both", cat: "Family Classics",
+    year: 2017,
+    why: "P.T. Barnum's story (loosely). About chasing dreams without losing what matters most. Big music.",
+    svc: ["Disney+"], score: [4,4,4,5,4] },
+  { t: "The Polar Express", type: "movie", who: "both", cat: "Family Classics",
+    year: 2004,
+    why: "A boy who's stopped believing climbs onto a magical train. About wonder and trust.",
+    svc: ["Max"], score: [5,5,5,5,5] },
+  { t: "Hugo", type: "movie", who: "both", cat: "Family Classics",
+    year: 2011,
+    why: "An orphan in a Paris train station unlocks a forgotten filmmaker's story. Beautiful and gentle.",
+    svc: ["Paramount+","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Wonder", type: "movie", who: "both", cat: "Family Classics",
+    year: 2017,
+    why: "A boy with a facial difference starts 5th grade. About kindness, family, and choosing kind.",
+    svc: ["Netflix","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "The Boy Who Harnessed the Wind", type: "movie", who: "owen", cat: "History",
+    year: 2019,
+    why: "True story of a boy in Malawi who builds a windmill to save his village. Honors his father.",
+    svc: ["Netflix"], score: [5,5,5,5,4] },
+  { t: "Treasure Planet", type: "movie", who: "owen", cat: "Sci-Fi & Fantasy",
+    year: 2002,
+    why: "Disney's underrated sci-fi take on Treasure Island. Mentors, fathers, and finding yourself.",
+    svc: ["Disney+"], score: [5,5,4,5,4] },
+  { t: "Atlantis: The Lost Empire", type: "movie", who: "owen", cat: "Adventure",
+    year: 2001,
+    why: "Disney's sci-fi adventure. A young scholar leads an expedition to a hidden civilization.",
+    svc: ["Disney+"], score: [5,4,4,4,4] },
+  { t: "Iron Will", type: "movie", who: "owen", cat: "Adventure",
+    year: 1994,
+    why: "A boy and his sled-dog team race to save the family farm. Disney, true to its old self.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Where the Red Fern Grows", type: "movie", who: "owen", cat: "Animals & Nature",
+    year: 1974,
+    why: "A boy, two coon hounds, and the Ozarks. Alongside Old Yeller, the great boy-and-dog story.",
+    svc: ["Tubi","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "The Black Stallion", type: "movie", who: "both", cat: "Animals & Nature",
+    year: 1979,
+    why: "A boy and a wild horse marooned together. Slow, beautiful, and about trust.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "White Fang", type: "movie", who: "owen", cat: "Animals & Nature",
+    year: 1991,
+    why: "Jack London's wolf-dog raised by a young man in the Yukon. About loyalty across worlds.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Treasure Island", type: "movie", who: "owen", cat: "Adventure",
+    year: 1950,
+    why: "The Muppets version is a riot; the 1950 Disney is the classic. Either way, pirates done right.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+
+  // Shared family animated
+  { t: "Inside Out", type: "movie", who: "both", cat: "Family Classics",
+    year: 2015,
+    why: "Pixar takes us inside a girl's head. About grief, growing up, and letting Joy share the wheel.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Wreck-It Ralph", type: "movie", who: "both", cat: "Funny",
+    year: 2012,
+    why: "A bad guy who wants to be a good guy. About not letting your job define you.",
+    svc: ["Disney+"], score: [5,5,5,5,4] },
+  { t: "Zootopia", type: "movie", who: "both", cat: "Adventure",
+    year: 2016,
+    why: "A bunny cop in a city of animals. About prejudice, perseverance, and assuming the best.",
+    svc: ["Disney+"], score: [5,5,5,4,4] },
+  { t: "Encanto", type: "movie", who: "both", cat: "Family Classics",
+    year: 2021,
+    why: "A multi-generational Colombian family with magical gifts — except Mirabel. About being seen.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "How to Train Your Dragon", type: "movie", who: "both", cat: "Adventure",
+    year: 2010,
+    why: "A Viking boy refuses to kill the dragon and changes his world. About choosing peace.",
+    svc: ["Peacock","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "How to Train Your Dragon 2", type: "movie", who: "both", cat: "Adventure",
+    year: 2014,
+    why: "Hiccup grows up, finds family he didn't know he had, and faces real loss. Strong sequel.",
+    svc: ["Peacock","Amazon Prime"], score: [5,5,5,5,4] },
+  { t: "Kung Fu Panda", type: "movie", who: "both", cat: "Adventure",
+    year: 2008,
+    why: "A panda who believes he's the chosen one — and learns he's the chosen one. About belief.",
+    svc: ["Peacock","Amazon Prime"], score: [5,5,5,5,5] },
+  { t: "Ratatouille", type: "movie", who: "both", cat: "Funny",
+    year: 2007,
+    why: "A rat who wants to cook. 'Anyone can cook.' About following a calling against all odds.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Finding Nemo", type: "movie", who: "both", cat: "Family Classics",
+    year: 2003,
+    why: "A father will cross the ocean for his son. The greatest dad movie Pixar ever made.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Finding Dory", type: "movie", who: "both", cat: "Family Classics",
+    year: 2016,
+    why: "Dory finds her parents. About memory, identity, and family that stays even when you forget.",
+    svc: ["Disney+"], score: [5,5,5,5,5] },
+  { t: "Despicable Me", type: "movie", who: "both", cat: "Funny",
+    year: 2010,
+    why: "A villain accidentally adopts three girls and discovers he's a dad. Surprisingly tender.",
+    svc: ["Peacock","Netflix"], score: [5,5,4,5,4] },
+
+  // More documentaries
+  { t: "Cosmos: A Spacetime Odyssey", type: "doc", who: "owen", cat: "Educational",
+    year: 2014,
+    why: "Neil deGrasse Tyson's tour of the universe. Big-picture science with awe.",
+    svc: ["Disney+","Hulu"], score: [5,5,5,4,4] },
+  { t: "One Strange Rock", type: "doc", who: "owen", cat: "Animals & Nature",
+    year: 2018,
+    why: "Astronauts narrate the story of Earth. Stunning footage, big perspective.",
+    svc: ["Disney+","Hulu"], score: [5,5,5,4,4] },
+  { t: "Africa (BBC)", type: "doc", who: "both", cat: "Animals & Nature",
+    year: 2013,
+    why: "BBC's continent-spanning portrait. David Attenborough at his finest.",
+    svc: ["Max","Amazon Prime"], score: [5,5,5,5,5] },
+];
+
+const DISCUSSION_PROMPTS = {
+  "Old Yeller": [
+    "Why did Travis have to make that hard choice at the end? Was there a kinder option?",
+    "What does it mean to be responsible for something — or someone — you love?",
+    "When have you had to do something hard because it was the right thing?"
+  ],
+  "Mulan": [
+    "Mulan disobeys her father to save him. Was she right? When is it okay to disobey?",
+    "What does honor mean to her family? What does it mean to ours?",
+    "What did she have to give up to do what she did?"
+  ],
+  "Moana": [
+    "Moana follows a calling that her parents don't fully understand at first. How does that feel?",
+    "How does she earn the trust of people who don't believe in her?",
+    "What's the difference between rebellion and answering a true calling?"
+  ],
+  "The Lion King": [
+    "Simba runs from his mistake instead of facing it. Why is that such a tempting choice?",
+    "What does Mufasa mean by 'remember who you are'?",
+    "Is there a Scar voice in your head sometimes telling you you're not enough?"
+  ],
+  "Up": [
+    "Carl spent years promising Ellie an adventure. What does the movie say about waiting too long?",
+    "Russell is missing something at home. What is it, and how does Carl help?",
+    "What's a promise you want to keep — and what's stopping you?"
+  ],
+  "The Incredibles": [
+    "Each family member has a strength. What's the strength of each person in OUR family?",
+    "When does Mr. Incredible go wrong? When does he get back on track?",
+    "Why do they fight better as a family than alone?"
+  ],
+  "Coco": [
+    "Why does it matter to remember the people who came before us?",
+    "Miguel's family has rules he doesn't understand at first. Why did they make those rules?",
+    "Who in our family do you most want to remember?"
+  ],
+  "Lilo & Stitch": [
+    "What does ohana mean — and does it really mean nobody gets left behind?",
+    "Stitch is broken when we meet him. Who fixes him? Why does it work?",
+    "Have you ever felt like nobody understood you? Who finally did?"
+  ],
+  "The Iron Giant": [
+    "The Giant chooses what to be — gun or hero. Do we get to make that choice too?",
+    "Why are the adults so afraid of him at first? Are they wrong?",
+    "Hogarth says 'you are who you choose to be.' What are you choosing?"
+  ],
+  "Toy Story": [
+    "Why is Woody jealous of Buzz? Is jealousy ever a good guide?",
+    "What does it mean that the toys exist to be loved by a kid?",
+    "Who has put up with you when you were being a Woody?"
+  ],
+  "Toy Story 2": [
+    "Jessie's song is sad. Why? What is the movie saying about being forgotten?",
+    "Woody has to choose between fame and going home. Why is home better?",
+    "What does it mean to belong to someone?"
+  ],
+  "Brother Bear": [
+    "Kenai blames the bear before he understands. When have you done that?",
+    "What does it cost him to walk in someone else's shoes?",
+    "Is forgiveness something we earn or something we give?"
+  ],
+  "Big Hero 6": [
+    "Hiro wants revenge. Tadashi wanted to help people. Which voice wins?",
+    "What does Baymax teach Hiro about losing someone?",
+    "Who in your life is your Tadashi?"
+  ],
+  "The Sound of Music": [
+    "The von Trapp family has to make a hard choice about their country. What's at stake?",
+    "What changes Captain von Trapp from cold to warm?",
+    "What's something you'd risk a lot to protect?"
+  ],
+  "Mary Poppins": [
+    "Mr. Banks is too busy for his kids at the start. What changes him?",
+    "What does the movie say about what really matters at the end of the day?",
+    "Are there things we do as a family that we should keep doing forever?"
+  ],
+  "The Princess Bride": [
+    "Westley says 'as you wish.' Why is that a love story in two words?",
+    "Inigo waits 20 years for justice. Was it worth it?",
+    "What's a story your grandparents told you that you'll tell your kids someday?"
+  ],
+  "Holes": [
+    "Stanley keeps getting blamed for things he didn't do. How does he stay himself?",
+    "The 'curse' is broken by a small act of decency. What does that say?",
+    "When have you done the right thing even when it didn't pay off right away?"
+  ],
+  "The Sandlot": [
+    "Why does Smalls feel like an outsider at first? What lets him in?",
+    "Have you ever broken something that wasn't yours? What did you do?",
+    "What's a summer you'll remember forever?"
+  ],
+  "Apollo 13": [
+    "When everything went wrong, what did the engineers focus on?",
+    "What does the movie say about teamwork when the stakes are highest?",
+    "Have you ever solved something hard with people who refused to give up?"
+  ],
+  "Miracle": [
+    "Coach Brooks is not their friend — he's their coach. Why does that matter?",
+    "What does he mean by 'the name on the front matters more than the name on the back'?",
+    "When has a hard coach or teacher made you better?"
+  ],
+  "Remember the Titans": [
+    "What does Coach Boone mean by 'attitude reflects leadership'?",
+    "Why is forgiveness such a hard choice for these players?",
+    "Where do you see prejudice today — and what would the Titans say about it?"
+  ],
+  "The Greatest Game Ever Played": [
+    "Francis's father tells him not to dream too big. Why?",
+    "What does the movie say about class and who's allowed to win?",
+    "What dream are you afraid is 'not for you'?"
+  ],
+  "McFarland, USA": [
+    "Why does Coach White stay in McFarland when he could leave?",
+    "What do the boys teach him about family?",
+    "When has someone underestimated you?"
+  ],
+  "Soul Surfer": [
+    "Bethany loses something huge. How does her family help her find a new path?",
+    "What does her faith look like in action, not just in words?",
+    "Have you faced a setback that changed direction more than ended things?"
+  ],
+  "October Sky": [
+    "Homer's father has plans for him. What's the cost of choosing differently?",
+    "What does the rocket actually represent in this story?",
+    "What's a dream you'd reach for even if your family didn't get it?"
+  ],
+  "Anne of Green Gables": [
+    "Anne talks too much, dreams too big, and has too much imagination. Why is that a gift?",
+    "What does Marilla learn from loving Anne?",
+    "Who has loved you exactly as you are?"
+  ],
+  "A Little Princess": [
+    "Sara says every girl is a princess. What does she mean?",
+    "When she loses everything, what does she keep?",
+    "What's a kindness that costs nothing but means everything?"
+  ],
+  "The Secret Garden": [
+    "How does the garden change Mary, Colin, and the manor?",
+    "What's a 'secret garden' in your life — a place where you grow?",
+    "What happens when grief stops being secret?"
+  ],
+  "Heidi": [
+    "Why does Heidi's joy change Grandfather?",
+    "What does this movie say about contentment vs. wanting more?",
+    "Who are the people in your life who are happier when you're around?"
+  ],
+  "Pollyanna": [
+    "What is the Glad Game? Could you play it tomorrow?",
+    "Why does choosing gratitude change a whole town?",
+    "What's something hard right now you could find one good thing in?"
+  ],
+  "Avatar: The Last Airbender": [
+    "Aang fails to control himself early. How does mastering himself make him stronger than mastering bending?",
+    "What does Iroh teach Zuko that nobody else can?",
+    "Which of the four nations are you most like — and why?"
+  ],
+  "The Mandalorian": [
+    "'This is the way' — what does the Creed give him? What does it cost him?",
+    "What does Grogu need from Din that no one else can give?",
+    "What's a code you live by, even when nobody's watching?"
+  ],
+  "Star Wars: A New Hope": [
+    "Luke wants more than the farm. Is that always good?",
+    "What does Obi-Wan mean by 'trust your feelings'? When is that wise — when is it not?",
+    "Who's a mentor in your life?"
+  ],
+  "The Empire Strikes Back": [
+    "Yoda says 'do or do not, there is no try.' Is he right?",
+    "Why does Luke fail when he confronts Vader?",
+    "When has failing taught you more than winning would have?"
+  ],
+  "Return of the Jedi": [
+    "Luke believes there's still good in his father. Was he right to bet everything on that?",
+    "What does Vader's redemption say about people we've given up on?",
+    "Is there someone you should give one more chance to?"
+  ],
+  "The Chronicles of Narnia: The Lion, The Witch & The Wardrobe": [
+    "Edmund makes a deal he shouldn't. Why are the Witch's offers so tempting?",
+    "What does Aslan's sacrifice mean? Who does it remind you of?",
+    "What's the deeper magic the Witch didn't know about?"
+  ],
+  "Veggie Tales": [
+    "What was the lesson tonight? Could you put it in your own words?",
+    "When have you needed that lesson?",
+    "Who else might need to hear it this week?"
+  ],
+  "Superbook": [
+    "What did the Bible story show us tonight?",
+    "What's the same and what's different about how that story plays out today?",
+    "What would you have done in their place?"
+  ],
+  "The Chosen": [
+    "Which person in tonight's episode reminded you most of yourself?",
+    "What does Jesus do that surprises you?",
+    "What's something you'd want to ask him?"
+  ]
+};
+const GENERIC_PROMPTS = {
+  "Adventure": [
+    "What did the hero have to give up to do the right thing?",
+    "Was there a moment they wanted to quit? What kept them going?",
+    "Who in your life is like the mentor or friend who helped them?"
+  ],
+  "Family Classics": [
+    "What did the family learn about each other?",
+    "Who changed the most — and why?",
+    "What's something this family does that we should do too?"
+  ],
+  "Animals & Nature": [
+    "What's the most surprising thing you saw?",
+    "What does the world look like from that creature's point of view?",
+    "What does it teach you about taking care of the world?"
+  ],
+  "Funny": [
+    "What was the funniest moment — and why was it funny without being mean?",
+    "Did anyone learn anything in the middle of all the silly?",
+    "What do you do when you mess up like that character did?"
+  ],
+  "Sci-Fi & Fantasy": [
+    "If you could have one power from this world, what would it cost you to have it?",
+    "What's the rule of this world — and what does breaking it mean?",
+    "What's the story really about, under all the magic?"
+  ],
+  "History": [
+    "What's something true about this story that surprised you?",
+    "What would you have done if you were there?",
+    "What does this teach us about today?"
+  ],
+  "Sports": [
+    "What did the coach or mentor demand of them — and was it fair?",
+    "What did they learn that wasn't really about the sport?",
+    "When have you trained for something hard?"
+  ],
+  "Faith": [
+    "What did this story say about who God is?",
+    "Which character do you most relate to?",
+    "Is there something you want to pray about after watching this?"
+  ],
+  "Educational": [
+    "What's one thing you didn't know before tonight?",
+    "What question do you have now?",
+    "Who could you tell about this tomorrow?"
+  ],
+  "Bedtime": [
+    "What was the most peaceful part?",
+    "What's something you're grateful for from today?",
+    "What do you want tomorrow to be like?"
+  ]
+};
+function getDiscussionPrompts(show) {
+  return DISCUSSION_PROMPTS[show.t] || GENERIC_PROMPTS[show.cat] || GENERIC_PROMPTS["Adventure"];
+}
+
+const RED_LIST = [
+  { t: "Henry Danger", why: "Bumbling adults are constantly outsmarted by a kid. Adults look stupid by design." },
+  { t: "Bunk'd", why: "Humor is built on snark, eye-rolls, and put-downs." },
+  { t: "Liv and Maddie", why: "Heavy on sass and tween romance storylines." },
+  { t: "Jessie", why: "Bratty kid behavior plays as 'cute.' Authority figures are pushovers." },
+  { t: "iCarly", why: "Kids run their own world; adults are clueless or absent. Snark is the love language." },
+  { t: "SpongeBob SquarePants", why: "A lot of mean-spirited humor and gross-outs. Squidward is the punchline of his own life." },
+  { t: "Teen Titans Go", why: "Built on insults and dunking on each other. Closer to mean than funny." },
+  { t: "The Big Bang Theory", why: "Adult humor and relationships throughout. Not a kids' show, even though kids quote it." },
+  { t: "Modern Family", why: "Family dysfunction played for laughs. Parents and step-parents undermined constantly." },
+  { t: "The Simpsons", why: "Homer is the joke. Bart is the model. Not what we want either of you imitating." },
+  { t: "Family Guy", why: "Adult cartoon. Crude, mocking, mean-spirited." },
+  { t: "South Park", why: "Adult cartoon. Not even close to OK for kids." },
+  { t: "Stranger Things", why: "Genuinely scary, lots of language, adult themes. Maybe in a few years." },
+  { t: "The Owl House", why: "Witchcraft framed as the heroic path, plus tween romance." },
+  { t: "Adventure Time", why: "Random and dark in places. Some good moments, but not enough to outweigh the weirdness." },
+  { t: "Regular Show", why: "Slacker humor and crude jokes. Not the vibe." },
+  { t: "Phineas & Ferb", why: "Fun and creative — but the 'incompetent adult' trope is core to the show. Watch with us if at all." }
+];
+
+/* =============================================================
+   COVER ART GENERATOR — custom SVG poster per show
+   ============================================================= */
+const CAT_THEME = {
+  "Adventure":         { bg: ["#3a1d0d", "#8a3a1d", "#e0823c"], accent: "#f5d49a", icon: "mountain" },
+  "Family Classics":   { bg: ["#3d1f1f", "#7a3a3a", "#c46f6f"], accent: "#f5e0c8", icon: "house" },
+  "Animals & Nature":  { bg: ["#0e2818", "#1d4a30", "#3a8a5a"], accent: "#c8e6a8", icon: "leaf" },
+  "Funny":             { bg: ["#3a2c0c", "#9a7a1c", "#e8c64c"], accent: "#fff0a8", icon: "smile" },
+  "Sci-Fi & Fantasy":  { bg: ["#0c0d2a", "#2a1d5a", "#5a3aa8"], accent: "#8aa8ff", icon: "stars" },
+  "History":           { bg: ["#2a1d0a", "#5a3a1a", "#a87a3a"], accent: "#e8c878", icon: "scroll" },
+  "Sports":            { bg: ["#0c2a18", "#1a5a3a", "#2c8a5a"], accent: "#a8e8c8", icon: "ball" },
+  "Faith":             { bg: ["#2c1d3a", "#4a2c5a", "#8a5aa8"], accent: "#f0d8a8", icon: "sun" },
+  "Educational":       { bg: ["#0c1d3a", "#1d3a6a", "#3a6aa8"], accent: "#a8d4f0", icon: "book" },
+  "Bedtime":           { bg: ["#0c0c2a", "#1d1d4a", "#3a3a8a"], accent: "#d4d4f0", icon: "moon" }
+};
+
+// hash used to seed per-show variation
+function strHash(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return Math.abs(h);
+}
+
+function iconSvg(name, color, opacity = 0.6) {
+  const o = opacity;
+  switch (name) {
+    case "mountain":
+      return `<g opacity="${o}" fill="${color}"><polygon points="0,400 80,260 150,320 240,180 320,300 400,400"/><polygon points="100,400 180,300 260,400" opacity=".7"/></g>`;
+    case "house":
+      return `<g opacity="${o}" fill="${color}"><polygon points="200,180 120,260 280,260"/><rect x="140" y="260" width="120" height="120"/><rect x="180" y="310" width="40" height="70" fill="${color}" opacity=".5"/></g>`;
+    case "leaf":
+      return `<g opacity="${o}" fill="${color}"><path d="M200,140 Q120,180 100,300 Q140,360 200,360 Q260,360 300,300 Q280,180 200,140 Z"/><path d="M200,160 L200,360" stroke="${color}" stroke-width="3" opacity=".8"/></g>`;
+    case "smile":
+      return `<g opacity="${o}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"><circle cx="200" cy="260" r="80" fill="${color}" opacity=".15"/><circle cx="172" cy="240" r="6" fill="${color}"/><circle cx="228" cy="240" r="6" fill="${color}"/><path d="M168,278 Q200,302 232,278" /></g>`;
+    case "stars":
+      return `<g opacity="${o}" fill="${color}">
+        <circle cx="80" cy="180" r="2.5"/><circle cx="320" cy="200" r="3.5"/><circle cx="180" cy="240" r="2"/>
+        <circle cx="280" cy="280" r="3"/><circle cx="120" cy="300" r="2.5"/><circle cx="240" cy="160" r="2"/>
+        <circle cx="60" cy="260" r="2"/><circle cx="340" cy="320" r="2.5"/>
+        <path d="M200,220 L208,250 L240,254 L214,272 L222,302 L200,284 L178,302 L186,272 L160,254 L192,250 Z" opacity=".8"/>
+      </g>`;
+    case "scroll":
+      return `<g opacity="${o}" fill="${color}"><rect x="120" y="200" width="160" height="160" rx="6"/><rect x="115" y="195" width="170" height="14" rx="4" opacity=".7"/><rect x="115" y="351" width="170" height="14" rx="4" opacity=".7"/></g>`;
+    case "ball":
+      return `<g opacity="${o}"><circle cx="200" cy="280" r="80" fill="${color}"/><path d="M120,280 L280,280 M200,200 L200,360 M140,220 L260,340 M260,220 L140,340" stroke="#0a0a0a" stroke-width="3" opacity=".4"/></g>`;
+    case "sun":
+      return `<g opacity="${o}" fill="${color}"><circle cx="200" cy="260" r="60"/><g><rect x="195" y="160" width="10" height="30" rx="4"/><rect x="195" y="330" width="10" height="30" rx="4"/><rect x="100" y="255" width="30" height="10" rx="4"/><rect x="270" y="255" width="30" height="10" rx="4"/><rect x="130" y="190" width="10" height="28" rx="4" transform="rotate(-45 135 204)"/><rect x="260" y="190" width="10" height="28" rx="4" transform="rotate(45 265 204)"/><rect x="130" y="302" width="10" height="28" rx="4" transform="rotate(45 135 316)"/><rect x="260" y="302" width="10" height="28" rx="4" transform="rotate(-45 265 316)"/></g></g>`;
+    case "book":
+      return `<g opacity="${o}" fill="${color}"><path d="M120,200 L200,220 L200,360 L120,340 Z"/><path d="M280,200 L200,220 L200,360 L280,340 Z" opacity=".75"/><path d="M200,220 L200,360" stroke="#0a0a0a" stroke-width="2" opacity=".4"/></g>`;
+    case "moon":
+      return `<g opacity="${o}" fill="${color}"><path d="M240,220 a60,60 0 1,0 0,120 a48,48 0 1,1 0,-120 Z"/><circle cx="100" cy="200" r="2"/><circle cx="320" cy="240" r="3"/><circle cx="80" cy="320" r="2"/></g>`;
+    default: return "";
+  }
+}
+
+function generateCover(show, opts = {}) {
+  const theme = CAT_THEME[show.cat] || CAT_THEME["Adventure"];
+  const h = strHash(show.t);
+  const angle = (h % 90) - 45; // -45 to 45
+  const variant = h % 4;
+  const w = 400, ht = 600;
+
+  const titleWords = show.t.split(/[: ]/).filter(Boolean);
+  const lines = [];
+  let cur = "";
+  titleWords.forEach(w => {
+    if ((cur + " " + w).trim().length > 14) { if (cur) lines.push(cur.trim()); cur = w; }
+    else cur = cur + " " + w;
+  });
+  if (cur.trim()) lines.push(cur.trim());
+  const fontSize = lines.length > 3 ? 28 : lines.length > 2 ? 34 : lines.length > 1 ? 40 : 46;
+  const lineHeight = fontSize * 1.05;
+  const startY = 480 - (lines.length - 1) * lineHeight / 2;
+
+  const id = `g${h % 10000}`;
+  const typeChip = show.type === "movie" ? "FILM" : show.type === "show" ? "SERIES" : "DOC";
+
+  // overlay textures based on variant
+  let overlay = "";
+  if (variant === 0) { // diagonal lines
+    overlay = `<g opacity=".06" stroke="${theme.accent}" stroke-width="1">
+      ${Array.from({length:18},(_,i)=>`<line x1="${i*30-100}" y1="0" x2="${i*30-100+200}" y2="600"/>`).join("")}
+    </g>`;
+  } else if (variant === 1) { // dots
+    overlay = `<g opacity=".08" fill="${theme.accent}">
+      ${Array.from({length:60},(_,i)=>`<circle cx="${(i*47)%w}" cy="${(i*73)%ht}" r="2"/>`).join("")}
+    </g>`;
+  } else if (variant === 2) { // arc
+    overlay = `<circle cx="${w*0.8}" cy="${ht*0.2}" r="180" fill="${theme.accent}" opacity=".07"/>`;
+  } else { // grid
+    overlay = `<g opacity=".05" stroke="${theme.accent}" stroke-width="1" fill="none">
+      ${Array.from({length:9},(_,i)=>`<line x1="${i*50}" y1="0" x2="${i*50}" y2="600"/>`).join("")}
+      ${Array.from({length:13},(_,i)=>`<line x1="0" y1="${i*50}" x2="400" y2="${i*50}"/>`).join("")}
+    </g>`;
+  }
+
+  return `
+<svg viewBox="0 0 ${w} ${ht}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="${id}-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${theme.bg[0]}"/>
+      <stop offset="55%" stop-color="${theme.bg[1]}"/>
+      <stop offset="100%" stop-color="${theme.bg[2]}"/>
+    </linearGradient>
+    <radialGradient id="${id}-glow" cx="0.7" cy="0.25" r="0.6">
+      <stop offset="0%" stop-color="${theme.accent}" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="${theme.accent}" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="${id}-fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="65%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity=".55"/>
+    </linearGradient>
+  </defs>
+  <rect width="${w}" height="${ht}" fill="url(#${id}-bg)"/>
+  <rect width="${w}" height="${ht}" fill="url(#${id}-glow)"/>
+  ${overlay}
+  <g transform="translate(0, 60) rotate(${angle*0.3} 200 250)">
+    ${iconSvg(theme.icon, theme.accent, 0.55)}
+  </g>
+  <rect width="${w}" height="${ht}" fill="url(#${id}-fade)"/>
+  <g font-family="Fraunces, Georgia, serif" fill="#fff">
+    ${lines.map((l,i) => `<text x="32" y="${startY + i*lineHeight}" font-size="${fontSize}" font-weight="800" letter-spacing="-1">${escapeHtml(l)}</text>`).join("")}
+  </g>
+  <text x="32" y="${startY + lines.length*lineHeight + 22}" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="${theme.accent}" letter-spacing="3">${typeChip} • ${show.cat.toUpperCase()}</text>
+</svg>`;
+}
+
+/* =============================================================
+   STATE
+   ============================================================= */
+const STORE_KEY = "martinez_watchlist_v2";
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { return defaultState(); }
+}
+function defaultState() {
+  return {
+    pin: null,
+    activeServices: ["Disney+","Netflix","Amazon Prime","Hulu","Paramount+","Max","Peacock","Apple TV+","PBS Kids"],
+    customShows: [],
+    removed: [],
+    tmdbKey: null,
+    tmdbCache: {},
+    providerLogos: {},
+    region: "US",
+    // Profiles, favorites, watched
+    profiles: {
+      alden: { name: "Alden", color: "#7fd4a8", animal: "🐸", age: 9 },
+      owen:  { name: "Owen",  color: "#FF8000", animal: "🏎️", age: 11 }
+    },
+    favorites: { alden: [], owen: [] },
+    watched: [],
+    approvalQueue: [],
+    activeKid: "both",
+    familyPhotos: [], // array of base64 data URLs — rotates as the icon
+    // Auto-discovery + AI scoring
+    anthropicKey: null,
+    autoDiscover: true,
+    lastDiscoveryAt: null,
+    rejectedTitles: [],
+    discoveryLog: []
+  };
+}
+function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+let state = loadState();
+if (!state.providerLogos) state.providerLogos = {};
+if (!state.profiles) state.profiles = defaultState().profiles;
+if (!state.favorites) state.favorites = { alden: [], owen: [] };
+if (!state.watched) state.watched = [];
+if (!state.approvalQueue) state.approvalQueue = [];
+if (!state.tmdbKey) { state.tmdbKey = DEFAULT_TMDB_KEY; saveState(); }
+if (!state.anthropicKey) { state.anthropicKey = DEFAULT_ANTHROPIC_KEY; saveState(); }
+if (state.autoDiscover === undefined) state.autoDiscover = true;
+if (!state.rejectedTitles) state.rejectedTitles = [];
+if (!state.discoveryLog) state.discoveryLog = [];
+// Migration: old single-photo state → new multi-photo array
+if (state.familyPhoto && (!state.familyPhotos || !state.familyPhotos.length)) {
+  state.familyPhotos = [state.familyPhoto];
+  delete state.familyPhoto;
+  saveState();
+}
+if (!state.familyPhotos) state.familyPhotos = [];
+// Icon migration: update Alden→frog, Owen→McLaren Senna once
+if (!state.iconVersion || state.iconVersion < 2) {
+  if (state.profiles?.alden) {
+    state.profiles.alden.animal = "🐸";
+    state.profiles.alden.color = "#7fd4a8";
+  }
+  if (state.profiles?.owen) {
+    state.profiles.owen.animal = "🏎️";
+    state.profiles.owen.color = "#FF8000";
+  }
+  state.iconVersion = 2;
+  saveState();
+}
+
+// One-time cache migration: clear cached matches for titles where TMDB likely picked wrong remake/version
+const AMBIGUOUS_TITLES = [
+  "Wonder","Heidi","Mulan","Beauty and the Beast","The Parent Trap","Charlotte's Web","Pollyanna",
+  "The Karate Kid","Treasure Island","Anne of Green Gables","A Little Princess","The Secret Garden",
+  "Old Yeller","Hook","The Goonies","E.T. the Extra-Terrestrial","Hoosiers","Field of Dreams",
+  "The Polar Express","Where the Red Fern Grows","White Fang","Iron Will","The Mighty Ducks",
+  "Cool Runnings","The Princess Bride","The Sandlot","The Sound of Music","Mary Poppins","Holes",
+  "The Black Stallion","Apollo 13","Miracle","Remember the Titans","McFarland, USA","Soul Surfer",
+  "October Sky","Secondhand Lions","Free Willy","Homeward Bound","Swiss Family Robinson",
+  "Chitty Chitty Bang Bang","The Land Before Time","An American Tail","Big Hero 6","Coco",
+  "The Iron Giant","Brother Bear","The Lion King","Lilo & Stitch","Toy Story","Toy Story 2",
+  "Up","The Incredibles","Inside Out","Wreck-It Ralph","Zootopia","Encanto","How to Train Your Dragon",
+  "Kung Fu Panda","Ratatouille","Finding Nemo","Finding Dory","Despicable Me","Tangled","Moana",
+  "Treasure Planet","Atlantis: The Lost Empire","Hugo","National Velvet","The Greatest Showman",
+  "We Are Marshall","Glory Road","Invincible","Million Dollar Arm","The Rookie","The Boy Who Harnessed the Wind"
+];
+if ((state.cacheFixVersion || 0) < 1) {
+  AMBIGUOUS_TITLES.forEach(t => { delete state.tmdbCache[t]; });
+  state.cacheFixVersion = 1;
+  saveState();
+}
+let kidFilter = { who: "both", cat: "All", services: null, type: "all" };
+let activeTab = "library";
+
+const ANIMAL_CHOICES = ["🐸","🏎️","🦊","🦁","🐻","🐼","🐯","🐨","🐶","🐱","🐰","🦄","🐺","🦒","🦅","🐢","🦋","🐙","🚗","🚀","⚽","🏀","🎸","🦖"];
+const COLOR_CHOICES = ["#FF8000","#7fd4a8","#ec6f7a","#e9b758","#8aa8ff","#c8a8ff","#5fd9e0","#f5a268","#a8e864"];
+
+/* =============================================================
+   TIME-OF-DAY AWARENESS
+   ============================================================= */
+function timeContext() {
+  const d = new Date();
+  const h = d.getHours();
+  const dow = d.getDay(); // 0 Sun, 6 Sat
+  const isWeekend = (dow === 0 || dow === 6);
+  if (h < 6) return { label: "Late night", prefer: "Bedtime", greeting: "Late tonight" };
+  if (h < 11 && isWeekend) return { label: "Weekend morning", prefer: "Family Classics", greeting: "Good morning" };
+  if (h < 11) return { label: "Morning", prefer: "Educational", greeting: "Good morning" };
+  if (h < 15) return { label: "Afternoon", prefer: null, greeting: "Good afternoon" };
+  if (h < 18) return { label: "Late afternoon", prefer: "Funny", greeting: "Good afternoon" };
+  if (h < 20) return { label: "Family movie time", prefer: "Family Classics", greeting: "Good evening" };
+  if (h < 22) return { label: "Wind down", prefer: "Bedtime", greeting: "Tonight's pick" };
+  return { label: "Bedtime", prefer: "Bedtime", greeting: "Almost bedtime" };
+}
+
+function allShows() {
+  const merged = SHOWS.concat(state.customShows.map(s => Object.assign({custom:true}, s)));
+  return merged.filter(s => !state.removed.includes(s.t));
+}
+
+/* =============================================================
+   TMDB INTEGRATION — real posters + live streaming availability
+   ============================================================= */
+const TMDB_PROVIDER_MAP = {
+  "Disney Plus": "Disney+", "Disney+": "Disney+",
+  "Netflix": "Netflix", "Netflix Standard with Ads": "Netflix", "Netflix basic with Ads": "Netflix",
+  "Amazon Prime Video": "Amazon Prime", "Amazon Prime Video with Ads": "Amazon Prime",
+  "Hulu": "Hulu",
+  "Apple TV Plus": "Apple TV+", "Apple TV+": "Apple TV+",
+  "Max": "Max", "HBO Max": "Max", "Max Amazon Channel": "Max",
+  "Paramount Plus": "Paramount+", "Paramount+": "Paramount+", "Paramount Plus Apple TV Channel": "Paramount+",
+  "Peacock": "Peacock", "Peacock Premium": "Peacock", "Peacock Premium Plus": "Peacock",
+  "PBS Kids": "PBS Kids", "PBS Kids Amazon Channel": "PBS Kids",
+  "Pure Flix": "Pure Flix",
+  "Yippee": "Yippee",
+  "Discovery Plus": "Discovery+", "Discovery+": "Discovery+"
+};
+function normalizeProvider(name) { return TMDB_PROVIDER_MAP[name] || null; }
+
+async function fetchTmdb(show) {
+  if (!state.tmdbKey) return null;
+  const key = state.tmdbKey.trim();
+  const isToken = key.length > 60; // v4 read access tokens are long JWTs
+  const headers = isToken ? { "Authorization": `Bearer ${key}` } : {};
+  const auth = isToken ? "" : `&api_key=${encodeURIComponent(key)}`;
+
+  const endpoints = show.type === "movie" ? ["movie"] : show.type === "show" ? ["tv"] : ["movie","tv"];
+  let best = null, bestType = null;
+  for (const ep of endpoints) {
+    const yearParam = show.year ? (ep === "movie" ? `&year=${show.year}` : `&first_air_date_year=${show.year}`) : "";
+    const url = `https://api.themoviedb.org/3/search/${ep}?query=${encodeURIComponent(show.t)}${yearParam}${auth}`;
+    try {
+      const r = await fetch(url, { headers });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j.results && j.results.length) {
+        if (!best || j.results[0].popularity > (best.popularity||0)) {
+          best = j.results[0]; bestType = ep;
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+  if (!best) {
+    state.tmdbCache[show.t] = { poster: null, providers: [], fetchedAt: Date.now(), notFound: true };
+    saveState(); return state.tmdbCache[show.t];
+  }
+  // providers
+  let providers = [];
+  try {
+    const provUrl = `https://api.themoviedb.org/3/${bestType}/${best.id}/watch/providers?${auth.slice(1) || ""}`;
+    const pr = await fetch(provUrl, { headers });
+    if (pr.ok) {
+      const pj = await pr.json();
+      const region = pj.results?.[state.region || "US"];
+      if (region) {
+        const flat = region.flatrate || [];
+        const seen = new Set();
+        flat.forEach(p => {
+          const norm = normalizeProvider(p.provider_name);
+          if (norm && !seen.has(norm)) {
+            seen.add(norm);
+            providers.push(norm);
+            // cache the brand logo once globally
+            if (p.logo_path && !state.providerLogos[norm]) {
+              state.providerLogos[norm] = `https://image.tmdb.org/t/p/original${p.logo_path}`;
+            }
+          }
+        });
+      }
+    }
+  } catch (e) { /* ignore */ }
+  // Fetch richer details + cast + trailer in parallel
+  let overview = best.overview || "", runtime = null, year = best.release_date || best.first_air_date || "", voteAverage = best.vote_average || 0, cast = [], trailerKey = null, certification = null;
+  try {
+    const [detailsR, creditsR, videosR] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/${bestType}/${best.id}?append_to_response=release_dates,content_ratings${auth}`, { headers }),
+      fetch(`https://api.themoviedb.org/3/${bestType}/${best.id}/credits${auth}`, { headers }),
+      fetch(`https://api.themoviedb.org/3/${bestType}/${best.id}/videos${auth}`, { headers })
+    ]);
+    if (detailsR.ok) {
+      const dj = await detailsR.json();
+      overview = dj.overview || overview;
+      runtime = dj.runtime || dj.episode_run_time?.[0] || null;
+      if (bestType === "movie") {
+        const us = (dj.release_dates?.results || []).find(x => x.iso_3166_1 === "US");
+        certification = us?.release_dates?.[0]?.certification || null;
+      } else {
+        const us = (dj.content_ratings?.results || []).find(x => x.iso_3166_1 === "US");
+        certification = us?.rating || null;
+      }
+    }
+    if (creditsR.ok) {
+      const cj = await creditsR.json();
+      cast = (cj.cast || []).slice(0, 5).map(c => ({ name: c.name, character: c.character }));
+    }
+    if (videosR.ok) {
+      const vj = await videosR.json();
+      const trailer = (vj.results || []).find(v => v.type === "Trailer" && v.site === "YouTube") || (vj.results || []).find(v => v.site === "YouTube");
+      trailerKey = trailer?.key || null;
+    }
+  } catch (e) { /* best-effort */ }
+
+  state.tmdbCache[show.t] = {
+    poster: best.poster_path ? `https://image.tmdb.org/t/p/w500${best.poster_path}` : null,
+    backdrop: best.backdrop_path ? `https://image.tmdb.org/t/p/w780${best.backdrop_path}` : null,
+    providers, fetchedAt: Date.now(), mediaType: bestType, id: best.id,
+    overview, runtime, year: year ? year.slice(0, 4) : null, voteAverage, cast, trailerKey, certification
+  };
+  saveState();
+  return state.tmdbCache[show.t];
+}
+
+let _tmdbBackfillRunning = false;
+const STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
+async function backfillTmdb({ force = false, validateAll = false, onProgress } = {}) {
+  if (!state.tmdbKey || _tmdbBackfillRunning) return;
+  _tmdbBackfillRunning = true;
+  const need = allShows().filter(s => {
+    if (force) return true;
+    const c = state.tmdbCache[s.t];
+    if (!c) return true;
+    if (c.notFound && Date.now() - c.fetchedAt > 86400000) return true;
+    if (validateAll && Date.now() - c.fetchedAt > STALE_MS) return true;
+    return false;
+  });
+  if (!need.length) { _tmdbBackfillRunning = false; if (onProgress) onProgress(0, 0); return; }
+  let done = 0;
+  // Parallel batches of 5 — TMDB allows 50/sec, we're well under
+  const BATCH = 5;
+  for (let i = 0; i < need.length; i += BATCH) {
+    const batch = need.slice(i, i + BATCH);
+    await Promise.all(batch.map(async show => {
+      try { await fetchTmdb(show); }
+      catch (e) { console.warn("TMDB fetch failed for", show.t, e); }
+      done++;
+      if (onProgress) onProgress(done, need.length);
+    }));
+    renderGrid();
+    if (i % 25 === 0) buildHero();
+    await new Promise(r => setTimeout(r, 100));
+  }
+  state.lastRefreshAt = Date.now();
+  saveState();
+  renderGrid(); buildHero();
+  if (typeof renderFreshness === "function") renderFreshness();
+  _tmdbBackfillRunning = false;
+}
+
+/* =============================================================
+   AUTO-DISCOVERY + AI VALUES SCORING
+   The system that keeps the library alive over years.
+   ============================================================= */
+
+const TMDB_GENRES_FAMILY_MOVIE = [10751, 16]; // Family, Animation
+const TMDB_GENRES_KIDS_TV = [10762, 10751, 16]; // Kids, Family, Animation
+
+async function tmdbDiscover(mediaType, page = 1) {
+  if (!state.tmdbKey) return [];
+  const key = state.tmdbKey.trim();
+  const isToken = key.length > 60;
+  const headers = isToken ? { "Authorization": `Bearer ${key}` } : {};
+  const auth = isToken ? "" : `&api_key=${encodeURIComponent(key)}`;
+  const genres = mediaType === "movie" ? TMDB_GENRES_FAMILY_MOVIE.join(",") : TMDB_GENRES_KIDS_TV.join(",");
+  const certParam = mediaType === "movie" ? "&certification_country=US&certification.lte=PG" : "";
+  // last 3 years for movies, all-time popular for TV (kids' TV doesn't get re-rated as fast)
+  const dateField = mediaType === "movie" ? "primary_release_date" : "first_air_date";
+  const threeYearsAgo = new Date(); threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
+  const dateParam = `&${dateField}.gte=${threeYearsAgo.toISOString().split("T")[0]}`;
+  const url = `https://api.themoviedb.org/3/discover/${mediaType}?with_genres=${genres}${certParam}${dateParam}&sort_by=popularity.desc&language=en-US&page=${page}${auth}`;
+  try {
+    const r = await fetch(url, { headers });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return (j.results || []).map(item => ({
+      tmdbId: item.id,
+      mediaType,
+      title: item.title || item.name,
+      year: (item.release_date || item.first_air_date || "").slice(0,4),
+      overview: item.overview || "",
+      poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+      voteAverage: item.vote_average || 0,
+      genreIds: item.genre_ids || []
+    }));
+  } catch (e) { console.warn("Discover failed", mediaType, e); return []; }
+}
+
+async function tmdbDetails(candidate) {
+  if (!state.tmdbKey) return null;
+  const key = state.tmdbKey.trim();
+  const isToken = key.length > 60;
+  const headers = isToken ? { "Authorization": `Bearer ${key}` } : {};
+  const auth = isToken ? "" : `&api_key=${encodeURIComponent(key)}`;
+  const ep = candidate.mediaType;
+  try {
+    const r = await fetch(`https://api.themoviedb.org/3/${ep}/${candidate.tmdbId}?append_to_response=keywords,content_ratings,release_dates${auth}`, { headers });
+    if (!r.ok) return null;
+    const j = await r.json();
+    let cert = "";
+    if (ep === "movie") {
+      const us = (j.release_dates?.results || []).find(x => x.iso_3166_1 === "US");
+      cert = us?.release_dates?.[0]?.certification || "";
+    } else {
+      const us = (j.content_ratings?.results || []).find(x => x.iso_3166_1 === "US");
+      cert = us?.rating || "";
+    }
+    const keywords = (j.keywords?.keywords || j.keywords?.results || []).map(k => k.name).slice(0,12);
+    return { ...candidate, certification: cert, keywords, runtime: j.runtime || j.episode_run_time?.[0] || null, providers: [] };
+  } catch (e) { return null; }
+}
+
+const SCORING_PROMPT = `You are scoring family content for the Martinez family. The kids are Alden (9, girl) and Owen (11, boy).
+
+Score on 5 dimensions (1=very bad, 5=excellent). DIMENSION 2 ("PARENTS_COMPETENT") is no longer used by this family — they happily watch kid-led adventures (Iron Will, Old Yeller, Holes) where parents aren't main characters. ALWAYS RETURN 5 for dimension 2 regardless of the show.
+1. KIDS_ACT_LIKE_KIDS — child characters don't act like mini-adults (no romance, careers, "wisdom beyond their years")
+2. PARENTS_COMPETENT — IGNORE this dimension, always return 5
+3. NO_SNARK — humor isn't built on insults, sarcasm, eye-rolls at adults, or putdowns
+4. WHOLESOME_FAMILY — siblings who like each other, family loyalty (intact-family is NOT required — orphans, single parents, kid-led stories all fine)
+5. AGE_APPROPRIATE — themes match a 9-11yo audience (no adult romance, sexuality, gratuitous violence, occult-as-heroic)
+
+CALIBRATION EXAMPLES (use these as anchors):
+- Bluey: [5,5,5,5,5] — greatest family dynamic on TV
+- Toy Story: [5,5,5,5,5] — friendship and loyalty
+- The Incredibles: [5,5,4,5,4] — whole family pulling together
+- Mulan: [5,5,5,5,4] — daughter honors family
+- Henry Danger: [2,1,1,2,3] — kids outsmart bumbling adults; mean humor
+- iCarly: [2,1,1,2,2] — kids run their world; snark is the love language
+- The Owl House: [3,3,4,2,2] — witchcraft as heroic, tween romance, anti-family vibe
+- Modern Family: [3,2,2,2,2] — family dysfunction played for laughs
+- The Simpsons: [3,2,2,3,2] — Homer is the joke, Bart is the model
+
+VERDICT:
+- "green" if min ≥ 4 AND avg ≥ 4.5 — kids see it tonight
+- "yellow" if min ≥ 3 AND avg ≥ 3.5 — parent reviews/watches with them
+- "red" otherwise — silently filtered
+
+CATEGORIES (pick exactly one):
+Adventure, Funny, Animals & Nature, Educational, History, Sports, Faith, Family Classics, Sci-Fi & Fantasy, Bedtime
+
+BEST_FOR (pick one based on themes/protagonist/maturity):
+"both" (default) | "alden" (gentler, female-led, ages 7-10 vibe) | "owen" (action/sports/sci-fi/military, ages 10-13 vibe)
+
+Return ONLY valid JSON, no surrounding prose:
+{"scores":[n,n,n,n,n],"why":"one short kid-facing sentence","category":"...","best_for":"...","verdict":"green|yellow|red","concerns":"brief parent note if yellow/red, else empty"}`;
+
+async function scoreWithClaude(candidate) {
+  if (!state.anthropicKey) return null;
+  const userMsg = `Score this:
+TITLE: ${candidate.title}
+TYPE: ${candidate.mediaType === "movie" ? "Movie" : "TV Show"}
+YEAR: ${candidate.year}
+CONTENT_RATING: ${candidate.certification || "unrated"}
+TMDB_VOTE: ${candidate.voteAverage?.toFixed?.(1) || "?"} / 10
+KEYWORDS: ${(candidate.keywords || []).join(", ") || "(none)"}
+PLOT: ${candidate.overview || "(none provided)"}`;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": state.anthropicKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 400,
+        system: SCORING_PROMPT,
+        messages: [{ role: "user", content: userMsg }]
+      })
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      console.warn("Claude scoring failed:", r.status, t);
+      return null;
+    }
+    const j = await r.json();
+    const text = j.content?.[0]?.text || "";
+    // Robust JSON extraction (LLMs sometimes wrap in code fences)
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(parsed.scores) || parsed.scores.length !== 5) return null;
+    return parsed;
+  } catch (e) { console.warn("Claude scoring error:", e); return null; }
+}
+
+function isAlreadyKnown(title) {
+  const lc = title.toLowerCase();
+  if (allShows().some(s => s.t.toLowerCase() === lc)) return true;
+  if (RED_LIST.some(r => r.t.toLowerCase() === lc)) return true;
+  if (state.rejectedTitles.includes(title)) return true;
+  if (state.approvalQueue.some(q => q.title.toLowerCase() === lc)) return true;
+  return false;
+}
+
+let _discoveryRunning = false;
+async function discoverNewContent({ onProgress, onLog } = {}) {
+  if (_discoveryRunning) return;
+  if (!state.tmdbKey) { onLog?.("No TMDB key — set it first."); return; }
+  if (!state.anthropicKey) { onLog?.("No Anthropic key — set it in Parent View → Auto-discovery to enable AI scoring."); return; }
+  _discoveryRunning = true;
+  try {
+    onLog?.("Pulling latest family content from TMDB…");
+    // 2 pages of movies, 2 pages of TV, each ~20 results = ~80 candidates
+    const [m1, m2, t1, t2] = await Promise.all([
+      tmdbDiscover("movie", 1), tmdbDiscover("movie", 2),
+      tmdbDiscover("tv", 1),    tmdbDiscover("tv", 2)
+    ]);
+    const all = [...m1, ...m2, ...t1, ...t2];
+    const novel = all.filter(c => !isAlreadyKnown(c.title));
+    onLog?.(`Found ${all.length} candidates, ${novel.length} are new.`);
+    if (!novel.length) {
+      const log = { date: new Date().toISOString(), found: all.length, novel: 0, added: 0, queued: 0, rejected: 0 };
+      state.discoveryLog.unshift(log);
+      state.lastDiscoveryAt = Date.now();
+      saveState();
+      onLog?.("Nothing new this round.");
+      return;
+    }
+    let added = 0, queued = 0, rejected = 0, scored = 0;
+    for (const cand of novel) {
+      // pull richer details before scoring
+      const detailed = await tmdbDetails(cand) || cand;
+      const verdict = await scoreWithClaude(detailed);
+      scored++;
+      onProgress?.(scored, novel.length, cand.title);
+      if (!verdict) { onLog?.(`⚠ Could not score "${cand.title}" (skipped)`); continue; }
+      const types = { movie: "movie", tv: "show" };
+      const newShow = {
+        t: cand.title,
+        type: types[cand.mediaType] || "movie",
+        who: verdict.best_for === "alden" || verdict.best_for === "owen" ? verdict.best_for : "both",
+        cat: verdict.category || "Family Classics",
+        why: verdict.why || "Newly discovered.",
+        svc: [], // will be filled by TMDB watch/providers next pass
+        score: verdict.scores
+      };
+      if (verdict.verdict === "green") {
+        // also pre-cache the poster + providers so the kids see it instantly
+        state.tmdbCache[newShow.t] = {
+          poster: cand.poster, providers: [], fetchedAt: Date.now(),
+          mediaType: cand.mediaType, id: cand.tmdbId
+        };
+        state.customShows.push(Object.assign({}, newShow, { _autoAdded: true }));
+        added++;
+        onLog?.(`✅ Auto-added: ${cand.title}`);
+      } else if (verdict.verdict === "yellow") {
+        state.approvalQueue.push({
+          title: cand.title,
+          requestedBy: "auto",
+          requestedAt: new Date().toISOString(),
+          posterUrl: cand.poster,
+          providers: [],
+          aiSuggestion: verdict
+        });
+        queued++;
+        onLog?.(`🟡 Queued for parent: ${cand.title}`);
+      } else {
+        state.rejectedTitles.push(cand.title);
+        rejected++;
+      }
+      saveState();
+      // small delay so the API isn't hammered
+      await new Promise(r => setTimeout(r, 250));
+    }
+    const log = { date: new Date().toISOString(), found: all.length, novel: novel.length, added, queued, rejected };
+    state.discoveryLog.unshift(log);
+    state.discoveryLog = state.discoveryLog.slice(0, 12);
+    state.lastDiscoveryAt = Date.now();
+    saveState();
+    // refresh streaming providers for any newly-added titles
+    backfillTmdb();
+    renderGrid(); buildHero(); renderApprovalCount();
+    onLog?.(`Done. Added ${added} auto-approved, ${queued} queued for review, ${rejected} filtered.`);
+  } finally {
+    _discoveryRunning = false;
+  }
+}
+
+function getEffectiveProviders(show) {
+  const cached = state.tmdbCache[show.t];
+  // UNION live TMDB data with hardcoded — TMDB sometimes misses niche services
+  // (PBS Kids, Pure Flix) and fuzzy matches can return narrower results than reality.
+  // Hardcoded gives us a reliable floor; TMDB gives us currency.
+  if (cached && cached.providers && cached.providers.length) {
+    const set = new Set(cached.providers);
+    show.svc.forEach(s => set.add(s));
+    return Array.from(set);
+  }
+  return show.svc;
+}
+function getCoverHtml(show) {
+  const cached = state.tmdbCache[show.t];
+  if (cached && cached.poster) {
+    return `<img src="${escapeHtml(cached.poster)}" alt="${escapeHtml(show.t)}" loading="lazy" />`;
+  }
+  return generateCover(show);
+}
+
+/* =============================================================
+   HERO
+   ============================================================= */
+let heroIdx = 0; let heroShows = []; let heroTimer = null;
+function buildHero() {
+  const greens = allShows().filter(s => {
+    const min = Math.min(...s.score), avg = s.score.reduce((a,b)=>a+b,0)/5;
+    return min >= 4 && avg >= 4.7;
+  });
+  // shuffle deterministic-ish by date
+  const today = new Date().toDateString();
+  const shuffled = greens.slice().sort((a,b) => strHash(a.t + today) - strHash(b.t + today));
+  heroShows = shuffled.slice(0, 4);
+  renderHero();
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(() => { heroIdx = (heroIdx + 1) % heroShows.length; renderHero(); }, 7000);
+}
+function renderHero() {
+  const stage = $("#heroStage");
+  const nav = $("#heroNav");
+  if (!heroShows.length) { stage.innerHTML = ""; nav.innerHTML = ""; return; }
+  stage.innerHTML = heroShows.map((s,i) => `
+    <div class="hero-slide">
+      <div class="text">
+        <div class="hero-eyebrow">Tonight's Pick #${i+1}</div>
+        <h2 class="hero-title">${escapeHtml(s.t)}</h2>
+        <div class="hero-meta">${capitalize(s.type)} • ${escapeHtml(s.cat)} • Best for: ${whoLabel(s.who)}</div>
+        <p class="hero-why">${escapeHtml(s.why)}</p>
+        <div class="hero-cta-row">
+          ${getEffectiveProviders(s).map(svcChip).join("")}
+        </div>
+      </div>
+      <div class="hero-cover">${getCoverHtml(s)}</div>
+    </div>
+  `).join("");
+  stage.style.transform = `translateX(-${heroIdx*100}%)`;
+  const bg = $("#heroBg");
+  const leftOverlay = $("#heroOverlayLeft");
+  if (state.familyPhotos && state.familyPhotos.length) {
+    // Use family photos as the cinematic hero backdrop, synced with hero rotation
+    const photoIdx = heroIdx % state.familyPhotos.length;
+    bg.classList.add("family");
+    bg.style.backgroundImage = `url("${state.familyPhotos[photoIdx]}")`;
+    bg.innerHTML = "";
+    if (leftOverlay) leftOverlay.classList.add("active");
+  } else {
+    // Fallback: blurred show poster
+    bg.classList.remove("family");
+    bg.style.backgroundImage = "";
+    bg.innerHTML = heroShows[heroIdx] ? getCoverHtml(heroShows[heroIdx]) : "";
+    if (leftOverlay) leftOverlay.classList.remove("active");
+  }
+  nav.innerHTML = heroShows.map((_,i) => `<button class="hero-dot ${i===heroIdx?'active':''}" data-i="${i}"></button>`).join("");
+  nav.querySelectorAll(".hero-dot").forEach(b => b.onclick = () => { heroIdx = +b.dataset.i; renderHero(); });
+}
+
+/* =============================================================
+   RENDER
+   ============================================================= */
+function $(s, root=document) { return root.querySelector(s); }
+function $$(s, root=document) { return Array.from(root.querySelectorAll(s)); }
+
+function renderWhoChips() {
+  const wrap = $("#whoChips");
+  if (!wrap) return;
+  const a = state.profiles.alden, o = state.profiles.owen;
+  wrap.innerHTML = `
+    <button class="chip ${kidFilter.who==='both'?'active':''}" data-who="both"><span class="who-chip-avatar"><span class="avatar" style="background:linear-gradient(135deg, ${a.color}, ${o.color});">👫</span> Both of us</span></button>
+    <button class="chip ${kidFilter.who==='alden'?'active':''}" data-who="alden"><span class="who-chip-avatar"><span class="avatar" style="background:${a.color};">${a.animal}</span> Just ${escapeHtml(a.name)}</span></button>
+    <button class="chip ${kidFilter.who==='owen'?'active':''}" data-who="owen"><span class="who-chip-avatar"><span class="avatar" style="background:${o.color};">${o.animal}</span> Just ${escapeHtml(o.name)}</span></button>
+  `;
+  $$("#whoChips .chip").forEach(b => b.onclick = () => {
+    kidFilter.who = b.dataset.who;
+    renderWhoChips(); renderGrid();
+  });
+}
+
+/* =============================================================
+   FAVORITES & WATCHED
+   ============================================================= */
+function isFav(showTitle, kid) {
+  return (state.favorites[kid] || []).includes(showTitle);
+}
+function toggleFav(showTitle, kid) {
+  const list = state.favorites[kid] || (state.favorites[kid] = []);
+  const i = list.indexOf(showTitle);
+  if (i >= 0) list.splice(i, 1); else list.push(showTitle);
+  saveState(); renderGrid(); updateTabCounts();
+}
+function watchedFor(showTitle) {
+  return state.watched.find(w => w.title === showTitle);
+}
+function markWatched(showTitle, who, stars) {
+  const existing = state.watched.findIndex(w => w.title === showTitle);
+  const entry = { title: showTitle, who, stars, date: new Date().toISOString() };
+  if (existing >= 0) state.watched[existing] = entry;
+  else state.watched.push(entry);
+  saveState(); renderGrid(); updateTabCounts();
+}
+function unmarkWatched(showTitle) {
+  state.watched = state.watched.filter(w => w.title !== showTitle);
+  saveState(); renderGrid(); updateTabCounts();
+}
+function updateTabCounts() {
+  const favs = (state.favorites[kidFilter.who] || state.favorites.alden.concat(state.favorites.owen)).length;
+  const seen = state.watched.length;
+  if ($("#favCount")) $("#favCount").textContent = favs;
+  if ($("#watchedCount")) $("#watchedCount").textContent = seen;
+}
+
+/* =============================================================
+   APPROVAL QUEUE
+   ============================================================= */
+async function requestApproval(title, fromKid) {
+  // try to fetch poster/providers via TMDB so the parent has context
+  let tmdbData = null;
+  try {
+    const tmp = { t: title, type: "movie", cat: "Adventure" };
+    tmdbData = await fetchTmdb(tmp);
+  } catch (e) {}
+  const entry = {
+    title, requestedBy: fromKid || kidFilter.who, requestedAt: new Date().toISOString(),
+    posterUrl: tmdbData?.poster || null,
+    providers: tmdbData?.providers || []
+  };
+  // dedupe
+  if (!state.approvalQueue.find(q => q.title.toLowerCase() === title.toLowerCase())) {
+    state.approvalQueue.push(entry);
+    saveState();
+  }
+  renderApprovalCount();
+}
+function renderApprovalCount() {
+  const n = state.approvalQueue.length;
+  const badge = $("#approvalCount");
+  if (badge) {
+    badge.style.display = n > 0 ? "" : "none";
+    badge.textContent = n;
+  }
+  const headerBadge = $("#parentTabBadge");
+  if (headerBadge) {
+    headerBadge.style.display = n > 0 ? "" : "none";
+    headerBadge.textContent = n;
+  }
+}
+function renderApprovalList() {
+  const wrap = $("#approvalList");
+  if (!wrap) return;
+  if (!state.approvalQueue.length) {
+    wrap.innerHTML = `<div style="color:var(--ink-dim); padding:8px 0;">No pending approval requests.</div>`;
+    return;
+  }
+  wrap.innerHTML = "";
+  state.approvalQueue.forEach((req, idx) => {
+    const card = document.createElement("div");
+    card.className = "approval-card";
+    const reqByName = req.requestedBy === "alden" ? state.profiles.alden.name
+      : req.requestedBy === "owen" ? state.profiles.owen.name
+      : req.requestedBy === "auto" ? "AI auto-discovery" : "Both";
+    const cover = req.posterUrl ? `<img src="${escapeHtml(req.posterUrl)}" alt=""/>` : `<div style="height:100%; display:grid; place-items:center; color:var(--ink-dim); font-size:24px;">?</div>`;
+    // pre-fill AI scores if present
+    if (req.aiSuggestion?.scores && !req._scores) {
+      req._scores = req.aiSuggestion.scores.slice();
+    }
+    const aiBlock = req.aiSuggestion ? `
+      <div style="background: rgba(127,212,168,.08); border: 1px solid rgba(127,212,168,.25); padding: 10px 12px; border-radius: 8px; margin: 8px 0; font-size: 13px;">
+        <div style="font-weight: 700; color: var(--mint); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px;">🔮 AI suggestion: ${escapeHtml(req.aiSuggestion.verdict || "?").toUpperCase()}</div>
+        <div style="color:var(--ink); margin-bottom: 4px;">${escapeHtml(req.aiSuggestion.why || "")}</div>
+        ${req.aiSuggestion.concerns ? `<div style="color:var(--warn); font-size:12px;">⚠ ${escapeHtml(req.aiSuggestion.concerns)}</div>` : ""}
+      </div>
+    ` : "";
+    card.innerHTML = `
+      <div class="cover">${cover}</div>
+      <div>
+        <h4>${escapeHtml(req.title)}</h4>
+        <div class="req-meta">Asked by ${escapeHtml(reqByName)} • ${new Date(req.requestedAt).toLocaleDateString()}</div>
+        ${aiBlock}
+        ${req.providers.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${req.providers.map(svcChip).join("")}</div>` : ""}
+        <div class="field-label">Score it (1-5 each) ${req.aiSuggestion ? "<span style='color:var(--mint); text-transform:none; letter-spacing:0; font-weight:500;'>— pre-filled by AI, adjust if needed</span>" : ""}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-top:6px;">
+          ${["Kids act like kids","Parents shown well","No snark","Wholesome family","Age-appropriate"].map((label,i) => {
+            const preScore = req._scores?.[i] || 0;
+            return `<div><div style="font-size:11px; color:var(--ink-soft); margin-bottom:2px;">${label}</div><div class="stars-row" data-idx="${idx}" data-rubric="${i}">${[1,2,3,4,5].map(n => `<button data-n="${n}" class="${n<=preScore?'on':''}">★</button>`).join("")}</div></div>`;
+          }).join("")}
+        </div>
+        <div class="field-label">Why is this OK? (one line for the kids)</div>
+        <input type="text" data-note="${idx}" placeholder="e.g., A kid pitcher learns about teamwork." value="${escapeHtml(req.aiSuggestion?.why || "")}" style="width:100%; padding:8px 10px; border-radius:8px; background:var(--bg-1); color:var(--ink); border:1px solid var(--border); font-family:inherit; font-size:13px; margin-top:4px;">
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="primary" data-approve="${idx}">Approve & add</button>
+          <button class="danger" data-reject="${idx}">Reject</button>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+
+  // wire up stars
+  wrap.querySelectorAll(".stars-row").forEach(row => {
+    const idx = +row.dataset.idx, rubric = +row.dataset.rubric;
+    if (!state.approvalQueue[idx]._scores) state.approvalQueue[idx]._scores = [0,0,0,0,0];
+    row.querySelectorAll("button").forEach(btn => {
+      btn.onclick = () => {
+        const n = +btn.dataset.n;
+        state.approvalQueue[idx]._scores[rubric] = n;
+        row.querySelectorAll("button").forEach((b, j) => b.classList.toggle("on", j < n));
+      };
+    });
+  });
+  wrap.querySelectorAll("[data-approve]").forEach(btn => {
+    btn.onclick = () => {
+      const idx = +btn.dataset.approve;
+      const req = state.approvalQueue[idx];
+      const scores = req._scores || [];
+      if (scores.length !== 5 || scores.some(s => s === 0)) { alert("Score all 5 dimensions first."); return; }
+      const noteEl = wrap.querySelector(`[data-note="${idx}"]`);
+      const why = (noteEl?.value.trim()) || "Approved by Mom & Dad.";
+      state.customShows.push({
+        t: req.title, type: "movie", who: req.requestedBy === "both" ? "both" : req.requestedBy,
+        cat: "Family Classics", why,
+        svc: req.providers.length ? req.providers : ["Disney+","Netflix"],
+        score: scores
+      });
+      state.approvalQueue.splice(idx, 1);
+      saveState(); renderApprovalList(); renderApprovalCount(); renderGrid(); buildHero();
+    };
+  });
+  wrap.querySelectorAll("[data-reject]").forEach(btn => {
+    btn.onclick = () => {
+      const idx = +btn.dataset.reject;
+      state.approvalQueue.splice(idx, 1);
+      saveState(); renderApprovalList(); renderApprovalCount();
+    };
+  });
+}
+
+/* =============================================================
+   BULK ADD
+   ============================================================= */
+async function bulkAdd() {
+  const raw = $("#bulkInput").value;
+  const titles = raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+  if (!titles.length) { $("#bulkStatus").textContent = "Paste some titles first."; return; }
+  const cat = $("#bulkCat").value, type = $("#bulkType").value, who = $("#bulkWho").value;
+  let added = 0;
+  for (let i = 0; i < titles.length; i++) {
+    const t = titles[i];
+    $("#bulkStatus").textContent = `Looking up ${i+1} of ${titles.length}: ${t}…`;
+    const fake = { t, type, cat };
+    const data = await fetchTmdb(fake);
+    state.customShows.push({
+      t, type, who, cat,
+      why: "Added in bulk — review/edit in Manage Shows.",
+      svc: data?.providers?.length ? data.providers : ["Disney+","Netflix"],
+      score: [4,4,4,4,4]
+    });
+    added++;
+    saveState();
+    if (added % 4 === 0) { renderGrid(); renderManageList(); }
+  }
+  $("#bulkStatus").textContent = `Added ${added} shows. Review them in Manage Shows.`;
+  $("#bulkInput").value = "";
+  renderGrid(); renderManageList(); buildHero();
+}
+
+/* =============================================================
+   PROFILES
+   ============================================================= */
+function renderProfileEditor() {
+  const wrap = $("#profileRow");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  ["alden","owen"].forEach(k => {
+    const p = state.profiles[k];
+    const card = document.createElement("div");
+    card.className = "profile-card-edit";
+    card.innerHTML = `
+      <h4><span class="avatar avatar-lg" style="background:${p.color};">${p.animal}</span> <input data-name="${k}" type="text" value="${escapeHtml(p.name)}" style="background:transparent; border:0; border-bottom:1px solid var(--border); color:var(--ink); font-family:inherit; font-size:16px; font-weight:600; margin-left:10px; padding:2px 0;"></h4>
+      <div style="font-size:11px; color:var(--ink-soft); margin-top:8px;">Animal</div>
+      <div class="icon-row">${ANIMAL_CHOICES.map(a => `<button class="pick-btn ${a===p.animal?'active':''}" data-anim="${k}" data-val="${a}">${a}</button>`).join("")}</div>
+      <div style="font-size:11px; color:var(--ink-soft); margin-top:6px;">Color</div>
+      <div class="color-row">${COLOR_CHOICES.map(c => `<button class="color-btn ${c===p.color?'active':''}" data-color="${k}" data-val="${c}" style="background:${c};"></button>`).join("")}</div>
+    `;
+    wrap.appendChild(card);
+  });
+  wrap.querySelectorAll("[data-name]").forEach(inp => inp.oninput = () => {
+    state.profiles[inp.dataset.name].name = inp.value;
+    saveState(); renderWhoChips();
+  });
+  wrap.querySelectorAll("[data-anim]").forEach(b => b.onclick = () => {
+    state.profiles[b.dataset.anim].animal = b.dataset.val;
+    saveState(); renderProfileEditor(); renderWhoChips();
+  });
+  wrap.querySelectorAll("[data-color]").forEach(b => b.onclick = () => {
+    state.profiles[b.dataset.color].color = b.dataset.val;
+    saveState(); renderProfileEditor(); renderWhoChips();
+  });
+}
+
+/* =============================================================
+   DICE
+   ============================================================= */
+// =============================================================
+// MOOD CHAT — kid types how they feel, Claude picks 3 shows
+// =============================================================
+async function askClaudeForMood(moodText) {
+  if (!state.anthropicKey) return null;
+  const greens = allShows().filter(s => {
+    const min = Math.min(...s.score), avg = avgScore(s);
+    return min >= 4 && avg >= 4.5;
+  });
+  // Simple library description so prompt isn't huge
+  const lib = greens.map(s => `- ${s.t} (${s.type}, ${s.cat}, for ${s.who}): ${s.why}`).join("\n");
+  const recentlyWatched = state.watched.slice(-5).map(w => `- ${w.title} (${w.stars}/5 stars)`).join("\n") || "(none yet)";
+  const sys = `You are helping the Martinez family pick a show for tonight.
+Kids: Alden (9, girl) and Owen (11, boy). Family values respect for parents, kids acting like kids, no snark, wholesome family dynamics.
+
+Pick 3 shows from the approved library that best fit their mood. Use shows that match the type/vibe of their request.
+For each pick, give a warm 1-sentence reason why it fits.
+Return ONLY valid JSON in this format:
+{"picks":[{"title":"exact title from library","reason":"..."}, ...]}`;
+  const user = `Family says: "${moodText}"
+
+APPROVED LIBRARY:
+${lib}
+
+RECENTLY WATCHED (avoid repeats unless they explicitly ask):
+${recentlyWatched}`;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": state.anthropicKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        system: sys,
+        messages: [{ role: "user", content: user }]
+      })
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const text = j.content?.[0]?.text || "";
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]);
+  } catch (e) { console.warn("Mood chat error:", e); return null; }
+}
+
+function openMoodModal() {
+  $("#moodBack").style.display = "flex";
+  $("#moodInput").value = "";
+  $("#moodResults").innerHTML = "";
+  setTimeout(() => $("#moodInput").focus(), 200);
+}
+function closeMoodModal() { $("#moodBack").style.display = "none"; }
+
+async function runMoodChat() {
+  const moodText = $("#moodInput").value.trim();
+  if (!moodText) return;
+  const results = $("#moodResults");
+  const submitBtn = $("#moodSubmit");
+  submitBtn.disabled = true; submitBtn.textContent = "Thinking…";
+  results.innerHTML = `<div style="color:var(--ink-soft); font-size:14px; padding:14px 0;">🔮 Asking Claude...</div>`;
+  const verdict = await askClaudeForMood(moodText);
+  submitBtn.disabled = false; submitBtn.textContent = "Find me a show";
+  if (!verdict || !verdict.picks || !verdict.picks.length) {
+    results.innerHTML = `<div style="color:var(--warn); font-size:14px;">Couldn't get suggestions right now. Try the regular search above.</div>`;
+    return;
+  }
+  results.innerHTML = `<div style="font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.1em; font-weight:700; margin-bottom:8px;">Here are 3 picks for you</div>` +
+    verdict.picks.map(pick => {
+      const found = allShows().find(s => s.t.toLowerCase() === (pick.title||"").toLowerCase());
+      if (!found) return "";
+      return `<div class="mood-pick-card" data-title="${escapeHtml(found.t)}">
+        <h4>${escapeHtml(found.t)}</h4>
+        <div class="reason">${escapeHtml(pick.reason || "")}</div>
+      </div>`;
+    }).join("");
+  results.querySelectorAll(".mood-pick-card").forEach(card => {
+    card.onclick = () => {
+      const show = allShows().find(s => s.t === card.dataset.title);
+      if (show) { closeMoodModal(); openModal(show); }
+    };
+  });
+}
+
+function pickForUs() {
+  const candidates = allShows().filter(s => {
+    if (!showMatchesFilter(s)) return false;
+    const min = Math.min(...s.score), avg = avgScore(s);
+    return min >= 4 && avg >= 4.5;
+  });
+  if (!candidates.length) { alert("No green-rated picks match your current filters. Try clearing some."); return; }
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  openModal(pick);
+}
+
+function renderServiceChips() {
+  const wrap = $("#serviceChips");
+  wrap.innerHTML = "";
+  // "All" chip — active when no specific services are filtered
+  const allBtn = document.createElement("button");
+  allBtn.className = "chip" + (kidFilter.services === null ? " active" : "");
+  allBtn.textContent = "All";
+  allBtn.onclick = () => { kidFilter.services = null; renderServiceChips(); renderGrid(); };
+  wrap.appendChild(allBtn);
+  state.activeServices.forEach(svc => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = svc;
+    if (kidFilter.services && kidFilter.services.includes(svc)) b.classList.add("active");
+    b.onclick = () => {
+      if (!kidFilter.services) kidFilter.services = [];
+      if (kidFilter.services.includes(svc)) {
+        kidFilter.services = kidFilter.services.filter(x => x !== svc);
+        if (kidFilter.services.length === 0) kidFilter.services = null;
+      } else { kidFilter.services.push(svc); }
+      renderServiceChips(); renderGrid();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function renderCatChips() {
+  const cats = ["All","Adventure","Funny","Animals & Nature","Educational","History","Sports","Faith","Family Classics","Sci-Fi & Fantasy","Bedtime"];
+  const wrap = $("#catChips");
+  wrap.innerHTML = "";
+  cats.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = c;
+    if (kidFilter.cat === c) b.classList.add("active");
+    b.onclick = () => { kidFilter.cat = c; renderCatChips(); renderGrid(); };
+    wrap.appendChild(b);
+  });
+}
+
+function showMatchesFilter(s) {
+  if (kidFilter.who !== "both" && s.who !== "both" && s.who !== kidFilter.who) return false;
+  if (kidFilter.cat !== "All" && s.cat !== kidFilter.cat) return false;
+  if (kidFilter.type !== "all" && s.type !== kidFilter.type) return false;
+  const services = kidFilter.services || state.activeServices;
+  const providers = getEffectiveProviders(s);
+  if (!providers.some(svc => services.includes(svc))) return false;
+  return true;
+}
+
+// We dropped dimension 1 ("Parents shown competently") — it was unfairly
+// penalizing kid-led adventures (Iron Will, Holes, Old Yeller). What matters
+// is kids acting like kids, no snark, wholesome family, age-appropriate.
+const ACTIVE_DIMS = [0, 2, 3, 4];
+const ACTIVE_LABELS = {
+  0: "Kids act like kids",
+  2: "No snark / mean humor",
+  3: "Wholesome family",
+  4: "Age-appropriate"
+};
+function avgScore(s) {
+  return ACTIVE_DIMS.reduce((sum, i) => sum + s.score[i], 0) / ACTIVE_DIMS.length;
+}
+function badgeFor(s) {
+  const relevant = ACTIVE_DIMS.map(i => s.score[i]);
+  const min = Math.min(...relevant);
+  const avg = avgScore(s);
+  if (min >= 4 && avg >= 4.5) return { cls: "green", label: "Green" };
+  if (min >= 3 && avg >= 3.5) return { cls: "yellow", label: "Yellow" };
+  return { cls: "red", label: "Red" };
+}
+function whoLabel(w) { return w === "both" ? "Both" : w === "alden" ? "Alden" : "Owen"; }
+
+function renderCard(s) {
+  const div = document.createElement("div");
+  div.className = "card";
+  const badge = badgeFor(s);
+  const providers = getEffectiveProviders(s);
+  const visibleSvc = providers.filter(v => state.activeServices.includes(v));
+  const showSvc = visibleSvc.length ? visibleSvc : providers.slice(0,2);
+  const watched = watchedFor(s.t);
+  const aFav = isFav(s.t, "alden"), oFav = isFav(s.t, "owen");
+  const aProf = state.profiles.alden, oProf = state.profiles.owen;
+  div.innerHTML = `
+    <div class="cover">
+      ${getCoverHtml(s)}
+      <span class="badge-mini ${badge.cls}">${badge.cls}</span>
+      <span class="badge-mini kid">${whoLabel(s.who)}</span>
+      <div class="heart-row">
+        <button class="heart-btn ${aFav?'faved':''}" data-fav-kid="alden" data-title="${escapeHtml(s.t)}"><span class="avatar" style="background:${aProf.color}; width:18px; height:18px; font-size:11px;">${aProf.animal}</span> ${aFav?'♥':'♡'}</button>
+        <button class="heart-btn ${oFav?'faved':''}" data-fav-kid="owen" data-title="${escapeHtml(s.t)}"><span class="avatar" style="background:${oProf.color}; width:18px; height:18px; font-size:11px;">${oProf.animal}</span> ${oFav?'♥':'♡'}</button>
+      </div>
+      ${watched ? `<div class="watched-banner">✓ Watched ${"★".repeat(watched.stars||0)}</div>` : ""}
+    </div>
+    <div class="body">
+      <h3>${escapeHtml(s.t)}${s.custom ? ' ★' : ''}</h3>
+      <div class="meta">${capitalize(s.type)} • ${escapeHtml(s.cat)}</div>
+      <div class="why">${escapeHtml(s.why)}</div>
+      <div class="where-svc">${showSvc.map(svcChip).join("")}</div>
+    </div>
+  `;
+  div.onclick = (e) => {
+    if (e.target.closest(".heart-btn")) {
+      const btn = e.target.closest(".heart-btn");
+      toggleFav(btn.dataset.title, btn.dataset.favKid);
+      e.stopPropagation();
+      return;
+    }
+    openModal(s);
+  };
+  return div;
+}
+
+function renderGrid() {
+  const grid = $("#grid");
+  grid.innerHTML = "";
+  let pool = allShows();
+  let heading = "Approved tonight";
+  if (activeTab === "favorites") {
+    const kid = kidFilter.who === "owen" ? "owen" : kidFilter.who === "alden" ? "alden" : null;
+    const favTitles = kid ? state.favorites[kid] : [...new Set([...state.favorites.alden, ...state.favorites.owen])];
+    pool = pool.filter(s => favTitles.includes(s.t));
+    heading = kid ? `${state.profiles[kid].name}'s favorites` : "Family favorites";
+  } else if (activeTab === "watched") {
+    const seen = new Set(state.watched.map(w => w.title));
+    pool = pool.filter(s => seen.has(s.t));
+    heading = "Watched together";
+  }
+  // Time-of-day sort boost on the library tab
+  if (activeTab === "library") {
+    const t = timeContext();
+    if (t.prefer) {
+      pool.sort((a,b) => {
+        const ap = a.cat === t.prefer ? 0 : 1;
+        const bp = b.cat === t.prefer ? 0 : 1;
+        if (ap !== bp) return ap - bp;
+        return 0;
+      });
+    }
+  }
+  const filtered = pool.filter(showMatchesFilter);
+  $("#listHeading").textContent = heading;
+  $("#listCount").textContent = `${filtered.length} option${filtered.length===1?"":"s"}`;
+  if (filtered.length === 0) {
+    let msg = "No matches with these filters. Try a different mood or service.";
+    if (activeTab === "favorites") msg = "No favorites yet. Tap the ♥ on any show card to add it here.";
+    else if (activeTab === "watched") msg = "Nothing watched yet. Open a show and tap 'We watched it' after you do.";
+    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--ink-dim);">${msg}</div>`;
+    return;
+  }
+  filtered.sort((a,b) => {
+    const order = { green: 0, yellow: 1, red: 2 };
+    if (order[badgeFor(a).cls] !== order[badgeFor(b).cls]) return order[badgeFor(a).cls] - order[badgeFor(b).cls];
+    return a.t.localeCompare(b.t);
+  });
+  filtered.forEach(s => grid.appendChild(renderCard(s)));
+  updateTabCounts();
+}
+
+function renderRedList() {
+  const grid = $("#redGrid");
+  grid.innerHTML = "";
+  RED_LIST.forEach(r => {
+    const div = document.createElement("div");
+    div.className = "red-card";
+    div.innerHTML = `
+      <span class="badge-mini red">Not for us</span>
+      <h3>${escapeHtml(r.t)}</h3>
+      <div class="why">${escapeHtml(r.why)}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+/* =============================================================
+   MODAL
+   ============================================================= */
+function openModal(s) {
+  const badge = badgeFor(s);
+  const verdictWord = badge.cls === "green" ? "Yes — go ahead" : badge.cls === "yellow" ? "Watch with a parent" : "Not a great pick";
+  const providers = getEffectiveProviders(s);
+  const available = providers.filter(v => state.activeServices.includes(v));
+  const elsewhere = providers.filter(v => !state.activeServices.includes(v));
+  $("#modalCover").innerHTML = getCoverHtml(s);
+  const labels = ["Kids act like kids", "Parents shown competently", "No snark / mean humor", "Wholesome family", "Age-appropriate"];
+  const ACTIVE_IDX = [0, 2, 3, 4]; // skip "Parents shown competently"
+  const aFav = isFav(s.t, "alden"), oFav = isFav(s.t, "owen");
+  const aProf = state.profiles.alden, oProf = state.profiles.owen;
+  const watched = watchedFor(s.t);
+  const prompts = getDiscussionPrompts(s);
+  const cached = state.tmdbCache[s.t] || {};
+  // Build rich metadata strip
+  const metaBits = [capitalize(s.type), escapeHtml(s.cat), `Best for: ${whoLabel(s.who)}`];
+  if (cached.year) metaBits.unshift(cached.year);
+  if (cached.runtime) metaBits.push(`${cached.runtime} min`);
+  if (cached.certification) metaBits.push(`Rated ${cached.certification}`);
+  if (cached.voteAverage) metaBits.push(`★ ${cached.voteAverage.toFixed(1)} TMDB`);
+  const castLine = (cached.cast && cached.cast.length) ? `<div class="meta" style="margin-top:8px;"><b style="color:var(--ink);">Cast:</b> ${cached.cast.slice(0,4).map(c => escapeHtml(c.name)).join(", ")}</div>` : "";
+  const overviewBlock = cached.overview ? `<p style="margin-top:14px; color:var(--ink); line-height:1.6;">${escapeHtml(cached.overview)}</p>` : "";
+  const trailerBlock = cached.trailerKey ? `<a href="https://www.youtube.com/watch?v=${cached.trailerKey}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:8px 14px; border-radius:8px; background:rgba(255,0,0,.15); color:#ff8484; text-decoration:none; font-size:13px; font-weight:600;">▶ Watch trailer on YouTube</a>` : "";
+  $("#modalInfo").innerHTML = `
+    <span class="verdict ${badge.cls}">${verdictWord}</span>
+    <h2>${escapeHtml(s.t)}${s.custom?' ★':''}</h2>
+    <div class="meta">${metaBits.join(" • ")}</div>
+    ${castLine}
+    <p style="margin-top:14px; font-style:italic; color:var(--gold); font-family:'Fraunces',serif; font-size:15px;">"${escapeHtml(s.why)}"</p>
+    ${overviewBlock}
+    ${trailerBlock}
+    ${available.length ? `<div class="watch-row">${available.map(svc => {
+      const url = watchUrl(svc, s.t);
+      if (!url) return svcChip(svc);
+      const cls = SVC_CLASS[svc] || "svc-Default";
+      const logo = (state.providerLogos || {})[svc];
+      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="watch-btn ${cls}">
+        ${logo ? `<img src="${escapeHtml(logo)}" alt="">` : `<span class="play-icon">▶</span>`}
+        <span>Watch on ${escapeHtml(svc)}</span>
+      </a>`;
+    }).join("")}</div>` : ""}
+    ${!available.length && elsewhere.length ? `<div class="where-line unavailable"><span class="label">Not on a service we have</span>${elsewhere.map(svcChip).join("")}</div>` : ""}
+
+    <div class="modal-actions">
+      <button id="favAlden" class="${aFav?'faved':''}"><span class="avatar" style="background:${aProf.color}; width:18px; height:18px; font-size:11px;">${aProf.animal}</span> ${aFav ? '♥ ' + aProf.name + ' loves it' : aProf.name + ' ♡'}</button>
+      <button id="favOwen" class="${oFav?'faved':''}"><span class="avatar" style="background:${oProf.color}; width:18px; height:18px; font-size:11px;">${oProf.animal}</span> ${oFav ? '♥ ' + oProf.name + ' loves it' : oProf.name + ' ♡'}</button>
+      <button id="markWatchedBtn" class="${watched?'watched':''}">${watched ? '✓ Watched '+'★'.repeat(watched.stars||0) : '✓ We watched it'}</button>
+    </div>
+
+    <div class="ratings">
+      ${ACTIVE_IDX.map(i=>`<div class="rrow"><span style="color:var(--ink-soft);">${labels[i]}</span><span class="stars">${"★".repeat(s.score[i])}${"☆".repeat(5-s.score[i])}</span></div>`).join("")}
+    </div>
+
+    <div class="prompts-card">
+      <h4>Talk about it</h4>
+      <ol>${prompts.map(p => `<li>${escapeHtml(p)}</li>`).join("")}</ol>
+    </div>
+  `;
+  // wire actions
+  $("#favAlden").onclick = () => { toggleFav(s.t, "alden"); openModal(s); };
+  $("#favOwen").onclick = () => { toggleFav(s.t, "owen"); openModal(s); };
+  $("#markWatchedBtn").onclick = () => {
+    if (watched) {
+      if (confirm("Unmark as watched?")) { unmarkWatched(s.t); openModal(s); }
+      return;
+    }
+    const stars = parseInt(prompt("How many stars (1-5)? Leave blank for none.") || "0");
+    const valid = Math.max(0, Math.min(5, isNaN(stars) ? 0 : stars));
+    markWatched(s.t, kidFilter.who, valid);
+    openModal(s);
+  };
+  $("#modalBack").classList.add("show");
+}
+function closeModal() { $("#modalBack").classList.remove("show"); }
+
+/* =============================================================
+   SEARCH
+   ============================================================= */
+function lookupVerdict(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const approved = allShows().find(s => s.t.toLowerCase().includes(q));
+  if (approved) return { kind: "approved", show: approved };
+  const red = RED_LIST.find(r => r.t.toLowerCase().includes(q));
+  if (red) return { kind: "red", show: red };
+  return { kind: "unknown", q };
+}
+
+let _searchLookupTimer = null;
+let _lastUnknownQuery = "";
+async function tryTmdbLookupForUnknown(query) {
+  if (!state.tmdbKey || !query || query.length < 3) return;
+  if (query === _lastUnknownQuery) return;
+  _lastUnknownQuery = query;
+  const fakeShow = { t: query, type: "movie", cat: "Adventure" };
+  try {
+    const data = await fetchTmdb(fakeShow);
+    if (data && (data.poster || data.providers.length)) {
+      const out = $("#searchResult");
+      const available = data.providers.filter(v => state.activeServices.includes(v));
+      const elsewhere = data.providers.filter(v => !state.activeServices.includes(v));
+      let whereHtml = "";
+      if (available.length) whereHtml = `<div class="where-line"><span class="label">▶ Watch on</span>${available.map(svcChip).join("")}</div>`;
+      else if (elsewhere.length) whereHtml = `<div class="where-line unavailable"><span class="label">Not on a service we have</span>${elsewhere.map(svcChip).join("")}</div>`;
+      out.innerHTML = `
+        <div class="search-result">
+          ${data.poster ? `<div class="cover"><img src="${escapeHtml(data.poster)}" alt="${escapeHtml(query)}"></div>` : ""}
+          <div ${data.poster ? "" : 'style="grid-column:1/-1;"'}>
+            <span class="verdict yellow">Ask Mom or Dad</span>
+            <h3>${escapeHtml(query)}</h3>
+            <p>We don't have a values rating for this one yet — show this screen to a parent so they can score it together with you.</p>
+            ${whereHtml}
+          </div>
+        </div>`;
+    }
+  } catch (e) { /* ignore */ }
+}
+function renderSearchResult() {
+  const r = lookupVerdict($("#searchInput").value);
+  const out = $("#searchResult");
+  if (!r) { out.innerHTML = ""; return; }
+  if (r.kind === "approved") {
+    const b = badgeFor(r.show);
+    const verdictWord = b.cls === "green" ? "Yes — go ahead" : b.cls === "yellow" ? "Maybe — ask first" : "Not a great pick";
+    const providers = getEffectiveProviders(r.show);
+    const available = providers.filter(v => state.activeServices.includes(v));
+    const elsewhere = providers.filter(v => !state.activeServices.includes(v));
+    let whereHtml = "";
+    if (available.length) {
+      whereHtml = `<div class="where-line"><span class="label">▶ Watch on</span>${available.map(svcChip).join("")}</div>`;
+    } else if (elsewhere.length) {
+      whereHtml = `<div class="where-line unavailable"><span class="label">Not on a service we have</span>${elsewhere.map(svcChip).join("")}</div>`;
+    }
+    out.innerHTML = `
+      <div class="search-result">
+        <div class="cover">${getCoverHtml(r.show)}</div>
+        <div>
+          <span class="verdict ${b.cls}">${verdictWord}</span>
+          <h3>${escapeHtml(r.show.t)}</h3>
+          <div class="meta">${capitalize(r.show.type)} • ${escapeHtml(r.show.cat)}</div>
+          ${whereHtml}
+          <p>${escapeHtml(r.show.why)}</p>
+        </div>
+      </div>`;
+  } else if (r.kind === "red") {
+    out.innerHTML = `
+      <div class="search-result" style="grid-template-columns:1fr;">
+        <div>
+          <span class="verdict red">Not for our family</span>
+          <h3>${escapeHtml(r.show.t)}</h3>
+          <p>${escapeHtml(r.show.why)}</p>
+        </div>
+      </div>`;
+  } else {
+    out.innerHTML = `
+      <div class="search-result" style="grid-template-columns:1fr;">
+        <div>
+          <span class="verdict yellow">Ask Mom or Dad</span>
+          <p>We don't have a note on "<b>${escapeHtml(r.q)}</b>" yet.</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            ${state.anthropicKey ? `<button class="primary" id="aiCheckBtn" style="background:linear-gradient(135deg, var(--mint), #5fc09e); color:#0e2218;">🔮 Let AI check it for me</button>` : ""}
+            <button class="secondary" id="sendApprovalBtn">📨 Send to Mom & Dad</button>
+          </div>
+          <span id="sendApprovalMsg" style="margin-left:0; margin-top:8px; display:block; font-size:13px; color:var(--mint);"></span>
+          <div id="aiVerdictBox" style="margin-top:14px;"></div>
+        </div>
+      </div>`;
+    $("#sendApprovalBtn").onclick = async () => {
+      $("#sendApprovalMsg").textContent = "Sending…";
+      await requestApproval(r.q, kidFilter.who);
+      $("#sendApprovalMsg").textContent = "✓ Sent! Mom or Dad will see this next time they open the app.";
+    };
+    const aiBtn = $("#aiCheckBtn");
+    if (aiBtn) aiBtn.onclick = async () => {
+      aiBtn.disabled = true; aiBtn.textContent = "🔮 Looking it up…";
+      $("#aiVerdictBox").innerHTML = "";
+      // Fetch TMDB details to give the AI good context
+      let candidate = { title: r.q, mediaType: "movie", year: "", overview: "", certification: "", keywords: [], voteAverage: 0, poster: null };
+      try {
+        const tmpShow = { t: r.q, type: "movie", cat: "Adventure" };
+        const data = await fetchTmdb(tmpShow);
+        if (data) {
+          candidate.poster = data.poster;
+          candidate.year = data.year;
+          candidate.overview = data.overview;
+          candidate.certification = data.certification;
+          candidate.voteAverage = data.voteAverage;
+          candidate.mediaType = data.mediaType;
+        }
+      } catch (e) {}
+      aiBtn.textContent = "🔮 Asking Claude…";
+      const verdict = await scoreWithClaude(candidate);
+      aiBtn.disabled = false; aiBtn.textContent = "🔮 Let AI check it for me";
+      const vbox = $("#aiVerdictBox");
+      if (!verdict) {
+        vbox.innerHTML = `<div style="padding:12px; border-radius:10px; background:var(--warn-soft); color:var(--warn);">Couldn't get a clear answer. Tap "Send to Mom & Dad" instead.</div>`;
+        return;
+      }
+      const cls = verdict.verdict;
+      const headline = cls === "green" ? "Yes — go ahead!" : cls === "yellow" ? "Maybe — talk to Mom or Dad first" : "Not for our family";
+      vbox.innerHTML = `
+        <div style="padding:16px; border-radius:14px; background: rgba(${cls==='green'?'127,212,168':cls==='yellow'?'240,182,87':'231,107,101'},.12); border:1px solid rgba(${cls==='green'?'127,212,168':cls==='yellow'?'240,182,87':'231,107,101'},.4);">
+          <span class="verdict ${cls}">${headline}</span>
+          <p style="margin:10px 0; font-size:15px; color:var(--ink); line-height:1.5;">${escapeHtml(verdict.why || "")}</p>
+          ${verdict.concerns ? `<p style="margin:8px 0 0; font-size:13px; color:var(--warn);">⚠ ${escapeHtml(verdict.concerns)}</p>` : ""}
+          ${cls === 'green' ? `<button class="primary" id="autoAddFromAi" style="margin-top:10px;">Add to our library</button>` : ""}
+          ${cls === 'yellow' ? `<button class="secondary" id="autoQueueFromAi" style="margin-top:10px;">Send to parent for final review</button>` : ""}
+        </div>`;
+      // Bind add/queue
+      const addBtn = $("#autoAddFromAi");
+      if (addBtn) addBtn.onclick = () => {
+        state.customShows.push({
+          t: r.q,
+          type: candidate.mediaType === "tv" ? "show" : "movie",
+          who: verdict.best_for === "alden" || verdict.best_for === "owen" ? verdict.best_for : "both",
+          cat: verdict.category || "Family Classics",
+          why: verdict.why || "AI-approved.",
+          svc: [],
+          score: verdict.scores,
+          year: candidate.year || undefined
+        });
+        saveState(); renderGrid(); buildHero();
+        addBtn.textContent = "✓ Added to your library";
+        addBtn.disabled = true;
+      };
+      const queueBtn = $("#autoQueueFromAi");
+      if (queueBtn) queueBtn.onclick = async () => {
+        await requestApproval(r.q, kidFilter.who);
+        // tag the queue entry with the AI scoring
+        const lastIdx = state.approvalQueue.findIndex(q => q.title.toLowerCase() === r.q.toLowerCase());
+        if (lastIdx >= 0) { state.approvalQueue[lastIdx].aiSuggestion = verdict; saveState(); }
+        queueBtn.textContent = "✓ Sent to parent";
+        queueBtn.disabled = true;
+      };
+    };
+    if (state.tmdbKey) {
+      if (_searchLookupTimer) clearTimeout(_searchLookupTimer);
+      _searchLookupTimer = setTimeout(() => tryTmdbLookupForUnknown(r.q), 600);
+    }
+  }
+}
+
+/* =============================================================
+   PARENT
+   ============================================================= */
+function setMode(mode) {
+  $("#kidView").style.display = mode === "kid" ? "" : "none";
+  $("#parentView").style.display = mode === "parent" ? "" : "none";
+  $("#kidModeBtn").classList.toggle("active", mode === "kid");
+  $("#parentModeBtn").classList.toggle("active", mode === "parent");
+  if (mode === "parent") renderParent();
+}
+
+function renderParent() {
+  const locked = !sessionStorage.getItem("parent_unlocked");
+  $("#parentLocked").style.display = locked ? "" : "none";
+  $("#parentUnlocked").style.display = locked ? "none" : "";
+  if (locked) {
+    $("#pinMsg").textContent = state.pin ? "" : "No PIN set yet — type one and tap Set new PIN.";
+  } else {
+    renderManageList(); renderParentServiceChips(); initRubric();
+    renderApprovalList(); renderApprovalCount();
+    renderProfileEditor();
+    renderDiscoveryStatus();
+    if (typeof renderPhotoGrid === "function") renderPhotoGrid();
+  }
+}
+
+function renderManageList() {
+  const wrap = $("#manageList");
+  wrap.innerHTML = "";
+  const merged = SHOWS.concat(state.customShows.map(s=>Object.assign({custom:true},s)));
+  merged.sort((a,b)=>a.t.localeCompare(b.t));
+  merged.forEach(s => {
+    const removed = state.removed.includes(s.t);
+    const row = document.createElement("div");
+    row.className = "manage-row";
+    row.innerHTML = `
+      <div class="info-block">
+        <div class="t">${escapeHtml(s.t)} ${s.custom?'<span style="font-size:11px; color:var(--gold);">★ custom</span>':''} ${removed?'<span style="font-size:11px; color:var(--bad);">(hidden)</span>':''}</div>
+        <div class="meta-line">${escapeHtml(s.cat)} • ${s.svc.join(", ")}</div>
+      </div>`;
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const btn = document.createElement("button");
+    btn.className = removed ? "secondary" : "danger";
+    btn.textContent = removed ? "Restore" : "Hide";
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      if (removed) state.removed = state.removed.filter(x=>x!==s.t);
+      else state.removed.push(s.t);
+      saveState(); renderManageList(); renderGrid(); buildHero();
+    };
+    actions.appendChild(btn);
+    if (s.custom) {
+      const del = document.createElement("button");
+      del.className = "danger";
+      del.textContent = "Delete";
+      del.onclick = (e) => {
+        e.stopPropagation();
+        state.customShows = state.customShows.filter(x => x.t !== s.t);
+        saveState(); renderManageList(); renderGrid(); buildHero();
+      };
+      actions.appendChild(del);
+    }
+    row.appendChild(actions);
+    wrap.appendChild(row);
+  });
+}
+
+function renderParentServiceChips() {
+  const wrap = $("#parentServiceChips");
+  wrap.innerHTML = "";
+  ALL_SERVICES.forEach(svc => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = svc;
+    if (state.activeServices.includes(svc)) b.classList.add("active");
+    b.onclick = () => {
+      if (state.activeServices.includes(svc)) state.activeServices = state.activeServices.filter(x=>x!==svc);
+      else state.activeServices.push(svc);
+      saveState(); renderParentServiceChips(); renderServiceChips(); renderGrid(); buildHero();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* RUBRIC */
+let rubricScores = { r1:0,r2:0,r3:0,r4:0,r5:0 };
+function initRubric() {
+  $$(".stars").forEach(group => {
+    if (!group.dataset.key) return;
+    const key = group.dataset.key;
+    group.innerHTML = "";
+    for (let i=1; i<=5; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.textContent = "★";
+      if (i <= rubricScores[key]) btn.classList.add("on");
+      btn.onclick = () => { rubricScores[key] = i; initRubric(); updateVerdict(); };
+      group.appendChild(btn);
+    }
+  });
+}
+function updateVerdict() {
+  const vals = Object.values(rubricScores);
+  if (vals.some(v=>v===0)) { $("#verdictBox").style.display="none"; return; }
+  const min = Math.min(...vals), avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  const box = $("#verdictBox");
+  box.style.display = "block";
+  let cls, label, msg;
+  if (min >= 4 && avg >= 4.5) {
+    cls = "green"; label = "GREEN — approved";
+    msg = "Solid pick across the board. Save it and the kids will see it in their list.";
+  } else if (min >= 3 && avg >= 3.5) {
+    cls = "yellow"; label = "YELLOW — watch with them";
+    msg = "Good in places, weak in others. Worth watching with the kids and pausing to talk about the rough spots.";
+  } else {
+    cls = "red"; label = "RED — not a great fit";
+    msg = "One or more dimensions are too low. Probably not worth the screen time for our family.";
+  }
+  box.className = "verdict-display " + cls;
+  box.innerHTML = `<b>${label}</b> — ${msg} <br/><span style="font-size:12px; opacity:.85;">Avg ${avg.toFixed(1)}/5 • Lowest ${min}/5</span>`;
+}
+function saveCustomShow() {
+  const t = $("#rTitle").value.trim();
+  if (!t) { alert("Give the show a title."); return; }
+  const why = $("#rWhy").value.trim() || "Approved by Mom & Dad.";
+  const svc = $("#rSvc").value.split(",").map(x=>x.trim()).filter(Boolean);
+  if (svc.length === 0) { alert("Add at least one streaming service."); return; }
+  if (Object.values(rubricScores).some(v=>v===0)) { alert("Rate all five dimensions first."); return; }
+  state.customShows.push({
+    t, type: $("#rType").value, who: $("#rWho").value, cat: $("#rCat").value, why, svc,
+    score: [rubricScores.r1,rubricScores.r2,rubricScores.r3,rubricScores.r4,rubricScores.r5]
+  });
+  saveState(); resetRubric(); renderGrid(); renderManageList(); buildHero();
+  alert("Saved! It now shows up in the kids' list.");
+}
+function resetRubric() {
+  rubricScores = { r1:0,r2:0,r3:0,r4:0,r5:0 };
+  ["#rTitle","#rWhy","#rSvc"].forEach(s => $(s).value = "");
+  initRubric(); $("#verdictBox").style.display = "none";
+}
+
+/* HELPERS */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+}
+function capitalize(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* WIRING */
+$("#kidModeBtn").onclick = () => setMode("kid");
+$("#parentModeBtn").onclick = () => setMode("parent");
+$$("#typeChips .chip").forEach(b => b.onclick = () => {
+  $$("#typeChips .chip").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  kidFilter.type = b.dataset.type;
+  renderGrid();
+});
+$("#searchInput").addEventListener("input", renderSearchResult);
+$("#modalClose").onclick = closeModal;
+$("#modalBack").addEventListener("click", e => { if (e.target.id === "modalBack") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+$("#pinSubmit").onclick = () => {
+  const v = $("#pinInput").value;
+  if (!state.pin) { $("#pinMsg").textContent = "No PIN set. Tap 'Set new PIN' instead."; return; }
+  if (v === state.pin) { sessionStorage.setItem("parent_unlocked","1"); $("#pinInput").value = ""; renderParent(); }
+  else $("#pinMsg").textContent = "Wrong PIN.";
+};
+$("#pinSet").onclick = () => {
+  const v = $("#pinInput").value;
+  if (!/^\d{4,6}$/.test(v)) { $("#pinMsg").textContent = "PIN must be 4–6 digits."; return; }
+  state.pin = v; saveState(); sessionStorage.setItem("parent_unlocked","1");
+  $("#pinInput").value = ""; $("#pinMsg").textContent = "PIN set. You're unlocked."; renderParent();
+};
+$("#lockBtn").onclick = () => { sessionStorage.removeItem("parent_unlocked"); renderParent(); };
+$("#saveShow").onclick = saveCustomShow;
+$("#resetForm").onclick = resetRubric;
+
+function setTmdbStatus(msg) { const el = $("#tmdbStatus"); if (el) el.textContent = msg || ""; }
+
+/* ===== Auto-Discovery Panel wiring ===== */
+function renderDiscoveryStatus() {
+  const status = $("#discoveryStatus");
+  const hist = $("#discoveryHistory");
+  if (!status) return;
+  const last = state.lastDiscoveryAt;
+  const cnt = state.discoveryLog.length;
+  if (state.anthropicKey) {
+    const when = last ? new Date(last).toLocaleString() : "never";
+    status.innerHTML = `Anthropic key saved. Last run: <b>${when}</b>. ${state.rejectedTitles.length} titles previously filtered.`;
+  } else {
+    status.textContent = "Add an Anthropic API key to enable auto-discovery.";
+  }
+  if (hist) {
+    if (state.discoveryLog.length) {
+      hist.innerHTML = `<div style="font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.1em; font-weight:700; margin-bottom:6px;">Recent runs</div>` +
+        state.discoveryLog.slice(0,6).map(log => {
+          const d = new Date(log.date).toLocaleDateString();
+          return `<div style="font-size:13px; padding:6px 0; border-bottom:1px solid var(--border);">
+            <span style="color:var(--ink-soft);">${d}</span> —
+            ${log.novel||0} new found,
+            <b style="color:var(--mint);">${log.added||0} added</b>,
+            <b style="color:var(--warn);">${log.queued||0} queued</b>,
+            <span style="color:var(--ink-dim);">${log.rejected||0} filtered</span>
+          </div>`;
+        }).join("");
+    } else hist.innerHTML = "";
+  }
+  const tog = $("#autoDiscoverToggle");
+  if (tog) tog.checked = !!state.autoDiscover;
+  const ki = $("#anthropicKeyInput");
+  if (ki && state.anthropicKey && !ki.value) ki.value = state.anthropicKey;
+}
+
+function appendDiscoveryLog(line) {
+  const el = $("#discoveryLog");
+  if (!el) return;
+  el.style.display = "block";
+  const t = new Date().toLocaleTimeString();
+  const div = document.createElement("div");
+  div.textContent = `[${t}] ${line}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function runDiscovery() {
+  const btn = $("#discoverNowBtn");
+  const prog = $("#discoveryProgress");
+  if (btn) { btn.disabled = true; btn.textContent = "🔮 Working…"; }
+  if (prog) { prog.style.display = "block"; prog.textContent = "Starting…"; }
+  $("#discoveryLog").innerHTML = "";
+  await discoverNewContent({
+    onProgress: (d, total, title) => {
+      if (prog) prog.textContent = `Scoring ${d}/${total}: ${title}`;
+    },
+    onLog: appendDiscoveryLog
+  });
+  if (btn) { btn.disabled = false; btn.textContent = "🔮 Discover now"; }
+  if (prog) { prog.style.display = "none"; }
+  renderDiscoveryStatus();
+  renderApprovalList(); renderApprovalCount();
+}
+$("#saveTmdbKey").onclick = async () => {
+  const v = $("#tmdbKeyInput").value.trim();
+  if (!v) { setTmdbStatus("Paste a key first."); return; }
+  state.tmdbKey = v; saveState();
+  setTmdbStatus("Fetching… this takes ~30 seconds for the full library.");
+  await backfillTmdb({ onProgress: (d, total) => setTmdbStatus(`Fetched ${d}/${total}…`) });
+  setTmdbStatus(`Done. Cached ${Object.keys(state.tmdbCache).length} shows.`);
+};
+$("#refreshTmdb").onclick = async () => {
+  if (!state.tmdbKey) { setTmdbStatus("Save a key first."); return; }
+  setTmdbStatus("Refreshing all streaming data…");
+  await backfillTmdb({ force: true, onProgress: (d, total) => setTmdbStatus(`Refreshed ${d}/${total}…`) });
+  setTmdbStatus(`Done. Cache refreshed for ${Object.keys(state.tmdbCache).length} shows.`);
+};
+$("#clearTmdbCache").onclick = () => {
+  state.tmdbCache = {}; saveState(); renderGrid(); buildHero();
+  setTmdbStatus("Cache cleared. Posters revert to generated covers.");
+};
+
+// Auto-discovery wiring
+const _saveAnthropic = $("#saveAnthropicKey");
+if (_saveAnthropic) _saveAnthropic.onclick = () => {
+  const v = $("#anthropicKeyInput").value.trim();
+  if (!v) { alert("Paste a key first."); return; }
+  state.anthropicKey = v; saveState();
+  renderDiscoveryStatus();
+  alert("Saved. Tap '🔮 Discover now' to find new content.");
+};
+const _discoverBtn = $("#discoverNowBtn");
+if (_discoverBtn) _discoverBtn.onclick = runDiscovery;
+const _autoTog = $("#autoDiscoverToggle");
+if (_autoTog) _autoTog.onchange = () => { state.autoDiscover = _autoTog.checked; saveState(); };
+
+// On parent unlock, prefill key
+const _origRenderParent = renderParent;
+renderParent = function() {
+  _origRenderParent();
+  const ki = $("#tmdbKeyInput");
+  if (ki && state.tmdbKey) ki.value = state.tmdbKey;
+  if (state.tmdbKey) {
+    const cached = Object.keys(state.tmdbCache).length;
+    setTmdbStatus(cached ? `Connected. ${cached} shows cached.` : "Key saved — tap 'Save & fetch all' to load posters & live streaming data.");
+  }
+};
+
+// =============================================================
+// Family photos as rotating app icon
+// =============================================================
+let _currentPhotoIdx = 0;
+let _photoRotationTimer = null;
+
+function setLogoPhoto(dataUrl, withFade = false) {
+  const logo = $("#brandLogo");
+  const bg = $("#headerBg");
+  const overlay = $("#headerOverlay");
+  // Wide banner backdrop
+  if (bg) {
+    bg.style.backgroundImage = `url("${dataUrl}")`;
+    bg.classList.add("active");
+  }
+  if (overlay) overlay.classList.add("active");
+  // Small logo
+  if (logo) {
+    if (withFade) {
+      logo.style.opacity = "0";
+      setTimeout(() => {
+        logo.style.background = "transparent";
+        logo.innerHTML = `<img src="${dataUrl}" alt="">`;
+        logo.style.opacity = "1";
+      }, 400);
+    } else {
+      logo.style.background = "transparent";
+      logo.innerHTML = `<img src="${dataUrl}" alt="">`;
+    }
+  }
+  // Favicon
+  let link = document.querySelector("link[rel*='icon']") || document.createElement("link");
+  link.rel = "icon"; link.href = dataUrl;
+  document.head.appendChild(link);
+}
+
+function clearBanner() {
+  const bg = $("#headerBg");
+  const overlay = $("#headerOverlay");
+  if (bg) { bg.classList.remove("active"); bg.style.backgroundImage = ""; }
+  if (overlay) overlay.classList.remove("active");
+}
+
+function applyFamilyPhoto() {
+  const logo = $("#brandLogo");
+  if (!logo) return;
+  if (_photoRotationTimer) { clearInterval(_photoRotationTimer); _photoRotationTimer = null; }
+  if (state.familyPhotos && state.familyPhotos.length) {
+    _currentPhotoIdx = Math.floor(Math.random() * state.familyPhotos.length);
+    setLogoPhoto(state.familyPhotos[_currentPhotoIdx], false);
+    updatePwaManifest(state.familyPhotos[_currentPhotoIdx]);
+    if (state.familyPhotos.length > 1) {
+      _photoRotationTimer = setInterval(() => {
+        _currentPhotoIdx = (_currentPhotoIdx + 1) % state.familyPhotos.length;
+        setLogoPhoto(state.familyPhotos[_currentPhotoIdx], true);
+      }, 6000);
+    }
+  } else {
+    logo.style.opacity = "1";
+    logo.style.background = "linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%)";
+    logo.innerHTML = "M";
+    clearBanner();
+    updatePwaManifest(null);
+  }
+}
+
+// PWA: dynamically build the manifest + apple-touch-icon from a family photo
+function updatePwaManifest(photoUrl) {
+  const iconHref = photoUrl || generateDefaultIconDataUrl();
+  const apple = document.getElementById("appleTouchIcon");
+  const fav = document.getElementById("favicon");
+  if (apple) apple.href = iconHref;
+  if (fav) fav.href = iconHref;
+  const manifest = {
+    name: "The Martinez Watchlist",
+    short_name: "Watchlist",
+    start_url: window.location.pathname,
+    scope: "/",
+    display: "standalone",
+    background_color: "#0c0d12",
+    theme_color: "#0c0d12",
+    orientation: "portrait-primary",
+    icons: [
+      { src: iconHref, sizes: "192x192", type: "image/jpeg", purpose: "any" },
+      { src: iconHref, sizes: "512x512", type: "image/jpeg", purpose: "any" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+  const manLink = document.getElementById("appManifest");
+  if (manLink) {
+    if (manLink._oldUrl) URL.revokeObjectURL(manLink._oldUrl);
+    const url = URL.createObjectURL(blob);
+    manLink.href = url;
+    manLink._oldUrl = url;
+  }
+}
+function generateDefaultIconDataUrl() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 192;
+  const ctx = c.getContext("2d");
+  const grad = ctx.createLinearGradient(0, 0, 192, 192);
+  grad.addColorStop(0, "#e9b758"); grad.addColorStop(1, "#ec6f7a");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 192, 192);
+  ctx.fillStyle = "#1a1209"; ctx.font = "bold 130px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("M", 96, 100);
+  return c.toDataURL("image/jpeg", 0.9);
+}
+
+function detectLowResPhotos() {
+  // Heuristic: 320px JPEG ~ 25-50KB base64; 1280px JPEG ~ 200-500KB
+  // If average is under 100KB, photos are low-res
+  if (!state.familyPhotos.length) return false;
+  const avg = state.familyPhotos.reduce((sum, p) => sum + p.length, 0) / state.familyPhotos.length;
+  return avg < 100000;
+}
+
+function renderPhotoGrid() {
+  const grid = $("#photoGrid");
+  const badge = $("#photoCountBadge");
+  if (badge) badge.textContent = state.familyPhotos.length;
+  if (!grid) return;
+  if (!state.familyPhotos.length) {
+    grid.innerHTML = `<div style="color:var(--ink-dim); font-size:13px; padding:8px 0;">No photos yet — tap "+ Add photos" to add some. Pick many at once.</div>`;
+    return;
+  }
+  // Low-res warning banner
+  let warningHtml = "";
+  if (detectLowResPhotos()) {
+    warningHtml = `
+      <div style="grid-column:1/-1; width:100%; padding:14px 16px; border-radius:12px; background: rgba(240,182,87,.12); border: 1px solid rgba(240,182,87,.4); margin-bottom:8px;">
+        <div style="font-weight:700; color:var(--warn); margin-bottom:4px;">⚠ Your photos are low-resolution</div>
+        <div style="font-size:13px; color:var(--ink); line-height:1.5;">They were saved with old settings (320px). The icon looks fine but the hero backdrop is pixelated. Tap below to replace them with HD versions (1280px) — you'll need to re-pick the same photos from your device.</div>
+        <button class="primary" id="replaceHdBtn" style="margin-top:10px;">📸 Replace all with HD versions</button>
+      </div>`;
+  }
+  grid.innerHTML = warningHtml + state.familyPhotos.map((p, i) =>
+    `<div class="photo-thumb"><img src="${p}" alt=""><button class="remove-btn" data-idx="${i}" title="Remove">×</button></div>`
+  ).join("");
+  grid.querySelectorAll(".remove-btn").forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    state.familyPhotos.splice(+b.dataset.idx, 1);
+    saveState(); renderPhotoGrid(); applyFamilyPhoto();
+  });
+  const replaceBtn = $("#replaceHdBtn");
+  if (replaceBtn) replaceBtn.onclick = () => {
+    if (!confirm("This will remove your current low-res photos and open the file picker so you can re-pick them at HD. Ready?")) return;
+    state.familyPhotos = [];
+    saveState(); renderPhotoGrid(); applyFamilyPhoto();
+    $("#photoFileInput").click();
+  };
+}
+
+function compressImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // 1280px max long edge — sharp on hero backdrop, still small enough for localStorage
+        const max = 1280;
+        const scale = Math.min(max / img.width, max / img.height, 1);
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const _photoUploadBtn = document.getElementById("photoUploadBtn");
+if (_photoUploadBtn) _photoUploadBtn.onclick = () => $("#photoFileInput").click();
+const _photoFileInput = document.getElementById("photoFileInput");
+if (_photoFileInput) _photoFileInput.onchange = async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  const status = $("#photoStatus");
+  let added = 0, skipped = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    if (!f.type.startsWith("image/")) { skipped++; continue; }
+    if (f.size > 12 * 1024 * 1024) { skipped++; continue; }
+    if (status) status.textContent = `Processing ${i+1} of ${files.length}…`;
+    try {
+      const compressed = await compressImageFile(f);
+      state.familyPhotos.push(compressed);
+      added++;
+      saveState();
+      renderPhotoGrid();
+    } catch (err) { skipped++; }
+  }
+  if (status) status.textContent = `✓ Added ${added}${skipped?` (${skipped} skipped)`:""}. ${state.familyPhotos.length} photos rotating.`;
+  applyFamilyPhoto();
+  // Reset the input so picking the same files again works
+  e.target.value = "";
+};
+const _photoRemoveAllBtn = document.getElementById("photoRemoveAllBtn");
+if (_photoRemoveAllBtn) _photoRemoveAllBtn.onclick = () => {
+  if (!state.familyPhotos.length) return;
+  if (!confirm(`Remove all ${state.familyPhotos.length} photos? You can add them back anytime.`)) return;
+  state.familyPhotos = [];
+  saveState(); renderPhotoGrid(); applyFamilyPhoto();
+  $("#photoStatus").textContent = "Cleared. Reverted to default M icon.";
+};
+renderPhotoGrid();
+applyFamilyPhoto();
+
+// Tab clicks
+$$("#tabRow button").forEach(b => b.onclick = () => {
+  $$("#tabRow button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  activeTab = b.dataset.tab;
+  renderGrid();
+});
+// Dice
+$("#diceBtn").onclick = pickForUs;
+// Mood chat
+$("#moodCta") && ($("#moodCta").onclick = openMoodModal);
+$("#moodClose") && ($("#moodClose").onclick = closeMoodModal);
+$("#moodBack") && ($("#moodBack").addEventListener("click", e => { if (e.target.id === "moodBack") closeMoodModal(); }));
+$("#moodSubmit") && ($("#moodSubmit").onclick = runMoodChat);
+$("#moodInput") && ($("#moodInput").addEventListener("keydown", e => { if (e.key === "Enter") runMoodChat(); }));
+// Refresh
+$("#refreshBtn") && ($("#refreshBtn").onclick = async () => {
+  if (!state.tmdbKey) { alert("No TMDB key set. Add one in Parents view."); return; }
+  const orig = $("#refreshBtn").textContent;
+  $("#refreshBtn").textContent = "🔄 Refreshing…";
+  $("#refreshBtn").disabled = true;
+  await backfillTmdb({ force: true, onProgress: (d, total) => {
+    if (total) $("#refreshBtn").textContent = `🔄 ${d}/${total}`;
+  }});
+  $("#refreshBtn").textContent = "✓ Up to date";
+  setTimeout(() => { $("#refreshBtn").textContent = orig; $("#refreshBtn").disabled = false; }, 1800);
+});
+// Bulk add
+$("#bulkAddBtn") && ($("#bulkAddBtn").onclick = bulkAdd);
+
+renderWhoChips();
+renderServiceChips();
+renderCatChips();
+renderGrid();
+renderRedList();
+buildHero();
+renderApprovalCount();
+updateTabCounts();
+
+// On every open: top up missing data immediately, then validate anything older than 24h.
+if (state.tmdbKey) {
+  setTimeout(() => backfillTmdb(), 800);
+  setTimeout(() => backfillTmdb({ validateAll: true }), 4000);
+}
+
+// Auto-discovery: weekly silent run if enabled and key is present
+if (state.anthropicKey && state.autoDiscover) {
+  const last = state.lastDiscoveryAt || 0;
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  if (Date.now() - last > sevenDays) {
+    setTimeout(() => {
+      console.log("Auto-discovery starting (silent background run)");
+      discoverNewContent({
+        onProgress: (d, total, title) => console.log(`Scored ${d}/${total}: ${title}`),
+        onLog: (msg) => console.log("[discovery]", msg)
+      });
+    }, 12000); // give the page 12 seconds to settle first
+  }
+}
+
+function renderFreshness() {
+  const el = $("#freshnessLine");
+  if (!el) return;
+  const last = state.lastRefreshAt;
+  const cached = Object.keys(state.tmdbCache).length;
+  if (!last) {
+    el.textContent = `${cached} shows cached`;
+    return;
+  }
+  const mins = Math.round((Date.now() - last) / 60000);
+  let when;
+  if (mins < 1) when = "just now";
+  else if (mins < 60) when = `${mins} min ago`;
+  else if (mins < 24*60) when = `${Math.round(mins/60)}h ago`;
+  else when = `${Math.round(mins/(60*24))}d ago`;
+  el.textContent = `Streaming data refreshed ${when} • ${cached} shows cached`;
+}
+renderFreshness();
+setInterval(renderFreshness, 60000);
+</script>
+</body>
+</html>
