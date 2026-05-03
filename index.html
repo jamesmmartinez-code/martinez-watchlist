@@ -755,6 +755,83 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Login splash (Netflix-style profile picker) ===== */
+#loginSplash {
+  position: fixed; inset: 0; z-index: 9500;
+  background:
+    radial-gradient(800px 500px at 20% 20%, rgba(233,183,88,.12), transparent 60%),
+    radial-gradient(800px 500px at 80% 80%, rgba(127,212,168,.1), transparent 60%),
+    var(--bg-0);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+#loginSplash.show { display: flex; }
+.login-card { width: 100%; max-width: 720px; text-align: center; }
+.login-greet { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 700; margin-bottom: 6px; }
+.login-device { font-size: 13px; color: var(--ink-soft); margin-bottom: 36px; letter-spacing: .04em; }
+.profile-picker {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px; margin-bottom: 26px;
+}
+.profile-card {
+  background: var(--bg-1); border: 1px solid var(--border);
+  padding: 24px 18px 18px; border-radius: 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  cursor: pointer; font-family: inherit; color: var(--ink);
+  transition: all .2s ease;
+}
+.profile-card:hover { transform: translateY(-4px); border-color: var(--border-strong); background: var(--card-elev); box-shadow: var(--shadow-md); }
+.profile-card.last-used { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(233,183,88,.15); }
+.profile-card.last-used::before {
+  content: "← Last used"; position: absolute; transform: translateY(-32px); font-size: 11px; color: var(--gold); font-weight: 700;
+}
+.profile-avatar {
+  position: relative; width: 80px; height: 80px; border-radius: 22px;
+  display: grid; place-items: center; font-size: 40px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.profile-avatar .lock-icon {
+  position: absolute; bottom: -4px; right: -4px;
+  background: var(--bg-0); border-radius: 50%;
+  width: 22px; height: 22px;
+  display: grid; place-items: center; font-size: 11px;
+}
+.profile-name { font-size: 17px; font-weight: 700; font-family: 'Fraunces', serif; }
+.profile-tag { font-size: 11px; color: var(--ink-dim); letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+.login-back {
+  background: transparent; border: 1px solid var(--border); color: var(--ink-soft);
+  padding: 10px 20px; border-radius: 999px; font-family: inherit; font-size: 13px; cursor: pointer;
+  margin-top: 10px;
+}
+.pin-modal {
+  position: fixed; inset: 0; z-index: 9600;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.pin-card {
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  padding: 28px; border-radius: 20px; max-width: 360px; width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+.pin-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.pin-name { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+.pin-label { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 6px; }
+.pin-card input {
+  width: 100%; padding: 14px; font-size: 22px; letter-spacing: 8px; text-align: center;
+  background: var(--bg-2); color: var(--ink); border: 1px solid var(--border-strong);
+  border-radius: 12px; font-family: inherit; outline: 0;
+}
+.pin-card input:focus { border-color: var(--gold); }
+.pin-msg { font-size: 13px; color: var(--bad); margin-top: 8px; min-height: 18px; text-align: center; }
+.user-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 10px 4px 4px; border-radius: 999px;
+  background: rgba(255,255,255,.08); border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .15s ease;
+}
+.user-badge:hover { background: rgba(255,255,255,.14); }
+
 /* ===== Family password splash ===== */
 #familySplash {
   position: fixed; inset: 0; z-index: 10000;
@@ -818,6 +895,9 @@ footer {
 </head>
 <body>
 
+<!-- Per-user login splash -->
+<div id="loginSplash"></div>
+
 <!-- Family password splash -->
 <div id="familySplash">
   <div class="splash-card">
@@ -844,9 +924,12 @@ footer {
         <div class="tagline">Stories worth your time.</div>
       </div>
     </div>
-    <div class="mode-toggle">
-      <button id="kidModeBtn" class="active">Kids</button>
-      <button id="parentModeBtn">Parents <span class="queue-badge" id="parentTabBadge" style="display:none;">0</span></button>
+    <div class="mode-toggle" style="gap:8px; align-items:center;">
+      <button class="user-badge" id="currentUserBadge" style="display:none;" title="Switch user"></button>
+      <div style="display:flex; gap:4px; background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px; border: 1px solid var(--border);">
+        <button id="kidModeBtn" class="active">Kids</button>
+        <button id="parentModeBtn">Parents <span class="queue-badge" id="parentTabBadge" style="display:none;">0</span></button>
+      </div>
     </div>
   </div>
 </header>
@@ -1154,6 +1237,12 @@ footer {
           <input type="checkbox" id="dateNightToggle" style="width:18px; height:18px;">
           <span style="font-size:14px;">Enable date night filter (parents only)</span>
         </label>
+      </div>
+
+      <div class="parent-panel">
+        <h2>Activity log</h2>
+        <p class="help">Who's been signing in from where, and what they've watched.</p>
+        <div id="activityLogView" style="max-height:340px; overflow-y:auto; font-size:13px;"></div>
       </div>
 
       <div class="parent-panel">
@@ -2196,9 +2285,12 @@ function defaultState() {
     region: "US",
     // Profiles, favorites, watched
     profiles: {
-      alden: { name: "Alden", color: "#7fd4a8", animal: "🐸", age: 9 },
-      owen:  { name: "Owen",  color: "#FF8000", animal: "🏎️", age: 11 }
+      alden: { name: "Alden", color: "#7fd4a8", animal: "🐸", age: 9, isParent: false, pin: null },
+      owen:  { name: "Owen",  color: "#FF8000", animal: "🏎️", age: 11, isParent: false, pin: null },
+      mom:   { name: "Mom",   color: "#ec6f7a", animal: "👩", age: null, isParent: true, pin: "100811" },
+      dad:   { name: "Dad",   color: "#8aa8ff", animal: "👨", age: null, isParent: true, pin: "100811" }
     },
+    activityLog: [], // [{ userId, deviceId, deviceName, action, detail, timestamp }]
     favorites: { alden: [], owen: [] },
     watched: [],
     approvalQueue: [],
@@ -2229,6 +2321,13 @@ function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 let state = loadState();
 if (!state.providerLogos) state.providerLogos = {};
 if (!state.profiles) state.profiles = defaultState().profiles;
+// Migrate: ensure mom/dad profiles exist on existing installs
+if (!state.profiles.mom) state.profiles.mom = defaultState().profiles.mom;
+if (!state.profiles.dad) state.profiles.dad = defaultState().profiles.dad;
+if (!state.profiles.alden.isParent && state.profiles.alden.isParent !== false) state.profiles.alden.isParent = false;
+if (!state.profiles.owen.isParent && state.profiles.owen.isParent !== false) state.profiles.owen.isParent = false;
+if (!state.activityLog) state.activityLog = [];
+saveState();
 if (!state.favorites) state.favorites = { alden: [], owen: [] };
 if (!state.watched) state.watched = [];
 if (!state.approvalQueue) state.approvalQueue = [];
@@ -2807,7 +2906,7 @@ function isFav(showTitle, kid) {
 function toggleFav(showTitle, kid) {
   const list = state.favorites[kid] || (state.favorites[kid] = []);
   const i = list.indexOf(showTitle);
-  if (i >= 0) list.splice(i, 1); else list.push(showTitle);
+  if (i >= 0) list.splice(i, 1); else { list.push(showTitle); logActivity("favorite", showTitle); }
   saveState(); renderGrid(); updateTabCounts();
 }
 function watchedFor(showTitle) {
@@ -2819,6 +2918,7 @@ function markWatched(showTitle, who, stars) {
   if (existing >= 0) state.watched[existing] = entry;
   else state.watched.push(entry);
   saveState(); renderGrid(); updateTabCounts();
+  logActivity("watched", showTitle + (stars ? ` (${stars}★)` : ""));
 }
 function unmarkWatched(showTitle) {
   state.watched = state.watched.filter(w => w.title !== showTitle);
@@ -3847,7 +3947,35 @@ function renderParent() {
     renderProfileEditor();
     renderDiscoveryStatus();
     if (typeof renderPhotoGrid === "function") renderPhotoGrid();
+    if (typeof renderActivityLog === "function") renderActivityLog();
   }
+}
+
+function renderActivityLog() {
+  const wrap = document.getElementById("activityLogView");
+  if (!wrap) return;
+  if (!state.activityLog.length) {
+    wrap.innerHTML = `<div style="color:var(--ink-dim); padding:8px 0;">No activity yet. Once family members log in and watch shows, you'll see it here.</div>`;
+    return;
+  }
+  // Show most recent 50, grouped by day
+  const recent = state.activityLog.slice(-50).reverse();
+  wrap.innerHTML = recent.map(e => {
+    const profile = state.profiles[e.userId];
+    const t = new Date(e.timestamp);
+    const when = t.toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const who = profile ? `${profile.animal} ${profile.name}` : e.userId;
+    let actionText = "";
+    if (e.action === "login") actionText = `signed in`;
+    else if (e.action === "logout") actionText = `signed out`;
+    else if (e.action === "watched") actionText = `marked "${e.detail}" as watched`;
+    else if (e.action === "favorite") actionText = `hearted "${e.detail}"`;
+    else actionText = e.action + (e.detail ? ` — ${e.detail}` : "");
+    return `<div style="padding: 8px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:10px;">
+      <div><b>${escapeHtml(who)}</b> ${escapeHtml(actionText)}</div>
+      <div style="color:var(--ink-dim); font-size:12px; text-align:right; flex-shrink:0;">${escapeHtml(when)}<br><span style="font-size:10px;">${escapeHtml(e.deviceName || "")}</span></div>
+    </div>`;
+  }).join("");
 }
 
 function renderManageList() {
@@ -3974,6 +4102,9 @@ function capitalize(s) { return s.charAt(0).toUpperCase()+s.slice(1); }
 /* WIRING */
 $("#kidModeBtn").onclick = () => setMode("kid");
 $("#parentModeBtn").onclick = () => setMode("parent");
+$("#currentUserBadge") && ($("#currentUserBadge").onclick = () => {
+  if (confirm("Switch user?")) logoutUser();
+});
 $$("#typeChips .chip").forEach(b => b.onclick = () => {
   $$("#typeChips .chip").forEach(x => x.classList.remove("active"));
   b.classList.add("active");
@@ -4028,23 +4159,25 @@ if (_restoreInput) _restoreInput.onchange = (e) => {
   };
   reader.readAsText(f);
 };
-// Date night toggle
+// Date night toggle — gated by parent login (kids physically cannot enable)
 const _dateNightToggle = document.getElementById("dateNightToggle");
 if (_dateNightToggle) {
   _dateNightToggle.checked = !!state.dateNightMode;
   _dateNightToggle.onchange = () => {
+    if (!isCurrentUserParent()) {
+      _dateNightToggle.checked = false;
+      alert("Date night mode is only available when a parent is logged in.");
+      return;
+    }
     state.dateNightMode = _dateNightToggle.checked;
     saveState();
     renderGrid();
   };
 }
-// Auto-disable date-night at 6am
-if (state.dateNightMode) {
-  const now = new Date();
-  if (now.getHours() >= 6 && now.getHours() < 20) {
-    state.dateNightMode = false;
-    saveState();
-  }
+// Force date-night OFF whenever a non-parent is logged in
+if (!isCurrentUserParent() && state.dateNightMode) {
+  state.dateNightMode = false;
+  saveState();
 }
 
 // PIN change (requires current pin)
@@ -4226,14 +4359,211 @@ function setLogoPhoto(dataUrl, withFade = false) {
 }
 
 // =============================================================
+// PER-USER LOGIN — Netflix-style profile picker.
+// Tracks who's logged in from which device + builds activity log.
+// =============================================================
+function getDeviceId() {
+  let id = localStorage.getItem("device_id");
+  if (!id) {
+    id = "dev_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+    localStorage.setItem("device_id", id);
+  }
+  return id;
+}
+function getDeviceName() {
+  let saved = localStorage.getItem("device_name");
+  if (saved) return saved;
+  const ua = navigator.userAgent;
+  let name;
+  if (/iPad/.test(ua)) name = "iPad";
+  else if (/iPhone/.test(ua)) name = "iPhone";
+  else if (/Android.*Mobile/.test(ua)) name = "Android Phone";
+  else if (/Android/.test(ua)) name = "Android Tablet";
+  else if (/Mac OS/.test(ua)) name = "Mac";
+  else if (/Windows/.test(ua)) name = "PC";
+  else name = "Browser";
+  localStorage.setItem("device_name", name);
+  return name;
+}
+function getCurrentUser() {
+  return sessionStorage.getItem("current_user") || null;
+}
+function setCurrentUser(userId) {
+  sessionStorage.setItem("current_user", userId);
+  // Also remember on device for auto-fill next time
+  localStorage.setItem("last_user", userId);
+  // Auto-set the kid filter
+  const profile = state.profiles[userId];
+  if (profile) {
+    if (profile.isParent) {
+      kidFilter.who = "both";
+    } else {
+      kidFilter.who = userId;
+    }
+  }
+}
+function isCurrentUserParent() {
+  const u = getCurrentUser();
+  if (!u) return false;
+  return state.profiles[u]?.isParent === true;
+}
+function logActivity(action, detail = "") {
+  const u = getCurrentUser();
+  if (!u) return;
+  const entry = {
+    userId: u,
+    deviceId: getDeviceId(),
+    deviceName: getDeviceName(),
+    action, detail,
+    timestamp: new Date().toISOString()
+  };
+  state.activityLog.push(entry);
+  // Keep last 500 entries
+  if (state.activityLog.length > 500) state.activityLog = state.activityLog.slice(-500);
+  saveState();
+}
+
+function renderLoginScreen() {
+  const splash = document.getElementById("loginSplash");
+  if (!splash) return;
+  splash.innerHTML = `
+    <div class="login-card">
+      <div class="login-greet">Who's watching?</div>
+      <div class="login-device">on ${escapeHtml(getDeviceName())}</div>
+      <div class="profile-picker">
+        ${["alden","owen","mom","dad"].map(id => {
+          const p = state.profiles[id];
+          if (!p) return "";
+          const lockIcon = p.pin ? `<span class="lock-icon">🔒</span>` : "";
+          const lastUser = localStorage.getItem("last_user") === id ? " last-used" : "";
+          return `
+            <button class="profile-card${lastUser}" data-userid="${id}">
+              <span class="profile-avatar" style="background:${p.color};">${p.animal}${lockIcon}</span>
+              <span class="profile-name">${escapeHtml(p.name)}</span>
+              <span class="profile-tag">${p.isParent ? 'Parent' : `Age ${p.age}`}</span>
+            </button>`;
+        }).join("")}
+      </div>
+      <button class="login-back" id="loginLogoutFamily">Lock everyone out</button>
+    </div>
+    <div class="pin-modal" id="pinModal" style="display:none;">
+      <div class="pin-card">
+        <div class="pin-header">
+          <span class="pin-avatar" id="pinAvatar"></span>
+          <div class="pin-name" id="pinName"></div>
+        </div>
+        <div class="pin-label">Enter PIN</div>
+        <input type="password" inputmode="numeric" maxlength="6" id="pinModalInput" autocomplete="off">
+        <div class="pin-msg" id="pinModalMsg"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button class="secondary" id="pinModalBack">Back</button>
+          <button class="primary" id="pinModalSubmit" style="flex:1;">Enter</button>
+        </div>
+      </div>
+    </div>
+  `;
+  splash.classList.add("show");
+  // Wire profile cards
+  splash.querySelectorAll(".profile-card").forEach(btn => {
+    btn.onclick = () => {
+      const userId = btn.dataset.userid;
+      const profile = state.profiles[userId];
+      if (profile.pin) {
+        showPinModal(userId);
+      } else {
+        loginUser(userId);
+      }
+    };
+  });
+  document.getElementById("loginLogoutFamily").onclick = () => {
+    if (!confirm("Lock the whole app on this device? You'll need the family password to get back in.")) return;
+    localStorage.removeItem("martinez_unlocked_v1");
+    sessionStorage.removeItem("current_user");
+    location.reload();
+  };
+}
+
+function showPinModal(userId) {
+  const profile = state.profiles[userId];
+  const modal = document.getElementById("pinModal");
+  document.getElementById("pinAvatar").innerHTML = `<span class="profile-avatar" style="background:${profile.color}; width:48px; height:48px; font-size:24px;">${profile.animal}</span>`;
+  document.getElementById("pinName").textContent = profile.name;
+  document.getElementById("pinModalInput").value = "";
+  document.getElementById("pinModalMsg").textContent = "";
+  modal.style.display = "flex";
+  setTimeout(() => document.getElementById("pinModalInput")?.focus(), 100);
+  document.getElementById("pinModalSubmit").onclick = () => {
+    const v = document.getElementById("pinModalInput").value;
+    if (v === profile.pin) {
+      modal.style.display = "none";
+      loginUser(userId);
+    } else {
+      document.getElementById("pinModalMsg").textContent = "Wrong PIN.";
+      document.getElementById("pinModalInput").value = "";
+      document.getElementById("pinModalInput").focus();
+    }
+  };
+  document.getElementById("pinModalBack").onclick = () => { modal.style.display = "none"; };
+  document.getElementById("pinModalInput").onkeydown = (e) => {
+    if (e.key === "Enter") document.getElementById("pinModalSubmit").click();
+  };
+}
+
+function loginUser(userId) {
+  setCurrentUser(userId);
+  logActivity("login");
+  const splash = document.getElementById("loginSplash");
+  if (splash) splash.classList.remove("show");
+  // Parents bypass the parent unlock screen too
+  if (state.profiles[userId].isParent) {
+    sessionStorage.setItem("parent_unlocked", "1");
+  }
+  renderWhoChips();
+  updateUserBadge();
+  renderGrid();
+  buildHero();
+}
+
+function logoutUser() {
+  logActivity("logout");
+  sessionStorage.removeItem("current_user");
+  sessionStorage.removeItem("parent_unlocked");
+  // Switch back to library tab
+  activeTab = "library";
+  showLogin();
+}
+
+function showLogin() {
+  if (!state.familyPassword || localStorage.getItem("martinez_unlocked_v1") !== state.familyPassword) {
+    return; // Family gate handles it
+  }
+  renderLoginScreen();
+}
+
+function updateUserBadge() {
+  const u = getCurrentUser();
+  const badge = document.getElementById("currentUserBadge");
+  if (!badge) return;
+  if (u && state.profiles[u]) {
+    const p = state.profiles[u];
+    badge.style.display = "inline-flex";
+    badge.innerHTML = `<span class="avatar" style="background:${p.color}; width:24px; height:24px; font-size:14px;">${p.animal}</span> ${escapeHtml(p.name)}`;
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+// =============================================================
 // Family password gate
 // =============================================================
 function checkFamilyGate() {
   const splash = document.getElementById("familySplash");
   if (!splash) return true;
-  if (!state.familyPassword) { splash.classList.remove("show"); return true; }
+  if (!state.familyPassword) { splash.classList.remove("show"); checkUserLogin(); return true; }
   if (localStorage.getItem("martinez_unlocked_v1") === state.familyPassword) {
-    splash.classList.remove("show"); return true;
+    splash.classList.remove("show");
+    checkUserLogin();
+    return true;
   }
   splash.classList.add("show");
   // Show photo on splash if available
@@ -4255,10 +4585,29 @@ function trySplashUnlock() {
     document.getElementById("familySplash").classList.remove("show");
     if (msg) msg.textContent = "";
     input.value = "";
+    checkUserLogin();
   } else {
     if (msg) msg.textContent = "Try again.";
     input.value = "";
     input.focus();
+  }
+}
+
+function checkUserLogin() {
+  // After family gate is passed, require user-level login
+  if (!getCurrentUser()) {
+    renderLoginScreen();
+  } else {
+    document.getElementById("loginSplash").classList.remove("show");
+    updateUserBadge();
+    // Auto-set kid filter from logged-in user
+    const u = getCurrentUser();
+    const profile = state.profiles[u];
+    if (profile && !profile.isParent) {
+      kidFilter.who = u;
+      renderWhoChips();
+      renderGrid();
+    }
   }
 }
 const _splashSubmit = document.getElementById("splashSubmit");
