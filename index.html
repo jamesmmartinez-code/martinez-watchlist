@@ -755,6 +755,79 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Stats / achievements modal ===== */
+.stats-back {
+  position: fixed; inset: 0; z-index: 8500;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.stats-back.show { display: flex; }
+.stats-card {
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  padding: 28px; border-radius: 22px; max-width: 520px; width: 100%;
+  max-height: 86vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+}
+.stats-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.stats-header .avatar { width: 56px; height: 56px; font-size: 28px; border-radius: 18px; }
+.stats-header h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0; }
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;
+}
+.stat-tile {
+  background: var(--bg-2); padding: 14px 16px; border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.stat-tile .stat-num { font-size: 28px; font-weight: 700; font-family: 'Fraunces', serif; color: var(--gold); }
+.stat-tile .stat-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+.badge-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px;
+}
+.achievement-badge {
+  background: var(--bg-2); border: 1px solid var(--border);
+  padding: 12px 10px; border-radius: 12px; text-align: center;
+  position: relative;
+}
+.achievement-badge.earned { border-color: var(--gold); background: var(--gold-soft); }
+.achievement-badge .badge-icon { font-size: 30px; margin-bottom: 4px; }
+.achievement-badge .badge-name { font-size: 12px; font-weight: 700; }
+.achievement-badge .badge-desc { font-size: 10px; color: var(--ink-soft); margin-top: 2px; line-height: 1.3; }
+.achievement-badge.locked { opacity: .35; }
+.stats-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(0,0,0,.4); border: 0; color: var(--ink); width: 32px; height: 32px;
+  border-radius: 50%; cursor: pointer; font-size: 18px;
+}
+
+/* ===== First-time onboarding tour ===== */
+.tour-back {
+  position: fixed; inset: 0; z-index: 9100;
+  background: rgba(0,0,0,.85);
+  display: none; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.tour-back.show { display: flex; }
+.tour-card {
+  background: var(--bg-1); border: 1px solid var(--border-strong);
+  padding: 36px 32px; border-radius: 22px; max-width: 480px; width: 100%;
+  text-align: center; box-shadow: var(--shadow-lg);
+}
+.tour-card .tour-emoji { font-size: 56px; margin-bottom: 16px; }
+.tour-card h2 { margin: 0 0 12px; font-size: 28px; font-family: 'Fraunces', serif; }
+.tour-card p { margin: 0 0 22px; color: var(--ink-soft); line-height: 1.55; font-size: 15px; }
+.tour-card .tour-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 18px; }
+.tour-card .tour-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); }
+.tour-card .tour-dots span.active { background: var(--gold); width: 24px; border-radius: 99px; }
+.tour-card .tour-actions { display: flex; gap: 10px; justify-content: center; }
+.tour-card button {
+  background: var(--gold); color: #1a1209; border: 0;
+  padding: 12px 24px; border-radius: 999px;
+  font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+}
+.tour-card button.skip {
+  background: transparent; color: var(--ink-soft);
+  border: 1px solid var(--border);
+}
+
 /* ===== Welcome banner ===== */
 .welcome-banner {
   display: flex; align-items: center; gap: 18px; padding: 18px 22px;
@@ -923,6 +996,17 @@ footer {
 
 <!-- Per-user login splash -->
 <div id="loginSplash"></div>
+
+<!-- First-time onboarding tour -->
+<div id="tourBack" class="tour-back"><div class="tour-card" id="tourCard"></div></div>
+
+<!-- Stats / Achievements -->
+<div id="statsBack" class="stats-back">
+  <div class="stats-card" id="statsCard" style="position:relative;">
+    <button class="stats-close" id="statsCloseBtn">×</button>
+    <div id="statsContent"></div>
+  </div>
+</div>
 
 <!-- Family password splash -->
 <div id="familySplash">
@@ -4332,13 +4416,17 @@ function renderWelcomeBanner() {
         <div class="welcome-sub">${escapeHtml(suggestionText)}</div>
         ${statBlurb}
       </div>
-      ${ctx.prefer ? `<button class="welcome-cta" data-cat="${escapeHtml(ctx.prefer)}">${escapeHtml(ctx.prefer)} →</button>` : ''}
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${ctx.prefer ? `<button class="welcome-cta" data-cat="${escapeHtml(ctx.prefer)}">${escapeHtml(ctx.prefer)} →</button>` : ''}
+        ${!profile.isParent ? `<button class="welcome-cta" id="welcomeStatsBtn" style="background:rgba(255,255,255,.1); color:var(--ink); border:1px solid var(--border); font-size:11px; padding:6px 12px;">🏆 My Stats</button>` : ''}
+      </div>
     </div>`;
 
-  banner.querySelector(".welcome-cta")?.addEventListener("click", (e) => {
+  banner.querySelector(".welcome-cta[data-cat]")?.addEventListener("click", (e) => {
     kidFilter.cat = e.target.dataset.cat;
     renderCatChips(); renderGrid();
   });
+  banner.querySelector("#welcomeStatsBtn")?.addEventListener("click", () => showStatsModal(u));
 }
 
 function renderPicksOfWeek() {
@@ -5080,6 +5168,12 @@ $("#parentModeBtn").onclick = () => setMode("parent");
 $("#currentUserBadge") && ($("#currentUserBadge").onclick = () => {
   if (confirm("Switch user?")) logoutUser();
 });
+const _statsClose = document.getElementById("statsCloseBtn");
+if (_statsClose) _statsClose.onclick = () => document.getElementById("statsBack").classList.remove("show");
+const _statsBack = document.getElementById("statsBack");
+if (_statsBack) _statsBack.addEventListener("click", e => {
+  if (e.target.id === "statsBack") document.getElementById("statsBack").classList.remove("show");
+});
 $$("#typeChips .chip").forEach(b => b.onclick = () => {
   $$("#typeChips .chip").forEach(x => x.classList.remove("active"));
   b.classList.add("active");
@@ -5570,6 +5664,7 @@ function showPinModal(userId) {
 }
 
 function loginUser(userId) {
+  const isFirstLogin = !localStorage.getItem(`onboarded_${userId}`);
   setCurrentUser(userId);
   logActivity("login");
   const splash = document.getElementById("loginSplash");
@@ -5582,6 +5677,167 @@ function loginUser(userId) {
   updateUserBadge();
   renderGrid();
   buildHero();
+  if (isFirstLogin && !state.profiles[userId].isParent) {
+    setTimeout(() => startOnboardingTour(userId), 600);
+  }
+}
+
+// =============================================================
+// FIRST-TIME ONBOARDING TOUR
+// =============================================================
+// =============================================================
+// STATS & ACHIEVEMENTS PER KID
+// =============================================================
+const ACHIEVEMENTS = [
+  { id: "first_watch", icon: "🎬", name: "First Watch", desc: "Watched 1 show", check: (s) => s.watched >= 1 },
+  { id: "five_watch", icon: "🌟", name: "Getting Started", desc: "5 shows watched", check: (s) => s.watched >= 5 },
+  { id: "ten_watch", icon: "🎯", name: "Movie Buff", desc: "10 shows watched", check: (s) => s.watched >= 10 },
+  { id: "twenty_five", icon: "🏆", name: "Quarter Century", desc: "25 shows watched", check: (s) => s.watched >= 25 },
+  { id: "first_fav", icon: "❤️", name: "First Favorite", desc: "Hearted your first show", check: (s) => s.favs >= 1 },
+  { id: "ten_favs", icon: "💝", name: "Big Heart", desc: "10 favorites", check: (s) => s.favs >= 10 },
+  { id: "five_star", icon: "⭐", name: "Five-Star Critic", desc: "Rated something 5 stars", check: (s) => s.fiveStars >= 1 },
+  { id: "adventure", icon: "🏔️", name: "Adventurer", desc: "5 Adventure shows", check: (s) => (s.byCategory["Adventure"] || 0) >= 5 },
+  { id: "animal_lover", icon: "🦁", name: "Animal Lover", desc: "5 Animals & Nature", check: (s) => (s.byCategory["Animals & Nature"] || 0) >= 5 },
+  { id: "sports_fan", icon: "⚽", name: "Sports Fan", desc: "5 Sports films", check: (s) => (s.byCategory["Sports"] || 0) >= 5 },
+  { id: "family_classics", icon: "🏡", name: "Family Classics", desc: "5 Family Classics", check: (s) => (s.byCategory["Family Classics"] || 0) >= 5 },
+  { id: "history_buff", icon: "📜", name: "History Buff", desc: "3 History shows", check: (s) => (s.byCategory["History"] || 0) >= 3 },
+  { id: "bucket_5", icon: "🎬", name: "Bucket: 5/30", desc: "5 of 30 family classics", check: (s) => s.bucketCompleted >= 5 },
+  { id: "bucket_10", icon: "🎟️", name: "Bucket: 10/30", desc: "10 of 30 family classics", check: (s) => s.bucketCompleted >= 10 },
+  { id: "bucket_done", icon: "👑", name: "Bucket Champion", desc: "All 30 family classics", check: (s) => s.bucketCompleted >= 30 }
+];
+
+function computeStats(userId) {
+  const profile = state.profiles[userId];
+  if (!profile) return null;
+  const myWatched = state.watched.filter(w => w.who === userId || (profile.isParent));
+  const stats = {
+    watched: myWatched.length,
+    favs: (state.favorites[userId] || []).length,
+    fiveStars: myWatched.filter(w => w.stars === 5).length,
+    avgRating: myWatched.length ? (myWatched.reduce((sum, w) => sum + (w.stars||0), 0) / myWatched.filter(w=>w.stars).length || 0).toFixed(1) : "—",
+    byCategory: {},
+    bucketCompleted: 0,
+    streakDays: 0,
+    topCategory: ""
+  };
+  // Count by category
+  myWatched.forEach(w => {
+    const show = allShows().find(s => s.t === w.title);
+    if (show) stats.byCategory[show.cat] = (stats.byCategory[show.cat] || 0) + 1;
+  });
+  // Top category
+  const cats = Object.entries(stats.byCategory).sort((a,b) => b[1]-a[1]);
+  stats.topCategory = cats[0]?.[0] || "—";
+  // Bucket completed
+  const watchedTitles = new Set(myWatched.map(w => w.title));
+  stats.bucketCompleted = state.bucketList.filter(t => watchedTitles.has(t)).length;
+  return stats;
+}
+
+function showStatsModal(userId) {
+  const profile = state.profiles[userId];
+  const stats = computeStats(userId);
+  if (!stats) return;
+  const earned = ACHIEVEMENTS.filter(a => a.check(stats));
+  const locked = ACHIEVEMENTS.filter(a => !a.check(stats));
+  document.getElementById("statsContent").innerHTML = `
+    <div class="stats-header">
+      <span class="avatar" style="background:${profile.color};">${profile.animal}</span>
+      <div>
+        <h2>${escapeHtml(profile.name)}'s Stats</h2>
+        <div style="font-size:12px; color:var(--ink-dim);">${earned.length} of ${ACHIEVEMENTS.length} achievements unlocked</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-tile"><div class="stat-num">${stats.watched}</div><div class="stat-label">Shows watched</div></div>
+      <div class="stat-tile"><div class="stat-num">${stats.favs}</div><div class="stat-label">Favorites</div></div>
+      <div class="stat-tile"><div class="stat-num">${stats.fiveStars}</div><div class="stat-label">5-star ratings</div></div>
+      <div class="stat-tile"><div class="stat-num">${stats.bucketCompleted}<span style="font-size:14px; color:var(--ink-soft);">/30</span></div><div class="stat-label">Bucket list</div></div>
+    </div>
+    ${stats.topCategory !== "—" ? `<div style="background:var(--bg-2); padding:12px 16px; border-radius:10px; margin-bottom:18px; font-size:13px;"><b style="color:var(--gold);">Top category:</b> ${escapeHtml(stats.topCategory)} (${stats.byCategory[stats.topCategory]} watched)</div>` : ""}
+    <h3 style="font-family:'Fraunces',serif; font-size:18px; margin:0 0 12px;">🏆 Achievements</h3>
+    <div class="badge-grid">
+      ${earned.map(a => `
+        <div class="achievement-badge earned">
+          <div class="badge-icon">${a.icon}</div>
+          <div class="badge-name">${escapeHtml(a.name)}</div>
+          <div class="badge-desc">${escapeHtml(a.desc)}</div>
+        </div>
+      `).join("")}
+      ${locked.map(a => `
+        <div class="achievement-badge locked">
+          <div class="badge-icon">🔒</div>
+          <div class="badge-name">${escapeHtml(a.name)}</div>
+          <div class="badge-desc">${escapeHtml(a.desc)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  document.getElementById("statsBack").classList.add("show");
+}
+
+function startOnboardingTour(userId) {
+  const profile = state.profiles[userId];
+  if (!profile) return;
+  const steps = [
+    {
+      emoji: profile.animal,
+      title: `Welcome, ${profile.name}!`,
+      body: `This is the family watchlist. We've picked shows that are good for your heart and your head — no shows that teach you to be sassy or rude. Let me show you around in 4 quick steps.`
+    },
+    {
+      emoji: "❤️",
+      title: "Tap ♥ to save shows you want to watch",
+      body: `When you find something cool, tap the heart with your face on it. Your favorites tab will keep them all together. Owen has his own; you have yours.`
+    },
+    {
+      emoji: "🔍",
+      title: "Search anything",
+      body: `Type any show or movie in the search bar — even ones not on our list. The app will tell you if it's good for our family. Or tell us how you're feeling and Claude will suggest something.`
+    },
+    {
+      emoji: "✨",
+      title: `"For You" picks just for you`,
+      body: `Once you've hearted some shows or rated a few, the "For You" tab will fill up with picks Claude thinks YOU specifically would love. The more you use it, the smarter it gets.`
+    },
+    {
+      emoji: "🎬",
+      title: "Last thing — the Bucket List",
+      body: `30 movies we want to watch as a family before you grow up. Every time we watch one, you get to check it off. Try to see how many we can do this year!`
+    }
+  ];
+  let idx = 0;
+  const back = document.getElementById("tourBack");
+  const card = document.getElementById("tourCard");
+  function render() {
+    const s = steps[idx];
+    const isLast = idx === steps.length - 1;
+    card.innerHTML = `
+      <div class="tour-emoji">${s.emoji}</div>
+      <h2>${escapeHtml(s.title)}</h2>
+      <p>${escapeHtml(s.body)}</p>
+      <div class="tour-dots">
+        ${steps.map((_, i) => `<span class="${i === idx ? 'active' : ''}"></span>`).join("")}
+      </div>
+      <div class="tour-actions">
+        ${idx > 0 ? '<button class="skip" id="tourBackBtn">Back</button>' : ''}
+        <button id="tourNextBtn">${isLast ? "Let's go!" : "Next →"}</button>
+      </div>
+    `;
+    document.getElementById("tourNextBtn").onclick = () => {
+      if (isLast) {
+        localStorage.setItem(`onboarded_${userId}`, "1");
+        back.classList.remove("show");
+      } else {
+        idx++; render();
+      }
+    };
+    if (idx > 0) {
+      document.getElementById("tourBackBtn").onclick = () => { idx--; render(); };
+    }
+  }
+  render();
+  back.classList.add("show");
 }
 
 function logoutUser() {
