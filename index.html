@@ -4712,8 +4712,258 @@ const GAMES_LIBRARY = [
   { id: "memory", title: "Movie Memory", emoji: "🃏", desc: "Match the movie posters.", launch: () => launchMovieMemory() },
   { id: "trivia", title: "Movie Trivia", emoji: "🎯", desc: "AI quiz on what you've watched.", launch: () => launchMovieTrivia() },
   { id: "hangman", title: "Movie Hangman", emoji: "🔤", desc: "Guess the movie title.", launch: () => launchHangman() },
-  { id: "chess", title: "Chess", emoji: "♟️", desc: "Real chess (Lichess).", launch: () => launchChess() }
+  { id: "chess", title: "Chess", emoji: "♟️", desc: "Full game with check + checkmate.", launch: () => launchChess() },
+  { id: "monsters", title: "Movie Monsters", emoji: "🐲", desc: "Catch & battle creatures inspired by movies.", launch: () => launchMonsters() }
 ];
+
+// =============================================================
+// MOVIE MONSTERS — original creatures inspired by movie themes.
+// Catch them with Tickets. Battle. Collect all 16.
+// =============================================================
+const MONSTERS = [
+  { id:"sandlobby", name:"Sandlobby", emoji:"🦞", type:"Adventure", hp:60, atk:18, def:14, rarity:"common", lore:"A loyal beach scout that loves long walks at sunset." },
+  { id:"barklit",   name:"Barklit",   emoji:"🐶", type:"Animal",    hp:55, atk:20, def:12, rarity:"common", lore:"A tail-wagging companion that never leaves a kid behind." },
+  { id:"manelyn",   name:"Manelyn",   emoji:"🦁", type:"Royalty",   hp:80, atk:24, def:16, rarity:"rare",   lore:"Born to lead. Will protect the family at all costs." },
+  { id:"finbo",     name:"Finbo",     emoji:"🐠", type:"Aqua",      hp:50, atk:16, def:14, rarity:"common", lore:"A tiny clown-fish-spirit that swims through every challenge." },
+  { id:"tortado",   name:"Tortado",   emoji:"🐢", type:"Wisdom",    hp:90, atk:12, def:24, rarity:"rare",   lore:"Ancient and patient. Knows the way of the wave." },
+  { id:"dinkin",    name:"Dinkin",    emoji:"🦖", type:"Prehistoric",hp:75,atk:26, def:14, rarity:"rare",   lore:"A lonely little dinosaur who's brave when his friends are near." },
+  { id:"princeling",name:"Princeling",emoji:"👑", type:"Royalty",   hp:65, atk:20, def:18, rarity:"rare",   lore:"Honors family above all. Quick to defend, slow to anger." },
+  { id:"spiritair", name:"Spiritair", emoji:"💨", type:"Air",       hp:70, atk:22, def:14, rarity:"rare",   lore:"Glides on the wind. Master of all four ways of moving." },
+  { id:"rocketto",  name:"Rocketto",  emoji:"🚀", type:"Space",     hp:60, atk:24, def:12, rarity:"rare",   lore:"Built from a kid's bedroom rocket. Knows the moons by name." },
+  { id:"mechon",    name:"Mechon",    emoji:"🤖", type:"Mech",      hp:85, atk:22, def:20, rarity:"epic",   lore:"A gentle giant. Chooses to protect rather than to destroy." },
+  { id:"bookwurm",  name:"Bookwurm",  emoji:"📚", type:"Wisdom",    hp:55, atk:14, def:20, rarity:"common", lore:"Knows the answer to every story question — even yours." },
+  { id:"snackmunch",name:"Snackmunch",emoji:"🍿", type:"Comedy",    hp:50, atk:18, def:10, rarity:"common", lore:"Powered by laughter. Stronger when the family's together." },
+  { id:"sailorat",  name:"Sailorat",  emoji:"⚓", type:"Adventure", hp:65, atk:20, def:16, rarity:"common", lore:"A swashbuckler who loves treasure but loves friends more." },
+  { id:"starbeam",  name:"Starbeam",  emoji:"⭐", type:"Faith",     hp:70, atk:22, def:18, rarity:"epic",   lore:"Glows brighter when someone shows kindness." },
+  { id:"foxlit",    name:"Foxlit",    emoji:"🦊", type:"Air",       hp:60, atk:24, def:14, rarity:"rare",   lore:"Quick, clever, and deeply loyal." },
+  { id:"ironguard", name:"Ironguard", emoji:"🛡️", type:"Mech",     hp:100,atk:18, def:30, rarity:"legendary", lore:"Ancient defender. Awakens only when family is in danger." }
+];
+
+function getMonsterState(userId) {
+  if (!state.monsters) state.monsters = {};
+  if (!state.monsters[userId]) state.monsters[userId] = { caught: {}, tickets: 8, wins: 0, losses: 0 };
+  return state.monsters[userId];
+}
+
+function launchMonsters() {
+  const u = getCurrentUser();
+  if (!u) { openGame(`<h2>🐲 Movie Monsters</h2><p>Log in first so we know whose collection this is!</p><button class="primary" onclick="closeGame()">OK</button>`); return; }
+  const profile = state.profiles[u];
+  showMonstersHome();
+}
+
+function showMonstersHome() {
+  const u = getCurrentUser();
+  const profile = state.profiles[u];
+  const ms = getMonsterState(u);
+  const caughtCount = Object.keys(ms.caught).length;
+  openGame(`
+    <h2>🐲 Movie Monsters</h2>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;">
+      <div style="padding:6px 12px; background:var(--bg-2); border-radius:999px; font-size:13px;">🎟️ Tickets: <b>${ms.tickets}</b></div>
+      <div style="padding:6px 12px; background:var(--bg-2); border-radius:999px; font-size:13px;">📖 Caught: <b>${caughtCount}/${MONSTERS.length}</b></div>
+      <div style="padding:6px 12px; background:var(--bg-2); border-radius:999px; font-size:13px;">🏆 Wins: <b>${ms.wins}</b></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+      <button class="primary" id="mEncounterBtn" style="padding:18px 12px; font-size:15px;">🌲 Find a wild monster</button>
+      <button class="answer-btn" id="mCollectionBtn" style="padding:18px 12px; font-size:15px;">📖 My collection</button>
+      <button class="answer-btn" id="mBattleBtn" style="padding:18px 12px; font-size:15px;">⚔️ Battle (vs computer)</button>
+      <button class="answer-btn" id="mShopBtn" style="padding:18px 12px; font-size:15px;">🎟️ Earn tickets</button>
+    </div>
+  `);
+  document.getElementById("mEncounterBtn").onclick = () => { if (ms.tickets <= 0) { alert("Out of tickets! Tap 'Earn tickets' to play a quick game."); return; } encounterMonster(); };
+  document.getElementById("mCollectionBtn").onclick = showCollection;
+  document.getElementById("mBattleBtn").onclick = startBattle;
+  document.getElementById("mShopBtn").onclick = earnTickets;
+}
+
+function encounterMonster() {
+  const u = getCurrentUser(); const ms = getMonsterState(u);
+  // Weight by rarity
+  const pool = [];
+  MONSTERS.forEach(m => {
+    const w = m.rarity === "common" ? 5 : m.rarity === "rare" ? 3 : m.rarity === "epic" ? 1 : (Math.random() < 0.05 ? 1 : 0);
+    for (let i = 0; i < w; i++) pool.push(m);
+  });
+  const wild = pool[Math.floor(Math.random()*pool.length)];
+  let wildHp = wild.hp;
+  function render(msg = "") {
+    const ratio = wildHp / wild.hp;
+    const catchPct = Math.round((1 - ratio*0.7) * 100);
+    openGame(`
+      <h2>🐲 Wild ${escapeHtml(wild.name)}!</h2>
+      <div class="game-progress">${escapeHtml(wild.lore)}</div>
+      <div style="text-align:center; padding:30px 10px; background:var(--bg-2); border-radius:14px; margin:16px 0;">
+        <div style="font-size:80px;">${wild.emoji}</div>
+        <div style="font-weight:700; margin-top:8px;">${escapeHtml(wild.name)} <span style="font-size:11px; color:var(--ink-soft);">(${wild.rarity})</span></div>
+        <div style="font-size:12px; color:var(--ink-soft); margin-top:4px;">${wild.type} type</div>
+        <div style="margin-top:12px; height:10px; background:#333; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${ratio*100}%; background:linear-gradient(90deg, var(--mint), var(--gold));"></div></div>
+        <div style="font-size:11px; color:var(--ink-dim); margin-top:4px;">HP ${wildHp}/${wild.hp}</div>
+      </div>
+      ${msg ? `<div style="text-align:center; color:var(--gold); margin:10px 0; font-style:italic;">${escapeHtml(msg)}</div>` : ""}
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        <button class="primary" id="mCatchBtn">🎟️ Throw Ticket (${catchPct}%)</button>
+        <button class="answer-btn" id="mWeakenBtn">🪨 Toss Stone</button>
+      </div>
+      <button class="secondary" id="mFleeBtn" style="margin-top:8px; width:100%;">Run away</button>
+    `);
+    document.getElementById("mCatchBtn").onclick = () => {
+      if (ms.tickets <= 0) { render("You're out of tickets!"); return; }
+      ms.tickets--;
+      saveState();
+      const success = Math.random() * 100 < catchPct;
+      if (success) {
+        ms.caught[wild.id] = (ms.caught[wild.id] || 0) + 1;
+        saveState();
+        openGame(`<h2>🎉 Caught!</h2><div style="text-align:center; padding:40px 20px;"><div style="font-size:96px;">${wild.emoji}</div><h3>${escapeHtml(wild.name)} joined your collection!</h3><p style="color:var(--ink-soft);">${escapeHtml(wild.lore)}</p></div><div style="display:flex; gap:10px;"><button class="primary" onclick="showMonstersHome()" style="flex:1;">Home</button><button class="answer-btn" onclick="encounterMonster()" style="flex:1;">Find another</button></div>`);
+      } else {
+        render(`The ticket failed! ${wild.name} broke free.`);
+      }
+    };
+    document.getElementById("mWeakenBtn").onclick = () => {
+      const dmg = 10 + Math.floor(Math.random()*15);
+      wildHp = Math.max(1, wildHp - dmg);
+      render(`You tossed a stone! ${wild.name} lost ${dmg} HP.`);
+    };
+    document.getElementById("mFleeBtn").onclick = showMonstersHome;
+  }
+  render();
+}
+
+function showCollection() {
+  const u = getCurrentUser(); const ms = getMonsterState(u);
+  const caughtList = MONSTERS.map(m => {
+    const count = ms.caught[m.id] || 0;
+    return { ...m, caught: count };
+  });
+  openGame(`
+    <h2>📖 ${escapeHtml(state.profiles[u].name)}'s Collection</h2>
+    <div class="game-progress">${Object.keys(ms.caught).length} of ${MONSTERS.length} discovered</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:10px; margin:18px 0;">
+      ${caughtList.map(m => m.caught ? `
+        <div style="background:var(--bg-2); border:1px solid ${m.rarity==="legendary"?"var(--gold)":m.rarity==="epic"?"var(--rose)":m.rarity==="rare"?"var(--mint)":"var(--border)"}; border-radius:10px; padding:10px 6px; text-align:center;">
+          <div style="font-size:36px;">${m.emoji}</div>
+          <div style="font-size:12px; font-weight:700;">${escapeHtml(m.name)}</div>
+          <div style="font-size:9px; color:var(--ink-dim); margin-top:2px;">${m.type} • ×${m.caught}</div>
+        </div>
+      ` : `
+        <div style="background:var(--bg-2); border:1px dashed var(--border); border-radius:10px; padding:10px 6px; text-align:center; opacity:.45;">
+          <div style="font-size:36px;">❓</div>
+          <div style="font-size:12px;">???</div>
+        </div>
+      `).join("")}
+    </div>
+    <button class="primary" onclick="showMonstersHome()" style="width:100%;">Home</button>
+  `);
+}
+
+function startBattle() {
+  const u = getCurrentUser(); const ms = getMonsterState(u);
+  const myList = Object.keys(ms.caught);
+  if (myList.length === 0) {
+    openGame(`<h2>⚔️ Battle</h2><p>You need at least 1 monster to battle. Go catch one first!</p><button class="primary" onclick="showMonstersHome()">Home</button>`);
+    return;
+  }
+  // Pick a random caught monster vs a random wild
+  const myMonster = MONSTERS.find(m => m.id === myList[Math.floor(Math.random()*myList.length)]);
+  const enemy = MONSTERS[Math.floor(Math.random()*MONSTERS.length)];
+  let myHp = myMonster.hp, enemyHp = enemy.hp;
+  let log = `A wild ${enemy.name} appeared! Go, ${myMonster.name}!`;
+  function render() {
+    openGame(`
+      <h2>⚔️ Battle</h2>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0;">
+        <div style="background:var(--bg-2); padding:14px; border-radius:12px; text-align:center; ${myHp<=0?'opacity:.4;':''}">
+          <div style="font-size:11px; color:var(--ink-soft); margin-bottom:4px;">YOU</div>
+          <div style="font-size:48px;">${myMonster.emoji}</div>
+          <div style="font-weight:700;">${escapeHtml(myMonster.name)}</div>
+          <div style="height:8px; background:#333; border-radius:4px; margin-top:8px; overflow:hidden;"><div style="height:100%; width:${(myHp/myMonster.hp)*100}%; background:var(--mint);"></div></div>
+          <div style="font-size:10px; color:var(--ink-dim); margin-top:2px;">HP ${myHp}/${myMonster.hp}</div>
+        </div>
+        <div style="background:var(--bg-2); padding:14px; border-radius:12px; text-align:center; ${enemyHp<=0?'opacity:.4;':''}">
+          <div style="font-size:11px; color:var(--ink-soft); margin-bottom:4px;">WILD</div>
+          <div style="font-size:48px;">${enemy.emoji}</div>
+          <div style="font-weight:700;">${escapeHtml(enemy.name)}</div>
+          <div style="height:8px; background:#333; border-radius:4px; margin-top:8px; overflow:hidden;"><div style="height:100%; width:${(enemyHp/enemy.hp)*100}%; background:var(--rose);"></div></div>
+          <div style="font-size:10px; color:var(--ink-dim); margin-top:2px;">HP ${enemyHp}/${enemy.hp}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg-1); padding:12px 16px; border-radius:10px; min-height:50px; font-size:14px; line-height:1.5; border-left:3px solid var(--gold);">${escapeHtml(log)}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        <button class="primary" id="mAttackBtn" ${myHp<=0||enemyHp<=0?"disabled":""}>⚔️ Attack</button>
+        <button class="answer-btn" id="mGuardBtn" ${myHp<=0||enemyHp<=0?"disabled":""}>🛡️ Guard</button>
+      </div>
+      ${enemyHp<=0 ? `<button class="primary" id="mWinBtn" style="margin-top:10px; width:100%;">🎉 Victory! +1 ticket</button>` : ""}
+      ${myHp<=0 ? `<button class="answer-btn" id="mLoseBtn" style="margin-top:10px; width:100%;">😅 Defeated. Try again?</button>` : ""}
+    `);
+    if (document.getElementById("mAttackBtn")) document.getElementById("mAttackBtn").onclick = () => {
+      const dmg = Math.max(1, myMonster.atk - enemy.def/2 + Math.floor(Math.random()*10) - 5);
+      enemyHp = Math.max(0, enemyHp - dmg);
+      log = `${myMonster.name} attacked! ${enemy.name} took ${dmg} damage.`;
+      render();
+      if (enemyHp > 0) setTimeout(() => {
+        const edmg = Math.max(1, enemy.atk - myMonster.def/2 + Math.floor(Math.random()*10) - 5);
+        myHp = Math.max(0, myHp - edmg);
+        log = `${enemy.name} attacked back! You took ${edmg} damage.`;
+        render();
+      }, 900);
+    };
+    if (document.getElementById("mGuardBtn")) document.getElementById("mGuardBtn").onclick = () => {
+      log = `${myMonster.name} braced. Damage reduced.`;
+      render();
+      setTimeout(() => {
+        const edmg = Math.max(1, Math.floor((enemy.atk - myMonster.def/2)/2) + Math.floor(Math.random()*4));
+        myHp = Math.max(0, myHp - edmg);
+        log += ` ${enemy.name} attacked but only did ${edmg} damage.`;
+        render();
+      }, 700);
+    };
+    if (document.getElementById("mWinBtn")) document.getElementById("mWinBtn").onclick = () => { ms.wins++; ms.tickets++; saveState(); showMonstersHome(); };
+    if (document.getElementById("mLoseBtn")) document.getElementById("mLoseBtn").onclick = () => { ms.losses++; saveState(); showMonstersHome(); };
+  }
+  render();
+}
+
+function earnTickets() {
+  // Quick mini-game: pick the right answer in 5 seconds = +2 tickets
+  openGame(`<h2>🎟️ Earn Tickets</h2>
+    <p style="color:var(--ink-soft);">Quick math challenge — solve 3 in a row to earn 3 tickets. Or play other games (Trivia, Hangman) — each win earns 1 ticket too.</p>
+    <button class="primary" id="startMath" style="width:100%; padding:14px; margin-top:14px;">Start math challenge</button>
+    <button class="secondary" onclick="showMonstersHome()" style="width:100%; padding:12px; margin-top:8px;">Home</button>`);
+  document.getElementById("startMath").onclick = () => mathChallenge();
+}
+function mathChallenge() {
+  const u = getCurrentUser(); const ms = getMonsterState(u);
+  let correct = 0, total = 3;
+  function next() {
+    if (correct >= total) {
+      ms.tickets += 3; saveState();
+      openGame(`<h2>🎉 +3 tickets!</h2><p style="text-align:center; padding:30px;">You did it! Total tickets: <b>${ms.tickets}</b></p><button class="primary" onclick="showMonstersHome()" style="width:100%;">Back</button>`);
+      return;
+    }
+    const a = Math.floor(Math.random()*12)+2, b = Math.floor(Math.random()*12)+2;
+    const ops = [["+",a+b],["−",a-b],["×",a*b]];
+    const [op, ans] = ops[Math.floor(Math.random()*ops.length)];
+    const wrong1 = ans + (Math.random()<.5?1:-1)*(Math.floor(Math.random()*5)+1);
+    const wrong2 = ans + (Math.random()<.5?2:-2)*(Math.floor(Math.random()*5)+1);
+    const choices = [ans, wrong1, wrong2].sort(() => Math.random()-0.5);
+    openGame(`<h2>🎟️ ${correct+1} of ${total}</h2>
+      <div style="text-align:center; padding:30px 0; font-size:48px; font-family:'Fraunces',serif;"><b>${a} ${op} ${b} = ?</b></div>
+      <div style="display:grid; gap:10px;">
+        ${choices.map(c => `<button class="answer-btn mathOpt" data-c="${c}">${c}</button>`).join("")}
+      </div>`);
+    document.querySelectorAll(".mathOpt").forEach(b => b.onclick = () => {
+      if (+b.dataset.c === ans) { correct++; setTimeout(next, 400); }
+      else {
+        b.classList.add("wrong");
+        setTimeout(() => {
+          openGame(`<h2>😅 Not quite</h2><p style="text-align:center; padding:30px;">${a} ${op} ${b} = <b>${ans}</b>. Got ${correct}/${total} right. Try again?</p><button class="primary" onclick="mathChallenge()" style="width:100%;">Try again</button><button class="secondary" onclick="showMonstersHome()" style="width:100%; margin-top:6px;">Home</button>`);
+        }, 800);
+      }
+    });
+  }
+  next();
+}
 
 function renderGamesHub() {
   const grid = $("#grid");
@@ -5107,17 +5357,144 @@ function launchHangman() {
   render();
 }
 
-// ----- CHESS (lichess embed) -----
+// ----- CHESS (real in-app implementation, 2-player pass-and-play) -----
 function launchChess() {
-  openGame(`<h2>♟️ Chess</h2>
-    <p style="color:var(--ink-soft); font-size:13px; margin-bottom:14px;">Powered by Lichess (free, no account needed). Pick a mode below to open it inline.</p>
-    <div style="display:grid; gap:10px;">
-      <a href="https://lichess.org/training/random" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">🎯 Solve a chess puzzle</a>
-      <a href="https://lichess.org/analysis" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">🧠 Analysis board (2-player on this device)</a>
-      <a href="https://lichess.org" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">♟ Play vs computer or online</a>
-    </div>
-    <p style="margin-top:18px; font-size:12px; color:var(--ink-dim); text-align:center;">Lichess opens in a new tab. Free forever, no ads.</p>
-    <button class="secondary" onclick="closeGame()" style="margin-top:14px;">Done</button>`);
+  const PIECES = { K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟" };
+  // Uppercase = white, lowercase = black
+  let board = [
+    ["r","n","b","q","k","b","n","r"],
+    ["p","p","p","p","p","p","p","p"],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ["P","P","P","P","P","P","P","P"],
+    ["R","N","B","Q","K","B","N","R"]
+  ];
+  let turn = "white", selected = null, validMoves = [], gameOver = null;
+  const isWhite = p => p && p === p.toUpperCase();
+  const isBlack = p => p && p === p.toLowerCase();
+  const ofTurn = p => turn === "white" ? isWhite(p) : isBlack(p);
+  function inBounds(r,c) { return r>=0&&r<8&&c>=0&&c<8; }
+  function getMoves(r, c, b = board) {
+    const p = b[r][c]; if (!p) return [];
+    const moves = []; const lower = p.toLowerCase(); const own = isWhite(p);
+    const enemy = (rr, cc) => b[rr][cc] && (isWhite(b[rr][cc]) !== own);
+    const empty = (rr, cc) => !b[rr][cc];
+    function slide(dirs) {
+      for (const [dr, dc] of dirs) {
+        let nr = r + dr, nc = c + dc;
+        while (inBounds(nr, nc)) {
+          if (!b[nr][nc]) moves.push({ r: nr, c: nc });
+          else { if (enemy(nr, nc)) moves.push({ r: nr, c: nc }); break; }
+          nr += dr; nc += dc;
+        }
+      }
+    }
+    if (lower === "p") {
+      const dir = own ? -1 : 1;
+      const startRow = own ? 6 : 1;
+      if (inBounds(r+dir, c) && !b[r+dir][c]) {
+        moves.push({ r: r+dir, c });
+        if (r === startRow && !b[r+2*dir][c]) moves.push({ r: r+2*dir, c });
+      }
+      for (const dc of [-1, 1]) {
+        const nr = r+dir, nc = c+dc;
+        if (inBounds(nr, nc) && b[nr][nc] && enemy(nr, nc)) moves.push({ r: nr, c: nc });
+      }
+    } else if (lower === "n") {
+      [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(([dr,dc]) => {
+        const nr = r+dr, nc = c+dc;
+        if (inBounds(nr,nc) && (!b[nr][nc] || enemy(nr,nc))) moves.push({r:nr,c:nc});
+      });
+    } else if (lower === "b") slide([[1,1],[1,-1],[-1,1],[-1,-1]]);
+    else if (lower === "r") slide([[1,0],[-1,0],[0,1],[0,-1]]);
+    else if (lower === "q") slide([[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
+    else if (lower === "k") {
+      [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc]) => {
+        const nr = r+dr, nc = c+dc;
+        if (inBounds(nr,nc) && (!b[nr][nc] || enemy(nr,nc))) moves.push({r:nr,c:nc});
+      });
+    }
+    return moves;
+  }
+  function findKing(color) {
+    const target = color === "white" ? "K" : "k";
+    for (let r=0; r<8; r++) for (let c=0; c<8; c++) if (board[r][c] === target) return {r,c};
+    return null;
+  }
+  function inCheck(color, b = board) {
+    const kingPos = (() => { const t = color==="white"?"K":"k"; for (let r=0;r<8;r++) for (let c=0;c<8;c++) if (b[r][c]===t) return {r,c}; })();
+    if (!kingPos) return false;
+    for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+      const p = b[r][c];
+      if (!p || (color==="white" ? isWhite(p) : isBlack(p))) continue;
+      const moves = getMoves(r, c, b);
+      if (moves.some(m => m.r===kingPos.r && m.c===kingPos.c)) return true;
+    }
+    return false;
+  }
+  function legalMoves(r, c) {
+    return getMoves(r, c).filter(m => {
+      const test = board.map(row => row.slice());
+      test[m.r][m.c] = test[r][c]; test[r][c] = null;
+      return !inCheck(turn, test);
+    });
+  }
+  function move(toR, toC) {
+    const piece = board[selected.r][selected.c];
+    board[toR][toC] = piece;
+    board[selected.r][selected.c] = null;
+    // Pawn promotion to queen
+    if (piece === "P" && toR === 0) board[toR][toC] = "Q";
+    if (piece === "p" && toR === 7) board[toR][toC] = "q";
+    turn = turn === "white" ? "black" : "white";
+    selected = null; validMoves = [];
+    // Check for game end
+    if (!findKing(turn)) gameOver = turn === "white" ? "Black wins!" : "White wins!";
+    else {
+      // Any legal moves?
+      let any = false;
+      for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+        if (board[r][c] && (turn==="white" ? isWhite(board[r][c]) : isBlack(board[r][c]))) {
+          if (legalMoves(r,c).length) { any = true; break; }
+        }
+        if (any) break;
+      }
+      if (!any) gameOver = inCheck(turn) ? `Checkmate! ${turn === "white" ? "Black" : "White"} wins!` : "Stalemate — draw!";
+    }
+    render();
+  }
+  function render() {
+    let cells = "";
+    for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+      const p = board[r][c];
+      const isSel = selected && selected.r===r && selected.c===c;
+      const isMove = validMoves.some(m => m.r===r && m.c===c);
+      const dark = (r+c)%2 === 1;
+      const bg = isSel ? "var(--gold)" : isMove ? "var(--mint)" : (dark ? "#3a2d18" : "#5c4a30");
+      const txtColor = p && isWhite(p) ? "#fff" : "#000";
+      cells += `<div class="csCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:pointer; font-size:32px; color:${txtColor}; text-shadow: 0 1px 3px rgba(0,0,0,.5);">${p ? PIECES[p] : ""}</div>`;
+    }
+    const inCheckNow = inCheck(turn);
+    openGame(`
+      <h2>♟️ Chess</h2>
+      <div class="game-progress">${gameOver ? `<b style="color:var(--mint); font-size:18px;">${gameOver}</b>` : `Turn: <b>${turn === "white" ? "⚪ White" : "⚫ Black"}</b>${inCheckNow ? ' <span style="color:var(--bad);">— Check!</span>' : ""}`}</div>
+      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:1px; max-width:480px; margin:14px auto; background:#000; padding:2px; border-radius:6px;">${cells}</div>
+      <button class="primary" id="csReset">New game</button>
+    `);
+    document.querySelectorAll(".csCell").forEach(el => el.onclick = () => {
+      if (gameOver) return;
+      const r = +el.dataset.r, c = +el.dataset.c;
+      if (selected && validMoves.some(m => m.r===r && m.c===c)) { move(r, c); return; }
+      const p = board[r][c];
+      if (p && ofTurn(p)) {
+        selected = {r, c}; validMoves = legalMoves(r, c); render();
+      } else { selected = null; validMoves = []; render(); }
+    });
+    document.getElementById("csReset").onclick = () => launchChess();
+  }
+  render();
 }
 
 // ----- CHECKERS (basic 2-player pass-and-play) -----
