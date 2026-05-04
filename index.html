@@ -775,13 +775,20 @@ button.danger {
   position: fixed; inset: 0; z-index: 8800;
   background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
   display: none; align-items: center; justify-content: center; padding: 20px;
+  overscroll-behavior: contain;
 }
 .game-modal-back.show { display: flex; }
 .game-modal {
   background: var(--bg-1); border: 1px solid var(--border-strong); border-radius: 22px;
   padding: 28px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
   position: relative; box-shadow: var(--shadow-lg);
+  overscroll-behavior: contain;
+  touch-action: manipulation;
 }
+/* Disable double-tap zoom and click delay on all interactive elements */
+button, .answer-btn, .chip, .heart-btn, .game-card, .memory-cell, .ckCell, .csCell, .ttCell, .c4Cell, .pwa-nudge button { touch-action: manipulation; }
+/* Lock body scroll when any game/modal is open */
+body.modal-locked { overflow: hidden; position: fixed; width: 100%; }
 .game-modal h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 6px; }
 .game-modal .game-progress { font-size: 12px; color: var(--ink-dim); margin-bottom: 18px; }
 .game-modal .answer-options { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
@@ -4716,7 +4723,11 @@ const GAMES_LIBRARY = [
   { id: "trivia", title: "Movie Trivia", emoji: "🎯", desc: "AI quiz on what you've watched.", launch: () => launchMovieTrivia() },
   { id: "hangman", title: "Movie Hangman", emoji: "🔤", desc: "Guess the movie title.", launch: () => launchHangman() },
   { id: "chess", title: "Chess", emoji: "♟️", desc: "Full game with check + checkmate.", launch: () => launchChess() },
-  { id: "monsters", title: "Movie Monsters", emoji: "🐲", desc: "Catch & battle creatures inspired by movies.", launch: () => launchMonsters() }
+  { id: "monsters", title: "Movie Monsters", emoji: "🐲", desc: "Catch & battle creatures inspired by movies.", launch: () => launchMonsters() },
+  { id: "crazy8s", title: "Wild Eights", emoji: "🃏", desc: "UNO-style card game vs computer.", launch: () => launchCrazy8s() },
+  { id: "familylife", title: "Family Life", emoji: "🎲", desc: "Roll the dice, live a life, who finishes richest?", launch: () => launchFamilyLife() },
+  { id: "battleship", title: "Battleship", emoji: "🚢", desc: "Sink the computer's fleet.", launch: () => launchBattleship() },
+  { id: "war", title: "Card War", emoji: "⚔️", desc: "Highest card wins. Pure luck.", launch: () => launchWar() }
 ];
 
 // =============================================================
@@ -4750,14 +4761,9 @@ function getMonsterState(userId) {
 
 function launchMonsters() {
   const u = getCurrentUser();
-  if (!u) { openGame(`<h2>🐲 Movie Monsters</h2><p>Log in first so we know whose collection this is!</p><button class="primary" onclick="closeGame()">OK</button>`); return; }
+  if (!u) { openGame(`<h2>🐲 Movie Monsters</h2><p>Log in first so we know whose collection this is!</p><button class="primary" id="monsLogin">OK</button>`); document.getElementById("monsLogin").onclick = closeGame; return; }
   showMonstersHome();
 }
-// Expose monster functions to window for inline onclick handlers
-window.showMonstersHome = function() { showMonstersHome(); };
-window.encounterMonster = function() { encounterMonster(); };
-window.mathChallenge = function() { mathChallenge(); };
-window.launchMovieTrivia = function() { launchMovieTrivia(); };
 
 function showMonstersHome() {
   const u = getCurrentUser();
@@ -4822,7 +4828,9 @@ function encounterMonster() {
       if (success) {
         ms.caught[wild.id] = (ms.caught[wild.id] || 0) + 1;
         saveState();
-        openGame(`<h2>🎉 Caught!</h2><div style="text-align:center; padding:40px 20px;"><div style="font-size:96px;">${wild.emoji}</div><h3>${escapeHtml(wild.name)} joined your collection!</h3><p style="color:var(--ink-soft);">${escapeHtml(wild.lore)}</p></div><div style="display:flex; gap:10px;"><button class="primary" onclick="showMonstersHome()" style="flex:1;">Home</button><button class="answer-btn" onclick="encounterMonster()" style="flex:1;">Find another</button></div>`);
+        openGame(`<h2>🎉 Caught!</h2><div style="text-align:center; padding:40px 20px;"><div style="font-size:96px;">${wild.emoji}</div><h3>${escapeHtml(wild.name)} joined your collection!</h3><p style="color:var(--ink-soft);">${escapeHtml(wild.lore)}</p></div><div style="display:flex; gap:10px;"><button class="primary" id="caughtHome" style="flex:1;">Home</button><button class="answer-btn" id="caughtAgain" style="flex:1;">Find another</button></div>`);
+        document.getElementById("caughtHome").onclick = showMonstersHome;
+        document.getElementById("caughtAgain").onclick = encounterMonster;
       } else {
         render(`The ticket failed! ${wild.name} broke free.`);
       }
@@ -4860,15 +4868,17 @@ function showCollection() {
         </div>
       `).join("")}
     </div>
-    <button class="primary" onclick="showMonstersHome()" style="width:100%;">Home</button>
+    <button class="primary" id="collHome" style="width:100%;">Home</button>
   `);
+  document.getElementById("collHome").onclick = showMonstersHome;
 }
 
 function startBattle() {
   const u = getCurrentUser(); const ms = getMonsterState(u);
   const myList = Object.keys(ms.caught);
   if (myList.length === 0) {
-    openGame(`<h2>⚔️ Battle</h2><p>You need at least 1 monster to battle. Go catch one first!</p><button class="primary" onclick="showMonstersHome()">Home</button>`);
+    openGame(`<h2>⚔️ Battle</h2><p>You need at least 1 monster to battle. Go catch one first!</p><button class="primary" id="bNoMons">Home</button>`);
+    document.getElementById("bNoMons").onclick = showMonstersHome;
     return;
   }
   // Pick a random caught monster vs a random wild
@@ -4932,12 +4942,12 @@ function startBattle() {
 }
 
 function earnTickets() {
-  // Quick mini-game: pick the right answer in 5 seconds = +2 tickets
   openGame(`<h2>🎟️ Earn Tickets</h2>
     <p style="color:var(--ink-soft);">Quick math challenge — solve 3 in a row to earn 3 tickets. Or play other games (Trivia, Hangman) — each win earns 1 ticket too.</p>
     <button class="primary" id="startMath" style="width:100%; padding:14px; margin-top:14px;">Start math challenge</button>
-    <button class="secondary" onclick="showMonstersHome()" style="width:100%; padding:12px; margin-top:8px;">Home</button>`);
-  document.getElementById("startMath").onclick = () => mathChallenge();
+    <button class="secondary" id="etHome" style="width:100%; padding:12px; margin-top:8px;">Home</button>`);
+  document.getElementById("startMath").onclick = mathChallenge;
+  document.getElementById("etHome").onclick = showMonstersHome;
 }
 function mathChallenge() {
   const u = getCurrentUser(); const ms = getMonsterState(u);
@@ -4945,7 +4955,8 @@ function mathChallenge() {
   function next() {
     if (correct >= total) {
       ms.tickets += 3; saveState();
-      openGame(`<h2>🎉 +3 tickets!</h2><p style="text-align:center; padding:30px;">You did it! Total tickets: <b>${ms.tickets}</b></p><button class="primary" onclick="showMonstersHome()" style="width:100%;">Back</button>`);
+      openGame(`<h2>🎉 +3 tickets!</h2><p style="text-align:center; padding:30px;">You did it! Total tickets: <b>${ms.tickets}</b></p><button class="primary" id="mWin" style="width:100%;">Back</button>`);
+      document.getElementById("mWin").onclick = showMonstersHome;
       return;
     }
     const a = Math.floor(Math.random()*12)+2, b = Math.floor(Math.random()*12)+2;
@@ -4964,7 +4975,9 @@ function mathChallenge() {
       else {
         b.classList.add("wrong");
         setTimeout(() => {
-          openGame(`<h2>😅 Not quite</h2><p style="text-align:center; padding:30px;">${a} ${op} ${b} = <b>${ans}</b>. Got ${correct}/${total} right. Try again?</p><button class="primary" onclick="mathChallenge()" style="width:100%;">Try again</button><button class="secondary" onclick="showMonstersHome()" style="width:100%; margin-top:6px;">Home</button>`);
+          openGame(`<h2>😅 Not quite</h2><p style="text-align:center; padding:30px;">${a} ${op} ${b} = <b>${ans}</b>. Got ${correct}/${total} right. Try again?</p><button class="primary" id="mTry" style="width:100%;">Try again</button><button class="secondary" id="mHome" style="width:100%; margin-top:6px;">Home</button>`);
+          document.getElementById("mTry").onclick = mathChallenge;
+          document.getElementById("mHome").onclick = showMonstersHome;
         }, 800);
       }
     });
@@ -4993,9 +5006,12 @@ function renderGamesHub() {
 function openGame(html) {
   $("#gameModalContent").innerHTML = html;
   $("#gameModalBack").classList.add("show");
+  document.body.classList.add("modal-locked");
 }
-function closeGame() { $("#gameModalBack").classList.remove("show"); }
-// Expose to window so inline onclick="..." handlers can find them
+function closeGame() {
+  $("#gameModalBack").classList.remove("show");
+  document.body.classList.remove("modal-locked");
+}
 window.closeGame = closeGame;
 window.openGame = openGame;
 
@@ -5600,6 +5616,391 @@ function launchCheckers() {
     document.getElementById("ckReset").onclick = () => launchCheckers();
   }
   render();
+}
+
+// ----- WILD EIGHTS (UNO-style card game) -----
+function launchCrazy8s() {
+  const SUITS = ["♠","♥","♦","♣"];
+  const RANKS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+  let deck = [], discard = [], hand = [], cpu = [], turn = "you", chosenSuit = null, gameOver = null;
+  function buildDeck() {
+    deck = [];
+    for (const s of SUITS) for (const r of RANKS) deck.push({s, r});
+    deck.sort(() => Math.random() - 0.5);
+  }
+  function draw(who, n=1) { for (let i=0;i<n && deck.length;i++) (who==="you"?hand:cpu).push(deck.pop()); }
+  function startGame() {
+    buildDeck(); discard = []; hand = []; cpu = []; chosenSuit = null; gameOver = null;
+    draw("you", 7); draw("cpu", 7);
+    discard.push(deck.pop());
+    turn = "you"; render();
+  }
+  function topCard() { return discard[discard.length - 1]; }
+  function canPlay(card) {
+    if (card.r === "8") return true;
+    const top = topCard();
+    return card.s === (chosenSuit || top.s) || card.r === top.r;
+  }
+  function cardColor(s) { return s === "♥" || s === "♦" ? "var(--bad)" : "var(--ink)"; }
+  function cardHTML(card, idx, playable) {
+    return `<div class="card-pl" data-i="${idx}" style="background:white; color:${cardColor(card.s)}; border-radius:8px; padding:8px 6px; min-width:46px; text-align:center; font-weight:700; cursor:${playable?"pointer":"not-allowed"}; opacity:${playable?1:.4}; box-shadow:0 2px 6px rgba(0,0,0,.4); flex-shrink:0;"><div style="font-size:18px;">${card.r}</div><div style="font-size:22px;">${card.s}</div></div>`;
+  }
+  function cpuTurn() {
+    setTimeout(() => {
+      if (gameOver) return;
+      let played = false;
+      for (let i=0;i<cpu.length;i++) {
+        if (canPlay(cpu[i])) {
+          const c = cpu.splice(i, 1)[0];
+          discard.push(c);
+          if (c.r === "8") {
+            const counts = {"♠":0,"♥":0,"♦":0,"♣":0};
+            cpu.forEach(c => counts[c.s]++);
+            chosenSuit = Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+          } else { chosenSuit = null; }
+          played = true; break;
+        }
+      }
+      if (!played) { if (deck.length) cpu.push(deck.pop()); }
+      if (cpu.length === 0) gameOver = "cpu";
+      turn = "you"; render();
+    }, 800);
+  }
+  function render() {
+    if (gameOver) {
+      openGame(`<h2>🃏 ${gameOver === "you" ? "🎉 You won!" : "Computer won"}</h2><div style="text-align:center; padding:30px 0; font-size:48px;">${gameOver==="you"?"🏆":"😅"}</div><div style="display:flex; gap:8px;"><button class="primary" id="cWAgain" style="flex:1;">Play again</button><button class="secondary" id="cWClose" style="flex:1;">Close</button></div>`);
+      document.getElementById("cWAgain").onclick = startGame;
+      document.getElementById("cWClose").onclick = closeGame;
+      return;
+    }
+    const top = topCard();
+    const suitDisplay = chosenSuit || top.s;
+    openGame(`
+      <h2>🃏 Wild Eights</h2>
+      <div class="game-progress">${turn === "you" ? "Your turn" : "Computer thinking..."} • Computer has <b>${cpu.length}</b> cards</div>
+      <div style="text-align:center; margin:18px 0;">
+        <div style="display:inline-block; background:white; color:${cardColor(top.s)}; border-radius:12px; padding:18px 14px; min-width:80px; box-shadow:0 4px 14px rgba(0,0,0,.4);">
+          <div style="font-size:28px; font-weight:700;">${top.r}</div>
+          <div style="font-size:36px;">${top.s}</div>
+        </div>
+        ${chosenSuit && top.r === "8" ? `<div style="margin-top:6px; font-size:13px; color:var(--gold);">Suit chosen: <b>${chosenSuit}</b></div>` : ""}
+      </div>
+      <div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">Your hand (${hand.length}):</div>
+      <div style="display:flex; gap:6px; overflow-x:auto; padding:8px 4px; background:var(--bg-2); border-radius:10px;">
+        ${hand.map((c, i) => cardHTML(c, i, canPlay(c) && turn === "you")).join("")}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+        <button class="primary" id="cwDraw" ${turn !== "you" || hand.some(canPlay) ? "disabled" : ""}>Draw a card</button>
+        <button class="secondary" id="cwReset">New game</button>
+      </div>
+    `);
+    if (turn === "you") {
+      document.querySelectorAll(".card-pl").forEach(el => el.onclick = () => {
+        const i = +el.dataset.i;
+        if (!canPlay(hand[i])) return;
+        const c = hand.splice(i, 1)[0];
+        discard.push(c);
+        if (c.r === "8") {
+          const choice = prompt("Wild! Pick a suit: ♠ ♥ ♦ ♣", "♥");
+          chosenSuit = ["♠","♥","♦","♣"].includes(choice) ? choice : "♥";
+        } else { chosenSuit = null; }
+        if (hand.length === 0) gameOver = "you";
+        turn = "cpu"; render();
+        if (!gameOver) cpuTurn();
+      });
+    }
+    document.getElementById("cwDraw").onclick = () => {
+      if (turn !== "you" || hand.some(canPlay) || !deck.length) return;
+      hand.push(deck.pop());
+      turn = "cpu"; render(); cpuTurn();
+    };
+    document.getElementById("cwReset").onclick = startGame;
+  }
+  startGame();
+}
+
+// ----- FAMILY LIFE (board game with life events) -----
+function launchFamilyLife() {
+  const SQUARES = [
+    {label:"START", money:0, msg:"You're born! Start your adventure."},
+    {label:"School starts", money:0, msg:"Off to school! Make new friends."},
+    {label:"Read a book", money:5, msg:"You read 100 books! +$5 of wisdom."},
+    {label:"Soccer practice", money:10, msg:"Made the team! Coach gave you $10 for cleats."},
+    {label:"Family vacation", money:0, msg:"Beach time! Skip 1 turn (relaxing)."},
+    {label:"Lemonade stand", money:25, msg:"You sold 50 cups! +$25"},
+    {label:"Lost a tooth", money:5, msg:"Tooth fairy left $5"},
+    {label:"Birthday!", money:50, msg:"Family gives you $50!"},
+    {label:"Summer camp", money:-15, msg:"You went to camp. -$15 for s'mores"},
+    {label:"Extra chores", money:20, msg:"Mowed neighbor's lawn. +$20"},
+    {label:"Movie night!", money:-5, msg:"-$5 for popcorn (worth it)"},
+    {label:"Math test A+", money:30, msg:"+$30 for the report card!"},
+    {label:"Lost wallet", money:-20, msg:"-$20 found later in the couch"},
+    {label:"Win a trophy", money:25, msg:"Champion! +$25"},
+    {label:"Friend's wedding", money:0, msg:"Wore your fancy clothes."},
+    {label:"Garage sale", money:40, msg:"Sold old toys. +$40"},
+    {label:"Pet adoption", money:-30, msg:"-$30 for the dog. Worth every penny."},
+    {label:"Help grandma", money:15, msg:"Grandma says +$15 for being kind."},
+    {label:"Lost a game", money:0, msg:"Lose 1 turn. You'll get 'em next time."},
+    {label:"Build a fort", money:0, msg:"It's the BEST fort. +$0 but priceless."},
+    {label:"Driver's permit", money:-10, msg:"-$10 for the test."},
+    {label:"First job", money:60, msg:"+$60 first paycheck!"},
+    {label:"College starts", money:-50, msg:"-$50 for textbooks."},
+    {label:"Volunteer trip", money:0, msg:"Helped people. Money can't measure that."},
+    {label:"Graduate!", money:100, msg:"+$100 graduation gift!"},
+    {label:"Get a pet bird", money:-15, msg:"Tweet tweet. -$15"},
+    {label:"Win the lottery (of life)", money:50, msg:"+$50 lucky day!"},
+    {label:"Family reunion", money:25, msg:"Aunt Mae slipped you $25."},
+    {label:"Wedding day", money:200, msg:"+$200 from family. Best day."},
+    {label:"FINISH", money:0, msg:"You made it! See your final score."}
+  ];
+  // 2-player. Player 1 = kid, Player 2 = sibling/parent
+  let players = [
+    { name: "Player 1", emoji: "🐸", pos: 0, money: 50, skip: 0 },
+    { name: "Player 2", emoji: "🏎️", pos: 0, money: 50, skip: 0 }
+  ];
+  let turn = 0, lastRoll = null, gameOver = false, eventMsg = "Roll the dice to start!";
+  function roll() { return Math.floor(Math.random()*6) + 1; }
+  function takeTurn() {
+    const p = players[turn];
+    if (p.skip > 0) {
+      p.skip--;
+      eventMsg = `${p.name} skips this turn (${p.skip} left).`;
+      turn = (turn + 1) % 2; render(); return;
+    }
+    const r = roll(); lastRoll = r;
+    p.pos = Math.min(SQUARES.length - 1, p.pos + r);
+    const sq = SQUARES[p.pos];
+    p.money += sq.money;
+    eventMsg = `${p.name} rolled ${r}, landed on "${sq.label}". ${sq.msg}`;
+    if (sq.label.includes("vacation") || sq.label.includes("Lost a game")) p.skip = 1;
+    if (p.pos >= SQUARES.length - 1) {
+      // Player finished
+      const other = players[1 - turn];
+      if (other.pos >= SQUARES.length - 1) gameOver = true;
+      else { turn = 1 - turn; render(); return; }
+    }
+    if (gameOver || (players[0].pos >= SQUARES.length - 1 && players[1].pos >= SQUARES.length - 1)) gameOver = true;
+    turn = (turn + 1) % 2;
+    render();
+  }
+  function render() {
+    if (gameOver) {
+      const winner = players[0].money > players[1].money ? players[0] : players[1].money > players[0].money ? players[1] : null;
+      openGame(`<h2>🎲 Game Over!</h2><div style="text-align:center; padding:20px 0;">
+        <div style="font-size:60px;">🏁</div>
+        ${winner ? `<h3>${winner.emoji} ${winner.name} wins with $${winner.money}!</h3>` : `<h3>It's a tie at $${players[0].money}!</h3>`}
+        <div style="margin-top:14px; padding:14px; background:var(--bg-2); border-radius:10px; text-align:left;">
+          <div>${players[0].emoji} ${players[0].name}: <b>$${players[0].money}</b></div>
+          <div style="margin-top:6px;">${players[1].emoji} ${players[1].name}: <b>$${players[1].money}</b></div>
+        </div>
+      </div>
+      <button class="primary" id="flAgain" style="width:100%;">Play again</button>`);
+      document.getElementById("flAgain").onclick = launchFamilyLife;
+      return;
+    }
+    const p1 = players[0], p2 = players[1];
+    const cur = players[turn];
+    openGame(`
+      <h2>🎲 Family Life</h2>
+      <div class="game-progress">${cur.emoji} <b>${cur.name}'s</b> turn ${lastRoll ? `• rolled ${lastRoll}` : ""}</div>
+      <div style="margin: 14px 0; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="padding:10px 12px; background:${turn===0?"var(--gold-soft)":"var(--bg-2)"}; border-radius:10px; ${turn===0?"border:1px solid var(--gold);":""}">
+          <div style="font-size:24px;">${p1.emoji} ${p1.name}</div>
+          <div style="font-size:13px; color:var(--ink-soft);">Square ${p1.pos+1}/${SQUARES.length} • <b style="color:var(--mint);">$${p1.money}</b></div>
+        </div>
+        <div style="padding:10px 12px; background:${turn===1?"var(--gold-soft)":"var(--bg-2)"}; border-radius:10px; ${turn===1?"border:1px solid var(--gold);":""}">
+          <div style="font-size:24px;">${p2.emoji} ${p2.name}</div>
+          <div style="font-size:13px; color:var(--ink-soft);">Square ${p2.pos+1}/${SQUARES.length} • <b style="color:var(--mint);">$${p2.money}</b></div>
+        </div>
+      </div>
+      <div style="background:var(--bg-2); border-radius:10px; padding:14px; min-height:60px; font-size:14px; line-height:1.5; border-left:3px solid var(--gold);">${escapeHtml(eventMsg)}</div>
+      <div style="margin-top:14px;">
+        <button class="primary" id="flRoll" style="width:100%; padding:14px; font-size:16px;">🎲 Roll the dice</button>
+      </div>
+      <div style="margin-top:10px; max-height:140px; overflow-y:auto; background:var(--bg-2); border-radius:8px; padding:8px 12px; font-size:11px; color:var(--ink-dim);">
+        ${SQUARES.map((s, i) => {
+          const onIt = (p1.pos === i && p2.pos === i) ? `${p1.emoji}${p2.emoji}` : (p1.pos === i ? p1.emoji : p2.pos === i ? p2.emoji : "");
+          return `<div style="${onIt?"color:var(--gold); font-weight:700;":""}">${i+1}. ${s.label} ${s.money>0?`+$${s.money}`:s.money<0?`-$${-s.money}`:""} ${onIt}</div>`;
+        }).join("")}
+      </div>
+    `);
+    document.getElementById("flRoll").onclick = takeTurn;
+  }
+  render();
+}
+
+// ----- BATTLESHIP (vs computer) -----
+function launchBattleship() {
+  const SIZE = 8;
+  const SHIPS = [{n:"Carrier",l:5},{n:"Battleship",l:4},{n:"Cruiser",l:3},{n:"Submarine",l:3},{n:"Destroyer",l:2}];
+  let myBoard = [], cpuBoard = [], myShots = [], cpuShots = [];
+  let phase = "place", placeIdx = 0, placeOrient = "h";
+  let gameOver = null;
+  function emptyBoard() { return Array.from({length:SIZE}, () => Array(SIZE).fill(null)); }
+  function placeShip(board, ship, r, c, orient) {
+    const cells = [];
+    for (let i = 0; i < ship.l; i++) {
+      const nr = r + (orient === "v" ? i : 0);
+      const nc = c + (orient === "h" ? i : 0);
+      if (nr<0||nr>=SIZE||nc<0||nc>=SIZE||board[nr][nc]) return false;
+      cells.push([nr,nc]);
+    }
+    cells.forEach(([nr,nc]) => board[nr][nc] = { ship: ship.n, hit: false });
+    return true;
+  }
+  function placeCpuShips() {
+    cpuBoard = emptyBoard();
+    for (const ship of SHIPS) {
+      while (true) {
+        const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
+        const o = Math.random() < 0.5 ? "h" : "v";
+        if (placeShip(cpuBoard, ship, r, c, o)) break;
+      }
+    }
+  }
+  function startGame() {
+    myBoard = emptyBoard(); cpuBoard = emptyBoard();
+    myShots = []; cpuShots = []; phase = "place"; placeIdx = 0; placeOrient = "h"; gameOver = null;
+    placeCpuShips();
+    render();
+  }
+  function checkWin(board, shots) {
+    const totalShipCells = SHIPS.reduce((s, sh) => s + sh.l, 0);
+    let hits = 0;
+    for (const [r,c] of shots) if (board[r][c]) hits++;
+    return hits >= totalShipCells;
+  }
+  function cpuShoot() {
+    setTimeout(() => {
+      if (gameOver) return;
+      let r, c;
+      do { r = Math.floor(Math.random()*SIZE); c = Math.floor(Math.random()*SIZE); }
+      while (cpuShots.some(s => s[0]===r && s[1]===c));
+      cpuShots.push([r, c]);
+      const hit = myBoard[r][c];
+      if (hit) hit.hit = true;
+      if (checkWin(myBoard, cpuShots)) gameOver = "cpu";
+      render();
+    }, 700);
+  }
+  function render() {
+    if (gameOver) {
+      openGame(`<h2>🚢 ${gameOver==="you"?"🎉 You sunk the fleet!":"Game over — computer won"}</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${gameOver==="you"?"🏆":"⚓"}</div></div><div style="display:flex; gap:8px;"><button class="primary" id="bsAgain" style="flex:1;">Play again</button><button class="secondary" id="bsClose" style="flex:1;">Close</button></div>`);
+      document.getElementById("bsAgain").onclick = startGame;
+      document.getElementById("bsClose").onclick = closeGame;
+      return;
+    }
+    if (phase === "place") {
+      const ship = SHIPS[placeIdx];
+      let cells = "";
+      for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
+        const has = myBoard[r][c];
+        cells += `<div class="bsP" data-r="${r}" data-c="${c}" style="aspect-ratio:1; background:${has?"var(--mint)":"var(--bg-2)"}; border:1px solid var(--border); cursor:pointer;"></div>`;
+      }
+      openGame(`
+        <h2>🚢 Place your ${ship.n} (${ship.l})</h2>
+        <div class="game-progress">Ship ${placeIdx+1} of ${SHIPS.length}. Click a square. Orientation: ${placeOrient === "h" ? "→ Horizontal" : "↓ Vertical"}</div>
+        <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; margin:14px auto; background:#000; padding:2px;">${cells}</div>
+        <button class="answer-btn" id="bsRotate" style="width:100%;">Rotate (${placeOrient === "h" ? "currently horizontal" : "currently vertical"})</button>
+      `);
+      document.getElementById("bsRotate").onclick = () => { placeOrient = placeOrient === "h" ? "v" : "h"; render(); };
+      document.querySelectorAll(".bsP").forEach(el => el.onclick = () => {
+        const r = +el.dataset.r, c = +el.dataset.c;
+        if (placeShip(myBoard, ship, r, c, placeOrient)) {
+          placeIdx++;
+          if (placeIdx >= SHIPS.length) { phase = "play"; }
+          render();
+        }
+      });
+      return;
+    }
+    // Play phase
+    let myCells = "", cpuCells = "";
+    for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
+      const myShip = myBoard[r][c];
+      const wasShot = cpuShots.some(s => s[0]===r && s[1]===c);
+      const myColor = wasShot && myShip ? "var(--bad)" : wasShot ? "var(--ink-dim)" : myShip ? "var(--mint)" : "var(--bg-2)";
+      myCells += `<div style="aspect-ratio:1; background:${myColor}; border:1px solid var(--border);"></div>`;
+
+      const myShotHere = myShots.find(s => s[0]===r && s[1]===c);
+      const cpuShipHere = cpuBoard[r][c];
+      const cpuColor = myShotHere && cpuShipHere ? "var(--bad)" : myShotHere ? "var(--ink-dim)" : "var(--bg-2)";
+      cpuCells += `<div class="bsAttack" data-r="${r}" data-c="${c}" style="aspect-ratio:1; background:${cpuColor}; border:1px solid var(--border); cursor:${myShotHere?"default":"pointer"};"></div>`;
+    }
+    openGame(`
+      <h2>🚢 Battleship</h2>
+      <div class="game-progress">Click the enemy grid to fire</div>
+      <div style="font-size:11px; color:var(--ink-soft); margin-top:14px; margin-bottom:4px;">Enemy waters:</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; background:#000; padding:2px;">${cpuCells}</div>
+      <div style="font-size:11px; color:var(--ink-soft); margin-top:14px; margin-bottom:4px;">Your fleet:</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; background:#000; padding:2px;">${myCells}</div>
+      <button class="secondary" id="bsReset" style="margin-top:14px; width:100%;">New game</button>
+    `);
+    document.getElementById("bsReset").onclick = startGame;
+    document.querySelectorAll(".bsAttack").forEach(el => el.onclick = () => {
+      const r = +el.dataset.r, c = +el.dataset.c;
+      if (myShots.some(s => s[0]===r && s[1]===c)) return;
+      myShots.push([r,c]);
+      if (cpuBoard[r][c]) cpuBoard[r][c].hit = true;
+      if (checkWin(cpuBoard, myShots)) { gameOver = "you"; }
+      render();
+      if (!gameOver) cpuShoot();
+    });
+  }
+  startGame();
+}
+
+// ----- WAR (card game) -----
+function launchWar() {
+  let p1Deck = [], p2Deck = [], p1Card = null, p2Card = null, gameOver = null, lastResult = "Click 'Battle!' to begin.";
+  function buildDeck() {
+    const cards = [];
+    for (let i = 2; i <= 14; i++) for (const s of ["♠","♥","♦","♣"]) cards.push({val:i, s});
+    cards.sort(() => Math.random() - 0.5);
+    p1Deck = cards.slice(0, 26); p2Deck = cards.slice(26);
+  }
+  function rankName(v) { return ({11:"J",12:"Q",13:"K",14:"A"})[v] || v; }
+  function battle() {
+    if (!p1Deck.length || !p2Deck.length) { gameOver = p1Deck.length ? "you" : "cpu"; render(); return; }
+    p1Card = p1Deck.shift(); p2Card = p2Deck.shift();
+    if (p1Card.val > p2Card.val) {
+      p1Deck.push(p1Card, p2Card);
+      lastResult = `You win this round! ${rankName(p1Card.val)}${p1Card.s} beats ${rankName(p2Card.val)}${p2Card.s}.`;
+    } else if (p2Card.val > p1Card.val) {
+      p2Deck.push(p1Card, p2Card);
+      lastResult = `Computer wins! ${rankName(p2Card.val)}${p2Card.s} beats ${rankName(p1Card.val)}${p1Card.s}.`;
+    } else {
+      p1Deck.push(p1Card); p2Deck.push(p2Card);
+      lastResult = `War! Both played ${rankName(p1Card.val)}.`;
+    }
+    if (!p1Deck.length) gameOver = "cpu";
+    if (!p2Deck.length) gameOver = "you";
+    render();
+  }
+  function startGame() { buildDeck(); p1Card = p2Card = null; gameOver = null; lastResult = "Click 'Battle!' to begin."; render(); }
+  function cardCol(s) { return s === "♥" || s === "♦" ? "var(--bad)" : "#000"; }
+  function cardBox(c) { return c ? `<div style="background:white; color:${cardCol(c.s)}; border-radius:10px; padding:18px 12px; min-width:80px; box-shadow:0 4px 14px rgba(0,0,0,.4);"><div style="font-size:32px; font-weight:700;">${rankName(c.val)}</div><div style="font-size:32px;">${c.s}</div></div>` : `<div style="background:var(--bg-2); border-radius:10px; padding:30px 24px; color:var(--ink-dim);">?</div>`; }
+  function render() {
+    if (gameOver) {
+      openGame(`<h2>⚔️ ${gameOver==="you"?"🎉 You won the war!":"😅 Computer won."}</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${gameOver==="you"?"🏆":"😢"}</div></div><div style="display:flex; gap:8px;"><button class="primary" id="warAgain" style="flex:1;">Play again</button><button class="secondary" id="warClose" style="flex:1;">Close</button></div>`);
+      document.getElementById("warAgain").onclick = startGame;
+      document.getElementById("warClose").onclick = closeGame;
+      return;
+    }
+    openGame(`
+      <h2>⚔️ Card War</h2>
+      <div class="game-progress">You: <b>${p1Deck.length}</b> cards • Computer: <b>${p2Deck.length}</b> cards</div>
+      <div style="display:flex; justify-content:space-around; align-items:center; margin:24px 0; gap:14px;">
+        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">YOU</div>${cardBox(p1Card)}</div>
+        <div style="font-size:32px; color:var(--gold);">⚔️</div>
+        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">COMPUTER</div>${cardBox(p2Card)}</div>
+      </div>
+      <div style="background:var(--bg-2); border-radius:10px; padding:12px 16px; min-height:50px; font-size:14px; line-height:1.5; border-left:3px solid var(--gold);">${escapeHtml(lastResult)}</div>
+      <button class="primary" id="warBattle" style="width:100%; padding:14px; margin-top:14px; font-size:16px;">⚔️ Battle!</button>
+    `);
+    document.getElementById("warBattle").onclick = battle;
+  }
+  startGame();
 }
 
 // =============================================================
