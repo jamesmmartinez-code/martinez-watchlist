@@ -755,6 +755,65 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Time Capsule / Memory features ===== */
+.memory-banner {
+  background: linear-gradient(135deg, rgba(127,212,168,.12), rgba(138,168,255,.1));
+  border: 1px solid rgba(138,168,255,.35); border-radius: 18px;
+  padding: 18px 22px; margin-bottom: 18px;
+  display: flex; align-items: center; gap: 16px;
+}
+.memory-banner .memory-emoji { font-size: 32px; }
+.memory-banner .memory-text { flex: 1; }
+.memory-banner .memory-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; }
+.memory-banner .memory-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+
+.birthday-banner {
+  background: linear-gradient(135deg, var(--gold), var(--rose));
+  border: 0; border-radius: 18px; padding: 22px 24px; margin-bottom: 18px;
+  color: #1a1209; position: relative; overflow: hidden;
+  animation: birthdayPulse 3s ease-in-out infinite;
+}
+@keyframes birthdayPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(233,183,88,.3); }
+  50% { box-shadow: 0 8px 36px rgba(236,111,122,.5); }
+}
+.birthday-banner h2 { font-family: 'Fraunces', serif; font-size: 30px; margin: 0 0 6px; }
+.birthday-banner p { font-size: 15px; margin: 0 0 14px; opacity: .85; }
+.confetti {
+  position: absolute; pointer-events: none; font-size: 18px; opacity: .7;
+  animation: confettiFall 3s linear infinite;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
+}
+
+.review-modal-back {
+  position: fixed; inset: 0; z-index: 8500;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.review-modal-back.show { display: flex; }
+.review-card {
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--gold); border-radius: 24px;
+  padding: 36px 32px; max-width: 520px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.review-card .month-tag { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.review-card h2 { font-family: 'Fraunces', serif; font-size: 30px; margin: 0 0 20px; line-height: 1.1; }
+.review-card .review-section { margin: 18px 0; padding: 14px 16px; background: rgba(255,255,255,.04); border-radius: 12px; border-left: 3px solid var(--gold); }
+.review-card .review-section h3 { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 8px; }
+.review-card .review-section p { margin: 0; line-height: 1.6; font-size: 15px; }
+.review-quote {
+  font-family: 'Fraunces', serif; font-style: italic; font-size: 18px;
+  color: var(--gold); padding: 16px 20px;
+  border-left: 3px solid var(--gold); background: var(--gold-soft);
+  border-radius: 10px; margin: 20px 0;
+}
+
 /* ===== Stats / achievements modal ===== */
 .stats-back {
   position: fixed; inset: 0; z-index: 8500;
@@ -1051,6 +1110,14 @@ footer {
 <!-- First-time onboarding tour -->
 <div id="tourBack" class="tour-back"><div class="tour-card" id="tourCard"></div></div>
 
+<!-- Time Capsule / Monthly Review modal -->
+<div id="reviewModalBack" class="review-modal-back">
+  <div class="review-card" id="reviewCard">
+    <button class="stats-close" id="reviewCloseBtn">×</button>
+    <div id="reviewContent"></div>
+  </div>
+</div>
+
 <!-- Stats / Achievements -->
 <div id="statsBack" class="stats-back">
   <div class="stats-card" id="statsCard" style="position:relative;">
@@ -1129,9 +1196,12 @@ footer {
       </div>
     </div>
 
+    <div id="birthdayBanner" style="display:none;"></div>
+    <div id="onThisDayBanner" style="display:none;"></div>
     <div id="welcomeBanner" style="display:none;"></div>
     <div id="whatsNewBanner" style="display:none;"></div>
     <div id="picksOfWeekBanner" style="display:none;"></div>
+    <div id="monthlyReviewBanner" style="display:none;"></div>
 
     <div class="mood-cta" id="moodCta">
       <div class="mood-text">
@@ -3223,7 +3293,10 @@ function defaultState() {
     // Date-night mode (parent-only filter)
     dateNightMode: false,
     picksOfWeek: { mom: null, dad: null, setAt: null },
-    movieNight: { active: false, candidates: [], votes: {}, winner: null, startedAt: null }
+    movieNight: { active: false, candidates: [], votes: {}, winner: null, startedAt: null },
+    monthlyReviews: {}, // { "alden_2026-05": { generatedAt, summary, topShow, topCategory, etc. } }
+    birthdays: { alden: { month: 7, day: 1 }, owen: { month: 8, day: 1 } }, // editable in parent panel
+    onThisDayLastShownAt: 0 // throttle the on-this-day banner
   };
 }
 function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
@@ -3261,6 +3334,8 @@ if (!state.bucketList) {
 }
 if (!state.picksOfWeek) state.picksOfWeek = { mom: null, dad: null, setAt: null };
 if (!state.movieNight) state.movieNight = { active: false, candidates: [], votes: {}, winner: null, startedAt: null };
+if (!state.monthlyReviews) state.monthlyReviews = {};
+if (!state.birthdays) state.birthdays = defaultState().birthdays;
 // Icon migration: update Alden→frog, Owen→McLaren Senna once
 if (!state.iconVersion || state.iconVersion < 2) {
   if (state.profiles?.alden) {
@@ -4553,6 +4628,209 @@ function renderWhatsNew() {
   });
 }
 
+// =============================================================
+// BIRTHDAY MODE — special UI on a kid's birthday
+// =============================================================
+function renderBirthdayBanner() {
+  const banner = document.getElementById("birthdayBanner");
+  if (!banner) return;
+  const u = getCurrentUser();
+  if (!u || !state.profiles[u] || state.profiles[u].isParent) { banner.style.display = "none"; return; }
+  const today = new Date();
+  const bday = state.birthdays[u];
+  if (!bday || bday.month !== today.getMonth() + 1 || bday.day !== today.getDate()) {
+    banner.style.display = "none"; return;
+  }
+  const profile = state.profiles[u];
+  banner.style.display = "block";
+  // Confetti overlay
+  const confetti = ["🎉","🎂","🎈","✨","🎁","🎊"].map((emoji, i) =>
+    `<span class="confetti" style="left:${10 + i * 14}%; top:0; animation-delay:${i * 0.3}s;">${emoji}</span>`
+  ).join("");
+  banner.innerHTML = `
+    <div class="birthday-banner">
+      ${confetti}
+      <h2>🎉 Happy Birthday, ${escapeHtml(profile.name)}!</h2>
+      <p>It's your special day. Here's a curated list of birthday picks chosen just for you.</p>
+      <button class="primary" id="birthdayPicksBtn" style="background:rgba(0,0,0,.25); color:#1a1209; border:1px solid rgba(0,0,0,.3);">See your birthday picks</button>
+    </div>`;
+  document.getElementById("birthdayPicksBtn").onclick = () => {
+    // Open mood chat with prefilled birthday request
+    openMoodModal();
+    setTimeout(() => {
+      $("#moodInput").value = `It's my birthday! Pick something extra special and celebratory I'd love.`;
+      runMoodChat();
+    }, 200);
+  };
+}
+
+// =============================================================
+// "ON THIS DAY A YEAR AGO" — surface old watch memories
+// =============================================================
+function renderOnThisDay() {
+  const banner = document.getElementById("onThisDayBanner");
+  if (!banner) return;
+  const u = getCurrentUser();
+  if (!u) { banner.style.display = "none"; return; }
+  // Don't show on the same day twice
+  const oneDay = 24 * 60 * 60 * 1000;
+  if (Date.now() - (state.onThisDayLastShownAt || 0) < oneDay) { banner.style.display = "none"; return; }
+  // Show probabilistically (1 in 4 sessions) so it feels like a treat, not annoying
+  if (Math.random() > 0.4) { banner.style.display = "none"; return; }
+  // Find watched entries from ~1 year ago (within 3 days either way) for this user
+  const targetTime = Date.now() - 365 * oneDay;
+  const memories = state.watched.filter(w => {
+    if (w.who !== u && !state.profiles[u]?.isParent) return false;
+    const t = new Date(w.date).getTime();
+    return Math.abs(t - targetTime) < 3 * oneDay;
+  });
+  if (!memories.length) { banner.style.display = "none"; return; }
+  const memory = memories[0];
+  const show = allShows().find(s => s.t === memory.title);
+  if (!show) { banner.style.display = "none"; return; }
+  state.onThisDayLastShownAt = Date.now();
+  saveState();
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div class="memory-banner">
+      <div class="memory-emoji">📅</div>
+      <div class="memory-text">
+        <div class="memory-title">A year ago today</div>
+        <div class="memory-sub">You watched <b>${escapeHtml(show.t)}</b>${memory.stars ? ` and rated it ${"★".repeat(memory.stars)}` : ""}. Want to rewatch?</div>
+      </div>
+      <button class="primary" id="onThisDayBtn" style="font-size:13px; padding:10px 16px;">Open</button>
+    </div>`;
+  document.getElementById("onThisDayBtn").onclick = () => openModal(show);
+}
+
+// =============================================================
+// MONTHLY TIME CAPSULE — AI-generated family memory cards
+// =============================================================
+function getMonthKey(userId) {
+  const d = new Date();
+  // Use last month so reviews surface AT THE START of the new month
+  d.setMonth(d.getMonth() - 1);
+  return `${userId}_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function getReviewMonthLabel() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return d.toLocaleDateString([], { month: "long", year: "numeric" });
+}
+async function maybeGenerateMonthlyReview(userId) {
+  if (!state.anthropicKey) return null;
+  const key = getMonthKey(userId);
+  if (state.monthlyReviews[key]) return state.monthlyReviews[key];
+  // Find shows watched in that month
+  const d = new Date(); d.setMonth(d.getMonth() - 1);
+  const monthStart = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+  const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime();
+  const watched = state.watched.filter(w => {
+    if (w.who !== userId && !state.profiles[userId]?.isParent) return false;
+    const t = new Date(w.date).getTime();
+    return t >= monthStart && t < monthEnd;
+  });
+  if (watched.length < 2) return null; // not enough activity for a review
+  const profile = state.profiles[userId];
+  const watchList = watched.map(w => {
+    const show = allShows().find(s => s.t === w.title);
+    return `- ${w.title}${w.stars ? ` (${w.stars}★)` : ""}${show ? ` [${show.cat}]` : ""}`;
+  }).join("\n");
+  const sys = `You are writing a beautiful, heartfelt monthly review for ${profile.name} (age ${profile.age}, ${profile.isParent ? "parent" : "child"}) in the Martinez family. Keep it warm, specific, age-appropriate, and concise.
+
+Return ONLY valid JSON:
+{
+  "topShow": "title of their favorite show this month",
+  "topCategory": "the category they watched most",
+  "categoryCount": number,
+  "summary": "2-3 sentences about what their month of watching looked like, what theme connected the shows, what we'd say about their taste",
+  "quote": "a memorable line, lesson, or theme from their top show that we want them to remember (8-15 words, in quotes)",
+  "looking_forward": "1 short sentence — what next month might bring"
+}`;
+  const user = `${profile.name} watched these shows in ${getReviewMonthLabel()}:\n${watchList}\n\nWrite their monthly review.`;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": state.anthropicKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 600, system: sys, messages: [{role:"user",content:user}] })
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const text = j.content?.[0]?.text || "";
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    const parsed = JSON.parse(m[0]);
+    parsed.generatedAt = Date.now();
+    parsed.month = getReviewMonthLabel();
+    parsed.userId = userId;
+    parsed.watchCount = watched.length;
+    state.monthlyReviews[key] = parsed;
+    saveState();
+    return parsed;
+  } catch (e) { return null; }
+}
+
+function renderMonthlyReviewBanner() {
+  const banner = document.getElementById("monthlyReviewBanner");
+  if (!banner) return;
+  const u = getCurrentUser();
+  if (!u) { banner.style.display = "none"; return; }
+  const key = getMonthKey(u);
+  const review = state.monthlyReviews[key];
+  // Show if we have a review and haven't dismissed it
+  if (!review || localStorage.getItem(`review_seen_${key}`)) {
+    // Try to generate if it's a new month and there's enough data
+    if (!review && state.anthropicKey) {
+      const today = new Date();
+      if (today.getDate() <= 7) { // only the first week of new month
+        maybeGenerateMonthlyReview(u).then(r => { if (r) renderMonthlyReviewBanner(); });
+      }
+    }
+    banner.style.display = "none"; return;
+  }
+  banner.style.display = "block";
+  banner.innerHTML = `
+    <div class="memory-banner" style="background: linear-gradient(135deg, rgba(233,183,88,.15), rgba(236,111,122,.1)); border-color: var(--gold);">
+      <div class="memory-emoji">⏳</div>
+      <div class="memory-text">
+        <div class="memory-title">Your ${escapeHtml(review.month)} time capsule is ready</div>
+        <div class="memory-sub">${review.watchCount} shows watched. Open to see what we noticed about your taste.</div>
+      </div>
+      <button class="primary" id="reviewOpenBtn" style="font-size:13px; padding:10px 16px;">Open</button>
+    </div>`;
+  document.getElementById("reviewOpenBtn").onclick = () => openMonthlyReview(u, key);
+}
+
+function openMonthlyReview(userId, key) {
+  const review = state.monthlyReviews[key];
+  if (!review) return;
+  const profile = state.profiles[userId];
+  document.getElementById("reviewContent").innerHTML = `
+    <div class="month-tag">${escapeHtml(review.month)} Time Capsule</div>
+    <h2>${escapeHtml(profile.name)}'s month of stories</h2>
+    <div class="review-section">
+      <h3>Top show</h3>
+      <p><b style="color:var(--gold);">${escapeHtml(review.topShow || "—")}</b></p>
+    </div>
+    <div class="review-section">
+      <h3>Most watched category</h3>
+      <p>${escapeHtml(review.topCategory || "—")}${review.categoryCount ? ` (${review.categoryCount} shows)` : ""}</p>
+    </div>
+    <div class="review-section">
+      <h3>What this month said about you</h3>
+      <p>${escapeHtml(review.summary || "")}</p>
+    </div>
+    ${review.quote ? `<div class="review-quote">${escapeHtml(review.quote)}</div>` : ""}
+    ${review.looking_forward ? `<div class="review-section"><h3>Looking forward</h3><p>${escapeHtml(review.looking_forward)}</p></div>` : ""}
+    <div style="text-align:center; margin-top:20px; font-size:12px; color:var(--ink-dim);">
+      Saved forever. Find it again in your stats panel.
+    </div>`;
+  document.getElementById("reviewModalBack").classList.add("show");
+  // Mark seen
+  localStorage.setItem(`review_seen_${key}`, "1");
+  setTimeout(() => renderMonthlyReviewBanner(), 100);
+}
+
 function renderEmptyState() {
   const u = getCurrentUser();
   const profile = u ? state.profiles[u] : null;
@@ -4616,6 +4894,9 @@ function renderEmptyState() {
 
 function renderGrid() {
   renderMovieNightVotePrompt();
+  renderBirthdayBanner();
+  renderOnThisDay();
+  renderMonthlyReviewBanner();
   renderWelcomeBanner();
   renderPicksOfWeek();
   renderWhatsNew();
@@ -5279,6 +5560,12 @@ $("#currentUserBadge") && ($("#currentUserBadge").onclick = () => {
 });
 const _statsClose = document.getElementById("statsCloseBtn");
 if (_statsClose) _statsClose.onclick = () => document.getElementById("statsBack").classList.remove("show");
+const _reviewClose = document.getElementById("reviewCloseBtn");
+if (_reviewClose) _reviewClose.onclick = () => document.getElementById("reviewModalBack").classList.remove("show");
+const _reviewBack = document.getElementById("reviewModalBack");
+if (_reviewBack) _reviewBack.addEventListener("click", e => {
+  if (e.target.id === "reviewModalBack") document.getElementById("reviewModalBack").classList.remove("show");
+});
 const _statsBack = document.getElementById("statsBack");
 if (_statsBack) _statsBack.addEventListener("click", e => {
   if (e.target.id === "statsBack") document.getElementById("statsBack").classList.remove("show");
