@@ -755,6 +755,66 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
+/* ===== Games ===== */
+.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+.game-card {
+  background: var(--bg-1); border: 1px solid var(--border);
+  border-radius: 18px; padding: 22px; cursor: pointer;
+  transition: all .2s ease; font-family: inherit; color: var(--ink); text-align: left;
+}
+.game-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: var(--shadow-md); }
+.game-card .game-emoji { font-size: 42px; margin-bottom: 10px; }
+.game-card h3 { margin: 0 0 6px; font-family: 'Fraunces', serif; font-size: 18px; }
+.game-card p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+.game-card .score-tag { display: inline-block; margin-top: 10px; padding: 4px 10px; background: var(--gold-soft); color: var(--gold); border-radius: 999px; font-size: 11px; font-weight: 700; }
+
+.game-modal-back {
+  position: fixed; inset: 0; z-index: 8800;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.game-modal-back.show { display: flex; }
+.game-modal {
+  background: var(--bg-1); border: 1px solid var(--border-strong); border-radius: 22px;
+  padding: 28px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
+  position: relative; box-shadow: var(--shadow-lg);
+}
+.game-modal h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 6px; }
+.game-modal .game-progress { font-size: 12px; color: var(--ink-dim); margin-bottom: 18px; }
+.game-modal .answer-options { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+.game-modal .answer-btn {
+  padding: 14px 18px; background: var(--bg-2); border: 1px solid var(--border-strong);
+  color: var(--ink); border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 15px;
+  text-align: left; transition: all .15s ease;
+}
+.game-modal .answer-btn:hover { background: var(--card-elev); border-color: var(--gold); }
+.game-modal .answer-btn.correct { background: var(--mint-soft); border-color: var(--mint); color: var(--mint); }
+.game-modal .answer-btn.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.emoji-clue {
+  font-size: 56px; padding: 20px; background: var(--bg-2); border-radius: 16px;
+  text-align: center; letter-spacing: 6px; margin: 18px 0;
+}
+
+.memory-board {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px;
+}
+.memory-cell {
+  aspect-ratio: 2/3; background: var(--bg-2); border: 2px solid var(--border);
+  border-radius: 8px; cursor: pointer; overflow: hidden; position: relative;
+  transition: transform .2s ease;
+}
+.memory-cell.flipped { border-color: var(--gold); }
+.memory-cell.matched { border-color: var(--mint); opacity: .55; cursor: default; }
+.memory-cell .face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  display: grid; place-items: center; font-size: 28px;
+}
+.memory-cell .back { background: linear-gradient(135deg, var(--bg-2), var(--card)); color: var(--ink-dim); }
+.memory-cell .front img { width: 100%; height: 100%; object-fit: cover; }
+.memory-cell.flipped .back, .memory-cell.matched .back { display: none; }
+.memory-cell .front { display: none; }
+.memory-cell.flipped .front, .memory-cell.matched .front { display: block; }
+
 /* ===== Time Capsule / Memory features ===== */
 .memory-banner {
   background: linear-gradient(135deg, rgba(127,212,168,.12), rgba(138,168,255,.1));
@@ -1110,6 +1170,14 @@ footer {
 <!-- First-time onboarding tour -->
 <div id="tourBack" class="tour-back"><div class="tour-card" id="tourCard"></div></div>
 
+<!-- Game modal -->
+<div id="gameModalBack" class="game-modal-back">
+  <div class="game-modal" id="gameModal">
+    <button class="stats-close" id="gameCloseBtn" style="top:14px; right:14px;">×</button>
+    <div id="gameModalContent"></div>
+  </div>
+</div>
+
 <!-- Time Capsule / Monthly Review modal -->
 <div id="reviewModalBack" class="review-modal-back">
   <div class="review-card" id="reviewCard">
@@ -1223,6 +1291,7 @@ footer {
       <button data-tab="watched">Watched <span class="count-pill" id="watchedCount">0</span></button>
       <button data-tab="bucket">🎬 Bucket List <span class="count-pill" id="bucketCount">0/30</span></button>
       <button data-tab="recommended" id="recTab" style="display:none;">✨ For You</button>
+      <button data-tab="games">🎮 Games</button>
     </div>
 
     <div class="section-title">
@@ -3261,6 +3330,7 @@ function defaultState() {
     providerLogos: {},
     region: "US",
     // Profiles, favorites, watched
+    gameScores: { alden: { trivia: 0, emoji: 0, memory: 0, predictor: 0 }, owen: { trivia: 0, emoji: 0, memory: 0, predictor: 0 } },
     profiles: {
       alden: { name: "Alden", color: "#7fd4a8", animal: "🐸", age: 9, isParent: false, pin: null },
       owen:  { name: "Owen",  color: "#FF8000", animal: "🏎️", age: 11, isParent: false, pin: null },
@@ -3336,6 +3406,7 @@ if (!state.picksOfWeek) state.picksOfWeek = { mom: null, dad: null, setAt: null 
 if (!state.movieNight) state.movieNight = { active: false, candidates: [], votes: {}, winner: null, startedAt: null };
 if (!state.monthlyReviews) state.monthlyReviews = {};
 if (!state.birthdays) state.birthdays = defaultState().birthdays;
+if (!state.gameScores) state.gameScores = defaultState().gameScores;
 // Icon migration: update Alden→frog, Owen→McLaren Senna once
 if (!state.iconVersion || state.iconVersion < 2) {
   if (state.profiles?.alden) {
@@ -4629,6 +4700,487 @@ function renderWhatsNew() {
 }
 
 // =============================================================
+// GAMES HUB — tic-tac-toe, connect 4, snake, memory, trivia,
+// hangman, chess (lichess embed), 2048, emoji quiz.
+// =============================================================
+const GAMES_LIBRARY = [
+  { id: "tictactoe", title: "Tic-Tac-Toe", emoji: "⭕", desc: "2-player classic. Pass and play.", launch: () => launchTicTacToe() },
+  { id: "connect4", title: "Connect Four", emoji: "🔴", desc: "Drop pieces, get four in a row.", launch: () => launchConnect4() },
+  { id: "checkers", title: "Checkers", emoji: "🔶", desc: "2-player classic strategy.", launch: () => launchCheckers() },
+  { id: "snake", title: "Snake", emoji: "🐍", desc: "Eat, grow, don't crash.", launch: () => launchSnake() },
+  { id: "2048", title: "2048", emoji: "🧩", desc: "Combine tiles. Reach 2048.", launch: () => launch2048() },
+  { id: "memory", title: "Movie Memory", emoji: "🃏", desc: "Match the movie posters.", launch: () => launchMovieMemory() },
+  { id: "trivia", title: "Movie Trivia", emoji: "🎯", desc: "AI quiz on what you've watched.", launch: () => launchMovieTrivia() },
+  { id: "hangman", title: "Movie Hangman", emoji: "🔤", desc: "Guess the movie title.", launch: () => launchHangman() },
+  { id: "chess", title: "Chess", emoji: "♟️", desc: "Real chess (Lichess).", launch: () => launchChess() }
+];
+
+function renderGamesHub() {
+  const grid = $("#grid");
+  grid.style.gridTemplateColumns = "1fr"; // override grid
+  $("#listHeading").textContent = "🎮 Family Games";
+  $("#listCount").textContent = `${GAMES_LIBRARY.length} games`;
+  grid.innerHTML = `<div class="games-grid">${GAMES_LIBRARY.map(g => `
+    <button class="game-card" data-game="${g.id}">
+      <div class="game-emoji">${g.emoji}</div>
+      <h3>${escapeHtml(g.title)}</h3>
+      <p>${escapeHtml(g.desc)}</p>
+    </button>
+  `).join("")}</div>`;
+  grid.querySelectorAll(".game-card").forEach(c => c.onclick = () => {
+    const game = GAMES_LIBRARY.find(g => g.id === c.dataset.game);
+    if (game) game.launch();
+  });
+}
+
+function openGame(html) {
+  $("#gameModalContent").innerHTML = html;
+  $("#gameModalBack").classList.add("show");
+}
+function closeGame() { $("#gameModalBack").classList.remove("show"); }
+
+// ----- TIC-TAC-TOE -----
+function launchTicTacToe() {
+  let board = ["","","","","","","","",""];
+  let turn = "X";
+  let done = false;
+  function render() {
+    openGame(`
+      <h2>⭕ Tic-Tac-Toe</h2>
+      <div class="game-progress" id="ttStatus">Turn: <b>${turn}</b></div>
+      <div style="display:grid; grid-template-columns:repeat(3,80px); gap:6px; justify-content:center; margin:20px 0;">
+        ${board.map((c,i) => `<button class="answer-btn ttCell" data-i="${i}" style="height:80px; font-size:36px; padding:0; text-align:center;">${c}</button>`).join("")}
+      </div>
+      <button class="primary" id="ttReset">New game</button>
+    `);
+    document.querySelectorAll(".ttCell").forEach(b => b.onclick = () => {
+      const i = +b.dataset.i;
+      if (board[i] || done) return;
+      board[i] = turn;
+      const winner = checkTTT(board);
+      if (winner) { done = true; render(); document.getElementById("ttStatus").innerHTML = `<b style="color:var(--mint);">${winner === "tie" ? "Tie game!" : winner + " wins! 🎉"}</b>`; return; }
+      turn = turn === "X" ? "O" : "X";
+      render();
+    });
+    document.getElementById("ttReset").onclick = () => { board = ["","","","","","","","",""]; turn="X"; done=false; render(); };
+  }
+  render();
+}
+function checkTTT(b) {
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (const [a,c,d] of wins) if (b[a] && b[a]===b[c] && b[c]===b[d]) return b[a];
+  if (b.every(c=>c)) return "tie";
+  return null;
+}
+
+// ----- CONNECT FOUR -----
+function launchConnect4() {
+  const ROWS = 6, COLS = 7;
+  let board = Array.from({length:ROWS}, () => Array(COLS).fill(""));
+  let turn = "🔴";
+  let done = false;
+  function drop(col) {
+    if (done) return;
+    for (let r = ROWS-1; r >= 0; r--) {
+      if (!board[r][col]) { board[r][col] = turn; const w = checkC4(board); if (w) { done = true; render(); document.getElementById("c4Status").innerHTML = `<b style="color:var(--mint); font-size:18px;">${w === "tie" ? "Tie!" : w + " wins! 🎉"}</b>`; return; } turn = turn === "🔴" ? "🟡" : "🔴"; render(); return; }
+    }
+  }
+  function render() {
+    openGame(`
+      <h2>🔴 Connect Four</h2>
+      <div class="game-progress" id="c4Status">Turn: <b>${turn}</b></div>
+      <div style="display:grid; grid-template-columns:repeat(${COLS},1fr); gap:4px; max-width:420px; margin:18px auto; background:var(--bg-2); padding:8px; border-radius:10px;">
+        ${board.flatMap((row,r) => row.map((cell,c) => `<button class="c4Cell" data-c="${c}" style="aspect-ratio:1; background:var(--bg-1); border:0; border-radius:50%; font-size:28px; cursor:pointer;">${cell}</button>`)).join("")}
+      </div>
+      <button class="primary" id="c4Reset">New game</button>
+    `);
+    document.querySelectorAll(".c4Cell").forEach(b => b.onclick = () => drop(+b.dataset.c));
+    document.getElementById("c4Reset").onclick = () => { board = Array.from({length:ROWS}, () => Array(COLS).fill("")); turn = "🔴"; done = false; render(); };
+  }
+  render();
+}
+function checkC4(b) {
+  const R = b.length, C = b[0].length;
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+    if (!b[r][c]) continue;
+    for (const [dr,dc] of dirs) {
+      let count = 1;
+      for (let k = 1; k < 4; k++) {
+        const nr = r + dr*k, nc = c + dc*k;
+        if (nr<0||nr>=R||nc<0||nc>=C||b[nr][nc] !== b[r][c]) break;
+        count++;
+      }
+      if (count >= 4) return b[r][c];
+    }
+  }
+  if (b.every(row => row.every(c => c))) return "tie";
+  return null;
+}
+
+// ----- SNAKE -----
+function launchSnake() {
+  const SIZE = 18;
+  let snake = [[9,9]], dir = [1,0], food = randomFood();
+  let score = 0, gameOver = false, intervalId = null;
+  function randomFood() {
+    let f;
+    do { f = [Math.floor(Math.random()*SIZE), Math.floor(Math.random()*SIZE)]; }
+    while (snake.some(s => s[0]===f[0] && s[1]===f[1]));
+    return f;
+  }
+  function tick() {
+    const head = [snake[0][0]+dir[0], snake[0][1]+dir[1]];
+    if (head[0]<0||head[0]>=SIZE||head[1]<0||head[1]>=SIZE||snake.some(s=>s[0]===head[0]&&s[1]===head[1])) {
+      gameOver = true; clearInterval(intervalId); render(); return;
+    }
+    snake.unshift(head);
+    if (head[0]===food[0]&&head[1]===food[1]) { score++; food = randomFood(); } else { snake.pop(); }
+    render();
+  }
+  function render() {
+    let cells = "";
+    for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
+      const isHead = snake[0][0]===r && snake[0][1]===c;
+      const isBody = !isHead && snake.some(s=>s[0]===r&&s[1]===c);
+      const isFood = food[0]===r && food[1]===c;
+      const bg = isHead ? "var(--gold)" : isBody ? "var(--mint)" : isFood ? "var(--rose)" : "var(--bg-2)";
+      cells += `<div style="background:${bg}; aspect-ratio:1; border-radius:2px;"></div>`;
+    }
+    openGame(`
+      <h2>🐍 Snake</h2>
+      <div class="game-progress">Score: <b>${score}</b> ${gameOver ? '<span style="color:var(--bad);">— Game Over!</span>' : ""}</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:420px; margin:14px auto; background:var(--bg-1); padding:6px; border-radius:8px;">${cells}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; max-width:240px; margin:14px auto;">
+        <span></span><button class="answer-btn" id="snUp" style="padding:14px;">↑</button><span></span>
+        <button class="answer-btn" id="snLeft" style="padding:14px;">←</button>
+        <button class="answer-btn" id="snDown" style="padding:14px;">↓</button>
+        <button class="answer-btn" id="snRight" style="padding:14px;">→</button>
+      </div>
+      <button class="primary" id="snReset" style="margin-top:8px;">${gameOver ? "Play again" : "New game"}</button>
+    `);
+    document.getElementById("snUp").onclick = () => { if (dir[0]!==1) dir = [-1,0]; };
+    document.getElementById("snDown").onclick = () => { if (dir[0]!==-1) dir = [1,0]; };
+    document.getElementById("snLeft").onclick = () => { if (dir[1]!==1) dir = [0,-1]; };
+    document.getElementById("snRight").onclick = () => { if (dir[1]!==-1) dir = [0,1]; };
+    document.getElementById("snReset").onclick = () => { clearInterval(intervalId); snake = [[9,9]]; dir = [1,0]; food = randomFood(); score = 0; gameOver = false; render(); intervalId = setInterval(tick, 200); };
+  }
+  render();
+  intervalId = setInterval(tick, 200);
+  // Cleanup when game closes
+  const back = document.getElementById("gameModalBack");
+  const obs = new MutationObserver(() => { if (!back.classList.contains("show")) { clearInterval(intervalId); obs.disconnect(); }});
+  obs.observe(back, { attributes: true, attributeFilter: ["class"] });
+  // Keyboard
+  const onKey = e => {
+    if (e.key === "ArrowUp" && dir[0]!==1) dir = [-1,0];
+    else if (e.key === "ArrowDown" && dir[0]!==-1) dir = [1,0];
+    else if (e.key === "ArrowLeft" && dir[1]!==1) dir = [0,-1];
+    else if (e.key === "ArrowRight" && dir[1]!==-1) dir = [0,1];
+  };
+  document.addEventListener("keydown", onKey);
+  obs.observe(back, { attributes: true });
+}
+
+// ----- 2048 -----
+function launch2048() {
+  let grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  let score = 0, gameOver = false;
+  function spawn() {
+    const empty = [];
+    for (let r=0;r<4;r++) for (let c=0;c<4;c++) if (!grid[r][c]) empty.push([r,c]);
+    if (!empty.length) return;
+    const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+    grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+  }
+  function slide(row) {
+    let arr = row.filter(v => v);
+    for (let i=0; i<arr.length-1; i++) if (arr[i]===arr[i+1]) { arr[i]*=2; score+=arr[i]; arr[i+1]=0; }
+    arr = arr.filter(v=>v);
+    while (arr.length < 4) arr.push(0);
+    return arr;
+  }
+  function move(dir) {
+    if (gameOver) return;
+    const before = JSON.stringify(grid);
+    if (dir === "L") grid = grid.map(slide);
+    else if (dir === "R") grid = grid.map(r => slide(r.slice().reverse()).reverse());
+    else if (dir === "U") {
+      for (let c=0;c<4;c++) {
+        const col = [grid[0][c],grid[1][c],grid[2][c],grid[3][c]];
+        const newCol = slide(col);
+        for (let r=0;r<4;r++) grid[r][c] = newCol[r];
+      }
+    } else if (dir === "D") {
+      for (let c=0;c<4;c++) {
+        const col = [grid[3][c],grid[2][c],grid[1][c],grid[0][c]];
+        const newCol = slide(col);
+        for (let r=0;r<4;r++) grid[3-r][c] = newCol[r];
+      }
+    }
+    if (JSON.stringify(grid) !== before) spawn();
+    if (!grid.flat().includes(0) && !canMove()) gameOver = true;
+    render();
+  }
+  function canMove() {
+    for (let r=0;r<4;r++) for (let c=0;c<4;c++) {
+      if (c<3 && grid[r][c]===grid[r][c+1]) return true;
+      if (r<3 && grid[r][c]===grid[r+1][c]) return true;
+    }
+    return false;
+  }
+  function tileColor(v) {
+    if (!v) return "var(--bg-2)";
+    const map = {2:"#3a3024",4:"#5c4a30",8:"#88663a",16:"#a87a3a",32:"#c08e44",64:"#e9b758",128:"#ec6f7a",256:"#7fd4a8",512:"#8aa8ff",1024:"#c8a8ff",2048:"#FF8000"};
+    return map[v] || "var(--gold)";
+  }
+  function render() {
+    const cells = grid.flatMap((row,r) => row.map((v,c) => `<div style="background:${tileColor(v)}; aspect-ratio:1; border-radius:8px; display:grid; place-items:center; font-size:${v>=1024?22:v>=128?26:32}px; font-weight:700; color:${v>=8?"#1a1209":"var(--ink-soft)"};">${v||""}</div>`)).join("");
+    openGame(`
+      <h2>🧩 2048</h2>
+      <div class="game-progress">Score: <b>${score}</b> ${gameOver ? '<span style="color:var(--bad);">— Game Over!</span>' : ""}</div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; max-width:340px; margin:18px auto; padding:8px; background:var(--bg-1); border-radius:10px;">${cells}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; max-width:240px; margin:14px auto;">
+        <span></span><button class="answer-btn" id="t2048Up" style="padding:14px;">↑</button><span></span>
+        <button class="answer-btn" id="t2048Left" style="padding:14px;">←</button>
+        <button class="answer-btn" id="t2048Down" style="padding:14px;">↓</button>
+        <button class="answer-btn" id="t2048Right" style="padding:14px;">→</button>
+      </div>
+      <button class="primary" id="t2048Reset">${gameOver ? "Play again" : "New game"}</button>
+    `);
+    document.getElementById("t2048Up").onclick = () => move("U");
+    document.getElementById("t2048Down").onclick = () => move("D");
+    document.getElementById("t2048Left").onclick = () => move("L");
+    document.getElementById("t2048Right").onclick = () => move("R");
+    document.getElementById("t2048Reset").onclick = () => { grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; score=0; gameOver=false; spawn(); spawn(); render(); };
+  }
+  spawn(); spawn(); render();
+  const onKey = e => {
+    if (e.key === "ArrowUp") move("U");
+    else if (e.key === "ArrowDown") move("D");
+    else if (e.key === "ArrowLeft") move("L");
+    else if (e.key === "ArrowRight") move("R");
+  };
+  document.addEventListener("keydown", onKey);
+  const back = document.getElementById("gameModalBack");
+  const obs = new MutationObserver(() => { if (!back.classList.contains("show")) { document.removeEventListener("keydown", onKey); obs.disconnect(); }});
+  obs.observe(back, { attributes: true, attributeFilter: ["class"] });
+}
+
+// ----- MOVIE MEMORY MATCH -----
+function launchMovieMemory() {
+  const u = getCurrentUser();
+  const favs = u ? (state.favorites[u] || []) : [];
+  // Use favorites if available, else use random library shows
+  let showPool = (favs.length >= 8 ? favs.map(t => allShows().find(s=>s.t===t)).filter(Boolean) : allShows().filter(s => state.tmdbCache[s.t]?.poster).slice(0, 16));
+  if (showPool.length < 8) showPool = allShows().filter(s => state.tmdbCache[s.t]?.poster).slice(0, 16);
+  const pairs = showPool.slice(0, 8);
+  let cards = [...pairs, ...pairs].map((s,i) => ({ id: i, show: s, flipped: false, matched: false }));
+  // Shuffle
+  cards = cards.sort(() => Math.random() - 0.5);
+  let firstPick = null, busy = false, matchedCount = 0, attempts = 0, startTime = Date.now();
+  function render() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    openGame(`
+      <h2>🃏 Movie Memory</h2>
+      <div class="game-progress">${matchedCount}/${pairs.length} pairs found • ${attempts} flips • ${elapsed}s</div>
+      <div class="memory-board">
+        ${cards.map((c,i) => `
+          <div class="memory-cell ${c.flipped?"flipped":""} ${c.matched?"matched":""}" data-i="${i}">
+            <div class="face back">?</div>
+            <div class="face front">${state.tmdbCache[c.show.t]?.poster ? `<img src="${state.tmdbCache[c.show.t].poster}" alt="">` : `<div style="padding:8px; font-size:11px; text-align:center;">${escapeHtml(c.show.t)}</div>`}</div>
+          </div>
+        `).join("")}
+      </div>
+      ${matchedCount === pairs.length ? `<div style="text-align:center; margin-top:18px;"><b style="color:var(--mint); font-size:18px;">🎉 You did it in ${elapsed}s with ${attempts} flips!</b></div>` : ""}
+      <button class="primary" id="memReset" style="margin-top:18px;">${matchedCount === pairs.length ? "Play again" : "Reset"}</button>
+    `);
+    document.querySelectorAll(".memory-cell").forEach(el => el.onclick = () => {
+      const i = +el.dataset.i;
+      if (cards[i].matched || cards[i].flipped || busy) return;
+      cards[i].flipped = true;
+      attempts++;
+      if (!firstPick) { firstPick = i; render(); return; }
+      busy = true;
+      render();
+      setTimeout(() => {
+        if (cards[firstPick].show.t === cards[i].show.t) {
+          cards[firstPick].matched = true; cards[i].matched = true;
+          matchedCount++;
+        } else {
+          cards[firstPick].flipped = false; cards[i].flipped = false;
+        }
+        firstPick = null; busy = false;
+        render();
+      }, 800);
+    });
+    document.getElementById("memReset").onclick = () => launchMovieMemory();
+  }
+  render();
+}
+
+// ----- MOVIE TRIVIA (AI) -----
+async function launchMovieTrivia() {
+  // Pick a watched show (the kid will have just seen it)
+  const u = getCurrentUser();
+  const myWatched = state.watched.filter(w => w.who === u || (u && state.profiles[u]?.isParent));
+  const seenShow = myWatched.length ? allShows().find(s => s.t === myWatched[Math.floor(Math.random()*myWatched.length)].title) : allShows()[Math.floor(Math.random()*allShows().length)];
+  if (!seenShow) {
+    openGame(`<h2>🎯 Movie Trivia</h2><p>Watch a few shows first, then come back for trivia about them!</p><button class="primary" onclick="closeGame()">Got it</button>`);
+    return;
+  }
+  openGame(`<h2>🎯 Movie Trivia</h2><div class="game-progress">Generating questions about <b>${escapeHtml(seenShow.t)}</b>…</div><div style="text-align:center; padding:30px;"><span style="font-size:32px;">🔮</span></div>`);
+  if (!state.anthropicKey) {
+    openGame(`<h2>🎯 Movie Trivia</h2><p>This game needs an Anthropic API key (set in Parent View → Auto-discovery panel).</p><button class="primary" onclick="closeGame()">OK</button>`);
+    return;
+  }
+  // Generate quiz
+  try {
+    const sys = `Generate a 5-question multiple-choice trivia quiz about a kids' movie or TV show. Questions should test if the kid actually paid attention — story, characters, themes. Age-appropriate (9-11). Each question has 4 options, only 1 correct.
+
+Return ONLY JSON: {"questions":[{"q":"...","options":["a","b","c","d"],"correct":0,"explanation":"..."}, ...]}`;
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":state.anthropicKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body: JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:1200, system:sys, messages:[{role:"user",content:`Show: "${seenShow.t}" (${seenShow.cat}). Generate the 5-question quiz.`}] })
+    });
+    const j = await r.json();
+    const m = (j.content?.[0]?.text || "").match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("bad response");
+    const quiz = JSON.parse(m[0]).questions;
+    let q = 0, score = 0;
+    function showQ() {
+      if (q >= quiz.length) {
+        if (u && state.gameScores[u]) {
+          state.gameScores[u].trivia = Math.max(state.gameScores[u].trivia || 0, score);
+          saveState();
+        }
+        openGame(`<h2>🎯 Trivia Complete!</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${score === quiz.length ? "🏆" : score >= quiz.length*0.6 ? "🎉" : "📚"}</div><h3>${score} / ${quiz.length}</h3><p>${score === quiz.length ? "Perfect score! You really watched it!" : score >= quiz.length*0.6 ? "Great job!" : "Watch it again to nail it next time!"}</p></div><button class="primary" onclick="launchMovieTrivia()">New trivia</button> <button class="secondary" onclick="closeGame()">Done</button>`);
+        return;
+      }
+      const item = quiz[q];
+      openGame(`<h2>🎯 Movie Trivia</h2><div class="game-progress">Question ${q+1} of ${quiz.length} • ${escapeHtml(seenShow.t)}</div><p style="font-size:17px; margin:14px 0 18px;"><b>${escapeHtml(item.q)}</b></p><div class="answer-options">${item.options.map((o,i) => `<button class="answer-btn triviaOpt" data-i="${i}">${escapeHtml(o)}</button>`).join("")}</div>`);
+      document.querySelectorAll(".triviaOpt").forEach((b,i) => b.onclick = () => {
+        document.querySelectorAll(".triviaOpt").forEach((bb,bi) => { bb.disabled = true; if (bi === item.correct) bb.classList.add("correct"); else if (bi === i) bb.classList.add("wrong"); });
+        if (i === item.correct) score++;
+        setTimeout(() => { q++; showQ(); }, 1500);
+      });
+    }
+    showQ();
+  } catch (e) {
+    openGame(`<h2>🎯 Movie Trivia</h2><p>Couldn't generate quiz right now. Try again in a moment.</p><button class="primary" onclick="closeGame()">OK</button>`);
+  }
+}
+
+// ----- HANGMAN -----
+function launchHangman() {
+  const titles = allShows().map(s => s.t).filter(t => t.length >= 4 && t.length <= 30);
+  const word = titles[Math.floor(Math.random()*titles.length)].toUpperCase();
+  let guessed = new Set(), wrong = 0, max = 6, won = false, lost = false;
+  function render() {
+    const display = word.split("").map(c => /[A-Z]/.test(c) ? (guessed.has(c) ? c : "_") : c).join(" ");
+    const hangman = ["", "(o)", "(o)\n |", "(o)\n/|", "(o)\n/|\\", "(o)\n/|\\\n/", "(o)\n/|\\\n/ \\"][wrong] || "";
+    won = !display.includes("_");
+    lost = wrong >= max;
+    openGame(`
+      <h2>🔤 Movie Hangman</h2>
+      <div class="game-progress">Wrong guesses: ${wrong}/${max}</div>
+      <pre style="font-family: monospace; font-size: 22px; text-align: center; min-height: 80px; white-space: pre-wrap;">${hangman}</pre>
+      <div style="font-family: monospace; font-size: 28px; text-align: center; letter-spacing: 3px; margin: 22px 0;">${display}</div>
+      ${won ? '<div style="text-align:center; color:var(--mint); font-weight:700; font-size:18px;">🎉 You got it!</div>' : lost ? `<div style="text-align:center; color:var(--bad); font-weight:700; font-size:16px;">Game over. The answer was: <b>${word}</b></div>` : ""}
+      <div style="display:grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 18px;">
+        ${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L => `
+          <button class="answer-btn hmL" data-l="${L}" style="padding:8px 0; font-size:14px; ${guessed.has(L) ? 'opacity:.4; cursor:default;' : ''}" ${guessed.has(L) || won || lost ? 'disabled' : ''}>${L}</button>
+        `).join("")}
+      </div>
+      <button class="primary" id="hmReset" style="margin-top:14px;">${won||lost ? "New word" : "Give up & restart"}</button>
+    `);
+    document.querySelectorAll(".hmL").forEach(b => b.onclick = () => {
+      const L = b.dataset.l;
+      if (guessed.has(L)) return;
+      guessed.add(L);
+      if (!word.includes(L)) wrong++;
+      render();
+    });
+    document.getElementById("hmReset").onclick = () => launchHangman();
+  }
+  render();
+}
+
+// ----- CHESS (lichess embed) -----
+function launchChess() {
+  openGame(`<h2>♟️ Chess</h2>
+    <p style="color:var(--ink-soft); font-size:13px; margin-bottom:14px;">Powered by Lichess (free, no account needed). Pick a mode below to open it inline.</p>
+    <div style="display:grid; gap:10px;">
+      <a href="https://lichess.org/training/random" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">🎯 Solve a chess puzzle</a>
+      <a href="https://lichess.org/analysis" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">🧠 Analysis board (2-player on this device)</a>
+      <a href="https://lichess.org" target="_blank" rel="noopener" class="answer-btn" style="display:block; text-align:center; text-decoration:none;">♟ Play vs computer or online</a>
+    </div>
+    <p style="margin-top:18px; font-size:12px; color:var(--ink-dim); text-align:center;">Lichess opens in a new tab. Free forever, no ads.</p>
+    <button class="secondary" onclick="closeGame()" style="margin-top:14px;">Done</button>`);
+}
+
+// ----- CHECKERS (basic 2-player pass-and-play) -----
+function launchCheckers() {
+  // 8x8 board. Player 1 (red, 🔴) at top, Player 2 (black, ⚫) at bottom.
+  let board = Array.from({length:8}, () => Array(8).fill(null));
+  for (let r=0;r<3;r++) for (let c=0;c<8;c++) if ((r+c)%2===1) board[r][c] = {p:1, king:false};
+  for (let r=5;r<8;r++) for (let c=0;c<8;c++) if ((r+c)%2===1) board[r][c] = {p:2, king:false};
+  let turn = 1, selected = null, moves = [];
+  function valid(r,c) { return r>=0&&r<8&&c>=0&&c<8; }
+  function getMoves(r,c) {
+    const piece = board[r][c]; if (!piece) return [];
+    const dirs = piece.king ? [[-1,-1],[-1,1],[1,-1],[1,1]] : (piece.p===1 ? [[1,-1],[1,1]] : [[-1,-1],[-1,1]]);
+    const moves = [];
+    for (const [dr,dc] of dirs) {
+      const nr = r+dr, nc = c+dc;
+      if (valid(nr,nc) && !board[nr][nc]) moves.push({r:nr,c:nc,jump:null});
+      const jr = r+dr*2, jc = c+dc*2;
+      if (valid(nr,nc) && board[nr][nc] && board[nr][nc].p !== piece.p && valid(jr,jc) && !board[jr][jc]) {
+        moves.push({r:jr,c:jc,jump:{r:nr,c:nc}});
+      }
+    }
+    return moves;
+  }
+  function render() {
+    const cells = [];
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      const p = board[r][c];
+      const isSelected = selected && selected.r===r && selected.c===c;
+      const isMove = moves.some(m => m.r===r && m.c===c);
+      const dark = (r+c)%2===1;
+      const bg = isSelected ? "var(--gold)" : isMove ? "var(--mint)" : (dark ? "#3a2d18" : "#5c4a30");
+      cells.push(`<div class="ckCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:pointer; font-size:24px;">${p ? (p.king ? (p.p===1?"👑":"🤴") : (p.p===1?"🔴":"⚫")) : ""}</div>`);
+    }
+    openGame(`
+      <h2>🔶 Checkers</h2>
+      <div class="game-progress">Turn: <b>${turn === 1 ? "🔴 Red" : "⚫ Black"}</b></div>
+      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:1px; max-width:400px; margin:14px auto; background:#000; padding:2px; border-radius:6px;">${cells.join("")}</div>
+      <button class="primary" id="ckReset">New game</button>
+    `);
+    document.querySelectorAll(".ckCell").forEach(el => el.onclick = () => {
+      const r = +el.dataset.r, c = +el.dataset.c;
+      if (selected && moves.some(m => m.r===r && m.c===c)) {
+        const move = moves.find(m => m.r===r && m.c===c);
+        board[r][c] = board[selected.r][selected.c];
+        board[selected.r][selected.c] = null;
+        if (move.jump) board[move.jump.r][move.jump.c] = null;
+        // Promote
+        if (board[r][c].p === 1 && r === 7) board[r][c].king = true;
+        if (board[r][c].p === 2 && r === 0) board[r][c].king = true;
+        selected = null; moves = [];
+        turn = turn === 1 ? 2 : 1;
+        render();
+      } else if (board[r][c] && board[r][c].p === turn) {
+        selected = {r,c}; moves = getMoves(r,c); render();
+      }
+    });
+    document.getElementById("ckReset").onclick = () => launchCheckers();
+  }
+  render();
+}
+
+// =============================================================
 // BIRTHDAY MODE — special UI on a kid's birthday
 // =============================================================
 function renderBirthdayBanner() {
@@ -4919,8 +5471,9 @@ function renderGrid() {
     pool = pool.filter(s => bucketSet.has(s.t));
     heading = `🎬 Big Family Movies — ${pool.filter(s => watchedTitles.has(s.t)).length} of ${state.bucketList.length} watched`;
   } else if (activeTab === "recommended") {
-    // Recommendations rendered separately
     return renderRecommendations();
+  } else if (activeTab === "games") {
+    return renderGamesHub();
   }
   // Time-of-day sort boost on the library tab
   if (activeTab === "library") {
@@ -5562,6 +6115,10 @@ const _statsClose = document.getElementById("statsCloseBtn");
 if (_statsClose) _statsClose.onclick = () => document.getElementById("statsBack").classList.remove("show");
 const _reviewClose = document.getElementById("reviewCloseBtn");
 if (_reviewClose) _reviewClose.onclick = () => document.getElementById("reviewModalBack").classList.remove("show");
+const _gameClose = document.getElementById("gameCloseBtn");
+if (_gameClose) _gameClose.onclick = closeGame;
+const _gameBack = document.getElementById("gameModalBack");
+if (_gameBack) _gameBack.addEventListener("click", e => { if (e.target.id === "gameModalBack") closeGame(); });
 const _reviewBack = document.getElementById("reviewModalBack");
 if (_reviewBack) _reviewBack.addEventListener("click", e => {
   if (e.target.id === "reviewModalBack") document.getElementById("reviewModalBack").classList.remove("show");
