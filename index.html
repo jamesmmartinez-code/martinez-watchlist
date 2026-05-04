@@ -6507,147 +6507,367 @@ function launchFamilyLife(mode) {
   maybeAITurn();
 }
 
-// ----- BATTLESHIP (vs computer) -----
+// ----- BATTLESHIP (drag & drop placement, visual ships) -----
 function launchBattleship() {
   const SIZE = 8;
-  const SHIPS = [{n:"Carrier",l:5},{n:"Battleship",l:4},{n:"Cruiser",l:3},{n:"Submarine",l:3},{n:"Destroyer",l:2}];
-  let myBoard = [], cpuBoard = [], myShots = [], cpuShots = [];
-  let phase = "place", placeIdx = 0, placeOrient = "h";
-  let gameOver = null;
+  const SHIPS = [
+    {n:"Carrier",   l:5, emoji:"🛳️", color:"#7fd4a8"},
+    {n:"Battleship",l:4, emoji:"🚢", color:"#5cb8d4"},
+    {n:"Cruiser",   l:3, emoji:"⛴️", color:"#8aa8ff"},
+    {n:"Submarine", l:3, emoji:"🤿", color:"#c8a8ff"},
+    {n:"Destroyer", l:2, emoji:"🛥️", color:"#ec6f7a"}
+  ];
+  // myShips: [{ ship, r, c, orient, hits:[bool] }]
+  let myShips = [], cpuShips = [], cpuBoard = [], myShots = [], cpuShots = [], cpuLastHits = [];
+  let phase = "place", placeIdx = 0, placeOrient = "h", hover = null, gameOver = null;
   function emptyBoard() { return Array.from({length:SIZE}, () => Array(SIZE).fill(null)); }
-  function placeShip(board, ship, r, c, orient) {
-    const cells = [];
+  function shipCells(ship, r, c, orient) {
+    const out = [];
     for (let i = 0; i < ship.l; i++) {
       const nr = r + (orient === "v" ? i : 0);
       const nc = c + (orient === "h" ? i : 0);
-      if (nr<0||nr>=SIZE||nc<0||nc>=SIZE||board[nr][nc]) return false;
-      cells.push([nr,nc]);
+      out.push([nr, nc]);
     }
-    cells.forEach(([nr,nc]) => board[nr][nc] = { ship: ship.n, hit: false });
+    return out;
+  }
+  function fits(board, ship, r, c, orient) {
+    for (const [nr, nc] of shipCells(ship, r, c, orient)) {
+      if (nr<0||nr>=SIZE||nc<0||nc>=SIZE||board[nr][nc]) return false;
+    }
     return true;
   }
+  function placeShipOn(board, ship, r, c, orient, idx) {
+    if (!fits(board, ship, r, c, orient)) return false;
+    for (const [nr, nc] of shipCells(ship, r, c, orient)) {
+      board[nr][nc] = { shipIdx: idx, hit: false };
+    }
+    return true;
+  }
+  function buildBoard(ships) {
+    const b = emptyBoard();
+    ships.forEach((s, i) => {
+      for (const [nr, nc] of shipCells(s.ship, s.r, s.c, s.orient)) {
+        b[nr][nc] = { shipIdx: i, hit: s.hits[shipCells(s.ship, s.r, s.c, s.orient).findIndex(([r2,c2]) => r2===nr && c2===nc)] };
+      }
+    });
+    return b;
+  }
   function placeCpuShips() {
-    cpuBoard = emptyBoard();
-    for (const ship of SHIPS) {
-      while (true) {
+    cpuShips = []; cpuBoard = emptyBoard();
+    for (let i=0; i<SHIPS.length; i++) {
+      const ship = SHIPS[i];
+      let placed = false, attempts = 0;
+      while (!placed && attempts++ < 200) {
         const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
         const o = Math.random() < 0.5 ? "h" : "v";
-        if (placeShip(cpuBoard, ship, r, c, o)) break;
+        if (fits(cpuBoard, ship, r, c, o)) {
+          for (const [nr, nc] of shipCells(ship, r, c, o)) cpuBoard[nr][nc] = { shipIdx: i, hit: false };
+          cpuShips.push({ ship, r, c, orient: o, hits: Array(ship.l).fill(false) });
+          placed = true;
+        }
       }
     }
   }
+  function autoPlaceMine() {
+    myShips = [];
+    const b = emptyBoard();
+    for (let i=0; i<SHIPS.length; i++) {
+      const ship = SHIPS[i];
+      let placed = false, attempts = 0;
+      while (!placed && attempts++ < 200) {
+        const r = Math.floor(Math.random()*SIZE), c = Math.floor(Math.random()*SIZE);
+        const o = Math.random() < 0.5 ? "h" : "v";
+        if (fits(b, ship, r, c, o)) {
+          for (const [nr, nc] of shipCells(ship, r, c, o)) b[nr][nc] = { shipIdx: i };
+          myShips.push({ ship, r, c, orient: o, hits: Array(ship.l).fill(false) });
+          placed = true;
+        }
+      }
+    }
+    placeIdx = SHIPS.length;
+  }
   function startGame() {
-    myBoard = emptyBoard(); cpuBoard = emptyBoard();
-    myShots = []; cpuShots = []; phase = "place"; placeIdx = 0; placeOrient = "h"; gameOver = null;
+    myShips = []; placeIdx = 0; placeOrient = "h"; hover = null; gameOver = null;
+    myShots = []; cpuShots = []; cpuLastHits = [];
+    phase = "place";
     placeCpuShips();
     render();
   }
-  function checkWin(board, shots) {
-    const totalShipCells = SHIPS.reduce((s, sh) => s + sh.l, 0);
-    let hits = 0;
-    for (const [r,c] of shots) if (board[r][c]) hits++;
-    return hits >= totalShipCells;
+  function checkAllSunk(ships) {
+    return ships.every(s => s.hits.every(Boolean));
   }
   function cpuShoot() {
     setTimeout(() => {
       if (gameOver) return;
       let r, c;
-      do { r = Math.floor(Math.random()*SIZE); c = Math.floor(Math.random()*SIZE); }
-      while (cpuShots.some(s => s[0]===r && s[1]===c));
+      // Smarter AI: if we have unsunk hits, target adjacent cells
+      const targets = [];
+      for (const [hr, hc] of cpuLastHits) {
+        for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+          const nr = hr+dr, nc = hc+dc;
+          if (nr>=0 && nr<SIZE && nc>=0 && nc<SIZE && !cpuShots.some(s => s[0]===nr && s[1]===nc)) {
+            targets.push([nr,nc]);
+          }
+        }
+      }
+      if (targets.length) {
+        [r, c] = targets[Math.floor(Math.random()*targets.length)];
+      } else {
+        do { r = Math.floor(Math.random()*SIZE); c = Math.floor(Math.random()*SIZE); }
+        while (cpuShots.some(s => s[0]===r && s[1]===c));
+      }
       cpuShots.push([r, c]);
-      const hit = myBoard[r][c];
-      if (hit) hit.hit = true;
-      if (checkWin(myBoard, cpuShots)) gameOver = "cpu";
+      // Find which of my ships was hit
+      let hitShip = null, hitIdx = -1;
+      for (let si=0; si<myShips.length; si++) {
+        const cells = shipCells(myShips[si].ship, myShips[si].r, myShips[si].c, myShips[si].orient);
+        const idx = cells.findIndex(([cr, cc]) => cr===r && cc===c);
+        if (idx >= 0) { hitShip = myShips[si]; hitIdx = idx; break; }
+      }
+      if (hitShip) {
+        hitShip.hits[hitIdx] = true;
+        cpuLastHits.push([r, c]);
+        sfxFlip(); haptic(40);
+        // If sunk, clear last hits
+        if (hitShip.hits.every(Boolean)) cpuLastHits = [];
+      } else {
+        sfxClick();
+      }
+      if (checkAllSunk(myShips)) gameOver = "cpu";
       render();
     }, 700);
   }
   function render() {
     if (gameOver) {
-      openGame(`<h2>🚢 ${gameOver==="you"?"🎉 You sunk the fleet!":"Game over — computer won"}</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${gameOver==="you"?"🏆":"⚓"}</div></div><div style="display:flex; gap:8px;"><button class="primary" id="bsAgain" style="flex:1;">Play again</button><button class="secondary" id="bsClose" style="flex:1;">Close</button></div>`);
-      document.getElementById("bsAgain").onclick = startGame;
-      document.getElementById("bsClose").onclick = closeGame;
-      return;
-    }
-    if (phase === "place") {
-      const ship = SHIPS[placeIdx];
-      let cells = "";
-      for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
-        const has = myBoard[r][c];
-        cells += `<div class="bsP" data-r="${r}" data-c="${c}" style="aspect-ratio:1; background:${has?"var(--mint)":"var(--bg-2)"}; border:1px solid var(--border); cursor:pointer;"></div>`;
-      }
-      openGame(`
-        <h2>🚢 Place your ${ship.n} (${ship.l})</h2>
-        <div class="game-progress">Ship ${placeIdx+1} of ${SHIPS.length}. Click a square. Orientation: ${placeOrient === "h" ? "→ Horizontal" : "↓ Vertical"}</div>
-        <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; margin:14px auto; background:#000; padding:2px;">${cells}</div>
-        <button class="answer-btn" id="bsRotate" style="width:100%;">Rotate (${placeOrient === "h" ? "currently horizontal" : "currently vertical"})</button>
-      `);
-      document.getElementById("bsRotate").onclick = () => { placeOrient = placeOrient === "h" ? "v" : "h"; render(); };
-      document.querySelectorAll(".bsP").forEach(el => el.onclick = () => {
-        const r = +el.dataset.r, c = +el.dataset.c;
-        if (placeShip(myBoard, ship, r, c, placeOrient)) {
-          placeIdx++;
-          if (placeIdx >= SHIPS.length) { phase = "play"; }
-          render();
-        }
-      });
-      return;
-    }
-    // Play phase
-    if (gameOver) {
       const won = gameOver === "you";
       if (!won) sfxLose();
       const inner = won
-        ? celebrateWin("⚓", "Victory at sea!", "You sank the enemy fleet!")
+        ? celebrateWin("⚓", "Victory at sea!", "You sank the entire enemy fleet!")
         : `<div class="win-celebrate"><div class="win-emoji">💥</div><h3>Fleet sunk!</h3><p style="color:var(--ink-soft);">The computer got you. Try again?</p></div>`;
       openGame(`
         <h2>🚢 Battleship</h2>
         ${inner}
-        <button class="primary" id="bsReset" style="margin-top:14px; width:100%;">New game</button>
+        <button class="primary" id="bsReset" style="margin-top:14px; width:100%;">Play again</button>
       `);
       document.getElementById("bsReset").onclick = startGame;
       return;
     }
+    if (phase === "place") return renderPlace();
+    return renderPlay();
+  }
+
+  function renderPlace() {
+    const ship = SHIPS[placeIdx];
+    const allPlaced = placeIdx >= SHIPS.length;
+    // Build board with placed ships colored
+    let cells = "";
+    for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
+      let bg = "linear-gradient(135deg, rgba(31,90,150,.4), rgba(10,44,82,.6))";
+      let inner = "";
+      let border = "1px solid rgba(255,255,255,.06)";
+      // Is there a placed ship here?
+      let placedShip = null;
+      for (const ms of myShips) {
+        if (shipCells(ms.ship, ms.r, ms.c, ms.orient).some(([nr,nc]) => nr===r && nc===c)) {
+          placedShip = ms; break;
+        }
+      }
+      if (placedShip) {
+        bg = `linear-gradient(135deg, ${placedShip.ship.color}, ${placedShip.ship.color}cc)`;
+        // Show ship emoji on first cell
+        const cells = shipCells(placedShip.ship, placedShip.r, placedShip.c, placedShip.orient);
+        if (cells[0][0]===r && cells[0][1]===c) inner = placedShip.ship.emoji;
+        border = `1px solid ${placedShip.ship.color}`;
+      }
+      // Hover preview
+      if (hover && ship && !allPlaced) {
+        const previewCells = shipCells(ship, hover.r, hover.c, placeOrient);
+        const onPreview = previewCells.some(([nr,nc]) => nr===r && nc===c);
+        if (onPreview) {
+          const valid = fits(buildPlaceBoard(), ship, hover.r, hover.c, placeOrient);
+          bg = valid
+            ? `linear-gradient(135deg, ${ship.color}aa, ${ship.color}66)`
+            : "linear-gradient(135deg, rgba(236,111,122,.5), rgba(236,111,122,.3))";
+          border = `1px solid ${valid ? ship.color : "#ec6f7a"}`;
+          if (previewCells[0][0]===r && previewCells[0][1]===c) inner = ship.emoji;
+        }
+      }
+      cells += `<div class="bsP" data-r="${r}" data-c="${c}" style="aspect-ratio:1; background:${bg}; ${border}; border-radius:6px; cursor:${placedShip || allPlaced ? "default" : "pointer"}; display:grid; place-items:center; font-size:14px; transition: all .12s;">${inner}</div>`;
+    }
+    function buildPlaceBoard() {
+      const b = emptyBoard();
+      myShips.forEach((s, i) => {
+        for (const [nr, nc] of shipCells(s.ship, s.r, s.c, s.orient)) b[nr][nc] = { shipIdx: i };
+      });
+      return b;
+    }
+    // Ship tray
+    const tray = SHIPS.map((s, i) => {
+      const placed = i < placeIdx;
+      const active = i === placeIdx && !allPlaced;
+      return `<div class="ship-tray-item" data-i="${i}" style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:${active?'linear-gradient(135deg,rgba(255,128,0,.15),rgba(255,128,0,.05))':placed?'rgba(127,212,168,.08)':'rgba(255,255,255,.03)'}; border:1.5px solid ${active?'var(--gold)':placed?'rgba(127,212,168,.4)':'rgba(255,255,255,.06)'}; border-radius:12px; ${active?'box-shadow:0 0 0 3px rgba(255,128,0,.18); cursor:pointer;':''} transition:all .2s;">
+        <div style="font-size:24px;">${s.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:700;">${s.n} ${placed ? "✓" : ""}</div>
+          <div style="display:flex; gap:3px; margin-top:4px;">
+            ${Array.from({length:s.l}, () => `<div style="width:14px; height:8px; border-radius:3px; background:${placed?'rgba(127,212,168,.55)':active?s.color:'rgba(255,255,255,.15)'};"></div>`).join("")}
+          </div>
+        </div>
+        ${active ? '<div style="font-size:11px; color:var(--gold); font-weight:700;">PLACING</div>' : placed ? '<div style="font-size:11px; color:#7fd4a8;">DONE</div>' : '<div style="font-size:11px; color:var(--ink-dim);">'+s.l+'</div>'}
+      </div>`;
+    }).join("");
+    openGame(`
+      <h2>🚢 Place Your Fleet</h2>
+      <div class="game-progress">${allPlaced ? "All ships placed! Ready to battle?" : `Tap a square to place your <b style="color:${ship.color};">${ship.n}</b> · ${placeOrient === "h" ? "→ Horizontal" : "↓ Vertical"}`}</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:14px auto; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5), 0 8px 22px rgba(0,80,140,.3);">${cells}</div>
+      ${!allPlaced ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+        <button class="secondary" id="bsRotate">↻ Rotate (${placeOrient === "h" ? "→" : "↓"})</button>
+        <button class="secondary" id="bsAuto">🎲 Auto-place all</button>
+      </div>` : ""}
+      <div style="display:grid; gap:6px; margin-top:8px;">${tray}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        ${allPlaced
+          ? `<button class="primary" id="bsStart" style="grid-column:1/-1; padding:14px;">⚔️ Start Battle</button>`
+          : `<button class="secondary" id="bsResetPlace">Clear &amp; restart</button>
+             <button class="secondary" id="bsBack" disabled style="opacity:.4;">Undo last</button>`}
+      </div>
+    `);
+    if (!allPlaced) {
+      document.getElementById("bsRotate").onclick = () => { placeOrient = placeOrient === "h" ? "v" : "h"; sfxClick(); render(); };
+      document.getElementById("bsAuto").onclick = () => { autoPlaceMine(); sfxDrop(); render(); };
+      document.getElementById("bsResetPlace").onclick = () => { myShips = []; placeIdx = 0; placeOrient = "h"; hover = null; render(); };
+    } else {
+      document.getElementById("bsStart").onclick = () => { phase = "play"; sfxDrop(); haptic(30); render(); };
+    }
+    document.querySelectorAll(".bsP").forEach(el => {
+      const r = +el.dataset.r, c = +el.dataset.c;
+      el.onmouseenter = () => { if (!allPlaced) { hover = {r,c}; render(); } };
+      el.onmouseleave = () => { hover = null; };
+      el.onclick = () => {
+        if (allPlaced) return;
+        const ship = SHIPS[placeIdx];
+        const b = (() => { const x = emptyBoard(); myShips.forEach((s,i) => { for (const [nr,nc] of shipCells(s.ship,s.r,s.c,s.orient)) x[nr][nc] = i; }); return x; })();
+        if (fits(b, ship, r, c, placeOrient)) {
+          myShips.push({ ship, r, c, orient: placeOrient, hits: Array(ship.l).fill(false) });
+          placeIdx++; hover = null; sfxDrop(); haptic(20);
+          render();
+        } else {
+          sfxLose(); haptic(50);
+        }
+      };
+    });
+  }
+
+  function renderPlay() {
+    // Build my display board
+    const mySunkShips = new Set(myShips.map((s,i) => s.hits.every(Boolean) ? i : -1).filter(i => i >= 0));
     let myCells = "", cpuCells = "";
     for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
-      const myShip = myBoard[r][c];
+      // my board
+      let myShipIdx = -1, myHitIdx = -1;
+      for (let si=0; si<myShips.length; si++) {
+        const cs = shipCells(myShips[si].ship, myShips[si].r, myShips[si].c, myShips[si].orient);
+        const i = cs.findIndex(([cr, cc]) => cr===r && cc===c);
+        if (i >= 0) { myShipIdx = si; myHitIdx = i; break; }
+      }
       const wasShot = cpuShots.some(s => s[0]===r && s[1]===c);
-      const myCellStyle = wasShot && myShip
-        ? "background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 8px rgba(236,111,122,.5); content:'💥'"
-        : wasShot ? "background: rgba(255,255,255,.04)"
-        : myShip ? "background: linear-gradient(135deg, #5cb88a, #3a8c63); box-shadow: inset 0 1px 0 rgba(255,255,255,.2)"
-        : "background: rgba(0,80,140,.3); box-shadow: inset 0 1px 2px rgba(0,0,0,.3)";
-      const myIcon = wasShot && myShip ? "💥" : wasShot ? "·" : "";
-      myCells += `<div style="aspect-ratio:1; ${myCellStyle}; border-radius:3px; display:grid; place-items:center; font-size:11px; color:rgba(255,255,255,.5);">${myIcon}</div>`;
+      const ship = myShipIdx >= 0 ? myShips[myShipIdx].ship : null;
+      const isHit = wasShot && myShipIdx >= 0;
+      const isMiss = wasShot && myShipIdx < 0;
+      const isSunk = mySunkShips.has(myShipIdx);
+      let style, icon = "";
+      if (isHit) {
+        style = `background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 10px rgba(236,111,122,.6);`;
+        icon = "💥";
+      } else if (isMiss) {
+        style = "background: rgba(255,255,255,.06);";
+        icon = "·";
+      } else if (myShipIdx >= 0) {
+        style = `background: linear-gradient(135deg, ${ship.color}, ${ship.color}99); box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 3px rgba(0,0,0,.3);`;
+        // Show ship emoji on its first cell only
+        if (myHitIdx === 0) icon = ship.emoji;
+        if (isSunk) style += " filter:grayscale(.4) brightness(.6);";
+      } else {
+        style = "background: linear-gradient(135deg, rgba(31,90,150,.4), rgba(10,44,82,.5));";
+      }
+      myCells += `<div style="aspect-ratio:1; ${style} border-radius:4px; display:grid; place-items:center; font-size:13px; color:rgba(255,255,255,.6);">${icon}</div>`;
 
+      // cpu board
       const myShotHere = myShots.find(s => s[0]===r && s[1]===c);
-      const cpuShipHere = cpuBoard[r][c];
-      const cpuCellStyle = myShotHere && cpuShipHere
-        ? "background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 8px rgba(236,111,122,.5)"
-        : myShotHere
-        ? "background: rgba(255,255,255,.06)"
-        : "background: rgba(0,80,140,.3)";
-      const cpuIcon = myShotHere && cpuShipHere ? "💥" : myShotHere ? "·" : "";
-      cpuCells += `<div class="bsAttack" data-r="${r}" data-c="${c}" style="aspect-ratio:1; ${cpuCellStyle}; border-radius:3px; cursor:${myShotHere?"default":"pointer"}; display:grid; place-items:center; font-size:11px; color:rgba(255,255,255,.5); transition: all .15s;">${cpuIcon}</div>`;
+      let cpuShipIdx = -1, cpuHitIdx = -1;
+      if (myShotHere) {
+        for (let si=0; si<cpuShips.length; si++) {
+          const cs = shipCells(cpuShips[si].ship, cpuShips[si].r, cpuShips[si].c, cpuShips[si].orient);
+          const i = cs.findIndex(([cr, cc]) => cr===r && cc===c);
+          if (i >= 0) { cpuShipIdx = si; cpuHitIdx = i; break; }
+        }
+      }
+      const cpuSunk = cpuShipIdx >= 0 && cpuShips[cpuShipIdx].hits.every(Boolean);
+      let cpuStyle, cpuIcon = "";
+      if (myShotHere && cpuShipIdx >= 0) {
+        cpuStyle = cpuSunk
+          ? `background: linear-gradient(135deg, ${cpuShips[cpuShipIdx].ship.color}, ${cpuShips[cpuShipIdx].ship.color}aa); filter: brightness(.7); box-shadow: 0 0 12px rgba(236,111,122,.4);`
+          : `background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 10px rgba(236,111,122,.6);`;
+        cpuIcon = cpuSunk ? cpuShips[cpuShipIdx].ship.emoji : "💥";
+      } else if (myShotHere) {
+        cpuStyle = "background: rgba(255,255,255,.06);";
+        cpuIcon = "·";
+      } else {
+        cpuStyle = "background: linear-gradient(135deg, rgba(31,90,150,.4), rgba(10,44,82,.5));";
+      }
+      cpuCells += `<div class="bsAttack" data-r="${r}" data-c="${c}" style="aspect-ratio:1; ${cpuStyle} border-radius:4px; cursor:${myShotHere?"default":"crosshair"}; display:grid; place-items:center; font-size:13px; color:rgba(255,255,255,.7); transition: all .15s;" ${myShotHere?'':'onmouseover="this.style.boxShadow=\'inset 0 0 0 2px var(--gold), 0 0 12px rgba(255,128,0,.4)\'" onmouseout="this.style.boxShadow=\'\'"'}>${cpuIcon}</div>`;
     }
+    // Ship status panels
+    const enemySunk = cpuShips.filter(s => s.hits.every(Boolean)).length;
+    const yourSunk = myShips.filter(s => s.hits.every(Boolean)).length;
+    const enemyStatus = cpuShips.map((s, i) => {
+      const sunk = s.hits.every(Boolean);
+      const hitCount = s.hits.filter(Boolean).length;
+      return `<div style="display:flex; align-items:center; gap:6px; padding:6px 10px; background:${sunk?'rgba(236,111,122,.15)':'rgba(255,255,255,.03)'}; border:1px solid ${sunk?'rgba(236,111,122,.4)':'rgba(255,255,255,.06)'}; border-radius:8px; ${sunk?'opacity:.7;':''}">
+        <span style="font-size:14px;">${sunk?'💥':s.ship.emoji}</span>
+        <div style="flex:1; display:flex; gap:2px;">${Array.from({length:s.ship.l}, (_, k) => `<div style="flex:1; height:5px; border-radius:2px; background:${k<hitCount?'#ec6f7a':sunk?'rgba(236,111,122,.3)':'rgba(255,255,255,.12)'};"></div>`).join("")}</div>
+      </div>`;
+    }).join("");
+    const yourStatus = myShips.map((s, i) => {
+      const sunk = s.hits.every(Boolean);
+      const hitCount = s.hits.filter(Boolean).length;
+      return `<div style="display:flex; align-items:center; gap:6px; padding:6px 10px; background:${sunk?'rgba(236,111,122,.15)':'rgba(255,255,255,.03)'}; border:1px solid ${sunk?'rgba(236,111,122,.4)':'rgba(255,255,255,.06)'}; border-radius:8px; ${sunk?'opacity:.7;':''}">
+        <span style="font-size:14px;">${sunk?'💥':s.ship.emoji}</span>
+        <div style="flex:1; display:flex; gap:2px;">${Array.from({length:s.ship.l}, (_, k) => `<div style="flex:1; height:5px; border-radius:2px; background:${k<hitCount?'#ec6f7a':sunk?'rgba(236,111,122,.3)':'rgba(127,212,168,.5)'};"></div>`).join("")}</div>
+      </div>`;
+    }).join("");
     openGame(`
       <h2>🚢 Battleship</h2>
-      <div class="game-progress">Click the enemy grid to fire</div>
-      <div style="font-size:11px; color:var(--ink-soft); margin: 14px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚔️ Enemy waters</div>
-      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5), 0 8px 22px rgba(0,80,140,.3);">${cpuCells}</div>
-      <div style="font-size:11px; color:var(--ink-soft); margin: 16px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚓ Your fleet</div>
-      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5);">${myCells}</div>
-      <button class="secondary" id="bsReset" style="margin-top:18px; width:100%;">New game</button>
+      <div class="game-progress">Sunk: <b>${enemySunk}/${cpuShips.length}</b> · Lost: <b>${yourSunk}/${myShips.length}</b></div>
+      <div style="font-size:11px; color:var(--ink-soft); margin: 14px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚔️ Enemy waters · click to fire</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto 10px; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5), 0 8px 22px rgba(0,80,140,.3);">${cpuCells}</div>
+      <div style="display:grid; gap:5px; margin-bottom:14px;">${enemyStatus}</div>
+      <div style="font-size:11px; color:var(--ink-soft); margin: 6px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚓ Your fleet</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto 10px; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5);">${myCells}</div>
+      <div style="display:grid; gap:5px; margin-bottom:14px;">${yourStatus}</div>
+      <button class="secondary" id="bsReset" style="margin-top:6px; width:100%;">New game</button>
     `);
     document.getElementById("bsReset").onclick = startGame;
     document.querySelectorAll(".bsAttack").forEach(el => el.onclick = () => {
       const r = +el.dataset.r, c = +el.dataset.c;
       if (myShots.some(s => s[0]===r && s[1]===c)) return;
       myShots.push([r,c]);
-      if (cpuBoard[r][c]) { cpuBoard[r][c].hit = true; sfxFlip(); haptic(40); }
-      else { sfxClick(); haptic(15); }
-      if (checkWin(cpuBoard, myShots)) { gameOver = "you"; }
+      // Find what we hit
+      let hitShipIdx = -1, hitIdx = -1;
+      for (let si=0; si<cpuShips.length; si++) {
+        const cs = shipCells(cpuShips[si].ship, cpuShips[si].r, cpuShips[si].c, cpuShips[si].orient);
+        const i = cs.findIndex(([cr, cc]) => cr===r && cc===c);
+        if (i >= 0) { hitShipIdx = si; hitIdx = i; break; }
+      }
+      if (hitShipIdx >= 0) {
+        cpuShips[hitShipIdx].hits[hitIdx] = true;
+        sfxFlip(); haptic(40);
+      } else {
+        sfxClick(); haptic(15);
+      }
+      if (checkAllSunk(cpuShips)) { gameOver = "you"; render(); return; }
       render();
-      if (!gameOver) cpuShoot();
+      cpuShoot();
     });
   }
   startGame();
