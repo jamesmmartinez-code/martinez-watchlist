@@ -758,72 +758,202 @@ button.danger {
   .approval-card { grid-template-columns: 60px 1fr; gap: 10px; }
 }
 
-/* ===== Games ===== */
-.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
-.game-card {
-  background: var(--bg-1); border: 1px solid var(--border);
-  border-radius: 18px; padding: 22px; cursor: pointer;
-  transition: all .2s ease; font-family: inherit; color: var(--ink); text-align: left;
+/* ===== Animation primitives + game polish ===== */
+@keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(233,183,88,.6); } 50% { box-shadow: 0 0 0 12px rgba(233,183,88,0); } }
+@keyframes flip3d { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(180deg); } }
+@keyframes drop { from { transform: translateY(-300px); } to { transform: translateY(0); } }
+@keyframes confetti-fall { 0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+/* Confetti container */
+.confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 99999; overflow: hidden; }
+.confetti-piece { position: absolute; top: -20px; font-size: 22px; animation: confetti-fall 3s linear forwards; }
+
+/* Win celebration card */
+.win-celebrate {
+  text-align: center; padding: 30px 20px;
+  animation: slideUp .5s cubic-bezier(.2,.8,.2,1);
 }
-.game-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: var(--shadow-md); }
-.game-card .game-emoji { font-size: 42px; margin-bottom: 10px; }
-.game-card h3 { margin: 0 0 6px; font-family: 'Fraunces', serif; font-size: 18px; }
-.game-card p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
-.game-card .score-tag { display: inline-block; margin-top: 10px; padding: 4px 10px; background: var(--gold-soft); color: var(--gold); border-radius: 999px; font-size: 11px; font-weight: 700; }
+.win-celebrate .win-emoji {
+  font-size: 96px; margin-bottom: 14px;
+  animation: pop .6s cubic-bezier(.34,1.56,.64,1), pulse 1.4s ease-in-out infinite;
+  display: inline-block;
+}
+.win-celebrate h3 {
+  font-family: 'Fraunces', serif; font-size: 32px; margin: 0 0 8px;
+  background: linear-gradient(135deg, var(--gold), var(--rose));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ===== Games (2025 modern aesthetic) ===== */
+.games-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 22px;
+}
+.game-card {
+  position: relative; cursor: pointer;
+  background: linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+              radial-gradient(120% 100% at 0% 0%, rgba(255,128,0,.10), transparent 55%),
+              radial-gradient(120% 100% at 100% 100%, rgba(127,212,168,.08), transparent 55%),
+              var(--bg-1);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px; padding: 22px 20px 18px;
+  transition: transform .25s cubic-bezier(.34,1.4,.64,1), box-shadow .25s ease, border-color .2s ease;
+  font-family: inherit; color: var(--ink); text-align: left; overflow: hidden;
+  box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 8px 24px rgba(0,0,0,.18);
+}
+.game-card::before {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,128,0,.0), rgba(255,128,0,.35), rgba(127,212,168,.25), rgba(255,128,0,.0));
+  opacity: 0; transition: opacity .25s ease; z-index: -1;
+}
+.game-card:hover { transform: translateY(-4px) scale(1.015); border-color: rgba(255,128,0,.5); box-shadow: 0 14px 38px rgba(0,0,0,.35), 0 0 0 1px rgba(255,128,0,.25); }
+.game-card:hover::before { opacity: 1; }
+.game-card:active { transform: translateY(-1px) scale(.99); transition-duration: .08s; }
+.game-card .game-emoji {
+  font-size: 44px; margin-bottom: 12px; line-height: 1;
+  display: inline-block; filter: drop-shadow(0 4px 12px rgba(0,0,0,.35));
+  transition: transform .35s cubic-bezier(.34,1.6,.64,1);
+}
+.game-card:hover .game-emoji { transform: scale(1.08) rotate(-4deg); }
+.game-card h3 { margin: 0 0 4px; font-family: 'Fraunces', serif; font-size: 18px; letter-spacing: -.01em; }
+.game-card p { margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.game-card .score-tag {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 12px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(255,128,0,.18), rgba(255,128,0,.08));
+  border: 1px solid rgba(255,128,0,.4);
+  color: var(--gold); border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .02em;
+}
 
 .game-modal-back {
   position: fixed; inset: 0; z-index: 8800;
-  background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center; padding: 20px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.7), rgba(0,0,0,.92));
+  backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+  display: none; align-items: center; justify-content: center; padding: 16px;
   overscroll-behavior: contain;
+  animation: modalFade .25s ease-out;
 }
+@keyframes modalFade { from { opacity: 0; backdrop-filter: blur(0); } to { opacity: 1; } }
 .game-modal-back.show { display: flex; }
 .game-modal {
-  background: var(--bg-1); border: 1px solid var(--border-strong); border-radius: 22px;
-  padding: 28px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto;
-  position: relative; box-shadow: var(--shadow-lg);
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(255,128,0,.06), transparent 60%),
+    radial-gradient(120% 80% at 100% 100%, rgba(127,212,168,.05), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)),
+    var(--bg-1);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  padding: 28px 26px; max-width: 580px; width: 100%; max-height: 92vh; overflow-y: auto;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.06) inset,
+    0 24px 60px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.03);
   overscroll-behavior: contain;
   touch-action: manipulation;
+  animation: modalSlide .35s cubic-bezier(.34,1.4,.64,1);
 }
+@keyframes modalSlide { from { opacity: 0; transform: translateY(20px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 /* Disable double-tap zoom and click delay on all interactive elements */
-button, .answer-btn, .chip, .heart-btn, .game-card, .memory-cell, .ckCell, .csCell, .ttCell, .c4Cell, .pwa-nudge button { touch-action: manipulation; }
+button, .answer-btn, .chip, .heart-btn, .game-card, .memory-cell, .ckCell, .csCell, .ttCell, .c4Cell, .pwa-nudge button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 /* Lock body scroll when any game/modal is open */
 body.modal-locked { overflow: hidden; position: fixed; width: 100%; }
-.game-modal h2 { font-family: 'Fraunces', serif; font-size: 24px; margin: 0 0 6px; }
-.game-modal .game-progress { font-size: 12px; color: var(--ink-dim); margin-bottom: 18px; }
+.game-modal h2 {
+  font-family: 'Fraunces', serif; font-size: 26px; margin: 0 0 6px; letter-spacing: -.015em;
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink) 60%, rgba(255,216,107,.95));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.game-modal .game-progress {
+  font-size: 12px; color: var(--ink-soft); margin: 0 0 16px;
+  padding: 8px 14px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 999px; display: inline-block; letter-spacing: .01em;
+}
 .game-modal .answer-options { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
 .game-modal .answer-btn {
-  padding: 14px 18px; background: var(--bg-2); border: 1px solid var(--border-strong);
-  color: var(--ink); border-radius: 12px; cursor: pointer; font-family: inherit; font-size: 15px;
-  text-align: left; transition: all .15s ease;
+  padding: 15px 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--ink); border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 15px;
+  text-align: left; transition: all .18s ease; letter-spacing: -.005em;
+  position: relative; overflow: hidden;
 }
-.game-modal .answer-btn:hover { background: var(--card-elev); border-color: var(--gold); }
-.game-modal .answer-btn.correct { background: var(--mint-soft); border-color: var(--mint); color: var(--mint); }
-.game-modal .answer-btn.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.game-modal .answer-btn::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,128,0,.12), transparent 50%);
+  opacity: 0; transition: opacity .25s;
+}
+.game-modal .answer-btn:hover { background: linear-gradient(135deg, rgba(255,128,0,.10), rgba(255,128,0,.04)); border-color: rgba(255,128,0,.5); transform: translateY(-1px); }
+.game-modal .answer-btn:hover::after { opacity: 1; }
+.game-modal .answer-btn.correct { background: linear-gradient(135deg, rgba(127,212,168,.18), rgba(127,212,168,.08)); border-color: rgba(127,212,168,.6); color: #a4e8c5; box-shadow: 0 0 0 4px rgba(127,212,168,.15); }
+.game-modal .answer-btn.wrong { background: linear-gradient(135deg, rgba(236,111,122,.18), rgba(236,111,122,.08)); border-color: rgba(236,111,122,.55); color: #f3a8b0; box-shadow: 0 0 0 4px rgba(236,111,122,.12); }
 .emoji-clue {
-  font-size: 56px; padding: 20px; background: var(--bg-2); border-radius: 16px;
-  text-align: center; letter-spacing: 6px; margin: 18px 0;
+  font-size: 60px; padding: 24px;
+  background: linear-gradient(135deg, rgba(255,128,0,.08), rgba(127,212,168,.05));
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 18px;
+  text-align: center; letter-spacing: 8px; margin: 18px 0;
+  box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px rgba(0,0,0,.2);
 }
 
+/* Modal primary/secondary buttons get a unified premium treatment */
+.game-modal button.primary {
+  background: linear-gradient(135deg, #FF8000, #FF5A1F);
+  color: #1a0d00; border: 0; border-radius: 14px; padding: 14px 18px;
+  font-weight: 700; font-family: inherit; font-size: 15px; letter-spacing: -.005em;
+  cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+  box-shadow: 0 2px 0 rgba(0,0,0,.18) inset, 0 6px 20px rgba(255,128,0,.35), 0 1px 0 rgba(255,255,255,.4) inset;
+}
+.game-modal button.primary:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 2px 0 rgba(0,0,0,.18) inset, 0 10px 28px rgba(255,128,0,.45), 0 1px 0 rgba(255,255,255,.5) inset; }
+.game-modal button.primary:active { transform: translateY(1px); }
+.game-modal button.primary:disabled { filter: saturate(.5) brightness(.7); cursor: not-allowed; box-shadow: none; }
+.game-modal button.secondary {
+  background: rgba(255,255,255,.05); color: var(--ink); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px; padding: 13px 18px; font-weight: 600; font-family: inherit; font-size: 15px;
+  cursor: pointer; transition: all .15s ease;
+}
+.game-modal button.secondary:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18); }
+
 .memory-board {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px;
 }
 .memory-cell {
-  aspect-ratio: 2/3; background: var(--bg-2); border: 2px solid var(--border);
-  border-radius: 8px; cursor: pointer; overflow: hidden; position: relative;
-  transition: transform .2s ease;
+  aspect-ratio: 2/3;
+  background: linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+  border: 1.5px solid rgba(255,255,255,.08);
+  border-radius: 12px; cursor: pointer; overflow: hidden; position: relative;
+  transition: transform .25s cubic-bezier(.34,1.4,.64,1), border-color .2s ease, box-shadow .2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
 }
-.memory-cell.flipped { border-color: var(--gold); }
-.memory-cell.matched { border-color: var(--mint); opacity: .55; cursor: default; }
+.memory-cell:hover:not(.matched) { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 24px rgba(0,0,0,.4); border-color: rgba(255,128,0,.4); }
+.memory-cell.flipped { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255,128,0,.35), 0 8px 22px rgba(0,0,0,.4); }
+.memory-cell.matched { border-color: var(--mint); opacity: .4; cursor: default; transform: scale(.96); }
 .memory-cell .face {
   position: absolute; inset: 0; backface-visibility: hidden;
-  display: grid; place-items: center; font-size: 28px;
+  display: grid; place-items: center; font-size: 32px;
 }
-.memory-cell .back { background: linear-gradient(135deg, var(--bg-2), var(--card)); color: var(--ink-dim); }
+.memory-cell .back {
+  background:
+    linear-gradient(135deg, rgba(255,128,0,.18), rgba(127,212,168,.12)),
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.1), transparent 60%);
+  color: rgba(255,255,255,.6);
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: 36px;
+}
 .memory-cell .front img { width: 100%; height: 100%; object-fit: cover; }
 .memory-cell.flipped .back, .memory-cell.matched .back { display: none; }
 .memory-cell .front { display: none; }
 .memory-cell.flipped .front, .memory-cell.matched .front { display: block; }
+
+/* Generic game cells get smoothed corners & subtle hover */
+.ttCell, .ckCell, .csCell, .c4Cell { border-radius: 6px; transition: transform .12s ease, box-shadow .15s ease; }
+.ttCell:hover, .ckCell:hover, .csCell:hover, .c4Cell:hover { filter: brightness(1.1); }
+.ttCell:active, .ckCell:active, .csCell:active, .c4Cell:active { transform: scale(.94); }
 
 /* ===== Time Capsule / Memory features ===== */
 .memory-banner {
@@ -4987,17 +5117,50 @@ function mathChallenge() {
 
 function renderGamesHub() {
   const grid = $("#grid");
-  grid.style.gridTemplateColumns = "1fr"; // override grid
+  grid.style.gridTemplateColumns = "1fr";
   $("#listHeading").textContent = "🎮 Family Games";
   $("#listCount").textContent = `${GAMES_LIBRARY.length} games`;
-  grid.innerHTML = `<div class="games-grid">${GAMES_LIBRARY.map(g => `
-    <button class="game-card" data-game="${g.id}">
-      <div class="game-emoji">${g.emoji}</div>
-      <h3>${escapeHtml(g.title)}</h3>
-      <p>${escapeHtml(g.desc)}</p>
-    </button>
-  `).join("")}</div>`;
+  // Categorize games for richer browsing
+  const STRATEGY = ["tictactoe","connect4","checkers","chess","battleship"];
+  const PUZZLE = ["snake","2048","hangman","memory"];
+  const CARD = ["crazy8s","war"];
+  const FAMILY = ["familylife","trivia","monsters"];
+  const groupOf = id => STRATEGY.includes(id) ? "🎯 Strategy" : PUZZLE.includes(id) ? "🧠 Puzzle" : CARD.includes(id) ? "🃏 Card" : FAMILY.includes(id) ? "🎉 Family" : "🎮 Other";
+  // Build grouped sections
+  const groups = {};
+  GAMES_LIBRARY.forEach(g => { const k = groupOf(g.id); (groups[k] = groups[k] || []).push(g); });
+  const groupOrder = ["🎯 Strategy","🧠 Puzzle","🃏 Card","🎉 Family","🎮 Other"];
+  let html = `
+    <div style="display:flex; align-items:center; gap:12px; padding:18px 20px; margin-bottom:14px;
+                background: linear-gradient(135deg, rgba(255,128,0,.12), rgba(127,212,168,.08));
+                border:1px solid rgba(255,128,0,.25); border-radius:18px;">
+      <div style="font-size:32px;">🎮</div>
+      <div style="flex:1;">
+        <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700;">${GAMES_LIBRARY.length} games to play together</div>
+        <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">Pass &amp; play, or take on the computer. Win badges, earn movie tickets.</div>
+      </div>
+    </div>`;
+  for (const groupName of groupOrder) {
+    if (!groups[groupName]) continue;
+    html += `
+      <div style="margin: 18px 0 10px; padding: 0 4px; display:flex; align-items:baseline; gap:8px;">
+        <h3 style="margin:0; font-family:'Fraunces',serif; font-size:16px; letter-spacing:-.005em;">${groupName}</h3>
+        <span style="font-size:11px; color:var(--ink-dim);">${groups[groupName].length}</span>
+      </div>
+      <div class="games-grid">
+        ${groups[groupName].map(g => `
+          <button class="game-card" data-game="${g.id}">
+            <div class="game-emoji">${g.emoji}</div>
+            <h3>${escapeHtml(g.title)}</h3>
+            <p>${escapeHtml(g.desc)}</p>
+            ${["tictactoe","connect4","checkers","chess","familylife","battleship","crazy8s","war"].includes(g.id) ? `<span class="score-tag">🤖 vs. AI &amp; 2P</span>` : ""}
+          </button>
+        `).join("")}
+      </div>`;
+  }
+  grid.innerHTML = html;
   grid.querySelectorAll(".game-card").forEach(c => c.onclick = () => {
+    sfxClick();
     const game = GAMES_LIBRARY.find(g => g.id === c.dataset.game);
     if (game) game.launch();
   });
@@ -5015,83 +5178,233 @@ function closeGame() {
 window.closeGame = closeGame;
 window.openGame = openGame;
 
-// ----- TIC-TAC-TOE -----
+// ----- TIC-TAC-TOE (with AI opponent option) -----
 function launchTicTacToe() {
+  let mode = "ai"; // "ai" or "2p"
   let board = ["","","","","","","","",""];
-  let turn = "X";
-  let done = false;
+  let turn = "X", done = false, lastWinLine = null;
+  function checkTTT(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const line of wins) { const [a,c,d] = line; if (b[a] && b[a]===b[c] && b[c]===b[d]) return { winner: b[a], line }; }
+    if (b.every(c=>c)) return { winner: "tie", line: null };
+    return null;
+  }
+  // Minimax for unbeatable AI (computer plays O)
+  function minimax(b, isMaxing) {
+    const result = checkTTT(b);
+    if (result) {
+      if (result.winner === "O") return 10;
+      if (result.winner === "X") return -10;
+      return 0;
+    }
+    if (isMaxing) {
+      let best = -Infinity;
+      for (let i=0; i<9; i++) if (!b[i]) { b[i] = "O"; best = Math.max(best, minimax(b, false)); b[i] = ""; }
+      return best;
+    } else {
+      let best = Infinity;
+      for (let i=0; i<9; i++) if (!b[i]) { b[i] = "X"; best = Math.min(best, minimax(b, true)); b[i] = ""; }
+      return best;
+    }
+  }
+  function aiMove() {
+    let bestScore = -Infinity, bestMove = -1;
+    for (let i=0; i<9; i++) if (!board[i]) { board[i] = "O"; const s = minimax(board, false); board[i] = ""; if (s > bestScore) { bestScore = s; bestMove = i; } }
+    if (bestMove >= 0) {
+      // Add slight randomness — don't always pick first equal move
+      board[bestMove] = "O";
+      sfxDrop(); haptic(20);
+      const result = checkTTT(board);
+      if (result) { done = true; lastWinLine = result.line; finish(result); return; }
+      turn = "X"; render();
+    }
+  }
+  function finish(result) {
+    if (result.winner === "tie") { sfxClick(); }
+    else if (mode === "ai" && result.winner === "X") celebrateWin("🏆", "You beat the AI!");
+    else if (result.winner === "X") celebrateWin("🎉", "X wins!");
+    else if (mode === "ai" && result.winner === "O") sfxLose();
+    else celebrateWin("🎉", "O wins!");
+    render();
+  }
   function render() {
+    const winSet = lastWinLine ? new Set(lastWinLine) : null;
     openGame(`
-      <h2>⭕ Tic-Tac-Toe</h2>
-      <div class="game-progress" id="ttStatus">Turn: <b>${turn}</b></div>
-      <div style="display:grid; grid-template-columns:repeat(3,80px); gap:6px; justify-content:center; margin:20px 0;">
-        ${board.map((c,i) => `<button class="answer-btn ttCell" data-i="${i}" style="height:80px; font-size:36px; padding:0; text-align:center;">${c}</button>`).join("")}
+      <h2>⭕ Tic-Tac-Toe ${mode === "ai" ? "<span style=\"font-size:13px; color:var(--ink-soft); font-weight:400;\">vs. AI</span>" : ""}</h2>
+      <div class="game-progress" id="ttStatus">${done ? `<b style="color:var(--gold);">${board.filter(c => c).length === 9 && !lastWinLine ? "Tie game!" : (mode === "ai" && checkTTT(board)?.winner === "O" ? "AI wins this round" : "🎉 Winner!")}</b>` : (mode === "ai" ? (turn === "X" ? "Your turn (X)" : "🤖 AI thinking...") : `Turn: <b>${turn}</b>`)}</div>
+      <div style="display:inline-flex; padding:4px; background:rgba(255,255,255,.05); border-radius:999px; margin: 4px 0 18px; border:1px solid rgba(255,255,255,.06);">
+        <button id="ttModeAi" style="padding:8px 18px; font-size:12.5px; border:0; cursor:pointer; border-radius:999px; font-weight:600; transition: all .2s ease; background:${mode==='ai'?'linear-gradient(135deg,#FF8000,#FF5A1F)':'transparent'}; color:${mode==='ai'?'#1a0d00':'var(--ink-soft)'}; box-shadow:${mode==='ai'?'0 4px 12px rgba(255,128,0,.3)':'none'};">🤖 vs. AI</button>
+        <button id="ttMode2p" style="padding:8px 18px; font-size:12.5px; border:0; cursor:pointer; border-radius:999px; font-weight:600; transition: all .2s ease; background:${mode==='2p'?'linear-gradient(135deg,#FF8000,#FF5A1F)':'transparent'}; color:${mode==='2p'?'#1a0d00':'var(--ink-soft)'}; box-shadow:${mode==='2p'?'0 4px 12px rgba(255,128,0,.3)':'none'};">👫 2 players</button>
       </div>
-      <button class="primary" id="ttReset">New game</button>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:300px; margin:10px auto 18px; padding:10px; background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(0,0,0,.15)); border:1px solid rgba(255,255,255,.06); border-radius:18px; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px rgba(0,0,0,.3);">
+        ${board.map((c,i) => `<button class="ttCell" data-i="${i}" style="aspect-ratio:1; font-size:42px; padding:0; text-align:center; cursor:pointer; border-radius:14px; font-weight:700; line-height:1; background:${winSet?.has(i)?'linear-gradient(135deg,rgba(127,212,168,.25),rgba(127,212,168,.1))':'rgba(255,255,255,.03)'}; border:1.5px solid ${winSet?.has(i)?'var(--mint)':'rgba(255,255,255,.06)'}; color:${c==='X'?'#FF8000':c==='O'?'#7fd4a8':'transparent'}; transition: all .2s; ${winSet?.has(i)?'animation: pulse 1.2s infinite; box-shadow: 0 0 24px rgba(127,212,168,.4);':''} ${c?'animation:pop .3s cubic-bezier(.34,1.56,.64,1);':''}">${c||""}</button>`).join("")}
+      </div>
+      <button class="primary" id="ttReset" style="width:100%;">${done ? "Play again" : "Restart"}</button>
     `);
     document.querySelectorAll(".ttCell").forEach(b => b.onclick = () => {
       const i = +b.dataset.i;
       if (board[i] || done) return;
+      if (mode === "ai" && turn === "O") return; // wait for AI
       board[i] = turn;
-      const winner = checkTTT(board);
-      if (winner) { done = true; render(); document.getElementById("ttStatus").innerHTML = `<b style="color:var(--mint);">${winner === "tie" ? "Tie game!" : winner + " wins! 🎉"}</b>`; return; }
+      sfxDrop(); haptic(15);
+      const result = checkTTT(board);
+      if (result) { done = true; lastWinLine = result.line; finish(result); return; }
       turn = turn === "X" ? "O" : "X";
       render();
+      if (mode === "ai" && turn === "O" && !done) setTimeout(aiMove, 500);
     });
-    document.getElementById("ttReset").onclick = () => { board = ["","","","","","","","",""]; turn="X"; done=false; render(); };
+    document.getElementById("ttModeAi").onclick = () => { mode = "ai"; board=["","","","","","","","",""]; turn="X"; done=false; lastWinLine=null; render(); };
+    document.getElementById("ttMode2p").onclick = () => { mode = "2p"; board=["","","","","","","","",""]; turn="X"; done=false; lastWinLine=null; render(); };
+    document.getElementById("ttReset").onclick = () => { board=["","","","","","","","",""]; turn="X"; done=false; lastWinLine=null; render(); };
   }
   render();
 }
-function checkTTT(b) {
-  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for (const [a,c,d] of wins) if (b[a] && b[a]===b[c] && b[c]===b[d]) return b[a];
-  if (b.every(c=>c)) return "tie";
-  return null;
-}
 
-// ----- CONNECT FOUR -----
+// ----- CONNECT FOUR (with AI) -----
 function launchConnect4() {
   const ROWS = 6, COLS = 7;
+  let mode = "ai"; // "ai" or "2p"
   let board = Array.from({length:ROWS}, () => Array(COLS).fill(""));
-  let turn = "🔴";
-  let done = false;
-  function drop(col) {
-    if (done) return;
-    for (let r = ROWS-1; r >= 0; r--) {
-      if (!board[r][col]) { board[r][col] = turn; const w = checkC4(board); if (w) { done = true; render(); document.getElementById("c4Status").innerHTML = `<b style="color:var(--mint); font-size:18px;">${w === "tie" ? "Tie!" : w + " wins! 🎉"}</b>`; return; } turn = turn === "🔴" ? "🟡" : "🔴"; render(); return; }
+  let turn = "🔴", done = false;
+  function checkC4(b) {
+    const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (!b[r][c]) continue;
+      for (const [dr,dc] of dirs) {
+        let count = 1;
+        for (let k = 1; k < 4; k++) {
+          const nr = r + dr*k, nc = c + dc*k;
+          if (nr<0||nr>=ROWS||nc<0||nc>=COLS||b[nr][nc] !== b[r][c]) break;
+          count++;
+        }
+        if (count >= 4) return b[r][c];
+      }
     }
+    if (b.every(row => row.every(c => c))) return "tie";
+    return null;
+  }
+  function dropIn(b, col, piece) {
+    for (let r = ROWS-1; r >= 0; r--) if (!b[r][col]) { b[r][col] = piece; return r; }
+    return -1;
+  }
+  // AI evaluates each column: 1) win immediately, 2) block win, 3) prefer center
+  function aiPick() {
+    // Try each column for an immediate win
+    for (let c = 0; c < COLS; c++) {
+      const test = board.map(r => r.slice());
+      if (dropIn(test, c, "🟡") < 0) continue;
+      if (checkC4(test) === "🟡") return c;
+    }
+    // Block opponent's win
+    for (let c = 0; c < COLS; c++) {
+      const test = board.map(r => r.slice());
+      if (dropIn(test, c, "🔴") < 0) continue;
+      if (checkC4(test) === "🔴") return c;
+    }
+    // Prefer center columns (3, 2, 4, 1, 5, 0, 6)
+    const order = [3,2,4,1,5,0,6];
+    for (const c of order) if (board[0][c] === "") return c;
+    return -1;
+  }
+  function play(col, piece) {
+    const r = dropIn(board, col, piece);
+    if (r < 0) return false;
+    sfxDrop(); haptic(20);
+    return true;
+  }
+  function endGame(w) {
+    done = true;
+    if (w === "tie") sfxClick();
+    else if (mode === "ai" && w === "🟡") sfxLose();
+    else celebrateWin(w === "🔴" ? "🔴" : "🟡", w + " wins!");
+    render();
   }
   function render() {
     openGame(`
-      <h2>🔴 Connect Four</h2>
-      <div class="game-progress" id="c4Status">Turn: <b>${turn}</b></div>
-      <div style="display:grid; grid-template-columns:repeat(${COLS},1fr); gap:4px; max-width:420px; margin:18px auto; background:var(--bg-2); padding:8px; border-radius:10px;">
-        ${board.flatMap((row,r) => row.map((cell,c) => `<button class="c4Cell" data-c="${c}" style="aspect-ratio:1; background:var(--bg-1); border:0; border-radius:50%; font-size:28px; cursor:pointer;">${cell}</button>`)).join("")}
+      <h2>🔴 Connect Four ${mode === "ai" ? "<span style=\"font-size:13px; color:var(--ink-soft); font-weight:400;\">vs. AI</span>" : ""}</h2>
+      <div class="game-progress" id="c4Status">${done ? `<b style="color:var(--gold); font-size:16px;">${checkC4(board) === "tie" ? "Tie!" : checkC4(board) + " wins!"}</b>` : (mode === "ai" ? (turn === "🔴" ? "Your turn 🔴" : "🤖 AI thinking...") : `Turn: ${turn}`)}</div>
+      <div style="display:inline-flex; padding:4px; background:rgba(255,255,255,.05); border-radius:999px; margin: 4px 0 14px; border:1px solid rgba(255,255,255,.06);">
+        <button id="c4ModeAi" style="padding:8px 18px; font-size:12.5px; border:0; cursor:pointer; border-radius:999px; font-weight:600; background:${mode==='ai'?'linear-gradient(135deg,#FF8000,#FF5A1F)':'transparent'}; color:${mode==='ai'?'#1a0d00':'var(--ink-soft)'}; box-shadow:${mode==='ai'?'0 4px 12px rgba(255,128,0,.3)':'none'};">🤖 vs. AI</button>
+        <button id="c4Mode2p" style="padding:8px 18px; font-size:12.5px; border:0; cursor:pointer; border-radius:999px; font-weight:600; background:${mode==='2p'?'linear-gradient(135deg,#FF8000,#FF5A1F)':'transparent'}; color:${mode==='2p'?'#1a0d00':'var(--ink-soft)'}; box-shadow:${mode==='2p'?'0 4px 12px rgba(255,128,0,.3)':'none'};">👫 2 players</button>
       </div>
-      <button class="primary" id="c4Reset">New game</button>
+      <div style="display:grid; grid-template-columns:repeat(${COLS},1fr); gap:6px; max-width:420px; margin:8px auto 18px; background:linear-gradient(135deg,#1f5a96,#0a2c52); padding:10px; border-radius:18px; box-shadow: 0 1px 0 rgba(255,255,255,.1) inset, 0 12px 30px rgba(31,90,150,.4);">
+        ${board.flatMap((row,r) => row.map((cell,c) => `<button class="c4Cell" data-c="${c}" style="aspect-ratio:1; background:${cell ? (cell==='🔴' ? 'radial-gradient(circle at 30% 30%, #ff6e6e, #c53030)' : 'radial-gradient(circle at 30% 30%, #ffe07a, #d4a017)') : 'radial-gradient(circle at 30% 30%, rgba(0,0,0,.5), rgba(0,0,0,.85))'}; border:0; border-radius:50%; font-size:0; cursor:${cell?'default':'pointer'}; ${cell?'animation:drop .35s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 2px 6px rgba(0,0,0,.4), inset 0 -3px 6px rgba(0,0,0,.3);':'box-shadow: inset 0 3px 6px rgba(0,0,0,.6);'} transition: transform .15s;">${cell}</button>`)).join("")}
+      </div>
+      <button class="primary" id="c4Reset" style="width:100%;">${done ? "Play again" : "Restart"}</button>
     `);
-    document.querySelectorAll(".c4Cell").forEach(b => b.onclick = () => drop(+b.dataset.c));
+    document.querySelectorAll(".c4Cell").forEach(b => b.onclick = () => {
+      if (done) return;
+      if (mode === "ai" && turn !== "🔴") return;
+      if (!play(+b.dataset.c, turn)) return;
+      const w = checkC4(board);
+      if (w) { endGame(w); return; }
+      turn = turn === "🔴" ? "🟡" : "🔴";
+      render();
+      if (mode === "ai" && turn === "🟡" && !done) setTimeout(() => {
+        const c = aiPick();
+        if (c >= 0) {
+          play(c, "🟡");
+          const w2 = checkC4(board);
+          if (w2) { endGame(w2); return; }
+          turn = "🔴"; render();
+        }
+      }, 600);
+    });
+    document.getElementById("c4ModeAi").onclick = () => { mode = "ai"; board = Array.from({length:ROWS}, () => Array(COLS).fill("")); turn = "🔴"; done = false; render(); };
+    document.getElementById("c4Mode2p").onclick = () => { mode = "2p"; board = Array.from({length:ROWS}, () => Array(COLS).fill("")); turn = "🔴"; done = false; render(); };
     document.getElementById("c4Reset").onclick = () => { board = Array.from({length:ROWS}, () => Array(COLS).fill("")); turn = "🔴"; done = false; render(); };
   }
   render();
 }
-function checkC4(b) {
-  const R = b.length, C = b[0].length;
-  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
-    if (!b[r][c]) continue;
-    for (const [dr,dc] of dirs) {
-      let count = 1;
-      for (let k = 1; k < 4; k++) {
-        const nr = r + dr*k, nc = c + dc*k;
-        if (nr<0||nr>=R||nc<0||nc>=C||b[nr][nc] !== b[r][c]) break;
-        count++;
-      }
-      if (count >= 4) return b[r][c];
-    }
+
+// =============================================================
+// GAME POLISH HELPERS — sound, haptics, confetti, AI opponents
+// =============================================================
+let _audioCtx = null;
+function getAudio() {
+  if (!_audioCtx) try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  return _audioCtx;
+}
+function playTone(freq, duration = 0.08, type = "sine", vol = 0.15) {
+  const ctx = getAudio();
+  if (!ctx) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.value = vol;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.stop(ctx.currentTime + duration);
+  } catch(e) {}
+}
+function sfxClick()    { playTone(600, 0.04, "square", 0.08); }
+function sfxWin()      { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.15, "triangle", 0.18), i * 80)); }
+function sfxLose()     { [392, 330, 277].forEach((f, i) => setTimeout(() => playTone(f, 0.18, "sine", 0.12), i * 100)); }
+function sfxFlip()     { playTone(440, 0.05, "sine", 0.1); setTimeout(() => playTone(550, 0.05, "sine", 0.08), 50); }
+function sfxDrop()     { playTone(220, 0.12, "sine", 0.15); }
+function haptic(ms = 30) { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
+function fireConfetti() {
+  const emojis = ["🎉","🎊","✨","⭐","🌟","🏆","💫"];
+  let c = document.querySelector(".confetti-container");
+  if (!c) { c = document.createElement("div"); c.className = "confetti-container"; document.body.appendChild(c); }
+  for (let i = 0; i < 50; i++) {
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    piece.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    piece.style.left = Math.random()*100 + "%";
+    piece.style.animationDelay = Math.random()*0.5 + "s";
+    piece.style.animationDuration = (2 + Math.random()*2) + "s";
+    piece.style.fontSize = (16 + Math.random()*16) + "px";
+    c.appendChild(piece);
+    setTimeout(() => piece.remove(), 5000);
   }
-  if (b.every(row => row.every(c => c))) return "tie";
-  return null;
+  setTimeout(() => { if (c.children.length === 0) c.remove(); }, 5500);
+}
+function celebrateWin(emoji = "🏆", title = "You won!", subtitle = "") {
+  fireConfetti(); sfxWin(); haptic(80);
+  return `<div class="win-celebrate"><div class="win-emoji">${emoji}</div><h3>${escapeHtml(title)}</h3>${subtitle ? `<p style="color:var(--ink-soft);">${escapeHtml(subtitle)}</p>` : ""}</div>`;
 }
 
 // Helper: attach swipe gesture detection to an element
@@ -5133,26 +5446,43 @@ function launchSnake() {
     render();
   }
   function render() {
+    if (gameOver) {
+      sfxLose();
+      openGame(`
+        <h2>🐍 Snake</h2>
+        <div class="win-celebrate"><div class="win-emoji">🐍</div><h3>Game Over!</h3><p style="color:var(--ink-soft);">Final length: ${snake.length} • Score: ${score}</p></div>
+        <button class="primary" id="snReset" style="margin-top:14px; width:100%;">Play again</button>
+      `);
+      document.getElementById("snReset").onclick = () => { clearInterval(intervalId); snake = [[9,9]]; dir = [1,0]; food = randomFood(); score = 0; gameOver = false; render(); intervalId = setInterval(tick, 200); };
+      return;
+    }
     let cells = "";
     for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
       const isHead = snake[0][0]===r && snake[0][1]===c;
       const isBody = !isHead && snake.some(s=>s[0]===r&&s[1]===c);
       const isFood = food[0]===r && food[1]===c;
-      const bg = isHead ? "var(--gold)" : isBody ? "var(--mint)" : isFood ? "var(--rose)" : "var(--bg-2)";
-      cells += `<div style="background:${bg}; aspect-ratio:1; border-radius:2px;"></div>`;
+      const bg = isHead ? "radial-gradient(circle at 30% 30%, #FFD86B, #FF8000)"
+              : isBody ? "radial-gradient(circle at 30% 30%, #9aeac5, #5cb88a)"
+              : isFood ? "radial-gradient(circle at 30% 30%, #ff8a96, #ec6f7a)"
+              : "rgba(255,255,255,.025)";
+      const shadow = isHead ? "0 0 8px rgba(255,128,0,.6), inset 0 1px 0 rgba(255,255,255,.4)"
+                  : isBody ? "inset 0 1px 0 rgba(255,255,255,.2)"
+                  : isFood ? "0 0 12px rgba(236,111,122,.5), inset 0 1px 0 rgba(255,255,255,.3); animation:pulse 1s infinite"
+                  : "";
+      cells += `<div style="background:${bg}; aspect-ratio:1; border-radius:${isHead||isBody||isFood?'4px':'3px'}; box-shadow:${shadow};"></div>`;
     }
     openGame(`
       <h2>🐍 Snake</h2>
-      <div class="game-progress">Score: <b>${score}</b> ${gameOver ? '<span style="color:var(--bad);">— Game Over!</span>' : ""}</div>
-      <div style="font-size:11px; color:var(--ink-dim); text-align:center; margin-bottom:6px;">Swipe on the board, or use the arrows below</div>
-      <div id="snBoard" style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:420px; margin:0 auto; background:var(--bg-1); padding:6px; border-radius:8px; touch-action:none;">${cells}</div>
+      <div class="game-progress">Length · <b style="color:var(--gold);">${snake.length}</b> · Score · <b style="color:var(--mint);">${score}</b></div>
+      <div style="font-size:11px; color:var(--ink-dim); text-align:center; margin-bottom:8px;">Swipe on the board, or use the arrows below</div>
+      <div id="snBoard" style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:2px; max-width:420px; margin:0 auto; background:linear-gradient(135deg,rgba(0,0,0,.4),rgba(0,0,0,.6)); padding:8px; border-radius:14px; touch-action:none; border:1px solid rgba(255,255,255,.06); box-shadow: inset 0 2px 6px rgba(0,0,0,.5);">${cells}</div>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; max-width:280px; margin:18px auto;">
-        <span></span><button class="answer-btn" id="snUp" style="padding:18px; font-size:22px;">↑</button><span></span>
-        <button class="answer-btn" id="snLeft" style="padding:18px; font-size:22px;">←</button>
-        <button class="answer-btn" id="snDown" style="padding:18px; font-size:22px;">↓</button>
-        <button class="answer-btn" id="snRight" style="padding:18px; font-size:22px;">→</button>
+        <span></span><button class="answer-btn" id="snUp" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">↑</button><span></span>
+        <button class="answer-btn" id="snLeft" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">←</button>
+        <button class="answer-btn" id="snDown" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">↓</button>
+        <button class="answer-btn" id="snRight" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">→</button>
       </div>
-      <button class="primary" id="snReset" style="margin-top:8px; width:100%;">${gameOver ? "Play again" : "New game"}</button>
+      <button class="primary" id="snReset" style="margin-top:8px; width:100%;">New game</button>
     `);
     document.getElementById("snUp").onclick = () => { if (dir[0]!==1) dir = [-1,0]; };
     document.getElementById("snDown").onclick = () => { if (dir[0]!==-1) dir = [1,0]; };
@@ -5224,7 +5554,7 @@ function launch2048() {
         for (let r=0;r<4;r++) grid[3-r][c] = newCol[r];
       }
     }
-    if (JSON.stringify(grid) !== before) spawn();
+    if (JSON.stringify(grid) !== before) { spawn(); sfxFlip(); haptic(15); }
     if (!grid.flat().includes(0) && !canMove()) gameOver = true;
     render();
   }
@@ -5236,22 +5566,49 @@ function launch2048() {
     return false;
   }
   function tileColor(v) {
-    if (!v) return "var(--bg-2)";
-    const map = {2:"#3a3024",4:"#5c4a30",8:"#88663a",16:"#a87a3a",32:"#c08e44",64:"#e9b758",128:"#ec6f7a",256:"#7fd4a8",512:"#8aa8ff",1024:"#c8a8ff",2048:"#FF8000"};
-    return map[v] || "var(--gold)";
+    if (!v) return "rgba(255,255,255,.04)";
+    const map = {
+      2:    "linear-gradient(135deg,#2a2620,#3a342a)",
+      4:    "linear-gradient(135deg,#3d3424,#5c4a30)",
+      8:    "linear-gradient(135deg,#a87a3a,#88663a)",
+      16:   "linear-gradient(135deg,#c08e44,#a87a3a)",
+      32:   "linear-gradient(135deg,#e9b758,#c08e44)",
+      64:   "linear-gradient(135deg,#FF9d40,#FF6E20)",
+      128:  "linear-gradient(135deg,#ff7a90,#ec6f7a)",
+      256:  "linear-gradient(135deg,#9aeac5,#7fd4a8)",
+      512:  "linear-gradient(135deg,#9bb4ff,#8aa8ff)",
+      1024: "linear-gradient(135deg,#d6baff,#c8a8ff)",
+      2048: "linear-gradient(135deg,#FFB347,#FF8000)"
+    };
+    return map[v] || "linear-gradient(135deg,#FFD86B,#FF8000)";
   }
   function render() {
-    const cells = grid.flatMap((row,r) => row.map((v,c) => `<div style="background:${tileColor(v)}; aspect-ratio:1; border-radius:8px; display:grid; place-items:center; font-size:${v>=1024?22:v>=128?26:32}px; font-weight:700; color:${v>=8?"#1a1209":"var(--ink-soft)"};">${v||""}</div>`)).join("");
+    const reached2048 = grid.some(row => row.some(v => v >= 2048));
+    if (gameOver || reached2048) {
+      if (reached2048) { sfxWin(); haptic(80); fireConfetti(); }
+      else sfxLose();
+      const inner = reached2048
+        ? celebrateWin("🏆", "You reached 2048!", `Score: ${score}`)
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>Game Over!</h3><p style="color:var(--ink-soft);">Score: ${score}</p></div>`;
+      openGame(`
+        <h2>🧩 2048</h2>
+        ${inner}
+        <button class="primary" id="t2048Reset" style="width:100%; margin-top:14px; padding:14px;">Play again</button>
+      `);
+      document.getElementById("t2048Reset").onclick = () => { grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; score=0; gameOver=false; spawn(); spawn(); render(); };
+      return;
+    }
+    const cells = grid.flatMap((row,r) => row.map((v,c) => `<div style="background:${tileColor(v)}; aspect-ratio:1; border-radius:12px; display:grid; place-items:center; font-size:${v>=1024?22:v>=128?28:34}px; font-weight:800; color:${v>=8?"#1a1209":"rgba(255,255,255,.4)"}; ${v?'animation:pop .18s ease-out;':''} box-shadow:${v ? "inset 0 1px 0 rgba(255,255,255,.18), 0 2px 8px rgba(0,0,0,.25)" + (v>=128 ? ", 0 0 18px rgba(255,128,0,.25)" : "") : "inset 0 1px 0 rgba(0,0,0,.2)"}; letter-spacing:-.02em; transition:all .18s;">${v||""}</div>`)).join("");
     openGame(`
       <h2>🧩 2048</h2>
-      <div class="game-progress">Score: <b>${score}</b> ${gameOver ? '<span style="color:var(--bad);">— Game Over!</span>' : ""}</div>
-      <div style="font-size:11px; color:var(--ink-dim); text-align:center; margin-bottom:6px;">Swipe on the board, or use the arrows below</div>
-      <div id="t2048Board" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; max-width:340px; margin:0 auto; padding:8px; background:var(--bg-1); border-radius:10px; touch-action:none;">${cells}</div>
+      <div class="game-progress">Score · <b style="color:var(--gold);">${score}</b></div>
+      <div style="font-size:11px; color:var(--ink-dim); text-align:center; margin-bottom:10px;">Swipe on the board, or use the arrows below</div>
+      <div id="t2048Board" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; max-width:360px; margin:0 auto; padding:10px; background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(0,0,0,.18)); border:1px solid rgba(255,255,255,.06); border-radius:18px; touch-action:none; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 12px 28px rgba(0,0,0,.3);">${cells}</div>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; max-width:280px; margin:18px auto;">
-        <span></span><button class="answer-btn" id="t2048Up" style="padding:18px; font-size:22px;">↑</button><span></span>
-        <button class="answer-btn" id="t2048Left" style="padding:18px; font-size:22px;">←</button>
-        <button class="answer-btn" id="t2048Down" style="padding:18px; font-size:22px;">↓</button>
-        <button class="answer-btn" id="t2048Right" style="padding:18px; font-size:22px;">→</button>
+        <span></span><button class="answer-btn" id="t2048Up" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">↑</button><span></span>
+        <button class="answer-btn" id="t2048Left" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">←</button>
+        <button class="answer-btn" id="t2048Down" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">↓</button>
+        <button class="answer-btn" id="t2048Right" style="padding:18px; font-size:22px; aspect-ratio:1; display:grid; place-items:center;">→</button>
       </div>
       <button class="primary" id="t2048Reset" style="width:100%;">${gameOver ? "Play again" : "New game"}</button>
     `);
@@ -5292,19 +5649,29 @@ function launchMovieMemory() {
   let firstPick = null, busy = false, matchedCount = 0, attempts = 0, startTime = Date.now();
   function render() {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    if (matchedCount === pairs.length) {
+      openGame(`
+        <h2>🃏 Movie Memory</h2>
+        ${celebrateWin("🃏", "All pairs found!", `Solved in ${elapsed}s with ${attempts} flips`)}
+        <div style="display:grid; gap:10px; margin-top:14px;">
+          <button class="primary" id="memReset" style="padding:14px;">Play again</button>
+        </div>
+      `);
+      document.getElementById("memReset").onclick = () => launchMovieMemory();
+      return;
+    }
     openGame(`
       <h2>🃏 Movie Memory</h2>
       <div class="game-progress">${matchedCount}/${pairs.length} pairs found • ${attempts} flips • ${elapsed}s</div>
       <div class="memory-board">
         ${cards.map((c,i) => `
           <div class="memory-cell ${c.flipped?"flipped":""} ${c.matched?"matched":""}" data-i="${i}">
-            <div class="face back">?</div>
-            <div class="face front">${state.tmdbCache[c.show.t]?.poster ? `<img src="${state.tmdbCache[c.show.t].poster}" alt="">` : `<div style="padding:8px; font-size:11px; text-align:center;">${escapeHtml(c.show.t)}</div>`}</div>
+            <div class="face back">🎬</div>
+            <div class="face front">${state.tmdbCache[c.show.t]?.poster ? `<img src="${state.tmdbCache[c.show.t].poster}" alt="">` : `<div style="padding:10px; font-size:11px; text-align:center; line-height:1.3;">${escapeHtml(c.show.t)}</div>`}</div>
           </div>
         `).join("")}
       </div>
-      ${matchedCount === pairs.length ? `<div style="text-align:center; margin-top:18px;"><b style="color:var(--mint); font-size:18px;">🎉 You did it in ${elapsed}s with ${attempts} flips!</b></div>` : ""}
-      <button class="primary" id="memReset" style="margin-top:18px;">${matchedCount === pairs.length ? "Play again" : "Reset"}</button>
+      <button class="primary" id="memReset" style="margin-top:18px; width:100%;">Reset</button>
     `);
     document.querySelectorAll(".memory-cell").forEach(el => el.onclick = () => {
       const i = +el.dataset.i;
@@ -5366,7 +5733,14 @@ Return ONLY JSON: {"questions":[{"q":"...","options":["a","b","c","d"],"correct"
           state.gameScores[u].trivia = Math.max(state.gameScores[u].trivia || 0, score);
           saveState();
         }
-        openGame(`<h2>🎯 Trivia Complete!</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${score === quiz.length ? "🏆" : score >= quiz.length*0.6 ? "🎉" : "📚"}</div><h3>${score} / ${quiz.length}</h3><p>${score === quiz.length ? "Perfect score! You really watched it!" : score >= quiz.length*0.6 ? "Great job!" : "Watch it again to nail it next time!"}</p></div><button class="primary" onclick="launchMovieTrivia()">New trivia</button> <button class="secondary" onclick="closeGame()">Done</button>`);
+        const perfect = score === quiz.length;
+        const goodScore = score >= quiz.length*0.6;
+        const inner = perfect
+          ? celebrateWin("🏆", "Perfect score!", `${score} / ${quiz.length} — you really watched it!`)
+          : goodScore
+          ? celebrateWin("🎉", "Great job!", `${score} / ${quiz.length}`)
+          : `<div class="win-celebrate"><div class="win-emoji">📚</div><h3>${score} / ${quiz.length}</h3><p style="color:var(--ink-soft);">Watch it again to nail it next time!</p></div>`;
+        openGame(`<h2>🎯 Trivia Complete!</h2>${inner}<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;"><button class="primary" onclick="launchMovieTrivia()" style="padding:14px;">New trivia</button><button class="secondary" onclick="closeGame()" style="padding:14px;">Done</button></div>`);
         return;
       }
       const item = quiz[q];
@@ -5389,28 +5763,54 @@ function launchHangman() {
   const word = titles[Math.floor(Math.random()*titles.length)].toUpperCase();
   let guessed = new Set(), wrong = 0, max = 6, won = false, lost = false;
   function render() {
-    const display = word.split("").map(c => /[A-Z]/.test(c) ? (guessed.has(c) ? c : "_") : c).join(" ");
-    const hangman = ["", "(o)", "(o)\n |", "(o)\n/|", "(o)\n/|\\", "(o)\n/|\\\n/", "(o)\n/|\\\n/ \\"][wrong] || "";
+    const display = word.split("").map(c => /[A-Z]/.test(c) ? (guessed.has(c) ? c : "_") : c).join("");
     won = !display.includes("_");
     lost = wrong >= max;
+    if (won) {
+      openGame(`
+        <h2>🔤 Movie Hangman</h2>
+        ${celebrateWin("🎬", "You got it!", `The answer was: ${word}`)}
+        <button class="primary" id="hmReset" style="margin-top:14px; width:100%;">New word</button>
+      `);
+      document.getElementById("hmReset").onclick = () => launchHangman();
+      return;
+    }
+    if (lost) {
+      sfxLose();
+      openGame(`
+        <h2>🔤 Movie Hangman</h2>
+        <div class="win-celebrate"><div class="win-emoji">😅</div><h3>Game over</h3><p style="color:var(--ink-soft);">The answer was: <b style="color:var(--gold);">${escapeHtml(word)}</b></p></div>
+        <button class="primary" id="hmReset" style="margin-top:14px; width:100%;">New word</button>
+      `);
+      document.getElementById("hmReset").onclick = () => launchHangman();
+      return;
+    }
+    // Modern progress bar instead of ASCII gallows
+    const pct = (wrong / max) * 100;
+    const segments = Array.from({length: max}, (_, i) => `<div style="flex:1; height:8px; border-radius:99px; background:${i < wrong ? 'linear-gradient(90deg, #FF8000, #ec6f7a)' : 'rgba(255,255,255,.08)'}; transition:all .3s;"></div>`).join("");
+    const remainingHearts = "❤️".repeat(max - wrong) + "🤍".repeat(wrong);
     openGame(`
       <h2>🔤 Movie Hangman</h2>
-      <div class="game-progress">Wrong guesses: ${wrong}/${max}</div>
-      <pre style="font-family: monospace; font-size: 22px; text-align: center; min-height: 80px; white-space: pre-wrap;">${hangman}</pre>
-      <div style="font-family: monospace; font-size: 28px; text-align: center; letter-spacing: 3px; margin: 22px 0;">${display}</div>
-      ${won ? '<div style="text-align:center; color:var(--mint); font-weight:700; font-size:18px;">🎉 You got it!</div>' : lost ? `<div style="text-align:center; color:var(--bad); font-weight:700; font-size:16px;">Game over. The answer was: <b>${word}</b></div>` : ""}
-      <div style="display:grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 18px;">
-        ${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L => `
-          <button class="answer-btn hmL" data-l="${L}" style="padding:8px 0; font-size:14px; ${guessed.has(L) ? 'opacity:.4; cursor:default;' : ''}" ${guessed.has(L) || won || lost ? 'disabled' : ''}>${L}</button>
-        `).join("")}
+      <div class="game-progress">Lives · ${remainingHearts}</div>
+      <div style="display:flex; gap:5px; margin: 14px 0;">${segments}</div>
+      <div style="display:flex; gap:8px; flex-wrap: wrap; justify-content:center; margin: 26px 0; min-height: 60px;">
+        ${word.split("").map(c => /[A-Z]/.test(c) ? `<div style="min-width:32px; padding:8px 6px; background:linear-gradient(180deg, rgba(255,128,0,.04), rgba(255,128,0,.12)); border:1px solid rgba(255,128,0,.2); border-radius:8px; font-family:'Fraunces',serif; font-size:24px; font-weight:700; text-align:center; ${guessed.has(c) ? 'color:var(--gold);' : 'color:transparent; border-bottom:2px solid var(--gold);'}">${guessed.has(c) ? c : "?"}</div>` : `<div style="min-width:12px; padding:8px 0; font-size:24px; color:var(--ink-soft);">${c === " " ? "&nbsp;" : c}</div>`).join("")}
       </div>
-      <button class="primary" id="hmReset" style="margin-top:14px;">${won||lost ? "🎲 New word" : "↻ Reset"}</button>
+      <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 18px;">
+        ${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(L => {
+          const used = guessed.has(L);
+          const correct = used && word.includes(L);
+          const wrongL = used && !word.includes(L);
+          return `<button class="hmL" data-l="${L}" style="aspect-ratio:1; padding:0; font-size:14px; font-weight:700; border-radius:8px; cursor:${used?'default':'pointer'}; transition: all .15s; background:${correct ? 'linear-gradient(135deg,rgba(127,212,168,.3),rgba(127,212,168,.15))' : wrongL ? 'linear-gradient(135deg,rgba(236,111,122,.3),rgba(236,111,122,.15))' : 'rgba(255,255,255,.04)'}; border:1px solid ${correct ? 'rgba(127,212,168,.5)' : wrongL ? 'rgba(236,111,122,.5)' : 'rgba(255,255,255,.08)'}; color:${correct ? '#a4e8c5' : wrongL ? '#f3a8b0' : 'var(--ink)'}; ${used?'opacity:.85':''}" ${used ? 'disabled' : ''}>${L}</button>`;
+        }).join("")}
+      </div>
+      <button class="primary" id="hmReset" style="margin-top:14px; width:100%;">Reset</button>
     `);
     document.querySelectorAll(".hmL").forEach(b => b.onclick = () => {
       const L = b.dataset.l;
       if (guessed.has(L)) return;
       guessed.add(L);
-      if (!word.includes(L)) wrong++;
+      if (!word.includes(L)) { wrong++; sfxLose(); haptic(40); } else { sfxClick(); haptic(15); }
       render();
     });
     document.getElementById("hmReset").onclick = () => launchHangman();
@@ -5419,8 +5819,22 @@ function launchHangman() {
 }
 
 // ----- CHESS (real in-app implementation, 2-player pass-and-play) -----
-function launchChess() {
+function launchChess(mode) {
+  if (!mode) {
+    openGame(`
+      <h2>♟️ Chess</h2>
+      <p style="color:var(--ink-soft); margin:8px 0 18px; text-align:center;">Pick how you want to play</p>
+      <div style="display:grid; gap:10px;">
+        <button class="primary" id="csAI" style="padding:18px; font-size:16px;">🤖 Vs. Computer (you play White)</button>
+        <button class="secondary" id="csPvP" style="padding:18px; font-size:16px;">👫 2 players (pass &amp; play)</button>
+      </div>
+    `);
+    document.getElementById("csAI").onclick = () => { sfxClick(); launchChess("ai"); };
+    document.getElementById("csPvP").onclick = () => { sfxClick(); launchChess("pvp"); };
+    return;
+  }
   const PIECES = { K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟" };
+  const VALUES = { p:1, n:3, b:3, r:5, q:9, k:1000 };
   // Uppercase = white, lowercase = black
   let board = [
     ["r","n","b","q","k","b","n","r"],
@@ -5432,7 +5846,7 @@ function launchChess() {
     ["P","P","P","P","P","P","P","P"],
     ["R","N","B","Q","K","B","N","R"]
   ];
-  let turn = "white", selected = null, validMoves = [], gameOver = null;
+  let turn = "white", selected = null, validMoves = [], gameOver = null, lastMove = null;
   const isWhite = p => p && p === p.toUpperCase();
   const isBlack = p => p && p === p.toLowerCase();
   const ofTurn = p => turn === "white" ? isWhite(p) : isBlack(p);
@@ -5502,13 +5916,17 @@ function launchChess() {
       return !inCheck(turn, test);
     });
   }
-  function move(toR, toC) {
-    const piece = board[selected.r][selected.c];
+  function move(fromR, fromC, toR, toC) {
+    const piece = board[fromR][fromC];
+    const captured = board[toR][toC];
     board[toR][toC] = piece;
-    board[selected.r][selected.c] = null;
+    board[fromR][fromC] = null;
     // Pawn promotion to queen
     if (piece === "P" && toR === 0) board[toR][toC] = "Q";
     if (piece === "p" && toR === 7) board[toR][toC] = "q";
+    lastMove = { from:{r:fromR,c:fromC}, to:{r:toR,c:toC} };
+    if (captured) sfxFlip(); else sfxDrop();
+    haptic(20);
     turn = turn === "white" ? "black" : "white";
     selected = null; validMoves = [];
     // Check for game end
@@ -5525,95 +5943,304 @@ function launchChess() {
       if (!any) gameOver = inCheck(turn) ? `Checkmate! ${turn === "white" ? "Black" : "White"} wins!` : "Stalemate — draw!";
     }
     render();
+    if (!gameOver && mode === "ai" && turn === "black") setTimeout(aiMove, 600);
+  }
+  function aiMove() {
+    if (gameOver || turn !== "black") return;
+    // Collect all legal moves for black with their static evaluation
+    const candidates = [];
+    for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
+      const p = board[r][c];
+      if (!p || !isBlack(p)) continue;
+      const legal = legalMoves(r, c);
+      for (const m of legal) {
+        const target = board[m.r][m.c];
+        const captureVal = target ? (VALUES[target.toLowerCase()] || 0) : 0;
+        // Simulate and check counter-capture (1-ply lookahead)
+        const test = board.map(row => row.slice());
+        test[m.r][m.c] = test[r][c]; test[r][c] = null;
+        if (test[m.r][m.c] === "p" && m.r === 7) test[m.r][m.c] = "q";
+        // Worst opponent capture from this position
+        let worstLoss = 0;
+        for (let rr=0; rr<8; rr++) for (let cc=0; cc<8; cc++) {
+          const op = test[rr][cc];
+          if (!op || !isWhite(op)) continue;
+          const oMoves = getMoves(rr, cc, test);
+          for (const om of oMoves) {
+            const tgt = test[om.r][om.c];
+            if (tgt && isBlack(tgt)) {
+              const v = VALUES[tgt.toLowerCase()] || 0;
+              if (v > worstLoss) worstLoss = v;
+            }
+          }
+        }
+        // Bonus: gives check?
+        const checkBonus = inCheck("white", test) ? 0.5 : 0;
+        // Bonus for development (knights/bishops out)
+        const devBonus = (p === "n" || p === "b") && r === 0 ? 0.3 : 0;
+        // Bonus for center control
+        const centerBonus = (m.r >= 3 && m.r <= 4 && m.c >= 3 && m.c <= 4) ? 0.2 : 0;
+        const score = captureVal - worstLoss + checkBonus + devBonus + centerBonus + Math.random() * 0.1;
+        candidates.push({ from:{r,c}, to:{r:m.r, c:m.c}, score });
+      }
+    }
+    if (!candidates.length) return; // shouldn't happen — gameOver would be set
+    candidates.sort((a, b) => b.score - a.score);
+    // Pick from top 3 with weighted randomness for variety
+    const top = candidates.slice(0, Math.min(3, candidates.length));
+    const choice = top[Math.floor(Math.random() * Math.min(top.length, candidates[0].score >= 5 ? 1 : top.length))];
+    selected = choice.from;
+    move(choice.from.r, choice.from.c, choice.to.r, choice.to.c);
   }
   function render() {
+    if (gameOver) {
+      const isHumanWin = mode === "ai" && gameOver.startsWith("White");
+      const isHumanLoss = mode === "ai" && gameOver.startsWith("Black");
+      const showCelebrate = mode !== "ai" || isHumanWin;
+      const winEmoji = gameOver.includes("White") ? "♔" : gameOver.includes("Black") ? "♚" : "🤝";
+      const subtitle = mode === "ai"
+        ? (isHumanWin ? "Brilliant chess!" : isHumanLoss ? "The computer outmaneuvered you. Try again!" : "Stalemate.")
+        : "Great match!";
+      if (isHumanLoss) sfxLose();
+      const inner = showCelebrate
+        ? celebrateWin(winEmoji, gameOver, subtitle)
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>${escapeHtml(gameOver)}</h3><p style="color:var(--ink-soft);">${escapeHtml(subtitle)}</p></div>`;
+      openGame(`
+        <h2>♟️ Chess</h2>
+        ${inner}
+        <div style="display:grid; gap:10px; margin-top:14px;">
+          <button class="primary" id="csAgain" style="padding:14px;">Play again</button>
+          <button class="secondary" id="csMenu" style="padding:14px;">Change mode</button>
+        </div>
+      `);
+      document.getElementById("csAgain").onclick = () => launchChess(mode);
+      document.getElementById("csMenu").onclick = () => launchChess();
+      return;
+    }
     let cells = "";
     for (let r=0; r<8; r++) for (let c=0; c<8; c++) {
       const p = board[r][c];
       const isSel = selected && selected.r===r && selected.c===c;
       const isMove = validMoves.some(m => m.r===r && m.c===c);
+      const isLast = lastMove && ((lastMove.from.r===r && lastMove.from.c===c) || (lastMove.to.r===r && lastMove.to.c===c));
       const dark = (r+c)%2 === 1;
-      const bg = isSel ? "var(--gold)" : isMove ? "var(--mint)" : (dark ? "#3a2d18" : "#5c4a30");
-      const txtColor = p && isWhite(p) ? "#fff" : "#000";
-      cells += `<div class="csCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:pointer; font-size:32px; color:${txtColor}; text-shadow: 0 1px 3px rgba(0,0,0,.5);">${p ? PIECES[p] : ""}</div>`;
+      const bg = isSel ? "linear-gradient(135deg,#FFD86B,#FF8000)" : isMove ? "linear-gradient(135deg,#7fd4a8,#5cb88a)" : isLast ? "rgba(255,128,0,.18)" : (dark ? "linear-gradient(135deg,#3a2d18,#2a1f10)" : "linear-gradient(135deg,#d4b685,#b89860)");
+      const txtColor = p && isWhite(p) ? "#fff" : "#0a0a0a";
+      const shadow = isMove ? "0 0 0 2px var(--mint), inset 0 0 12px rgba(127,212,168,.3)" : isSel ? "0 0 0 2px var(--gold), inset 0 0 12px rgba(255,216,107,.3)" : "";
+      cells += `<div class="csCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:pointer; font-size:32px; color:${txtColor}; text-shadow: 0 2px 4px rgba(0,0,0,.6); border-radius:3px; box-shadow:${shadow}; transition:all .12s;">${p ? `<span style="display:inline-block; ${isLast ? 'animation:pop .3s ease-out;' : ''}">${PIECES[p]}</span>` : ""}</div>`;
     }
     const inCheckNow = inCheck(turn);
+    const turnLabel = mode === "ai"
+      ? (turn === "white" ? "Your turn" : "🤖 Computer thinking...")
+      : `Turn: ${turn === "white" ? "⚪ White" : "⚫ Black"}`;
     openGame(`
-      <h2>♟️ Chess</h2>
-      <div class="game-progress">${gameOver ? `<b style="color:var(--mint); font-size:18px;">${gameOver}</b>` : `Turn: <b>${turn === "white" ? "⚪ White" : "⚫ Black"}</b>${inCheckNow ? ' <span style="color:var(--bad);">— Check!</span>' : ""}`}</div>
-      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:1px; max-width:480px; margin:14px auto; background:#000; padding:2px; border-radius:6px;">${cells}</div>
-      <button class="primary" id="csReset">New game</button>
+      <h2>♟️ Chess ${mode === "ai" ? "<span style=\"font-size:13px; color:var(--ink-soft); font-weight:400;\">vs. Computer</span>" : ""}</h2>
+      <div class="game-progress" style="text-align:center;">${turnLabel}${inCheckNow ? ' <span style="color:var(--bad); font-weight:700;">— Check!</span>' : ""}</div>
+      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:1px; max-width:480px; margin:14px auto; background:linear-gradient(135deg,#1a1208,#000); padding:6px; border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,.5);">${cells}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="primary" id="csReset" style="padding:12px;">Restart</button>
+        <button class="secondary" id="csMenu" style="padding:12px;">Change mode</button>
+      </div>
     `);
     document.querySelectorAll(".csCell").forEach(el => el.onclick = () => {
       if (gameOver) return;
+      if (mode === "ai" && turn === "black") return; // wait for AI
       const r = +el.dataset.r, c = +el.dataset.c;
-      if (selected && validMoves.some(m => m.r===r && m.c===c)) { move(r, c); return; }
+      if (selected && validMoves.some(m => m.r===r && m.c===c)) {
+        move(selected.r, selected.c, r, c);
+        return;
+      }
       const p = board[r][c];
       if (p && ofTurn(p)) {
-        selected = {r, c}; validMoves = legalMoves(r, c); render();
+        selected = {r, c}; validMoves = legalMoves(r, c); sfxClick(); render();
       } else { selected = null; validMoves = []; render(); }
     });
-    document.getElementById("csReset").onclick = () => launchChess();
+    document.getElementById("csReset").onclick = () => launchChess(mode);
+    document.getElementById("csMenu").onclick = () => launchChess();
   }
   render();
 }
 
 // ----- CHECKERS (basic 2-player pass-and-play) -----
-function launchCheckers() {
-  // 8x8 board. Player 1 (red, 🔴) at top, Player 2 (black, ⚫) at bottom.
+function launchCheckers(mode) {
+  // 8x8 board. Player 1 (red 🔴) at top moving DOWN, Player 2 (black ⚫) at bottom moving UP.
+  // Human = Player 2 (black, bottom). AI = Player 1 (red, top) when mode === "ai".
+  if (!mode) {
+    openGame(`
+      <h2>🔶 Checkers</h2>
+      <p style="color:var(--ink-soft); margin:8px 0 18px; text-align:center;">Pick how you want to play</p>
+      <div style="display:grid; gap:10px;">
+        <button class="primary" id="ckAI" style="padding:18px; font-size:16px;">🤖 Vs. Computer</button>
+        <button class="secondary" id="ckPvP" style="padding:18px; font-size:16px;">👫 2 players (pass &amp; play)</button>
+      </div>
+    `);
+    document.getElementById("ckAI").onclick = () => { sfxClick(); launchCheckers("ai"); };
+    document.getElementById("ckPvP").onclick = () => { sfxClick(); launchCheckers("pvp"); };
+    return;
+  }
   let board = Array.from({length:8}, () => Array(8).fill(null));
   for (let r=0;r<3;r++) for (let c=0;c<8;c++) if ((r+c)%2===1) board[r][c] = {p:1, king:false};
   for (let r=5;r<8;r++) for (let c=0;c<8;c++) if ((r+c)%2===1) board[r][c] = {p:2, king:false};
-  let turn = 1, selected = null, moves = [];
+  let turn = 2, selected = null, moves = [], gameOver = null, lastMove = null;
   function valid(r,c) { return r>=0&&r<8&&c>=0&&c<8; }
-  function getMoves(r,c) {
-    const piece = board[r][c]; if (!piece) return [];
+  function getMovesFor(b, r, c) {
+    const piece = b[r][c]; if (!piece) return [];
     const dirs = piece.king ? [[-1,-1],[-1,1],[1,-1],[1,1]] : (piece.p===1 ? [[1,-1],[1,1]] : [[-1,-1],[-1,1]]);
-    const moves = [];
+    const out = [];
     for (const [dr,dc] of dirs) {
       const nr = r+dr, nc = c+dc;
-      if (valid(nr,nc) && !board[nr][nc]) moves.push({r:nr,c:nc,jump:null});
+      if (valid(nr,nc) && !b[nr][nc]) out.push({r:nr,c:nc,jump:null});
       const jr = r+dr*2, jc = c+dc*2;
-      if (valid(nr,nc) && board[nr][nc] && board[nr][nc].p !== piece.p && valid(jr,jc) && !board[jr][jc]) {
-        moves.push({r:jr,c:jc,jump:{r:nr,c:nc}});
+      if (valid(nr,nc) && b[nr][nc] && b[nr][nc].p !== piece.p && valid(jr,jc) && !b[jr][jc]) {
+        out.push({r:jr,c:jc,jump:{r:nr,c:nc}});
       }
     }
-    return moves;
+    return out;
+  }
+  function getMoves(r,c) { return getMovesFor(board, r, c); }
+  function allMovesFor(p) {
+    // jumps are mandatory if any exist
+    const movesList = []; const jumpsList = [];
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      if (board[r][c] && board[r][c].p === p) {
+        for (const m of getMoves(r,c)) {
+          const e = { from:{r,c}, to:{r:m.r,c:m.c}, jump:m.jump };
+          if (m.jump) jumpsList.push(e); else movesList.push(e);
+        }
+      }
+    }
+    return jumpsList.length ? jumpsList : movesList;
+  }
+  function checkEnd() {
+    // No pieces or no moves = lose
+    let p1Pieces = 0, p2Pieces = 0;
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      if (board[r][c]) (board[r][c].p === 1 ? p1Pieces++ : p2Pieces++);
+    }
+    if (p1Pieces === 0) { gameOver = 2; return; }
+    if (p2Pieces === 0) { gameOver = 1; return; }
+    if (allMovesFor(turn).length === 0) gameOver = turn === 1 ? 2 : 1;
+  }
+  function applyMove(from, to, jump) {
+    const piece = board[from.r][from.c];
+    board[to.r][to.c] = piece;
+    board[from.r][from.c] = null;
+    if (jump) board[jump.r][jump.c] = null;
+    // Promote
+    if (piece.p === 1 && to.r === 7) piece.king = true;
+    if (piece.p === 2 && to.r === 0) piece.king = true;
+    lastMove = { from, to };
+  }
+  function aiTurn() {
+    setTimeout(() => {
+      if (gameOver) return;
+      const all = allMovesFor(1);
+      if (all.length === 0) { checkEnd(); render(); return; }
+      // Heuristic: jumps are forced. Prefer king promotions, then random.
+      const jumps = all.filter(m => m.jump);
+      const pool = jumps.length ? jumps : all;
+      const promoting = pool.filter(m => {
+        const p = board[m.from.r][m.from.c];
+        return p && !p.king && p.p === 1 && m.to.r === 7;
+      });
+      const chosen = (promoting.length ? promoting : pool)[Math.floor(Math.random() * (promoting.length ? promoting.length : pool.length))];
+      applyMove(chosen.from, chosen.to, chosen.jump);
+      sfxDrop();
+      // Multi-jump?
+      if (chosen.jump) {
+        const more = getMoves(chosen.to.r, chosen.to.c).filter(m => m.jump);
+        if (more.length) {
+          const next = more[Math.floor(Math.random() * more.length)];
+          setTimeout(() => {
+            applyMove({r:chosen.to.r,c:chosen.to.c}, {r:next.r,c:next.c}, next.jump);
+            sfxDrop();
+            turn = 2; checkEnd(); render();
+          }, 450);
+          return;
+        }
+      }
+      turn = 2; checkEnd(); render();
+    }, 600);
   }
   function render() {
+    if (gameOver) {
+      const human = mode === "ai" ? 2 : null;
+      const isHumanWin = human && gameOver === human;
+      const title = mode === "ai"
+        ? (isHumanWin ? "You won!" : "Computer wins!")
+        : (gameOver === 1 ? "🔴 Red wins!" : "⚫ Black wins!");
+      const sub = mode === "ai"
+        ? (isHumanWin ? "Brilliant strategy." : "Tough one — go again?")
+        : "Great game!";
+      if (mode === "ai" && !isHumanWin) sfxLose();
+      const winHTML = (mode === "ai" && isHumanWin) || mode !== "ai"
+        ? celebrateWin(gameOver === 1 ? "🔴" : "⚫", title, sub)
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>${title}</h3><p style="color:var(--ink-soft);">${sub}</p></div>`;
+      openGame(`
+        <h2>🔶 Checkers</h2>
+        ${winHTML}
+        <div style="display:grid; gap:10px; margin-top:14px;">
+          <button class="primary" id="ckAgain" style="padding:14px;">Play again</button>
+          <button class="secondary" id="ckMenu" style="padding:14px;">Change mode</button>
+        </div>
+      `);
+      document.getElementById("ckAgain").onclick = () => launchCheckers(mode);
+      document.getElementById("ckMenu").onclick = () => launchCheckers();
+      return;
+    }
     const cells = [];
     for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
       const p = board[r][c];
       const isSelected = selected && selected.r===r && selected.c===c;
       const isMove = moves.some(m => m.r===r && m.c===c);
+      const isLast = lastMove && ((lastMove.from.r===r && lastMove.from.c===c) || (lastMove.to.r===r && lastMove.to.c===c));
       const dark = (r+c)%2===1;
-      const bg = isSelected ? "var(--gold)" : isMove ? "var(--mint)" : (dark ? "#3a2d18" : "#5c4a30");
-      cells.push(`<div class="ckCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:pointer; font-size:24px;">${p ? (p.king ? (p.p===1?"👑":"🤴") : (p.p===1?"🔴":"⚫")) : ""}</div>`);
+      const bg = isSelected ? "linear-gradient(135deg,#FFD86B,#FF8000)" : isMove ? "linear-gradient(135deg,#7fd4a8,#5cb88a)" : isLast ? "rgba(255,128,0,0.18)" : (dark ? "linear-gradient(135deg,#3a2d18,#2a1f10)" : "linear-gradient(135deg,#5c4a30,#4a3920)");
+      const piece = p ? `<span style="display:inline-block; animation:pop .25s ease-out;">${p.king ? (p.p===1?"👑":"♛") : (p.p===1?"🔴":"⚫")}</span>` : "";
+      cells.push(`<div class="ckCell" data-r="${r}" data-c="${c}" style="background:${bg}; aspect-ratio:1; display:grid; place-items:center; cursor:${dark?"pointer":"default"}; font-size:26px; border-radius:4px; box-shadow:${isMove ? "0 0 0 2px var(--mint), inset 0 0 12px rgba(127,212,168,.3)" : isSelected ? "0 0 0 2px var(--gold), inset 0 0 12px rgba(255,216,107,.3)" : ""}; transition:all .15s;">${piece}</div>`);
     }
+    let p1c = 0, p2c = 0;
+    for (let r=0;r<8;r++) for (let c=0;c<8;c++) {
+      if (board[r][c]) (board[r][c].p === 1 ? p1c++ : p2c++);
+    }
+    const turnLabel = mode === "ai"
+      ? (turn === 2 ? "Your turn" : "🤖 Computer thinking...")
+      : `Turn: ${turn === 1 ? "🔴 Red" : "⚫ Black"}`;
     openGame(`
-      <h2>🔶 Checkers</h2>
-      <div class="game-progress">Turn: <b>${turn === 1 ? "🔴 Red" : "⚫ Black"}</b></div>
-      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:1px; max-width:400px; margin:14px auto; background:#000; padding:2px; border-radius:6px;">${cells.join("")}</div>
-      <button class="primary" id="ckReset">New game</button>
+      <h2>🔶 Checkers ${mode === "ai" ? "<span style=\"font-size:13px; color:var(--ink-soft); font-weight:400;\">vs. Computer</span>" : ""}</h2>
+      <div class="game-progress" style="text-align:center;">${turnLabel}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin:10px 14px 6px; font-size:13px; color:var(--ink-soft);">
+        <span>🔴 ${p1c}</span>
+        <span>⚫ ${p2c}</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(8,1fr); gap:2px; max-width:400px; margin:8px auto 16px; background:linear-gradient(135deg,#1a1208,#000); padding:6px; border-radius:10px; box-shadow:0 4px 18px rgba(0,0,0,.5);">${cells.join("")}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="primary" id="ckReset" style="padding:12px;">Restart</button>
+        <button class="secondary" id="ckMenu" style="padding:12px;">Change mode</button>
+      </div>
     `);
     document.querySelectorAll(".ckCell").forEach(el => el.onclick = () => {
+      if (gameOver || (mode === "ai" && turn === 1)) return;
       const r = +el.dataset.r, c = +el.dataset.c;
       if (selected && moves.some(m => m.r===r && m.c===c)) {
         const move = moves.find(m => m.r===r && m.c===c);
-        board[r][c] = board[selected.r][selected.c];
-        board[selected.r][selected.c] = null;
-        if (move.jump) board[move.jump.r][move.jump.c] = null;
-        // Promote
-        if (board[r][c].p === 1 && r === 7) board[r][c].king = true;
-        if (board[r][c].p === 2 && r === 0) board[r][c].king = true;
+        applyMove({r:selected.r,c:selected.c}, {r,c}, move.jump);
+        sfxDrop(); haptic(20);
         selected = null; moves = [];
+        // Multi-jump?
+        if (move.jump) {
+          const more = getMoves(r,c).filter(m => m.jump);
+          if (more.length) { selected = {r,c}; moves = more; render(); return; }
+        }
         turn = turn === 1 ? 2 : 1;
-        render();
+        checkEnd(); render();
+        if (!gameOver && mode === "ai" && turn === 1) aiTurn();
       } else if (board[r][c] && board[r][c].p === turn) {
-        selected = {r,c}; moves = getMoves(r,c); render();
-      }
+        selected = {r,c}; moves = getMoves(r,c); sfxClick(); render();
+      } else { selected = null; moves = []; render(); }
     });
-    document.getElementById("ckReset").onclick = () => launchCheckers();
+    document.getElementById("ckReset").onclick = () => launchCheckers(mode);
+    document.getElementById("ckMenu").onclick = () => launchCheckers();
   }
   render();
 }
@@ -5641,9 +6268,9 @@ function launchCrazy8s() {
     const top = topCard();
     return card.s === (chosenSuit || top.s) || card.r === top.r;
   }
-  function cardColor(s) { return s === "♥" || s === "♦" ? "var(--bad)" : "var(--ink)"; }
+  function cardColor(s) { return s === "♥" || s === "♦" ? "#d33" : "#1a1209"; }
   function cardHTML(card, idx, playable) {
-    return `<div class="card-pl" data-i="${idx}" style="background:white; color:${cardColor(card.s)}; border-radius:8px; padding:8px 6px; min-width:46px; text-align:center; font-weight:700; cursor:${playable?"pointer":"not-allowed"}; opacity:${playable?1:.4}; box-shadow:0 2px 6px rgba(0,0,0,.4); flex-shrink:0;"><div style="font-size:18px;">${card.r}</div><div style="font-size:22px;">${card.s}</div></div>`;
+    return `<div class="card-pl" data-i="${idx}" style="background:linear-gradient(180deg,#fff,#f4ece1); color:${cardColor(card.s)}; border-radius:10px; padding:10px 8px; min-width:54px; text-align:center; font-weight:800; cursor:${playable?"pointer":"not-allowed"}; opacity:${playable?1:.35}; box-shadow:${playable?'0 1px 0 rgba(255,255,255,.7) inset, 0 6px 14px rgba(0,0,0,.35), 0 0 0 1.5px rgba(255,128,0,.3)':'0 4px 8px rgba(0,0,0,.3)'}; flex-shrink:0; transition: transform .15s, box-shadow .2s; transform:${playable?'translateY(0)':'translateY(0)'};" onmouseover="if(${playable})this.style.transform='translateY(-6px)';" onmouseout="this.style.transform='translateY(0)';"><div style="font-size:18px; line-height:1;">${card.r}</div><div style="font-size:24px; line-height:1; margin-top:2px;">${card.s}</div></div>`;
   }
   function cpuTurn() {
     setTimeout(() => {
@@ -5668,30 +6295,34 @@ function launchCrazy8s() {
   }
   function render() {
     if (gameOver) {
-      openGame(`<h2>🃏 ${gameOver === "you" ? "🎉 You won!" : "Computer won"}</h2><div style="text-align:center; padding:30px 0; font-size:48px;">${gameOver==="you"?"🏆":"😅"}</div><div style="display:flex; gap:8px;"><button class="primary" id="cWAgain" style="flex:1;">Play again</button><button class="secondary" id="cWClose" style="flex:1;">Close</button></div>`);
+      const won = gameOver === "you";
+      if (!won) sfxLose();
+      const inner = won
+        ? celebrateWin("🃏", "You won!", "Empty hand — well played!")
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>Computer won</h3><p style="color:var(--ink-soft);">It cleared its hand first. Run it back?</p></div>`;
+      openGame(`<h2>🃏 Wild Eights</h2>${inner}<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;"><button class="primary" id="cWAgain" style="padding:14px;">Play again</button><button class="secondary" id="cWClose" style="padding:14px;">Close</button></div>`);
       document.getElementById("cWAgain").onclick = startGame;
       document.getElementById("cWClose").onclick = closeGame;
       return;
     }
     const top = topCard();
-    const suitDisplay = chosenSuit || top.s;
     openGame(`
       <h2>🃏 Wild Eights</h2>
-      <div class="game-progress">${turn === "you" ? "Your turn" : "Computer thinking..."} • Computer has <b>${cpu.length}</b> cards</div>
-      <div style="text-align:center; margin:18px 0;">
-        <div style="display:inline-block; background:white; color:${cardColor(top.s)}; border-radius:12px; padding:18px 14px; min-width:80px; box-shadow:0 4px 14px rgba(0,0,0,.4);">
-          <div style="font-size:28px; font-weight:700;">${top.r}</div>
-          <div style="font-size:36px;">${top.s}</div>
+      <div class="game-progress">${turn === "you" ? "Your turn" : "🤖 Computer thinking..."} · Opponent · <b>${cpu.length}</b> cards</div>
+      <div style="text-align:center; margin:22px 0;">
+        <div style="display:inline-block; background:linear-gradient(180deg,#fff,#f4ece1); color:${cardColor(top.s)}; border-radius:14px; padding:20px 18px; min-width:90px; box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 12px 28px rgba(0,0,0,.45), 0 0 0 3px rgba(255,128,0,.2); position:relative; animation:pop .3s cubic-bezier(.34,1.56,.64,1);">
+          <div style="font-size:30px; font-weight:800; line-height:1;">${top.r}</div>
+          <div style="font-size:38px; line-height:1; margin-top:4px;">${top.s}</div>
         </div>
-        ${chosenSuit && top.r === "8" ? `<div style="margin-top:6px; font-size:13px; color:var(--gold);">Suit chosen: <b>${chosenSuit}</b></div>` : ""}
+        ${chosenSuit && top.r === "8" ? `<div style="margin-top:10px; display:inline-block; padding:6px 14px; background:linear-gradient(135deg,rgba(255,128,0,.18),rgba(255,128,0,.08)); border:1px solid rgba(255,128,0,.4); border-radius:99px; font-size:12px; color:var(--gold); font-weight:700;">Wild! Suit: <b>${chosenSuit}</b></div>` : ""}
       </div>
-      <div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">Your hand (${hand.length}):</div>
-      <div style="display:flex; gap:6px; overflow-x:auto; padding:8px 4px; background:var(--bg-2); border-radius:10px;">
+      <div style="font-size:11px; color:var(--ink-soft); margin-bottom:8px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;">Your hand · ${hand.length}</div>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding:14px 8px; background:linear-gradient(135deg,rgba(255,255,255,.03),rgba(0,0,0,.18)); border:1px solid rgba(255,255,255,.06); border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.3);">
         ${hand.map((c, i) => cardHTML(c, i, canPlay(c) && turn === "you")).join("")}
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-        <button class="primary" id="cwDraw" ${turn !== "you" || hand.some(canPlay) ? "disabled" : ""}>Draw a card</button>
-        <button class="secondary" id="cwReset">New game</button>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+        <button class="primary" id="cwDraw" style="padding:14px;" ${turn !== "you" || hand.some(canPlay) ? "disabled" : ""}>Draw a card</button>
+        <button class="secondary" id="cwReset" style="padding:14px;">New game</button>
       </div>
     `);
     if (turn === "you") {
@@ -5720,7 +6351,20 @@ function launchCrazy8s() {
 }
 
 // ----- FAMILY LIFE (board game with life events) -----
-function launchFamilyLife() {
+function launchFamilyLife(mode) {
+  if (!mode) {
+    openGame(`
+      <h2>🎲 Family Life</h2>
+      <p style="color:var(--ink-soft); margin:8px 0 18px; text-align:center;">Pick how you want to play</p>
+      <div style="display:grid; gap:10px;">
+        <button class="primary" id="flAI" style="padding:18px; font-size:16px;">🤖 Solo vs. Computer</button>
+        <button class="secondary" id="flPvP" style="padding:18px; font-size:16px;">👫 2 players (pass &amp; play)</button>
+      </div>
+    `);
+    document.getElementById("flAI").onclick = () => { sfxClick(); launchFamilyLife("ai"); };
+    document.getElementById("flPvP").onclick = () => { sfxClick(); launchFamilyLife("pvp"); };
+    return;
+  }
   const SQUARES = [
     {label:"START", money:0, msg:"You're born! Start your adventure."},
     {label:"School starts", money:0, msg:"Off to school! Make new friends."},
@@ -5753,80 +6397,114 @@ function launchFamilyLife() {
     {label:"Wedding day", money:200, msg:"+$200 from family. Best day."},
     {label:"FINISH", money:0, msg:"You made it! See your final score."}
   ];
-  // 2-player. Player 1 = kid, Player 2 = sibling/parent
+  // 2-player. Player 1 = human kid, Player 2 = sibling/parent OR AI in vs-computer mode
   let players = [
-    { name: "Player 1", emoji: "🐸", pos: 0, money: 50, skip: 0 },
-    { name: "Player 2", emoji: "🏎️", pos: 0, money: 50, skip: 0 }
+    { name: "You", emoji: "🐸", pos: 0, money: 50, skip: 0 },
+    { name: mode === "ai" ? "Computer" : "Player 2", emoji: mode === "ai" ? "🤖" : "🏎️", pos: 0, money: 50, skip: 0 }
   ];
-  let turn = 0, lastRoll = null, gameOver = false, eventMsg = "Roll the dice to start!";
+  let turn = 0, lastRoll = null, gameOver = false, eventMsg = "Roll the dice to start!", busy = false;
   function roll() { return Math.floor(Math.random()*6) + 1; }
   function takeTurn() {
+    if (busy || gameOver) return;
+    busy = true;
     const p = players[turn];
     if (p.skip > 0) {
       p.skip--;
       eventMsg = `${p.name} skips this turn (${p.skip} left).`;
-      turn = (turn + 1) % 2; render(); return;
+      turn = (turn + 1) % 2; busy = false; render();
+      maybeAITurn();
+      return;
     }
     const r = roll(); lastRoll = r;
+    sfxDrop(); haptic(15);
     p.pos = Math.min(SQUARES.length - 1, p.pos + r);
     const sq = SQUARES[p.pos];
     p.money += sq.money;
     eventMsg = `${p.name} rolled ${r}, landed on "${sq.label}". ${sq.msg}`;
     if (sq.label.includes("vacation") || sq.label.includes("Lost a game")) p.skip = 1;
     if (p.pos >= SQUARES.length - 1) {
-      // Player finished
       const other = players[1 - turn];
       if (other.pos >= SQUARES.length - 1) gameOver = true;
-      else { turn = 1 - turn; render(); return; }
+      else { turn = 1 - turn; busy = false; render(); maybeAITurn(); return; }
     }
     if (gameOver || (players[0].pos >= SQUARES.length - 1 && players[1].pos >= SQUARES.length - 1)) gameOver = true;
     turn = (turn + 1) % 2;
+    busy = false;
     render();
+    maybeAITurn();
+  }
+  function maybeAITurn() {
+    if (mode === "ai" && turn === 1 && !gameOver) {
+      setTimeout(() => takeTurn(), 1100);
+    }
   }
   function render() {
     if (gameOver) {
       const winner = players[0].money > players[1].money ? players[0] : players[1].money > players[0].money ? players[1] : null;
-      openGame(`<h2>🎲 Game Over!</h2><div style="text-align:center; padding:20px 0;">
-        <div style="font-size:60px;">🏁</div>
-        ${winner ? `<h3>${winner.emoji} ${winner.name} wins with $${winner.money}!</h3>` : `<h3>It's a tie at $${players[0].money}!</h3>`}
+      const isHumanWin = mode === "ai" ? winner === players[0] : false;
+      const isHumanLoss = mode === "ai" && winner === players[1];
+      const showCelebrate = mode !== "ai" || isHumanWin;
+      const title = winner ? `${winner.emoji} ${winner.name} wins with $${winner.money}!` : `It's a tie at $${players[0].money}!`;
+      const sub = mode === "ai"
+        ? (isHumanWin ? "You finished richest!" : isHumanLoss ? "Tough luck — go again!" : "Tied!")
+        : "What a life!";
+      if (isHumanLoss) sfxLose();
+      const innerHTML = showCelebrate
+        ? celebrateWin(winner ? winner.emoji : "🤝", title, sub)
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>${escapeHtml(title)}</h3><p style="color:var(--ink-soft);">${escapeHtml(sub)}</p></div>`;
+      openGame(`<h2>🎲 Game Over!</h2>
+        ${innerHTML}
         <div style="margin-top:14px; padding:14px; background:var(--bg-2); border-radius:10px; text-align:left;">
           <div>${players[0].emoji} ${players[0].name}: <b>$${players[0].money}</b></div>
           <div style="margin-top:6px;">${players[1].emoji} ${players[1].name}: <b>$${players[1].money}</b></div>
         </div>
-      </div>
-      <button class="primary" id="flAgain" style="width:100%;">Play again</button>`);
-      document.getElementById("flAgain").onclick = launchFamilyLife;
+        <div style="display:grid; gap:10px; margin-top:14px;">
+          <button class="primary" id="flAgain" style="padding:14px;">Play again</button>
+          <button class="secondary" id="flMenu" style="padding:14px;">Change mode</button>
+        </div>`);
+      document.getElementById("flAgain").onclick = () => launchFamilyLife(mode);
+      document.getElementById("flMenu").onclick = () => launchFamilyLife();
       return;
     }
     const p1 = players[0], p2 = players[1];
     const cur = players[turn];
+    const isAITurn = mode === "ai" && turn === 1;
     openGame(`
-      <h2>🎲 Family Life</h2>
-      <div class="game-progress">${cur.emoji} <b>${cur.name}'s</b> turn ${lastRoll ? `• rolled ${lastRoll}` : ""}</div>
-      <div style="margin: 14px 0; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <div style="padding:10px 12px; background:${turn===0?"var(--gold-soft)":"var(--bg-2)"}; border-radius:10px; ${turn===0?"border:1px solid var(--gold);":""}">
-          <div style="font-size:24px;">${p1.emoji} ${p1.name}</div>
-          <div style="font-size:13px; color:var(--ink-soft);">Square ${p1.pos+1}/${SQUARES.length} • <b style="color:var(--mint);">$${p1.money}</b></div>
+      <h2>🎲 Family Life ${mode === "ai" ? "<span style=\"font-size:13px; color:var(--ink-soft); font-weight:400;\">vs. Computer</span>" : ""}</h2>
+      <div class="game-progress" style="text-align:center;">${cur.emoji} <b>${cur.name}'s</b> turn ${lastRoll ? `• rolled <span style="color:var(--gold); font-size:18px;">🎲 ${lastRoll}</span>` : ""}</div>
+      <div style="margin: 14px 0; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div style="padding:12px; background:${turn===0?"linear-gradient(135deg, var(--mint-soft), rgba(127,212,168,.06))":"var(--bg-2)"}; border-radius:12px; border:2px solid ${turn===0?"var(--mint)":"transparent"}; transition:all .25s;">
+          <div style="font-size:26px;">${p1.emoji} <span style="font-size:15px;">${p1.name}</span></div>
+          <div style="font-size:12px; color:var(--ink-soft); margin-top:4px;">Square ${p1.pos+1}/${SQUARES.length}</div>
+          <div style="font-size:18px; color:var(--mint); font-weight:700; margin-top:2px;">$${p1.money}</div>
         </div>
-        <div style="padding:10px 12px; background:${turn===1?"var(--gold-soft)":"var(--bg-2)"}; border-radius:10px; ${turn===1?"border:1px solid var(--gold);":""}">
-          <div style="font-size:24px;">${p2.emoji} ${p2.name}</div>
-          <div style="font-size:13px; color:var(--ink-soft);">Square ${p2.pos+1}/${SQUARES.length} • <b style="color:var(--mint);">$${p2.money}</b></div>
+        <div style="padding:12px; background:${turn===1?"linear-gradient(135deg, var(--gold-soft), rgba(255,128,0,.06))":"var(--bg-2)"}; border-radius:12px; border:2px solid ${turn===1?"var(--gold)":"transparent"}; transition:all .25s;">
+          <div style="font-size:26px;">${p2.emoji} <span style="font-size:15px;">${p2.name}</span></div>
+          <div style="font-size:12px; color:var(--ink-soft); margin-top:4px;">Square ${p2.pos+1}/${SQUARES.length}</div>
+          <div style="font-size:18px; color:var(--mint); font-weight:700; margin-top:2px;">$${p2.money}</div>
         </div>
       </div>
-      <div style="background:var(--bg-2); border-radius:10px; padding:14px; min-height:60px; font-size:14px; line-height:1.5; border-left:3px solid var(--gold);">${escapeHtml(eventMsg)}</div>
+      <div style="background:var(--bg-2); border-radius:12px; padding:14px; min-height:60px; font-size:14px; line-height:1.5; border-left:4px solid var(--gold); animation:slideIn .3s ease-out;">${escapeHtml(eventMsg)}</div>
       <div style="margin-top:14px;">
-        <button class="primary" id="flRoll" style="width:100%; padding:14px; font-size:16px;">🎲 Roll the dice</button>
+        <button class="primary" id="flRoll" style="width:100%; padding:16px; font-size:16px;" ${isAITurn?"disabled":""}>${isAITurn ? "🤖 Computer is rolling..." : "🎲 Roll the dice"}</button>
       </div>
-      <div style="margin-top:10px; max-height:140px; overflow-y:auto; background:var(--bg-2); border-radius:8px; padding:8px 12px; font-size:11px; color:var(--ink-dim);">
+      <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="secondary" id="flRestart" style="padding:10px;">Restart</button>
+        <button class="secondary" id="flMenu" style="padding:10px;">Change mode</button>
+      </div>
+      <div style="margin-top:10px; max-height:140px; overflow-y:auto; background:var(--bg-2); border-radius:10px; padding:10px 14px; font-size:11px; color:var(--ink-dim);">
         ${SQUARES.map((s, i) => {
           const onIt = (p1.pos === i && p2.pos === i) ? `${p1.emoji}${p2.emoji}` : (p1.pos === i ? p1.emoji : p2.pos === i ? p2.emoji : "");
           return `<div style="${onIt?"color:var(--gold); font-weight:700;":""}">${i+1}. ${s.label} ${s.money>0?`+$${s.money}`:s.money<0?`-$${-s.money}`:""} ${onIt}</div>`;
         }).join("")}
       </div>
     `);
-    document.getElementById("flRoll").onclick = takeTurn;
+    if (!isAITurn) document.getElementById("flRoll").onclick = takeTurn;
+    document.getElementById("flRestart").onclick = () => launchFamilyLife(mode);
+    document.getElementById("flMenu").onclick = () => launchFamilyLife();
   }
   render();
+  maybeAITurn();
 }
 
 // ----- BATTLESHIP (vs computer) -----
@@ -5915,33 +6593,58 @@ function launchBattleship() {
       return;
     }
     // Play phase
+    if (gameOver) {
+      const won = gameOver === "you";
+      if (!won) sfxLose();
+      const inner = won
+        ? celebrateWin("⚓", "Victory at sea!", "You sank the enemy fleet!")
+        : `<div class="win-celebrate"><div class="win-emoji">💥</div><h3>Fleet sunk!</h3><p style="color:var(--ink-soft);">The computer got you. Try again?</p></div>`;
+      openGame(`
+        <h2>🚢 Battleship</h2>
+        ${inner}
+        <button class="primary" id="bsReset" style="margin-top:14px; width:100%;">New game</button>
+      `);
+      document.getElementById("bsReset").onclick = startGame;
+      return;
+    }
     let myCells = "", cpuCells = "";
     for (let r=0; r<SIZE; r++) for (let c=0; c<SIZE; c++) {
       const myShip = myBoard[r][c];
       const wasShot = cpuShots.some(s => s[0]===r && s[1]===c);
-      const myColor = wasShot && myShip ? "var(--bad)" : wasShot ? "var(--ink-dim)" : myShip ? "var(--mint)" : "var(--bg-2)";
-      myCells += `<div style="aspect-ratio:1; background:${myColor}; border:1px solid var(--border);"></div>`;
+      const myCellStyle = wasShot && myShip
+        ? "background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 8px rgba(236,111,122,.5); content:'💥'"
+        : wasShot ? "background: rgba(255,255,255,.04)"
+        : myShip ? "background: linear-gradient(135deg, #5cb88a, #3a8c63); box-shadow: inset 0 1px 0 rgba(255,255,255,.2)"
+        : "background: rgba(0,80,140,.3); box-shadow: inset 0 1px 2px rgba(0,0,0,.3)";
+      const myIcon = wasShot && myShip ? "💥" : wasShot ? "·" : "";
+      myCells += `<div style="aspect-ratio:1; ${myCellStyle}; border-radius:3px; display:grid; place-items:center; font-size:11px; color:rgba(255,255,255,.5);">${myIcon}</div>`;
 
       const myShotHere = myShots.find(s => s[0]===r && s[1]===c);
       const cpuShipHere = cpuBoard[r][c];
-      const cpuColor = myShotHere && cpuShipHere ? "var(--bad)" : myShotHere ? "var(--ink-dim)" : "var(--bg-2)";
-      cpuCells += `<div class="bsAttack" data-r="${r}" data-c="${c}" style="aspect-ratio:1; background:${cpuColor}; border:1px solid var(--border); cursor:${myShotHere?"default":"pointer"};"></div>`;
+      const cpuCellStyle = myShotHere && cpuShipHere
+        ? "background: radial-gradient(circle at 30% 30%, #ff8a96, #c53030); box-shadow: 0 0 8px rgba(236,111,122,.5)"
+        : myShotHere
+        ? "background: rgba(255,255,255,.06)"
+        : "background: rgba(0,80,140,.3)";
+      const cpuIcon = myShotHere && cpuShipHere ? "💥" : myShotHere ? "·" : "";
+      cpuCells += `<div class="bsAttack" data-r="${r}" data-c="${c}" style="aspect-ratio:1; ${cpuCellStyle}; border-radius:3px; cursor:${myShotHere?"default":"pointer"}; display:grid; place-items:center; font-size:11px; color:rgba(255,255,255,.5); transition: all .15s;">${cpuIcon}</div>`;
     }
     openGame(`
       <h2>🚢 Battleship</h2>
       <div class="game-progress">Click the enemy grid to fire</div>
-      <div style="font-size:11px; color:var(--ink-soft); margin-top:14px; margin-bottom:4px;">Enemy waters:</div>
-      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; background:#000; padding:2px;">${cpuCells}</div>
-      <div style="font-size:11px; color:var(--ink-soft); margin-top:14px; margin-bottom:4px;">Your fleet:</div>
-      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:1px; max-width:360px; background:#000; padding:2px;">${myCells}</div>
-      <button class="secondary" id="bsReset" style="margin-top:14px; width:100%;">New game</button>
+      <div style="font-size:11px; color:var(--ink-soft); margin: 14px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚔️ Enemy waters</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5), 0 8px 22px rgba(0,80,140,.3);">${cpuCells}</div>
+      <div style="font-size:11px; color:var(--ink-soft); margin: 16px 0 6px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚓ Your fleet</div>
+      <div style="display:grid; grid-template-columns:repeat(${SIZE},1fr); gap:3px; max-width:380px; margin:0 auto; background:linear-gradient(135deg, #0a2c52, #061d3a); padding:8px; border-radius:14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5);">${myCells}</div>
+      <button class="secondary" id="bsReset" style="margin-top:18px; width:100%;">New game</button>
     `);
     document.getElementById("bsReset").onclick = startGame;
     document.querySelectorAll(".bsAttack").forEach(el => el.onclick = () => {
       const r = +el.dataset.r, c = +el.dataset.c;
       if (myShots.some(s => s[0]===r && s[1]===c)) return;
       myShots.push([r,c]);
-      if (cpuBoard[r][c]) cpuBoard[r][c].hit = true;
+      if (cpuBoard[r][c]) { cpuBoard[r][c].hit = true; sfxFlip(); haptic(40); }
+      else { sfxClick(); haptic(15); }
       if (checkWin(cpuBoard, myShots)) { gameOver = "you"; }
       render();
       if (!gameOver) cpuShoot();
@@ -5978,27 +6681,57 @@ function launchWar() {
     render();
   }
   function startGame() { buildDeck(); p1Card = p2Card = null; gameOver = null; lastResult = "Click 'Battle!' to begin."; render(); }
-  function cardCol(s) { return s === "♥" || s === "♦" ? "var(--bad)" : "#000"; }
-  function cardBox(c) { return c ? `<div style="background:white; color:${cardCol(c.s)}; border-radius:10px; padding:18px 12px; min-width:80px; box-shadow:0 4px 14px rgba(0,0,0,.4);"><div style="font-size:32px; font-weight:700;">${rankName(c.val)}</div><div style="font-size:32px;">${c.s}</div></div>` : `<div style="background:var(--bg-2); border-radius:10px; padding:30px 24px; color:var(--ink-dim);">?</div>`; }
+  function cardCol(s) { return s === "♥" || s === "♦" ? "#d33" : "#1a1209"; }
+  function cardBox(c, hi) {
+    if (!c) return `<div style="aspect-ratio:5/7; width:90px; background:linear-gradient(135deg, #FF8000, #FF5A1F); border-radius:14px; display:grid; place-items:center; color:rgba(255,255,255,.85); font-size:42px; font-family:'Fraunces',serif; box-shadow: 0 1px 0 rgba(255,255,255,.2) inset, 0 8px 18px rgba(0,0,0,.4);">⚔️</div>`;
+    const col = cardCol(c.s);
+    return `<div style="aspect-ratio:5/7; width:90px; background:linear-gradient(180deg,#fff,#f4ece1); color:${col}; border-radius:14px; padding:10px 12px; box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 12px 24px rgba(0,0,0,.45); animation:pop .3s cubic-bezier(.34,1.56,.64,1); position:relative; ${hi?'transform: scale(1.06); box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 0 0 3px var(--gold), 0 12px 28px rgba(255,128,0,.4);':''}; transition: all .3s;">
+      <div style="font-size:18px; font-weight:800; line-height:1; text-align:left;">${rankName(c.val)}</div>
+      <div style="font-size:18px; line-height:1; text-align:left; margin-top:2px;">${c.s}</div>
+      <div style="position:absolute; bottom:10px; right:12px; font-size:18px; font-weight:800; transform:rotate(180deg);">${rankName(c.val)}<br>${c.s}</div>
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:36px;">${c.s}</div>
+    </div>`;
+  }
   function render() {
     if (gameOver) {
-      openGame(`<h2>⚔️ ${gameOver==="you"?"🎉 You won the war!":"😅 Computer won."}</h2><div style="text-align:center; padding:30px;"><div style="font-size:60px;">${gameOver==="you"?"🏆":"😢"}</div></div><div style="display:flex; gap:8px;"><button class="primary" id="warAgain" style="flex:1;">Play again</button><button class="secondary" id="warClose" style="flex:1;">Close</button></div>`);
+      const won = gameOver === "you";
+      if (!won) sfxLose();
+      const inner = won
+        ? celebrateWin("👑", "You won the war!", "All cards captured!")
+        : `<div class="win-celebrate"><div class="win-emoji">😅</div><h3>Computer won</h3><p style="color:var(--ink-soft);">Out of cards. Run it back?</p></div>`;
+      openGame(`
+        <h2>⚔️ Card War</h2>
+        ${inner}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+          <button class="primary" id="warAgain" style="padding:14px;">Play again</button>
+          <button class="secondary" id="warClose" style="padding:14px;">Close</button>
+        </div>
+      `);
       document.getElementById("warAgain").onclick = startGame;
       document.getElementById("warClose").onclick = closeGame;
       return;
     }
+    const youHi = p1Card && p2Card && p1Card.val > p2Card.val;
+    const cpuHi = p1Card && p2Card && p2Card.val > p1Card.val;
+    const totalCards = 52;
+    const youPct = (p1Deck.length / totalCards) * 100;
+    const cpuPct = (p2Deck.length / totalCards) * 100;
     openGame(`
       <h2>⚔️ Card War</h2>
-      <div class="game-progress">You: <b>${p1Deck.length}</b> cards • Computer: <b>${p2Deck.length}</b> cards</div>
-      <div style="display:flex; justify-content:space-around; align-items:center; margin:24px 0; gap:14px;">
-        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">YOU</div>${cardBox(p1Card)}</div>
-        <div style="font-size:32px; color:var(--gold);">⚔️</div>
-        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:6px;">COMPUTER</div>${cardBox(p2Card)}</div>
+      <div class="game-progress">You · <b>${p1Deck.length}</b> · Computer · <b>${p2Deck.length}</b></div>
+      <div style="display:flex; gap:6px; height:6px; margin: 8px 0 18px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.05);">
+        <div style="flex:${p1Deck.length}; background:linear-gradient(90deg,#FF8000,#FF5A1F); transition: flex .35s;"></div>
+        <div style="flex:${p2Deck.length}; background:linear-gradient(90deg,#5cb88a,#7fd4a8); transition: flex .35s;"></div>
       </div>
-      <div style="background:var(--bg-2); border-radius:10px; padding:12px 16px; min-height:50px; font-size:14px; line-height:1.5; border-left:3px solid var(--gold);">${escapeHtml(lastResult)}</div>
-      <button class="primary" id="warBattle" style="width:100%; padding:14px; margin-top:14px; font-size:16px;">⚔️ Battle!</button>
+      <div style="display:flex; justify-content:space-around; align-items:center; margin:24px 0; gap:14px;">
+        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:8px; letter-spacing:.05em;">YOU</div>${cardBox(p1Card, youHi)}</div>
+        <div style="font-size:36px; color:var(--gold); filter: drop-shadow(0 4px 12px rgba(255,128,0,.4));">⚔️</div>
+        <div style="text-align:center;"><div style="font-size:11px; color:var(--ink-soft); margin-bottom:8px; letter-spacing:.05em;">COMPUTER</div>${cardBox(p2Card, cpuHi)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:14px 16px; min-height:50px; font-size:14px; line-height:1.5; border-left:4px solid var(--gold);">${escapeHtml(lastResult)}</div>
+      <button class="primary" id="warBattle" style="width:100%; padding:16px; margin-top:14px; font-size:16px;">⚔️ Battle!</button>
     `);
-    document.getElementById("warBattle").onclick = battle;
+    document.getElementById("warBattle").onclick = () => { sfxFlip(); haptic(20); battle(); };
   }
   startGame();
 }
