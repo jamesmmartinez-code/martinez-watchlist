@@ -4853,7 +4853,7 @@ const GAMES_LIBRARY = [
   { id: "trivia", title: "Movie Trivia", emoji: "🎯", desc: "AI quiz on what you've watched.", launch: () => launchMovieTrivia() },
   { id: "hangman", title: "Movie Hangman", emoji: "🔤", desc: "Guess the movie title.", launch: () => launchHangman() },
   { id: "chess", title: "Chess", emoji: "♟️", desc: "Full game with check + checkmate.", launch: () => launchChess() },
-  { id: "monsters", title: "Movie Monsters", emoji: "🐲", desc: "Catch & battle creatures inspired by movies.", launch: () => launchMonsters() },
+  { id: "eldoria", title: "Realm of Eldoria", emoji: "🗡️", desc: "Fantasy RPG. Pick a class, explore zones, slay monsters, level up, beat the dragon.", launch: () => launchEldoria() },
   { id: "crazy8s", title: "Wild Eights", emoji: "🃏", desc: "UNO-style card game vs computer.", launch: () => launchCrazy8s() },
   { id: "familylife", title: "Family Life", emoji: "🎲", desc: "Roll the dice, live a life, who finishes richest?", launch: () => launchFamilyLife() },
   { id: "battleship", title: "Battleship", emoji: "🚢", desc: "Sink the computer's fleet.", launch: () => launchBattleship() },
@@ -5115,6 +5115,828 @@ function mathChallenge() {
   next();
 }
 
+// ============================================================
+// REALM OF ELDORIA — Fantasy RPG (single-player, AI-augmented)
+// Per-kid characters. Classes, leveling, gear, quests, dungeons.
+// ============================================================
+const ELDORIA_CLASSES = {
+  knight:  { name:"Knight",  emoji:"🛡️", hp:120, mp:30,  atk:14, def:10, spd:6,  desc:"Heavy armor, big swings, hard to break.",     abilities:["Slash","Shield Bash","Rally"] },
+  mage:    { name:"Mage",    emoji:"🧙", hp:80,  mp:120, atk:8,  def:5,  spd:8,  desc:"Glass cannon. Fireballs, frost, lightning.",  abilities:["Fireball","Frost Bolt","Lightning"] },
+  rogue:   { name:"Rogue",   emoji:"🗡️", hp:90,  mp:50,  atk:16, def:6,  spd:14, desc:"Fast, sneaky, lethal critical strikes.",      abilities:["Backstab","Poison Dart","Vanish"] },
+  ranger:  { name:"Ranger",  emoji:"🏹", hp:100, mp:60,  atk:13, def:7,  spd:11, desc:"Bow & arrow. Pet wolf companion.",            abilities:["Arrow Volley","Hunter's Mark","Wolf Strike"] }
+};
+const ELDORIA_ABILITIES = {
+  "Slash":         { mp:0,  type:"melee",  power:1.0, desc:"Standard sword strike." },
+  "Shield Bash":   { mp:8,  type:"melee",  power:1.4, stun:true, desc:"Heavy hit, may stun." },
+  "Rally":         { mp:14, type:"buff",   heal:25,   desc:"Recover HP and shrug off effects." },
+  "Fireball":      { mp:12, type:"spell",  power:1.6, desc:"Big ball of fire." },
+  "Frost Bolt":    { mp:8,  type:"spell",  power:1.2, slow:true, desc:"Slows the enemy." },
+  "Lightning":     { mp:18, type:"spell",  power:2.0, desc:"Massive single-target zap." },
+  "Backstab":      { mp:6,  type:"melee",  power:1.5, crit:0.5, desc:"50% chance for double damage." },
+  "Poison Dart":   { mp:4,  type:"ranged", power:0.7, dot:8,    desc:"Damage over 3 turns." },
+  "Vanish":        { mp:10, type:"buff",   dodge:true, desc:"Dodge the enemy's next attack." },
+  "Arrow Volley":  { mp:10, type:"ranged", power:1.3, hits:2,   desc:"Two arrows." },
+  "Hunter's Mark": { mp:6,  type:"buff",   atkup:1.4,           desc:"+40% attack for 3 turns." },
+  "Wolf Strike":   { mp:14, type:"melee",  power:1.7,           desc:"Your wolf companion attacks too." }
+};
+const ELDORIA_ZONES = [
+  { id:"village",  name:"Briarwood Village",  emoji:"🏘️", level:1,  bg:"linear-gradient(135deg, #6b8e6b, #3d5a3d)",  desc:"A peaceful starting town. NPCs, shop, training dummies.", enemies:[] },
+  { id:"forest",   name:"Whisperwood Forest", emoji:"🌲", level:1,  bg:"linear-gradient(135deg, #2d5a2d, #1a3a1a)",  desc:"Wolves and goblins lurk among the trees.", enemies:["wolf","goblin","sprite","forestbear"] },
+  { id:"swamp",    name:"Mistveil Swamp",     emoji:"🌫️", level:5,  bg:"linear-gradient(135deg, #4a5a4a, #2a3a3a)",  desc:"Toxic bogs and lurking creatures.", enemies:["bogling","slime","witchghost","crocodile"] },
+  { id:"desert",   name:"Searing Sands",      emoji:"🏜️", level:10, bg:"linear-gradient(135deg, #c08e44, #88663a)",  desc:"Scorpions, sand wraiths, ancient ruins.", enemies:["scorpion","wraith","mummy","sandserp"] },
+  { id:"icepeak",  name:"Frostspire Mountains",emoji:"🏔️", level:15, bg:"linear-gradient(135deg, #8aa8ff, #4a6a9a)", desc:"Yetis, frost giants, blizzard wolves.", enemies:["yeti","frostgiant","icewolf","frostimp"] },
+  { id:"dungeon",  name:"Shadow Catacombs",   emoji:"🕯️", level:20, bg:"linear-gradient(135deg, #2a1a3a, #0a0414)",  desc:"Cursed crypts. Skeletons, vampires, lich.", enemies:["skeleton","wraith","vampire","gargoyle"] },
+  { id:"volcano",  name:"Emberforge Volcano", emoji:"🌋", level:25, bg:"linear-gradient(135deg, #c53030, #5c1010)",  desc:"Lava beasts, fire elementals. The dragon's lair.", enemies:["lavaimp","emberbeast","drake"] }
+];
+const ELDORIA_ENEMIES = {
+  wolf:        { name:"Forest Wolf",      emoji:"🐺", hp:35,  atk:8,  def:3,  xp:15,  gold:6,  loot:["fang","pelt"] },
+  goblin:      { name:"Goblin Scout",     emoji:"👺", hp:30,  atk:9,  def:4,  xp:18,  gold:10, loot:["dagger","gold"] },
+  sprite:      { name:"Wisp Sprite",      emoji:"🧚", hp:24,  atk:11, def:2,  xp:20,  gold:14, loot:["dust","mana_potion"] },
+  forestbear:  { name:"Forest Bear",      emoji:"🐻", hp:60,  atk:14, def:6,  xp:35,  gold:18, loot:["pelt","claw"] },
+  bogling:     { name:"Bog Goblin",       emoji:"🤢", hp:55,  atk:12, def:5,  xp:32,  gold:20, loot:["sludge","gold"] },
+  slime:       { name:"Toxic Slime",      emoji:"🟢", hp:45,  atk:10, def:8,  xp:28,  gold:14, loot:["slime","health_potion"] },
+  witchghost:  { name:"Marsh Witch",      emoji:"🧙‍♀️", hp:70,  atk:16, def:6,  xp:45,  gold:30, loot:["spellbook","mana_potion"] },
+  crocodile:   { name:"Bog Crocodile",    emoji:"🐊", hp:90,  atk:18, def:10, xp:55,  gold:32, loot:["scales","tooth"] },
+  scorpion:    { name:"Sand Scorpion",    emoji:"🦂", hp:80,  atk:20, def:8,  xp:60,  gold:40, loot:["stinger","gold"] },
+  wraith:      { name:"Wraith",           emoji:"👻", hp:70,  atk:24, def:5,  xp:75,  gold:50, loot:["ectoplasm","cursed_gem"] },
+  mummy:       { name:"Cursed Mummy",     emoji:"🧟", hp:120, atk:22, def:14, xp:90,  gold:55, loot:["wrap","amulet"] },
+  sandserp:    { name:"Sand Serpent",     emoji:"🐍", hp:130, atk:26, def:10, xp:100, gold:60, loot:["fang","scales"] },
+  yeti:        { name:"Frost Yeti",       emoji:"🦍", hp:180, atk:30, def:18, xp:140, gold:90, loot:["fur","ice_shard"] },
+  frostgiant:  { name:"Frost Giant",      emoji:"🧊", hp:240, atk:38, def:22, xp:200, gold:130, loot:["giant_axe","ice_shard"] },
+  icewolf:     { name:"Blizzard Wolf",    emoji:"🐺", hp:140, atk:32, def:14, xp:160, gold:80, loot:["pelt","fang"] },
+  frostimp:    { name:"Ice Imp",          emoji:"😈", hp:100, atk:35, def:10, xp:150, gold:90, loot:["ice_shard","mana_potion"] },
+  skeleton:    { name:"Skeleton Warrior", emoji:"💀", hp:160, atk:36, def:16, xp:180, gold:100, loot:["bone","sword"] },
+  vampire:     { name:"Vampire Lord",     emoji:"🧛", hp:220, atk:42, def:18, xp:240, gold:160, loot:["fang","cursed_gem"] },
+  gargoyle:    { name:"Stone Gargoyle",   emoji:"🗿", hp:280, atk:44, def:30, xp:280, gold:180, loot:["stone","amulet"] },
+  lavaimp:     { name:"Lava Imp",         emoji:"🔥", hp:180, atk:48, def:14, xp:280, gold:200, loot:["ember","gold"] },
+  emberbeast:  { name:"Ember Beast",      emoji:"🦏", hp:300, atk:54, def:24, xp:360, gold:280, loot:["horn","ember"] },
+  drake:       { name:"Crimson Drake",    emoji:"🐉", hp:380, atk:62, def:30, xp:480, gold:380, loot:["dragon_scale","ember"] },
+  // Bosses
+  king_goblin: { name:"Goblin Warlord",   emoji:"👹", hp:140, atk:18, def:8,  xp:120, gold:80,  boss:true, loot:["goblin_crown","health_potion","mana_potion"] },
+  marsh_hag:   { name:"Marsh Hag Queen",  emoji:"🧙‍♀️", hp:280, atk:32, def:14, xp:280, gold:180, boss:true, loot:["hag_robe","spellbook","cursed_gem"] },
+  pharaoh:     { name:"Forgotten Pharaoh",emoji:"🪦", hp:480, atk:46, def:22, xp:540, gold:340, boss:true, loot:["pharaoh_amulet","amulet","gold"] },
+  ice_titan:   { name:"Ice Titan",        emoji:"🥶", hp:780, atk:62, def:34, xp:900, gold:560, boss:true, loot:["titan_axe","ice_shard","amulet"] },
+  lich:        { name:"Necromancer Lich", emoji:"☠️", hp:1100,atk:78, def:32, xp:1400,gold:900, boss:true, loot:["lich_staff","cursed_gem","spellbook"] },
+  dragon:      { name:"Pyralis the Eternal Dragon", emoji:"🐉", hp:2400, atk:120, def:50, xp:5000, gold:2500, boss:true, loot:["dragon_heart","dragon_scale","ember","gold"] }
+};
+const ELDORIA_ZONE_BOSS = { forest:"king_goblin", swamp:"marsh_hag", desert:"pharaoh", icepeak:"ice_titan", dungeon:"lich", volcano:"dragon" };
+const ELDORIA_ITEMS = {
+  // Materials & loot
+  fang:           { name:"Wolf Fang",       emoji:"🦷", type:"material", value:8 },
+  pelt:           { name:"Animal Pelt",     emoji:"🟫", type:"material", value:12 },
+  dagger:         { name:"Goblin Dagger",   emoji:"🗡️", type:"weapon", atk:5,  value:18 },
+  dust:           { name:"Fairy Dust",      emoji:"✨", type:"material", value:20 },
+  claw:           { name:"Bear Claw",       emoji:"🐾", type:"material", value:25 },
+  sludge:         { name:"Bog Sludge",      emoji:"🟢", type:"material", value:10 },
+  slime:          { name:"Slime Glob",      emoji:"💧", type:"material", value:8 },
+  spellbook:      { name:"Tattered Spellbook", emoji:"📖", type:"weapon", atk:14, value:60 },
+  scales:         { name:"Reptile Scales",  emoji:"🟩", type:"material", value:30 },
+  tooth:          { name:"Croc Tooth",      emoji:"🦷", type:"material", value:22 },
+  stinger:        { name:"Scorpion Stinger",emoji:"⚡", type:"material", value:35 },
+  ectoplasm:      { name:"Ectoplasm",       emoji:"👻", type:"material", value:40 },
+  wrap:           { name:"Mummy Wrap",      emoji:"📜", type:"armor", def:8,  value:55 },
+  amulet:         { name:"Ancient Amulet",  emoji:"🔱", type:"trinket", atk:6, def:6, value:120 },
+  fur:            { name:"Yeti Fur",        emoji:"🟪", type:"armor", def:14, value:140 },
+  ice_shard:      { name:"Ice Shard",       emoji:"❄️", type:"material", value:80 },
+  giant_axe:      { name:"Giant's Axe",     emoji:"🪓", type:"weapon", atk:32, value:380 },
+  bone:           { name:"Cursed Bone",     emoji:"🦴", type:"material", value:60 },
+  sword:          { name:"Skeleton Sword",  emoji:"⚔️", type:"weapon", atk:24, value:280 },
+  cursed_gem:     { name:"Cursed Gem",      emoji:"🟣", type:"trinket", atk:8, value:200 },
+  stone:          { name:"Gargoyle Stone",  emoji:"🪨", type:"armor", def:24, value:300 },
+  ember:          { name:"Ember Crystal",   emoji:"🔥", type:"material", value:120 },
+  horn:           { name:"Beast Horn",      emoji:"🦴", type:"material", value:200 },
+  dragon_scale:   { name:"Dragon Scale",    emoji:"🟥", type:"armor", def:38, value:600 },
+  // Boss-only
+  goblin_crown:   { name:"Goblin Crown",    emoji:"👑", type:"trinket", atk:4, def:4, value:80 },
+  hag_robe:       { name:"Hag Robe",        emoji:"🧥", type:"armor", def:18, value:220 },
+  pharaoh_amulet: { name:"Pharaoh's Amulet",emoji:"🪬", type:"trinket", atk:14, def:10, value:520 },
+  titan_axe:      { name:"Titan's Greataxe",emoji:"⚒️", type:"weapon", atk:48, value:900 },
+  lich_staff:     { name:"Lich Staff",      emoji:"🪄", type:"weapon", atk:55, value:1400 },
+  dragon_heart:   { name:"Dragon Heart",    emoji:"❤️", type:"trinket", atk:30, def:30, value:5000 },
+  // Consumables
+  health_potion:  { name:"Health Potion",   emoji:"🧪", type:"consumable", heal:60, value:35 },
+  mana_potion:    { name:"Mana Potion",     emoji:"🔵", type:"consumable", mp:50, value:35 },
+  elixir:         { name:"Elixir",          emoji:"🌟", type:"consumable", heal:200, mp:200, value:200 },
+  // Generic
+  gold:           { name:"Gold Pouch",      emoji:"💰", type:"currency",  amount:30, value:30 }
+};
+const ELDORIA_SHOP = ["health_potion","mana_potion","elixir","dagger","wrap","sword","amulet","fur"];
+
+function eldData(userId) {
+  if (!state.eldoria) state.eldoria = {};
+  if (!state.eldoria[userId]) state.eldoria[userId] = null; // null = no character yet
+  return state.eldoria[userId];
+}
+function eldSave(userId, data) {
+  if (!state.eldoria) state.eldoria = {};
+  state.eldoria[userId] = data;
+  saveState();
+}
+function eldXpForLevel(level) { return 100 + level * 60 + Math.floor(level * level * 8); }
+function eldRecalcStats(c) {
+  const cls = ELDORIA_CLASSES[c.cls];
+  const lvlBoost = (c.level - 1);
+  const eq = c.equipped || {};
+  const eqItem = (slot) => eq[slot] && ELDORIA_ITEMS[eq[slot]] ? ELDORIA_ITEMS[eq[slot]] : null;
+  const wep = eqItem("weapon"), arm = eqItem("armor"), trk = eqItem("trinket");
+  c.maxHp  = cls.hp + lvlBoost * 14;
+  c.maxMp  = cls.mp + lvlBoost * 8;
+  c.atk    = cls.atk + lvlBoost * 2 + (wep?.atk||0) + (trk?.atk||0);
+  c.def    = cls.def + lvlBoost * 1 + (arm?.def||0) + (trk?.def||0);
+  c.spd    = cls.spd + Math.floor(lvlBoost / 2);
+  if (c.hp > c.maxHp) c.hp = c.maxHp;
+  if (c.mp > c.maxMp) c.mp = c.maxMp;
+}
+function eldGiveXp(c, xp) {
+  c.xp = (c.xp || 0) + xp;
+  let leveled = 0;
+  while (c.xp >= eldXpForLevel(c.level)) {
+    c.xp -= eldXpForLevel(c.level);
+    c.level++;
+    leveled++;
+    eldRecalcStats(c);
+    c.hp = c.maxHp; c.mp = c.maxMp;
+  }
+  return leveled;
+}
+function eldAddItem(c, itemId, qty = 1) {
+  if (!c.inventory) c.inventory = {};
+  if (itemId === "gold") { c.gold = (c.gold || 0) + (ELDORIA_ITEMS.gold.amount * qty); return; }
+  c.inventory[itemId] = (c.inventory[itemId] || 0) + qty;
+}
+
+let _eldState = null; // current run state
+function launchEldoria() {
+  const u = getCurrentUser();
+  if (!u) {
+    openGame(`<h2>🗡️ Realm of Eldoria</h2><p style="margin:14px 0;">Sign in first so the realm knows your hero!</p><button class="primary" onclick="closeGame()" style="width:100%;">Close</button>`);
+    return;
+  }
+  const data = eldData(u);
+  if (!data) return eldShowCreator(u);
+  return eldShowTown(u);
+}
+
+function eldShowCreator(u) {
+  const profile = state.profiles?.[u] || {};
+  openGame(`
+    <h2>🗡️ Realm of Eldoria</h2>
+    <p style="color:var(--ink-soft); margin:8px 0 18px;">Welcome, ${escapeHtml(profile.name || u)}! Pick your class to begin your quest.</p>
+    <div style="display:grid; gap:10px;">
+      ${Object.entries(ELDORIA_CLASSES).map(([id, c]) => `
+        <button class="eldClass" data-cls="${id}" style="display:flex; align-items:center; gap:14px; padding:16px; background:linear-gradient(135deg,rgba(255,128,0,.06),rgba(255,255,255,.02)); border:1.5px solid rgba(255,255,255,.08); border-radius:14px; cursor:pointer; text-align:left; color:var(--ink); font-family:inherit; transition:all .2s;">
+          <div style="font-size:46px;">${c.emoji}</div>
+          <div style="flex:1;">
+            <div style="font-family:'Fraunces',serif; font-size:18px; font-weight:700;">${c.name}</div>
+            <div style="font-size:12.5px; color:var(--ink-soft); margin-top:2px;">${c.desc}</div>
+            <div style="display:flex; gap:8px; margin-top:6px; font-size:10.5px;">
+              <span style="color:#ec6f7a;">❤️ ${c.hp}</span>
+              <span style="color:#8aa8ff;">🔵 ${c.mp}</span>
+              <span style="color:var(--gold);">⚔️ ${c.atk}</span>
+              <span style="color:#7fd4a8;">🛡️ ${c.def}</span>
+              <span style="color:#FFD86B;">💨 ${c.spd}</span>
+            </div>
+          </div>
+        </button>
+      `).join("")}
+    </div>
+  `);
+  document.querySelectorAll(".eldClass").forEach(el => el.onmouseenter = () => el.style.borderColor = "var(--gold)");
+  document.querySelectorAll(".eldClass").forEach(el => el.onmouseleave = () => el.style.borderColor = "rgba(255,255,255,.08)");
+  document.querySelectorAll(".eldClass").forEach(el => el.onclick = () => {
+    const cls = el.dataset.cls;
+    const c = {
+      cls, level:1, xp:0, gold:30,
+      hp:0, mp:0, maxHp:0, maxMp:0, atk:0, def:0, spd:0,
+      inventory: { health_potion:3, mana_potion:2 },
+      equipped: { weapon:null, armor:null, trinket:null },
+      questsCompleted: 0, bossesDefeated: [], deaths: 0, monstersSlain: 0
+    };
+    eldRecalcStats(c);
+    c.hp = c.maxHp; c.mp = c.maxMp;
+    eldSave(u, c);
+    sfxWin(); fireConfetti();
+    setTimeout(() => eldShowTown(u), 600);
+    openGame(`<h2>🗡️ Welcome, ${ELDORIA_CLASSES[cls].name}!</h2><div class="win-celebrate"><div class="win-emoji">${ELDORIA_CLASSES[cls].emoji}</div><h3>Your adventure begins!</h3><p style="color:var(--ink-soft);">Briarwood Village awaits...</p></div>`);
+  });
+}
+
+function eldStatusBar(c, compact) {
+  const cls = ELDORIA_CLASSES[c.cls];
+  const xpNext = eldXpForLevel(c.level);
+  const xpPct = Math.floor((c.xp / xpNext) * 100);
+  const hpPct = Math.floor((c.hp / c.maxHp) * 100);
+  const mpPct = Math.floor((c.mp / c.maxMp) * 100);
+  return `
+    <div style="display:flex; align-items:center; gap:12px; padding:${compact?'10px 14px':'14px 16px'}; background:linear-gradient(135deg,rgba(255,128,0,.10),rgba(255,255,255,.02)); border:1px solid rgba(255,128,0,.25); border-radius:14px; margin-bottom:14px;">
+      <div style="font-size:${compact?'30':'40'}px;">${cls.emoji}</div>
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <span style="font-family:'Fraunces',serif; font-size:${compact?'15':'17'}px; font-weight:700;">${cls.name}</span>
+          <span style="font-size:11px; color:var(--gold);">Lv ${c.level}</span>
+        </div>
+        <div style="display:grid; gap:3px; margin-top:4px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:10px; color:#ec6f7a; min-width:32px;">❤️ ${c.hp}/${c.maxHp}</span>
+            <div style="flex:1; height:5px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden;"><div style="width:${hpPct}%; height:100%; background:linear-gradient(90deg,#ec6f7a,#c53030); transition: width .3s;"></div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:10px; color:#8aa8ff; min-width:32px;">🔵 ${c.mp}/${c.maxMp}</span>
+            <div style="flex:1; height:5px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden;"><div style="width:${mpPct}%; height:100%; background:linear-gradient(90deg,#8aa8ff,#5a78d4); transition: width .3s;"></div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:10px; color:var(--gold); min-width:32px;">⭐ ${c.xp}/${xpNext}</span>
+            <div style="flex:1; height:5px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden;"><div style="width:${xpPct}%; height:100%; background:linear-gradient(90deg,#FFD86B,#FF8000); transition: width .3s;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right; font-size:11px;">
+        <div style="color:var(--gold); font-weight:700;">💰 ${c.gold}</div>
+        <div style="color:var(--ink-soft); margin-top:3px;">⚔️${c.atk} 🛡️${c.def}</div>
+      </div>
+    </div>`;
+}
+
+function eldShowTown(u) {
+  const c = eldData(u);
+  if (!c) return eldShowCreator(u);
+  const unlockedZones = ELDORIA_ZONES.filter(z => z.level <= c.level + 4);
+  const lockedZones = ELDORIA_ZONES.filter(z => z.level > c.level + 4);
+  openGame(`
+    <h2>🗡️ Realm of Eldoria</h2>
+    ${eldStatusBar(c)}
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+      <button class="secondary" id="eldInv" style="padding:10px 8px; font-size:13px;">🎒 Inventory</button>
+      <button class="secondary" id="eldShop" style="padding:10px 8px; font-size:13px;">🏪 Shop</button>
+      <button class="secondary" id="eldQuests" style="padding:10px 8px; font-size:13px;">📜 Quests</button>
+    </div>
+    <div style="font-size:12px; color:var(--ink-soft); margin: 18px 0 8px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;">⚔️ Travel To</div>
+    <div style="display:grid; gap:8px;">
+      ${unlockedZones.map(z => {
+        const recommended = c.level >= z.level && c.level < z.level + 5;
+        const tooHigh = z.level > c.level + 4;
+        const danger = z.level > c.level + 1;
+        const bossBeaten = c.bossesDefeated && c.bossesDefeated.includes(ELDORIA_ZONE_BOSS[z.id]);
+        return `<button class="eldZone" data-zone="${z.id}" style="display:flex; align-items:center; gap:14px; padding:14px; background:${z.bg}; border:1.5px solid ${recommended?'var(--gold)':'rgba(255,255,255,.1)'}; border-radius:14px; cursor:pointer; text-align:left; color:#fff; font-family:inherit; transition:all .2s; ${recommended?'box-shadow:0 0 0 3px rgba(255,128,0,.18);':''}">
+          <div style="font-size:38px; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4));">${z.emoji}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:700; text-shadow: 0 2px 4px rgba(0,0,0,.5);">${z.name} ${bossBeaten ? '<span style="color:#FFD86B; font-size:13px;">★</span>' : ''}</div>
+            <div style="font-size:11.5px; color:rgba(255,255,255,.85); margin-top:2px; text-shadow:0 1px 2px rgba(0,0,0,.6);">${z.desc}</div>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:10.5px; padding:3px 8px; background:${danger?'rgba(236,111,122,.6)':'rgba(0,0,0,.4)'}; border-radius:99px; font-weight:700; backdrop-filter:blur(4px);">Lv ${z.level}+</div>
+          </div>
+        </button>`;
+      }).join("")}
+      ${lockedZones.map(z => `<div style="display:flex; align-items:center; gap:14px; padding:12px 14px; background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.1); border-radius:14px; opacity:.5;">
+        <div style="font-size:30px;">${z.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:600;">🔒 ${z.name}</div>
+          <div style="font-size:11px; color:var(--ink-dim);">Reach Level ${z.level} to unlock</div>
+        </div>
+      </div>`).join("")}
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+      <button class="secondary" id="eldStats" style="padding:10px;">📊 Stats</button>
+      <button class="secondary" id="eldRest" style="padding:10px;">😴 Rest (full heal)</button>
+    </div>
+  `);
+  document.getElementById("eldInv").onclick = () => eldShowInventory(u);
+  document.getElementById("eldShop").onclick = () => eldShowShop(u);
+  document.getElementById("eldQuests").onclick = () => eldShowQuests(u);
+  document.getElementById("eldStats").onclick = () => eldShowStats(u);
+  document.getElementById("eldRest").onclick = () => { c.hp = c.maxHp; c.mp = c.maxMp; eldSave(u, c); sfxClick(); eldShowTown(u); };
+  document.querySelectorAll(".eldZone").forEach(el => el.onclick = () => { sfxClick(); eldEnterZone(u, el.dataset.zone); });
+}
+
+function eldEnterZone(u, zoneId) {
+  const c = eldData(u);
+  const zone = ELDORIA_ZONES.find(z => z.id === zoneId);
+  const bossId = ELDORIA_ZONE_BOSS[zoneId];
+  const bossBeaten = c.bossesDefeated && c.bossesDefeated.includes(bossId);
+  if (zoneId === "village") return eldShowTown(u);
+  openGame(`
+    <h2>${zone.emoji} ${escapeHtml(zone.name)}</h2>
+    ${eldStatusBar(c, true)}
+    <div style="padding:18px; background:${zone.bg}; border-radius:14px; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.4); margin-bottom:14px;">
+      <div style="font-size:60px; text-align:center; filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));">${zone.emoji}</div>
+      <div style="text-align:center; font-size:13.5px; line-height:1.5; margin-top:10px; text-shadow:0 1px 2px rgba(0,0,0,.6);">${escapeHtml(zone.desc)}</div>
+    </div>
+    <div style="display:grid; gap:10px;">
+      <button class="primary" id="eldExplore" style="padding:14px;">⚔️ Explore (random encounter)</button>
+      ${bossId ? `<button class="${bossBeaten?'secondary':'primary'}" id="eldBoss" style="padding:14px; ${!bossBeaten?'background:linear-gradient(135deg,#c53030,#7c1414);':''}">${bossBeaten?'⚔️ Re-fight':'👹 Challenge'} ${ELDORIA_ENEMIES[bossId].name} ${bossBeaten?'★':''}</button>` : ""}
+      <button class="secondary" id="eldBack" style="padding:14px;">🏠 Return to Village</button>
+    </div>
+  `);
+  document.getElementById("eldExplore").onclick = () => eldRandomEncounter(u, zoneId);
+  if (bossId) document.getElementById("eldBoss").onclick = () => eldStartCombat(u, bossId, true);
+  document.getElementById("eldBack").onclick = () => eldShowTown(u);
+}
+
+function eldRandomEncounter(u, zoneId) {
+  const zone = ELDORIA_ZONES.find(z => z.id === zoneId);
+  if (!zone.enemies.length) return eldShowTown(u);
+  const enemyId = zone.enemies[Math.floor(Math.random() * zone.enemies.length)];
+  // 12% chance for a treasure instead
+  if (Math.random() < 0.12) return eldTreasure(u, zoneId);
+  eldStartCombat(u, enemyId, false, zoneId);
+}
+
+function eldTreasure(u, zoneId) {
+  const c = eldData(u);
+  const goldFound = 20 + Math.floor(Math.random() * 30) * c.level;
+  c.gold += goldFound;
+  const items = ["health_potion","mana_potion"];
+  const found = items[Math.floor(Math.random() * items.length)];
+  eldAddItem(c, found, 1);
+  eldSave(u, c);
+  sfxWin(); fireConfetti();
+  openGame(`
+    <h2>✨ Treasure!</h2>
+    <div class="win-celebrate"><div class="win-emoji">💰</div><h3>You found a chest!</h3>
+    <p style="color:var(--ink-soft);">+${goldFound} gold<br>+1 ${ELDORIA_ITEMS[found].emoji} ${ELDORIA_ITEMS[found].name}</p></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+      <button class="primary" id="eldKeep" style="padding:14px;">⚔️ Keep exploring</button>
+      <button class="secondary" id="eldReturn" style="padding:14px;">🏠 Return</button>
+    </div>
+  `);
+  document.getElementById("eldKeep").onclick = () => eldRandomEncounter(u, zoneId);
+  document.getElementById("eldReturn").onclick = () => eldShowTown(u);
+}
+
+function eldStartCombat(u, enemyId, isBoss, zoneId) {
+  const c = eldData(u);
+  const proto = ELDORIA_ENEMIES[enemyId];
+  const enemy = JSON.parse(JSON.stringify(proto));
+  enemy.id = enemyId;
+  enemy.maxHp = enemy.hp;
+  _eldState = {
+    user: u, char: c, enemy, isBoss, zoneId,
+    log: [`A wild ${enemy.name} appears!`],
+    playerBuffs: { atkupTurns:0, dodgeNext:false, atkupMult:1 },
+    enemyDebuffs: { dotTurns:0, dotDmg:0, slowTurns:0, stun:false }
+  };
+  eldRenderCombat();
+}
+
+function eldRenderCombat() {
+  const s = _eldState;
+  const c = s.char, e = s.enemy;
+  const cls = ELDORIA_CLASSES[c.cls];
+  const isOver = c.hp <= 0 || e.hp <= 0;
+  const enemyHpPct = Math.max(0, Math.floor((e.hp / e.maxHp) * 100));
+  const charHpPct = Math.max(0, Math.floor((c.hp / c.maxHp) * 100));
+  const charMpPct = Math.max(0, Math.floor((c.mp / c.maxMp) * 100));
+  if (isOver) return eldFinishCombat();
+  openGame(`
+    <h2>⚔️ Combat${s.isBoss ? " · Boss Fight" : ""}</h2>
+    <!-- Enemy panel -->
+    <div style="padding:14px; background:linear-gradient(135deg,rgba(236,111,122,.15),rgba(0,0,0,.2)); border:1.5px solid rgba(236,111,122,.4); border-radius:14px; margin-bottom:12px; ${s.isBoss?'animation:pulse 2s infinite;':''}">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size:${s.isBoss?'56':'42'}px; filter: drop-shadow(0 4px 12px rgba(236,111,122,.5));">${e.emoji}</div>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <span style="font-family:'Fraunces',serif; font-size:${s.isBoss?'18':'16'}px; font-weight:700;">${escapeHtml(e.name)}</span>
+            ${s.isBoss?'<span style="font-size:11px; color:var(--gold); padding:3px 8px; background:rgba(255,128,0,.18); border-radius:99px; font-weight:700;">★ BOSS</span>':''}
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+            <span style="font-size:10px; color:#ec6f7a; min-width:50px;">❤️ ${e.hp}/${e.maxHp}</span>
+            <div style="flex:1; height:8px; background:rgba(0,0,0,.4); border-radius:99px; overflow:hidden;"><div style="width:${enemyHpPct}%; height:100%; background:linear-gradient(90deg,#ec6f7a,#c53030); transition: width .35s;"></div></div>
+          </div>
+          ${s.enemyDebuffs.dotTurns>0?'<div style="font-size:10px; color:#7fd4a8; margin-top:4px;">🟢 Poisoned · '+s.enemyDebuffs.dotTurns+' turns</div>':''}
+          ${s.enemyDebuffs.slowTurns>0?'<div style="font-size:10px; color:#8aa8ff; margin-top:4px;">❄️ Slowed · '+s.enemyDebuffs.slowTurns+' turns</div>':''}
+        </div>
+      </div>
+    </div>
+    <!-- Player panel -->
+    <div style="padding:12px 14px; background:linear-gradient(135deg,rgba(127,212,168,.10),rgba(0,0,0,.2)); border:1.5px solid rgba(127,212,168,.3); border-radius:14px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size:36px;">${cls.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fraunces',serif; font-size:14px; font-weight:700;">${cls.name} · Lv ${c.level}</div>
+          <div style="display:grid; gap:3px; margin-top:4px;">
+            <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:10px; color:#ec6f7a; min-width:50px;">❤️ ${c.hp}/${c.maxHp}</span><div style="flex:1; height:6px; background:rgba(0,0,0,.3); border-radius:99px; overflow:hidden;"><div style="width:${charHpPct}%; height:100%; background:linear-gradient(90deg,#ec6f7a,#c53030); transition: width .35s;"></div></div></div>
+            <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:10px; color:#8aa8ff; min-width:50px;">🔵 ${c.mp}/${c.maxMp}</span><div style="flex:1; height:6px; background:rgba(0,0,0,.3); border-radius:99px; overflow:hidden;"><div style="width:${charMpPct}%; height:100%; background:linear-gradient(90deg,#8aa8ff,#5a78d4); transition: width .35s;"></div></div></div>
+          </div>
+          ${s.playerBuffs.atkupTurns>0?'<div style="font-size:10px; color:var(--gold); margin-top:4px;">⭐ +'+Math.round((s.playerBuffs.atkupMult-1)*100)+'% atk · '+s.playerBuffs.atkupTurns+' turns</div>':''}
+          ${s.playerBuffs.dodgeNext?'<div style="font-size:10px; color:#c8a8ff; margin-top:4px;">💨 Will dodge next attack</div>':''}
+        </div>
+      </div>
+    </div>
+    <!-- Battle log -->
+    <div style="background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 14px; margin-bottom:14px; font-size:12.5px; line-height:1.55; max-height:90px; overflow-y:auto;">
+      ${s.log.slice(-4).map(l => `<div style="margin: 2px 0;">${escapeHtml(l)}</div>`).join("")}
+    </div>
+    <!-- Abilities -->
+    <div style="display:grid; gap:8px;">
+      ${cls.abilities.map(a => {
+        const ab = ELDORIA_ABILITIES[a];
+        const can = c.mp >= ab.mp;
+        return `<button class="eldAb" data-a="${a}" style="display:flex; align-items:center; gap:12px; padding:12px 14px; background:linear-gradient(135deg,${can?'rgba(255,128,0,.12)':'rgba(255,255,255,.03)'},rgba(255,255,255,.01)); border:1px solid ${can?'rgba(255,128,0,.3)':'rgba(255,255,255,.08)'}; border-radius:12px; cursor:${can?'pointer':'not-allowed'}; opacity:${can?1:.5}; text-align:left; color:var(--ink); font-family:inherit; transition:all .15s;" ${can?'':'disabled'}>
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:700;">${a}</div>
+            <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">${escapeHtml(ab.desc)}</div>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:10px; color:#8aa8ff;">${ab.mp>0?ab.mp+' 🔵':'Free'}</div>
+          </div>
+        </button>`;
+      }).join("")}
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:6px;">
+        <button class="secondary" id="eldUsePot" style="padding:10px 6px; font-size:12px;">🧪 Potion (${c.inventory.health_potion||0})</button>
+        <button class="secondary" id="eldUseMana" style="padding:10px 6px; font-size:12px;">🔵 Mana (${c.inventory.mana_potion||0})</button>
+        <button class="secondary" id="eldFlee" style="padding:10px 6px; font-size:12px;">🏃 Flee</button>
+      </div>
+    </div>
+  `);
+  document.querySelectorAll(".eldAb").forEach(b => b.onclick = () => {
+    const a = b.dataset.a;
+    eldUseAbility(a);
+  });
+  document.getElementById("eldUsePot").onclick = () => {
+    if ((c.inventory.health_potion || 0) <= 0) { sfxLose(); return; }
+    c.inventory.health_potion--;
+    const heal = Math.min(c.maxHp - c.hp, ELDORIA_ITEMS.health_potion.heal);
+    c.hp += heal;
+    s.log.push(`You quaff a Health Potion (+${heal} HP).`);
+    sfxClick();
+    eldEnemyTurn();
+  };
+  document.getElementById("eldUseMana").onclick = () => {
+    if ((c.inventory.mana_potion || 0) <= 0) { sfxLose(); return; }
+    c.inventory.mana_potion--;
+    const restore = Math.min(c.maxMp - c.mp, ELDORIA_ITEMS.mana_potion.mp);
+    c.mp += restore;
+    s.log.push(`You drink a Mana Potion (+${restore} MP).`);
+    sfxClick();
+    eldEnemyTurn();
+  };
+  document.getElementById("eldFlee").onclick = () => {
+    if (s.isBoss) { s.log.push(`You can't flee from a boss!`); sfxLose(); eldRenderCombat(); return; }
+    if (Math.random() < 0.7) {
+      sfxClick();
+      eldShowTown(s.user);
+    } else {
+      s.log.push(`You couldn't escape!`);
+      eldEnemyTurn();
+    }
+  };
+}
+
+function eldUseAbility(name) {
+  const s = _eldState; const c = s.char; const e = s.enemy;
+  const ab = ELDORIA_ABILITIES[name];
+  if (c.mp < ab.mp) return;
+  c.mp -= ab.mp;
+  const atkMult = (s.playerBuffs.atkupMult || 1);
+  if (ab.type === "buff") {
+    if (ab.heal) { const h = Math.min(c.maxHp - c.hp, ab.heal); c.hp += h; s.log.push(`You ${name} — recover ${h} HP.`); }
+    if (ab.dodge) { s.playerBuffs.dodgeNext = true; s.log.push(`You ${name} — vanish into shadow.`); }
+    if (ab.atkup) { s.playerBuffs.atkupTurns = 3; s.playerBuffs.atkupMult = ab.atkup; s.log.push(`You ${name} — attack power surges.`); }
+    sfxFlip();
+  } else {
+    let baseDmg = Math.max(1, Math.floor(c.atk * (ab.power||1) * atkMult) - Math.floor(e.def / 2));
+    let totalDmg = 0, hits = ab.hits || 1, critHit = false;
+    for (let i=0; i<hits; i++) {
+      let dmg = baseDmg + Math.floor(Math.random() * 5) - 2;
+      if (ab.crit && Math.random() < ab.crit) { dmg *= 2; critHit = true; }
+      dmg = Math.max(1, dmg);
+      e.hp -= dmg; totalDmg += dmg;
+    }
+    s.log.push(`You ${name} for ${totalDmg} dmg${critHit?' 💥 CRIT!':''}${hits>1?` (${hits} hits)`:''}`);
+    if (ab.dot) { s.enemyDebuffs.dotTurns = 3; s.enemyDebuffs.dotDmg = ab.dot; s.log.push(`${e.name} is poisoned!`); }
+    if (ab.slow) { s.enemyDebuffs.slowTurns = 2; s.log.push(`${e.name} is slowed!`); }
+    if (ab.stun && Math.random() < 0.5) { s.enemyDebuffs.stun = true; s.log.push(`${e.name} is stunned!`); }
+    sfxDrop(); haptic(30);
+  }
+  // Apply DOT after action
+  if (s.enemyDebuffs.dotTurns > 0) {
+    e.hp -= s.enemyDebuffs.dotDmg;
+    s.log.push(`Poison ticks ${s.enemyDebuffs.dotDmg} dmg.`);
+    s.enemyDebuffs.dotTurns--;
+  }
+  if (e.hp <= 0) return eldFinishCombat();
+  eldEnemyTurn();
+}
+
+function eldEnemyTurn() {
+  const s = _eldState; const c = s.char; const e = s.enemy;
+  if (e.hp <= 0) return eldFinishCombat();
+  // Slow / stun checks
+  if (s.enemyDebuffs.stun) { s.log.push(`${e.name} is stunned and skips its turn.`); s.enemyDebuffs.stun = false; }
+  else if (s.enemyDebuffs.slowTurns > 0 && Math.random() < 0.5) {
+    s.log.push(`${e.name} is too slow to act.`);
+    s.enemyDebuffs.slowTurns--;
+  } else {
+    if (s.playerBuffs.dodgeNext) {
+      s.log.push(`You dodge ${e.name}'s attack!`);
+      s.playerBuffs.dodgeNext = false;
+    } else {
+      let dmg = Math.max(1, e.atk - Math.floor(c.def / 2) + Math.floor(Math.random() * 5) - 2);
+      c.hp -= dmg;
+      s.log.push(`${e.name} attacks for ${dmg} dmg.`);
+      sfxLose(); haptic(40);
+    }
+    if (s.enemyDebuffs.slowTurns > 0) s.enemyDebuffs.slowTurns--;
+  }
+  if (s.playerBuffs.atkupTurns > 0) {
+    s.playerBuffs.atkupTurns--;
+    if (s.playerBuffs.atkupTurns === 0) s.playerBuffs.atkupMult = 1;
+  }
+  if (c.hp <= 0) return eldFinishCombat();
+  eldRenderCombat();
+}
+
+function eldFinishCombat() {
+  const s = _eldState; const c = s.char; const e = s.enemy;
+  if (c.hp <= 0) {
+    c.hp = 1; // brought to brink, not perma-dead
+    c.deaths = (c.deaths || 0) + 1;
+    c.gold = Math.max(0, c.gold - Math.floor(c.gold * 0.15));
+    eldSave(s.user, c);
+    sfxLose();
+    openGame(`
+      <h2>💀 You Were Defeated</h2>
+      <div class="win-celebrate"><div class="win-emoji">⚰️</div><h3>${escapeHtml(e.name)} bested you</h3>
+      <p style="color:var(--ink-soft);">A kindly traveler dragged you back to the village.<br>Lost some gold (–15%).</p></div>
+      <button class="primary" id="eldRevive" style="margin-top:14px; width:100%;">🏘️ Return to Village</button>
+    `);
+    document.getElementById("eldRevive").onclick = () => eldShowTown(s.user);
+    return;
+  }
+  // Victory!
+  c.monstersSlain = (c.monstersSlain || 0) + 1;
+  const xpEarned = e.xp;
+  const goldEarned = e.gold + Math.floor(Math.random() * (e.gold/4));
+  c.gold += goldEarned;
+  const dropped = [];
+  if (e.loot) {
+    for (const lootId of e.loot) {
+      const chance = s.isBoss ? 1.0 : 0.45;
+      if (Math.random() < chance) { eldAddItem(c, lootId, 1); dropped.push(lootId); }
+    }
+  }
+  const leveled = eldGiveXp(c, xpEarned);
+  if (s.isBoss) {
+    if (!c.bossesDefeated) c.bossesDefeated = [];
+    if (!c.bossesDefeated.includes(e.id)) c.bossesDefeated.push(e.id);
+  }
+  eldSave(s.user, c);
+  sfxWin(); fireConfetti(); haptic(80);
+  const dropList = dropped.map(id => {
+    const it = ELDORIA_ITEMS[id];
+    if (id === "gold") return `${ELDORIA_ITEMS.gold.amount} 💰`;
+    return `${it.emoji} ${it.name}`;
+  });
+  openGame(`
+    <h2>${s.isBoss?"👑 Boss Defeated!":"⚔️ Victory!"}</h2>
+    <div class="win-celebrate">
+      <div class="win-emoji">${s.isBoss?"👑":"🏆"}</div>
+      <h3>You slayed ${escapeHtml(e.name)}!</h3>
+      <p style="color:var(--ink-soft); margin-top:8px;">
+        +${xpEarned} XP · +${goldEarned} 💰
+        ${leveled?'<br><span style="color:var(--gold); font-weight:700;">🎉 LEVEL UP! Now Level '+c.level+'</span>':''}
+      </p>
+      ${dropList.length?'<div style="margin-top:12px; padding:10px 14px; background:rgba(255,128,0,.08); border:1px solid rgba(255,128,0,.3); border-radius:10px; font-size:12.5px; text-align:left;"><b style="color:var(--gold);">Loot:</b><br>'+dropList.join("<br>")+'</div>':''}
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;">
+      ${!s.isBoss && s.zoneId?'<button class="primary" id="eldKeep" style="padding:14px;">⚔️ Keep exploring</button>':''}
+      <button class="${s.isBoss?'primary':'secondary'}" id="eldDone" style="padding:14px; ${s.isBoss?'grid-column:1/-1;':''}">🏠 Return to Village</button>
+    </div>
+  `);
+  if (!s.isBoss && s.zoneId) document.getElementById("eldKeep").onclick = () => eldRandomEncounter(s.user, s.zoneId);
+  document.getElementById("eldDone").onclick = () => eldShowTown(s.user);
+}
+
+function eldShowInventory(u) {
+  const c = eldData(u);
+  const inv = c.inventory || {};
+  const eq = c.equipped || { weapon:null, armor:null, trinket:null };
+  const owned = Object.entries(inv).filter(([id, n]) => n > 0);
+  function slotBox(slot) {
+    const eqId = eq[slot];
+    const item = eqId ? ELDORIA_ITEMS[eqId] : null;
+    return `<div style="padding:10px 12px; background:rgba(255,128,0,.06); border:1px solid rgba(255,128,0,.2); border-radius:12px; flex:1; min-width:0;">
+      <div style="font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;">${slot}</div>
+      ${item ? `<div style="display:flex; align-items:center; gap:6px; margin-top:4px;"><span style="font-size:18px;">${item.emoji}</span><span style="font-size:12px; font-weight:700;">${item.name}</span></div>${item.atk?`<div style="font-size:10px; color:var(--gold);">+${item.atk} ⚔️</div>`:''}${item.def?`<div style="font-size:10px; color:#7fd4a8;">+${item.def} 🛡️</div>`:''}` : `<div style="font-size:11px; color:var(--ink-dim); margin-top:4px;">(empty)</div>`}
+    </div>`;
+  }
+  openGame(`
+    <h2>🎒 Inventory</h2>
+    ${eldStatusBar(c, true)}
+    <div style="font-size:11px; color:var(--ink-soft); margin: 6px 0 8px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Equipped</div>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      ${slotBox("weapon")}
+      ${slotBox("armor")}
+      ${slotBox("trinket")}
+    </div>
+    <div style="font-size:11px; color:var(--ink-soft); margin: 14px 0 8px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Items (${owned.length})</div>
+    ${owned.length === 0 ? '<div style="text-align:center; padding:30px; color:var(--ink-dim);">Your bag is empty.</div>' : `
+      <div style="display:grid; gap:6px;">
+        ${owned.map(([id, qty]) => {
+          const item = ELDORIA_ITEMS[id];
+          if (!item) return "";
+          const canEquip = ["weapon","armor","trinket"].includes(item.type);
+          const canUse = item.type === "consumable";
+          return `<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px;">
+            <span style="font-size:22px;">${item.emoji}</span>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:13px; font-weight:600;">${escapeHtml(item.name)} <span style="color:var(--ink-dim); font-size:11px;">×${qty}</span></div>
+              <div style="font-size:10.5px; color:var(--ink-soft);">${item.atk?`⚔️ +${item.atk} `:''}${item.def?`🛡️ +${item.def} `:''}${item.heal?`❤️ +${item.heal} `:''}${item.mp?`🔵 +${item.mp} `:''}<span style="color:var(--gold);">${item.value}💰</span></div>
+            </div>
+            ${canEquip?`<button class="invAction" data-action="equip" data-id="${id}" style="padding:6px 10px; font-size:11px; background:rgba(255,128,0,.15); border:1px solid rgba(255,128,0,.4); color:var(--gold); border-radius:8px; cursor:pointer; font-family:inherit;">Equip</button>`:''}
+            ${canUse?`<button class="invAction" data-action="use" data-id="${id}" style="padding:6px 10px; font-size:11px; background:rgba(127,212,168,.15); border:1px solid rgba(127,212,168,.4); color:#7fd4a8; border-radius:8px; cursor:pointer; font-family:inherit;">Use</button>`:''}
+            <button class="invAction" data-action="sell" data-id="${id}" style="padding:6px 10px; font-size:11px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:var(--ink-soft); border-radius:8px; cursor:pointer; font-family:inherit;">Sell</button>
+          </div>`;
+        }).join("")}
+      </div>
+    `}
+    <button class="primary" id="eldInvBack" style="width:100%; margin-top:14px;">← Back</button>
+  `);
+  document.getElementById("eldInvBack").onclick = () => eldShowTown(u);
+  document.querySelectorAll(".invAction").forEach(b => b.onclick = () => {
+    const id = b.dataset.id, action = b.dataset.action;
+    const item = ELDORIA_ITEMS[id];
+    if (action === "equip") {
+      // Swap equipped
+      const slot = item.type;
+      const old = c.equipped[slot];
+      if (old) eldAddItem(c, old, 1);
+      c.equipped[slot] = id;
+      c.inventory[id]--;
+      eldRecalcStats(c);
+      sfxFlip();
+    } else if (action === "use") {
+      if (item.heal) c.hp = Math.min(c.maxHp, c.hp + item.heal);
+      if (item.mp) c.mp = Math.min(c.maxMp, c.mp + item.mp);
+      c.inventory[id]--;
+      sfxClick();
+    } else if (action === "sell") {
+      c.gold += item.value;
+      c.inventory[id]--;
+      sfxClick();
+    }
+    eldSave(u, c);
+    eldShowInventory(u);
+  });
+}
+
+function eldShowShop(u) {
+  const c = eldData(u);
+  openGame(`
+    <h2>🏪 Briarwood Shop</h2>
+    ${eldStatusBar(c, true)}
+    <div style="font-size:13px; color:var(--ink-soft); margin: 6px 0 14px; font-style:italic;">"Welcome, traveler! Best wares this side of the Whisperwood."</div>
+    <div style="display:grid; gap:8px;">
+      ${ELDORIA_SHOP.map(id => {
+        const item = ELDORIA_ITEMS[id];
+        const cost = Math.floor(item.value * 1.4);
+        const can = c.gold >= cost;
+        return `<div style="display:flex; align-items:center; gap:10px; padding:11px 14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px;">
+          <span style="font-size:24px;">${item.emoji}</span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13.5px; font-weight:600;">${escapeHtml(item.name)}</div>
+            <div style="font-size:10.5px; color:var(--ink-soft);">${item.atk?`⚔️ +${item.atk} `:''}${item.def?`🛡️ +${item.def} `:''}${item.heal?`❤️ +${item.heal} `:''}${item.mp?`🔵 +${item.mp} `:''}</div>
+          </div>
+          <button class="shopBuy" data-id="${id}" data-cost="${cost}" style="padding:8px 14px; font-size:12px; background:${can?'linear-gradient(135deg,#FFD86B,#FF8000)':'rgba(255,255,255,.05)'}; color:${can?'#1a0d00':'var(--ink-dim)'}; border:0; border-radius:10px; cursor:${can?'pointer':'not-allowed'}; font-weight:700; font-family:inherit;" ${can?'':'disabled'}>${cost} 💰</button>
+        </div>`;
+      }).join("")}
+    </div>
+    <button class="primary" id="eldShopBack" style="width:100%; margin-top:14px;">← Back</button>
+  `);
+  document.getElementById("eldShopBack").onclick = () => eldShowTown(u);
+  document.querySelectorAll(".shopBuy").forEach(b => b.onclick = () => {
+    const id = b.dataset.id; const cost = +b.dataset.cost;
+    if (c.gold < cost) return;
+    c.gold -= cost;
+    eldAddItem(c, id, 1);
+    eldSave(u, c);
+    sfxWin();
+    eldShowShop(u);
+  });
+}
+
+function eldShowQuests(u) {
+  const c = eldData(u);
+  // Static "main quest" progression based on bosses
+  const mainQuests = [
+    { boss:"king_goblin", title:"The Goblin Warlord",  zone:"forest",  reward:"+200 XP, +100 gold, fame" },
+    { boss:"marsh_hag",   title:"The Marsh Hag Queen", zone:"swamp",   reward:"+400 XP, +200 gold, fame" },
+    { boss:"pharaoh",     title:"Tomb of the Pharaoh", zone:"desert",  reward:"+600 XP, +400 gold, amulet" },
+    { boss:"ice_titan",   title:"The Frozen Titan",    zone:"icepeak", reward:"+1000 XP, +600 gold, axe" },
+    { boss:"lich",        title:"Catacombs of the Lich",zone:"dungeon",reward:"+1400 XP, +900 gold, staff" },
+    { boss:"dragon",      title:"Slay the Eternal Dragon", zone:"volcano", reward:"+5000 XP, +2500 gold, dragon heart" }
+  ];
+  openGame(`
+    <h2>📜 Quests</h2>
+    ${eldStatusBar(c, true)}
+    <div style="font-size:11px; color:var(--ink-soft); margin: 6px 0 8px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Main Quest Line</div>
+    <div style="display:grid; gap:8px;">
+      ${mainQuests.map((q, i) => {
+        const done = (c.bossesDefeated || []).includes(q.boss);
+        const prevDone = i === 0 || (c.bossesDefeated || []).includes(mainQuests[i-1].boss);
+        const locked = !done && !prevDone;
+        const zone = ELDORIA_ZONES.find(z => z.id === q.zone);
+        return `<div style="padding:12px 14px; background:${done?'rgba(127,212,168,.08)':locked?'rgba(255,255,255,.02)':'rgba(255,128,0,.08)'}; border:1.5px solid ${done?'rgba(127,212,168,.4)':locked?'rgba(255,255,255,.06)':'rgba(255,128,0,.4)'}; border-radius:12px; ${locked?'opacity:.6;':''}">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:22px;">${done?'✅':locked?'🔒':'⚔️'}</span>
+            <div style="flex:1;">
+              <div style="font-family:'Fraunces',serif; font-size:14px; font-weight:700;">${escapeHtml(q.title)}</div>
+              <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">${zone.emoji} ${zone.name} · ${ELDORIA_ENEMIES[q.boss].emoji} ${ELDORIA_ENEMIES[q.boss].name}</div>
+              <div style="font-size:10.5px; color:var(--gold); margin-top:3px;">Reward: ${q.reward}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div style="font-size:11px; color:var(--ink-soft); margin: 18px 0 8px; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Random Quest</div>
+    ${state.anthropicKey
+      ? `<button class="primary" id="eldGenQuest" style="width:100%; padding:14px;">🎲 Generate AI Side-Quest</button>`
+      : `<div style="padding:12px; background:rgba(255,255,255,.04); border-radius:10px; font-size:12px; color:var(--ink-soft); text-align:center;">AI side-quests unlock once an Anthropic API key is set.</div>`
+    }
+    <div id="eldQuestSlot" style="margin-top:10px;"></div>
+    <button class="secondary" id="eldQBack" style="width:100%; margin-top:14px;">← Back</button>
+  `);
+  document.getElementById("eldQBack").onclick = () => eldShowTown(u);
+  if (state.anthropicKey) {
+    document.getElementById("eldGenQuest").onclick = async () => {
+      const slot = document.getElementById("eldQuestSlot");
+      slot.innerHTML = `<div style="text-align:center; padding:20px; color:var(--ink-soft);">⏳ The bards are composing your tale...</div>`;
+      try {
+        const sys = `Generate a short fantasy side-quest for a ${ELDORIA_CLASSES[c.cls].name} (level ${c.level}). Return ONLY JSON: {"title":"...","story":"2-3 sentences","objective":"kill X | gather Y | escort Z","reward":"flavor text","emoji":"📜"}. Make it kid-friendly (ages 9-11), heroic, with vivid imagery. Use only emoji from common Unicode.`;
+        const r = await fetch("https://api.anthropic.com/v1/messages", {
+          method:"POST",
+          headers:{"Content-Type":"application/json","x-api-key":state.anthropicKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+          body: JSON.stringify({ model:"claude-haiku-4-5-20251001", max_tokens:400, system:sys, messages:[{role:"user", content:`Generate a quest. Hero is at level ${c.level}, has ${c.gold} gold, has slain ${c.monstersSlain || 0} monsters.`}] })
+        });
+        const j = await r.json();
+        const m = (j.content?.[0]?.text || "").match(/\{[\s\S]*\}/);
+        const q = JSON.parse(m[0]);
+        slot.innerHTML = `<div style="padding:14px; background:linear-gradient(135deg,rgba(255,128,0,.12),rgba(127,212,168,.05)); border:1.5px solid rgba(255,128,0,.4); border-radius:12px;">
+          <div style="font-size:32px; text-align:center; margin-bottom:8px;">${q.emoji||'📜'}</div>
+          <div style="font-family:'Fraunces',serif; font-size:16px; font-weight:700; text-align:center;">${escapeHtml(q.title)}</div>
+          <div style="font-size:13px; color:var(--ink-soft); margin-top:8px; line-height:1.5;">${escapeHtml(q.story)}</div>
+          <div style="margin-top:10px; padding:8px 10px; background:rgba(255,255,255,.04); border-radius:8px; font-size:12px;"><b>Objective:</b> ${escapeHtml(q.objective)}</div>
+          <div style="margin-top:6px; font-size:11.5px; color:var(--gold);"><b>Reward:</b> ${escapeHtml(q.reward)}</div>
+          <button class="primary" id="eldAcceptQ" style="width:100%; margin-top:12px; padding:12px;">⚔️ Accept (gives +50 XP, +25 gold)</button>
+        </div>`;
+        document.getElementById("eldAcceptQ").onclick = () => {
+          eldGiveXp(c, 50); c.gold += 25; c.questsCompleted = (c.questsCompleted||0) + 1;
+          eldSave(u, c); sfxWin(); fireConfetti(); eldShowTown(u);
+        };
+      } catch (e) {
+        slot.innerHTML = `<div style="padding:14px; background:rgba(236,111,122,.1); border-radius:10px; font-size:12px; color:var(--ink-soft);">Couldn't reach the bards. Try again later.</div>`;
+      }
+    };
+  }
+}
+
+function eldShowStats(u) {
+  const c = eldData(u);
+  const cls = ELDORIA_CLASSES[c.cls];
+  openGame(`
+    <h2>📊 Hero Stats</h2>
+    ${eldStatusBar(c)}
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+      <div style="padding:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:var(--ink-soft);">Class</div>
+        <div style="font-size:16px; font-weight:700; margin-top:4px;">${cls.emoji} ${cls.name}</div>
+      </div>
+      <div style="padding:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:var(--ink-soft);">Level</div>
+        <div style="font-size:16px; font-weight:700; margin-top:4px; color:var(--gold);">${c.level}</div>
+      </div>
+      <div style="padding:12px; background:rgba(236,111,122,.08); border:1px solid rgba(236,111,122,.3); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:#ec6f7a;">Monsters Slain</div>
+        <div style="font-size:18px; font-weight:700; margin-top:4px;">${c.monstersSlain||0}</div>
+      </div>
+      <div style="padding:12px; background:rgba(255,128,0,.08); border:1px solid rgba(255,128,0,.3); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:var(--gold);">Quests Done</div>
+        <div style="font-size:18px; font-weight:700; margin-top:4px;">${c.questsCompleted||0}</div>
+      </div>
+      <div style="padding:12px; background:rgba(127,212,168,.08); border:1px solid rgba(127,212,168,.3); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:#7fd4a8;">Bosses Defeated</div>
+        <div style="font-size:18px; font-weight:700; margin-top:4px;">${(c.bossesDefeated||[]).length} / 6</div>
+      </div>
+      <div style="padding:12px; background:rgba(138,168,255,.08); border:1px solid rgba(138,168,255,.3); border-radius:10px; text-align:center;">
+        <div style="font-size:11px; color:#8aa8ff;">Deaths</div>
+        <div style="font-size:18px; font-weight:700; margin-top:4px;">${c.deaths||0}</div>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <button class="secondary" id="eldStatBack" style="padding:12px;">← Back</button>
+      <button class="secondary" id="eldRestart" style="padding:12px; color:#ec6f7a;">🔄 Reroll Hero</button>
+    </div>
+  `);
+  document.getElementById("eldStatBack").onclick = () => eldShowTown(u);
+  document.getElementById("eldRestart").onclick = () => {
+    if (confirm("Delete your hero and start over? This can't be undone.")) {
+      eldSave(u, null);
+      eldShowCreator(u);
+    }
+  };
+}
+
 function renderGamesHub() {
   const grid = $("#grid");
   grid.style.gridTemplateColumns = "1fr";
@@ -5124,12 +5946,13 @@ function renderGamesHub() {
   const STRATEGY = ["tictactoe","connect4","checkers","chess","battleship"];
   const PUZZLE = ["snake","2048","hangman","memory"];
   const CARD = ["crazy8s","war"];
-  const FAMILY = ["familylife","trivia","monsters"];
-  const groupOf = id => STRATEGY.includes(id) ? "🎯 Strategy" : PUZZLE.includes(id) ? "🧠 Puzzle" : CARD.includes(id) ? "🃏 Card" : FAMILY.includes(id) ? "🎉 Family" : "🎮 Other";
+  const FAMILY = ["familylife","trivia"];
+  const ADVENTURE = ["eldoria"];
+  const groupOf = id => ADVENTURE.includes(id) ? "⚔️ Adventure" : STRATEGY.includes(id) ? "🎯 Strategy" : PUZZLE.includes(id) ? "🧠 Puzzle" : CARD.includes(id) ? "🃏 Card" : FAMILY.includes(id) ? "🎉 Family" : "🎮 Other";
   // Build grouped sections
   const groups = {};
   GAMES_LIBRARY.forEach(g => { const k = groupOf(g.id); (groups[k] = groups[k] || []).push(g); });
-  const groupOrder = ["🎯 Strategy","🧠 Puzzle","🃏 Card","🎉 Family","🎮 Other"];
+  const groupOrder = ["⚔️ Adventure","🎯 Strategy","🧠 Puzzle","🃏 Card","🎉 Family","🎮 Other"];
   let html = `
     <div style="display:flex; align-items:center; gap:12px; padding:18px 20px; margin-bottom:14px;
                 background: linear-gradient(135deg, rgba(255,128,0,.12), rgba(127,212,168,.08));
@@ -5153,7 +5976,7 @@ function renderGamesHub() {
             <div class="game-emoji">${g.emoji}</div>
             <h3>${escapeHtml(g.title)}</h3>
             <p>${escapeHtml(g.desc)}</p>
-            ${["tictactoe","connect4","checkers","chess","familylife","battleship","crazy8s","war"].includes(g.id) ? `<span class="score-tag">🤖 vs. AI &amp; 2P</span>` : ""}
+            ${g.id === "eldoria" ? `<span class="score-tag">⚔️ Solo RPG · AI Quests</span>` : ["tictactoe","connect4","checkers","chess","familylife","battleship","crazy8s","war"].includes(g.id) ? `<span class="score-tag">🤖 vs. AI &amp; 2P</span>` : ""}
           </button>
         `).join("")}
       </div>`;
