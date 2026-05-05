@@ -65,20 +65,25 @@ Currently keyed: `goblin`, `wolf`, `goblin_warlord`, `skeleton`,
 `crystal_elemental`, `bandit` (entries vary). New enemy kinds MUST add a drop
 table entry; do not let an enemy ship without loot.
 
-### Live wolf table (run 17 — Builder)
+### Live wolf table (run 19 — Builder)
 
 | id            | weight | qty   | notes                                              |
 |---------------|--------|-------|----------------------------------------------------|
 | `hp_potion_s` |   22   | 1-2   | Owen-tier survival floor                           |
-| `wolf_pelt`   |   38   | 1     | fetch material for `pelt_for_lyra`                 |
-| `wolf_fang`   |   18   | 1     | **NEW (run 17)** — fetch material for `wolf_fang_for_roan` |
-| `leather`     |   12   | 1     | crafting material                                  |
+| `wolf_pelt`   |   35   | 1     | fetch material for `pelt_for_lyra` (38 → 35 run 19) |
+| `wolf_fang`   |   15   | 1     | fetch material for `wolf_fang_for_roan` (18 → 15 run 19) |
+| `wolf_heart`  |    8   | 1     | **NEW (run 19)** — RARE; fetch material for `wolf_heart_for_bram` |
+| `leather`     |   10   | 1     | crafting material (12 → 10 run 19)                 |
 | `chainmail`   |    6   | 1     | mid-tier armor                                     |
 | `steel_blade` |    4   | 1     | mid-tier weapon                                    |
-| **Total**     | **100**|       | weight total moved 92 → 100 in run 17              |
+| **Total**     | **100**|       | weight total preserved at 100 across runs 17 + 19  |
 
-Lyra and Roan can be quested in parallel — a 5-kill wolf grind expects
-~1.9 fangs + ~2.0 pelts at the rebalanced weights.
+Lyra, Roan, and Bram can all be quested in parallel — a ~13-kill wolf
+grind expects ~4.5 pelts + ~1.95 fangs + ~1.04 hearts at the run-19
+rebalanced weights, satisfying Lyra's 4 + Roan's 5 + Bram's 3 in one
+loop. Hala's 4-kill quest finishes earliest. The drift on each id's
+relative odds is < 4% from the run-17 weights, so existing 30-kill grind
+expectations are byte-identical within rounding.
 
 ## Status Effects
 
@@ -97,7 +102,7 @@ A quest may grant any combination of:
 - `consequence: String` — *reserved*, see QUEST_GRAMMAR.md (faction shifts,
   NPC memory flags, world flags). Not yet wired.
 
-## Live Quest Catalog (run 17 update)
+## Live Quest Catalog (run 19 update)
 
 Lives in `World.QUEST_CATALOG`. Mapped to NPCs by `role` field via
 `World._quest_for_role(role)` — returns the FIRST matching entry, so each
@@ -112,20 +117,34 @@ role currently has at most one quest. Schema fields: `giver`, `actor`,
 | `pelt_for_lyra`        | Herbalist Lyra      | alchemy  | fetch | 4 wolf_pelt | 70 xp / 45 g + 2× hp_potion_l | `dire_wolves` -0.1 | `trusts_player`          | `lyra_potion_brew`      |
 | `ears_for_mara`        | Mara the Merchant   | shop     | fetch | 6 goblin_ear | 60 xp / 90 g | `whisperwood_goblins` -0.15 | `good_customer`         | `mara_bounty_paid`      |
 | `wolf_fang_for_roan`   | Stablemaster Roan   | stable   | fetch | 5 wolf_fang | 65 xp / 50 g | `dire_wolves` -0.1         | `first_bounty_done`      | `roan_bounty_paid`      |
-| `wolf_form_with_hala` ⭐| Trainer Hala        | trainer  | kill  | 4 wolf      | 90 xp / 35 g | `dire_wolves` -0.1         | `wolf_form_taught`       | `hala_wolf_form_done`   |
+| `wolf_form_with_hala`  | Trainer Hala        | trainer  | kill  | 4 wolf      | 90 xp / 35 g | `dire_wolves` -0.1         | `wolf_form_taught`       | `hala_wolf_form_done`   |
+| `wolf_heart_for_bram` ⭐| Innkeeper Bram      | inn      | fetch | 3 wolf_heart| 70 xp / 55 g | `dire_wolves` -0.1         | `nights_quiet`           | `bram_nights_quiet`     |
 
-⭐ = NEW in run 18 — THIRD `dire_wolves` reducer (closes the curve to the
-run-6 third cliff: pressure 0.2, packs of 1). Hala's role `trainer` was
-quest-blank before; now matches Roan/Mara/Lyra in dialogue depth (line
-pitch + warm_flag tier). FIRST kill-quest after `whisperwood_cleansing`.
-Reward economy is XP-heavy (90 xp) / coin-light (35 g) — befits a teacher
-who trades knowledge, not gold.
+⭐ = NEW in run 19 — FOURTH `dire_wolves` reducer (trips the run-6 third
+cliff: pressure 0.1, packs of 1). Bram's role `inn` was QUEST-BLANK before
+this entry — `_quest_for_role("inn")` returned `{}`, so the Accept Quest
+button never appeared on his dialogue panel in runs 1-18. Now matches
+Roan/Mara/Lyra/Hala in dialogue depth (line pitch + warm_flag tier). New
+RARE-rarity material `wolf_heart` joins `wolf_pelt` + `wolf_fang` on the
+wolf drop table; weights rebalanced to keep total at 100 (relative-odds
+drift < 4% per id). Bram is purely additive to the wolf curve, NOT a
+fourth flag in the run-18 `wolf_tamer` Achievement predicate — Wolf-Tamer
+title still attainable on the Lyra+Roan+Hala arc. The single surviving
+wolf at pressure 0.1 reads as "the alpha that wouldn't be hunted" —
+boss-feeling fight without a boss-spawn, pure compound on existing
+cooldown/chase scalars.
 
-(Original run-17 note retained:) The previous ⭐ — `wolf_fang_for_roan` is
-run 17 — second `dire_wolves` reducer, mirrors `ears_for_mara`
-as the second goblin reducer. Composes with run 6 (spawn density), run 7
-(adaptive cooldown), run 8 (adaptive chase + Roan faction tier), and the
-new run-17 Roan `warm_flag` tier.
+(Run-18 note retained:) `wolf_form_with_hala` is the run-18 third
+`dire_wolves` reducer. Hala's role `trainer` was quest-blank before; now
+matches Roan/Mara/Lyra in dialogue depth. FIRST kill-quest after
+`whisperwood_cleansing`. Reward economy is XP-heavy (90 xp) / coin-light
+(35 g) — befits a teacher who trades knowledge, not gold.
+
+(Original run-17 note retained:) `wolf_fang_for_roan` is the run-17
+second `dire_wolves` reducer, mirrors `ears_for_mara` as the second
+goblin reducer. Composes with run 6 (spawn density), run 7 (adaptive
+cooldown), run 8 (adaptive chase + Roan faction tier), and the run-17
+Roan `warm_flag` tier.
 
 ## NPC Schema
 

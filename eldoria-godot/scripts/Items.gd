@@ -79,6 +79,17 @@ const ITEMS = {
 	                  "icon":"🦊", "icon_path":"res://assets/icons/wolf_pelt.png","color":Color(0.65,0.55,0.40),"stack":true,"value":8},
 	"wolf_fang":     {"name":"Wolf Fang",       "type":"material","slot":"","rarity":"common",
 	                  "icon":"🦷", "icon_path":"res://assets/icons/wolf_fang.png","color":Color(0.92,0.88,0.78),"stack":true,"value":6},
+	# COMPOUND (run 19): wolf_heart — RARE wolf trophy, fetch material for
+	# `wolf_heart_for_bram` (Bram's Heartwood Mead bounty, 4th `dire_wolves`
+	# reducer). Rarity bumped to "rare" so the inventory tooltip shows the
+	# blue chip the moment the player rolls one — a different visual beat from
+	# the common 🦊 pelt and 🦷 fang sitting alongside it. value 32 sits
+	# between wolf_pelt (8) and crystal_shard (35) — heart is rarer-than-pelt
+	# but the player should already have crystal_shards by Bram-pacing time.
+	# 🫀 emoji as legacy fallback; icon_path lights up if `wolf_heart.png`
+	# painterly icon ships from the artist agent (same fail-soft as wolf_fang).
+	"wolf_heart":    {"name":"Wolf Heart",      "type":"material","slot":"","rarity":"rare",
+	                  "icon":"🫀", "icon_path":"res://assets/icons/wolf_heart.png","color":Color(0.65,0.18,0.22),"stack":true,"value":32},
 	"goblin_ear":    {"name":"Goblin Ear",      "type":"material","slot":"","rarity":"common",
 	                  "icon":"👂", "icon_path":"res://assets/icons/goblin_ear.png","color":Color(0.45,0.65,0.30),"stack":true,"value":3},
 	"crystal_shard": {"name":"Crystal Shard",   "type":"material","slot":"","rarity":"uncommon",
@@ -102,18 +113,30 @@ const DROP_TABLE = {
 	],
 	"wolf": [
 		# REFINE: balance — wolf table tilted slightly toward gear (chainmail/
-		# steel_blade) since they're the mid-tier challenge enemy. Total weight
-		# unchanged at 92.
+		# steel_blade) since they're the mid-tier challenge enemy.
 		# COMPOUND (run 17): added wolf_fang material (Roan-bounty fetch item).
 		# Pulled wolf_pelt 48 → 38 and added wolf_fang at weight 18 to keep the
 		# wolf table tilted toward materials (now 56% combined vs 52% pelt-only)
 		# without making fang harder to roll than ear. A 4-kill wolf grind
 		# averages ≥1 fang AND ≥1 pelt, so the Lyra and Roan quests can be run
 		# in parallel without re-grinding. Total weight: 92 → 100.
+		# COMPOUND (run 19): added wolf_heart material (Bram-bounty fetch item,
+		# 4th `dire_wolves` reducer). Pulled -3 from wolf_pelt (38 → 35), -3
+		# from wolf_fang (18 → 15), -2 from leather (12 → 10) to fund weight 8
+		# for wolf_heart. Total stays at 100, so the weighted-roll math is
+		# byte-identical to run 17 (each id's relative odds drift by < 4%).
+		# wolf_heart at weight 8 is RARER than fang (15) and pelt (35) — Bram
+		# wants 3, so a ~12-kill grind averages 0.96 hearts (just under quota).
+		# That mirrors Roan's 5-fang grind (~5/0.18 ≈ 13.9 kills): both Roan
+		# and Bram bounties take the same wolf-time to clear, so the player
+		# can run them in parallel. Lyra's pelt grind is fastest (4/0.35 ≈
+		# 11.4 kills), Hala's kill quest (4 wolves) is fastest of all — kid-
+		# tuned curve preserved.
 		{"id":"hp_potion_s", "weight":22, "qty":[1,2]},
-		{"id":"wolf_pelt",   "weight":38, "qty":[1,1]},
-		{"id":"wolf_fang",   "weight":18, "qty":[1,1]},
-		{"id":"leather",     "weight":12, "qty":[1,1]},
+		{"id":"wolf_pelt",   "weight":35, "qty":[1,1]},
+		{"id":"wolf_fang",   "weight":15, "qty":[1,1]},
+		{"id":"wolf_heart",  "weight":8,  "qty":[1,1]},
+		{"id":"leather",     "weight":10, "qty":[1,1]},
 		{"id":"chainmail",   "weight":6,  "qty":[1,1]},
 		{"id":"steel_blade", "weight":4,  "qty":[1,1]},
 	],

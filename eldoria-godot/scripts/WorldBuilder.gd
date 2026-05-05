@@ -281,12 +281,42 @@ const NPCS = [
 	 "schedule":[Vector3(-7.5, 0, -7.5), Vector3(-3.0, 0, -5.0), Vector3(-3.0, 0, -4.4), Vector3(-3.0, 0, -5.0)],
 	 "use_json_dialogue":true},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
-	 "line":"Pull up a stool. Rest your bones.",
+	 # COMPOUND (run 19 — Builder): swap the legacy "pull up a stool" line for
+	 # the Bram-issued bounty pitch. Bram's role `inn` was QUEST-BLANK in
+	 # WorldBuilder runs 1-18 — the Accept Quest button never appeared on his
+	 # dialogue panel because `_quest_for_role("inn")` returned `{}`. With
+	 # World.QUEST_CATALOG run-19 entry `wolf_heart_for_bram`, the resolver
+	 # now hits, and `line` is the offer text shown when the player opens
+	 # dialogue. Pattern matches Mara's ear bounty, Lyra's pelt fetch, Roan's
+	 # fang bounty, and Hala's wolf-form drill. Old "pull up a stool" line
+	 # preserved as `lines[0]` so it still cycles in the time-of-day pool.
+	 "line":"Wolves spoil the bards' songs. Bring me 3 wolf hearts and the deep barrel's yours.",
 	 "lines":[
 		"*polishes a mug* — Stew's on. Pull up a stool, rest your bones.",
 		"Bards lie about half their songs. The other half are mine.",
 		"Best ale in three valleys. The other two valleys have no ale, mind.",
 		"Bed's warm. Fire's banked. Stay if you've nowhere safer.",
+	 ],
+	 # COMPOUND (run 19 — Builder): Bram's `warm_flag` tier — Tier 2 in
+	 # NPC.gd's dialogue stack, fires above his existing memory tier (Tier
+	 # 5, run 16). `nights_quiet` is set as the npc_flag on the
+	 # wolf_heart_for_bram consequence, so these lines unlock the moment
+	 # that quest turns in. Promotes Bram from a memory-only NPC (run 16)
+	 # to a full warm_flag + memory NPC — same dialogue depth as Maeve.
+	 # Bram's village role is the rumor exchange: when the wolves quiet,
+	 # he hears the SONG come back to the road first. Lines lean on the
+	 # bards-and-mead motif from his existing `lines` (THEME §7 "voice:
+	 # warm gravitas") so the warm tier reads as the SAME Bram, just
+	 # warmer — not a different character. Tier 2 (warm_flag) ranks above
+	 # tier 5 (memory) so once the quest is in, returning patrons read the
+	 # warm lines first; on warm_flag miss the memory tier still fires for
+	 # the cold-rep loop.
+	 "warm_flag":"nights_quiet",
+	 "warm_lines":[
+		"Three hearts to the hearth — and the bards finished their set last night, first time in months.",
+		"My deep barrel's yours, friend. Pour heavy; the howls won't drown the lute now.",
+		"Fire's high and the door's open later these evenings. Your work — sit.",
+		"Even past midnight the singing carries to the road. Quiet enough now. Stay safe out there.",
 	 ],
 	 # COMPOUND (run 10 — third JSON opt-in): Bram joins Maeve & Edda on the
 	 # JSON-tree resolver. `data/dialogue/innkeeper_bram.json` carries 15 keys
