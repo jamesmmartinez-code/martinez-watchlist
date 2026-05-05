@@ -502,22 +502,47 @@ func _on_equipment_changed() -> void:
 	stats_changed.emit()
 
 func _rebuild_weapon_visual() -> void:
-	# Procedural sword disabled — needs bone-attachment to new Hero.glb skeleton
-	# TODO: Character agent should attach a sword GLB to a hand bone via BoneAttachment3D
+	# Free any old weapon node — fresh build each equipment_changed.
 	if weapon_visual and is_instance_valid(weapon_visual):
 		weapon_visual.queue_free()
 	weapon_visual = null
+	if inventory == null:
+		return
+	var weapon_id: String = ""
+	if inventory.has_method("equipped_weapon_id"):
+		weapon_id = inventory.equipped_weapon_id()
+	if weapon_id == "":
+		return
+	var item: Dictionary = Items.get_item(weapon_id)
+	if item.is_empty():
+		return
 
+	# THEME §12 — bone-attach the sword to the right-hand bone so it
+	# tracks idle / walk / attack animations instead of floating beside
+	# the body. Falls back to the legacy body-relative offset if the
+	# active player GLB has no skeleton or no recognizable hand bone.
+	var attach_parent: Node = self
+	var local_origin: Vector3 = Vector3(0.45, 1.05, 0.1)
+	var local_rot: Vector3 = Vector3(0, 0, deg_to_rad(35))
+	var bone_attach: BoneAttachment3D = _make_right_hand_bone_attachment()
+	if bone_attach != null:
+		attach_parent = bone_attach
+		# Bone-local: hand grip points along the bone's +Y, sword runs
+		# down the palm. Tuned values that read correctly on both
+		# Owen.glb (Sketchfab "RightHand") and Hero.glb (Mixamo
+		# "mixamorigRightHand_021"). Slight forward offset so the
+		# hilt doesn't intersect fingers.
+		local_origin = Vector3(0.0, 0.04, 0.10)
+		local_rot = Vector3(deg_to_rad(90), 0, 0)
 
 	weapon_visual = Node3D.new()
 	weapon_visual.name = "WeaponVisual"
-	# Position near the right hand of the soldier model
-	weapon_visual.position = Vector3(0.45, 1.05, 0.1)
-	weapon_visual.rotation = Vector3(0, 0, deg_to_rad(35))
-	add_child(weapon_visual)
+	weapon_visual.position = local_origin
+	weapon_visual.rotation = local_rot
+	attach_parent.add_child(weapon_visual)
 
 	var color: Color = item.get("color", Color(0.85, 0.85, 0.85))
-	var glow: bool = item.rarity in ["epic", "legendary"]
+	var glow: bool = item.get("rarity", "common") in ["epic", "legendary"]
 
 	# Build a sword-like or axe-like or dagger-like shape based on icon
 	var icon: String = item.get("icon", "⚔")
@@ -666,6 +691,67 @@ func _find_animation_player(node: Node) -> AnimationPlayer:
 		if found:
 			return found
 	return null
+
+
+# THEME §12 — locate the player's Skeleton3D (deep search) so the weapon
+# visual can ride a real hand bone rather than a hard-coded body offset.
+func _find_first_skeleton(node: Node) -> Skeleton3D:
+	if node is Skeleton3D:
+		return node
+	for c in node.get_children():
+		var s := _find_first_skeleton(c)
+		if s:
+			return s
+	return null
+
+
+# Build (or reuse) a BoneAttachment3D parented under the player skeleton's
+# right-hand bone. Returns null if the active GLB has no skeleton or no
+# recognizable right-hand bone — caller should then fall back to the
+# legacy body-relative weapon offset.
+func _make_right_hand_bone_attachment() -> BoneAttachment3D:
+	var skel: Skeleton3D = _find_first_skeleton(self)
+	if skel == null:
+		return null
+	var bone_idx: int = -1
+	# Owen.glb uses bare "RightHand"; Hero.glb (Mixamo) uses suffixed names
+	# like "mixamorigRightHand_021"; Blender rigs use "hand.R" / "hand_r";
+	# UE5/MetaHuman uses "Hand_R". Try them in priority order.
+	var candidates: Array[String] = [
+		"RightHand", "Right_Hand", "right_hand",
+		"Hand_R", "HandR", "hand.R", "hand_r",
+		"mixamorigRightHand", "mixamorig:RightHand"
+	]
+	for cand in candidates:
+		bone_idx = skel.find_bone(cand)
+		if bone_idx >= 0:
+			break
+	# Mixamo names get suffixed when imported (e.g. "_021"). Fuzzy match the
+	# palm bone, excluding finger / thumb / index / pinky / middle / ring
+	# bones so we don't end up attached to a fingertip.
+	if bone_idx < 0:
+		for i in range(skel.get_bone_count()):
+			var bn: String = skel.get_bone_name(i).to_lower()
+			if bn.find("righthand") >= 0:
+				var exclude := ["index", "thumb", "pinky", "middle", "ring", "finger", "_end"]
+				var skip := false
+				for ex in exclude:
+					if bn.find(ex) >= 0:
+						skip = true; break
+				if not skip:
+					bone_idx = i; break
+	if bone_idx < 0:
+		return null
+	# Reuse an existing attachment node if we made one earlier.
+	for c in skel.get_children():
+		if c is BoneAttachment3D and c.name == "RightHandSwordAttach":
+			(c as BoneAttachment3D).bone_idx = bone_idx
+			return c
+	var ba := BoneAttachment3D.new()
+	ba.name = "RightHandSwordAttach"
+	ba.bone_idx = bone_idx
+	skel.add_child(ba)
+	return ba
 
 
 # ════════════════════════════════════════════════════════════════════════
