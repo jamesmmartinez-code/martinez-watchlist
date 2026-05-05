@@ -65,6 +65,21 @@ Currently keyed: `goblin`, `wolf`, `goblin_warlord`, `skeleton`,
 `crystal_elemental`, `bandit` (entries vary). New enemy kinds MUST add a drop
 table entry; do not let an enemy ship without loot.
 
+### Live wolf table (run 17 — Builder)
+
+| id            | weight | qty   | notes                                              |
+|---------------|--------|-------|----------------------------------------------------|
+| `hp_potion_s` |   22   | 1-2   | Owen-tier survival floor                           |
+| `wolf_pelt`   |   38   | 1     | fetch material for `pelt_for_lyra`                 |
+| `wolf_fang`   |   18   | 1     | **NEW (run 17)** — fetch material for `wolf_fang_for_roan` |
+| `leather`     |   12   | 1     | crafting material                                  |
+| `chainmail`   |    6   | 1     | mid-tier armor                                     |
+| `steel_blade` |    4   | 1     | mid-tier weapon                                    |
+| **Total**     | **100**|       | weight total moved 92 → 100 in run 17              |
+
+Lyra and Roan can be quested in parallel — a 5-kill wolf grind expects
+~1.9 fangs + ~2.0 pelts at the rebalanced weights.
+
 ## Status Effects
 
 NONE shipped yet. Reserved schema for downstream runs:
@@ -81,6 +96,27 @@ A quest may grant any combination of:
 - `reward_item: String, reward_item_qty: int`
 - `consequence: String` — *reserved*, see QUEST_GRAMMAR.md (faction shifts,
   NPC memory flags, world flags). Not yet wired.
+
+## Live Quest Catalog (run 17 update)
+
+Lives in `World.QUEST_CATALOG`. Mapped to NPCs by `role` field via
+`World._quest_for_role(role)` — returns the FIRST matching entry, so each
+role currently has at most one quest. Schema fields: `giver`, `actor`,
+`role`, `kind` (`kill`|`fetch`), `target`/`item`, `needed`, `title`,
+`text`, `xp_reward`, `gold_reward`, `motivation`, `location`, `urgency`,
+`world_trigger`, `consequence`.
+
+| id                     | giver               | role     | kind  | needed | reward         | faction Δ                  | npc_flag (set)           | world_flag (set)        |
+|------------------------|---------------------|----------|-------|--------|----------------|----------------------------|--------------------------|-------------------------|
+| `whisperwood_cleansing`| Elder Maeve         | quest    | kill  | 5 goblin | 80 xp / 60 g  | `whisperwood_goblins` -0.2 | `first_quest_done`       | `whisperwood_safer`     |
+| `pelt_for_lyra`        | Herbalist Lyra      | alchemy  | fetch | 4 wolf_pelt | 70 xp / 45 g + 2× hp_potion_l | `dire_wolves` -0.1 | `trusts_player`          | `lyra_potion_brew`      |
+| `ears_for_mara`        | Mara the Merchant   | shop     | fetch | 6 goblin_ear | 60 xp / 90 g | `whisperwood_goblins` -0.15 | `good_customer`         | `mara_bounty_paid`      |
+| `wolf_fang_for_roan` ⭐ | Stablemaster Roan   | stable   | fetch | 5 wolf_fang | 65 xp / 50 g | `dire_wolves` -0.1         | `first_bounty_done`      | `roan_bounty_paid`      |
+
+⭐ = NEW in run 17 — second `dire_wolves` reducer, mirrors `ears_for_mara`
+as the second goblin reducer. Composes with run 6 (spawn density), run 7
+(adaptive cooldown), run 8 (adaptive chase + Roan faction tier), and the
+new run-17 Roan `warm_flag` tier.
 
 ## NPC Schema
 

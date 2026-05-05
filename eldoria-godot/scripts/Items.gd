@@ -77,6 +77,8 @@ const ITEMS = {
 	# ── Materials (drop from enemies, used in fetch quests) ───────────────
 	"wolf_pelt":     {"name":"Wolf Pelt",       "type":"material","slot":"","rarity":"common",
 	                  "icon":"🦊", "icon_path":"res://assets/icons/wolf_pelt.png","color":Color(0.65,0.55,0.40),"stack":true,"value":8},
+	"wolf_fang":     {"name":"Wolf Fang",       "type":"material","slot":"","rarity":"common",
+	                  "icon":"🦷", "icon_path":"res://assets/icons/wolf_fang.png","color":Color(0.92,0.88,0.78),"stack":true,"value":6},
 	"goblin_ear":    {"name":"Goblin Ear",      "type":"material","slot":"","rarity":"common",
 	                  "icon":"👂", "icon_path":"res://assets/icons/goblin_ear.png","color":Color(0.45,0.65,0.30),"stack":true,"value":3},
 	"crystal_shard": {"name":"Crystal Shard",   "type":"material","slot":"","rarity":"uncommon",
@@ -102,8 +104,15 @@ const DROP_TABLE = {
 		# REFINE: balance — wolf table tilted slightly toward gear (chainmail/
 		# steel_blade) since they're the mid-tier challenge enemy. Total weight
 		# unchanged at 92.
+		# COMPOUND (run 17): added wolf_fang material (Roan-bounty fetch item).
+		# Pulled wolf_pelt 48 → 38 and added wolf_fang at weight 18 to keep the
+		# wolf table tilted toward materials (now 56% combined vs 52% pelt-only)
+		# without making fang harder to roll than ear. A 4-kill wolf grind
+		# averages ≥1 fang AND ≥1 pelt, so the Lyra and Roan quests can be run
+		# in parallel without re-grinding. Total weight: 92 → 100.
 		{"id":"hp_potion_s", "weight":22, "qty":[1,2]},
-		{"id":"wolf_pelt",   "weight":48, "qty":[1,1]},
+		{"id":"wolf_pelt",   "weight":38, "qty":[1,1]},
+		{"id":"wolf_fang",   "weight":18, "qty":[1,1]},
 		{"id":"leather",     "weight":12, "qty":[1,1]},
 		{"id":"chainmail",   "weight":6,  "qty":[1,1]},
 		{"id":"steel_blade", "weight":4,  "qty":[1,1]},

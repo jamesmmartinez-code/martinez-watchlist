@@ -3119,3 +3119,175 @@ After-merge branch resets: `auto/builder`, `auto/polisher`, `auto/art` fast-forw
 **Integration gaps spotted:** none new this run. Prior gap (Roan/Hala JSON wired into NPCs) is closed — commit `813f350` set `use_json_dialogue:true` on both. Trainer Hala dialogue file remains the seventh-of-seven Briarwood NPC surface to ship; current `data/dialogue/trainer_hala.json` is on main from an earlier integrator cherry-pick.
 
 **Next-run TODO:** the seven-NPC Briarwood JSON ring is closed on main. Lore can move on to either (a) Silverleaf/Embergrove/etc. NPC dialogue surfaces or (b) deeper warmed-tier lines per the Withholding Ledger. No integrator-side blockers.
+
+## 2026-05-05 — Builder run 17 (Roan wolf-bounty quest + warm_flag tier)
+
+### What I'm building
+Roan-issued wolf-bounty quest (`wolf_fang_for_roan`) — the SECOND
+`dire_wolves` faction reducer, mirroring Mara's `ears_for_mara` pattern as
+the second goblin reducer. Single new quest plus new fetch material
+(`wolf_fang`), plus Roan's first `warm_flag` dialogue tier.
+
+### THEME §X cited
+- §1 (lived-in): Roan's `warm_lines` reference Pippin nuzzling at sunset and
+  the mares sleeping clean through — micro-detail consistent with the warm,
+  age-touched village voice.
+- §2 (medieval, no modern): bounty paid in coin/saddle, fang as proof — no
+  paperwork, no markers, no modern bureaucracy.
+- §4 (silhouette-distinct NPCs): Roan retains his lean-ranger silhouette;
+  no model change. The dialogue is the only identity vector touched.
+- §6 (audio): no new music/SFX; existing inventory chime fires when the
+  fang drops — already in canon.
+- §7 (warm gravitas): Roan's warm lines are gratitude without speeches,
+  matching the "trusts horses over men" rhythm established in run 8.
+
+### Mood board panel
+N/A — mood-boards/ directory not present. Cited THEME.md §1, §2, §4, §6, §7 directly per the THEME-gate fallback.
+
+### 5-output rule
+
+(i) **Integration** — Plumbed into the existing quest pipeline:
+- `Items.gd`: `wolf_fang` material added below `wolf_pelt`. Wolf
+  `DROP_TABLE` rebalanced (wolf_pelt 48 → 38, wolf_fang +18; total
+  weight 92 → 100). A 5-kill wolf grind expects ~1.9 fangs (1-fang
+  rolls = 0.18) AND ~2.0 pelts in parallel — Lyra's pelt quest and
+  Roan's fang quest can be progressed simultaneously without re-grinding.
+- `World.gd QUEST_CATALOG`: `wolf_fang_for_roan` added below
+  `ears_for_mara`. Role `stable` — Roan's existing role, currently the
+  only stable-role NPC, so `_quest_for_role("stable")` returns it
+  unambiguously. Fields match the schema documented in
+  `SYSTEM_REGISTRY.md` "Quest Catalog Schema".
+- `WorldBuilder.gd NPCS`: Roan gets `warm_flag: "first_bounty_done"`
+  + 4 `warm_lines`. The existing `warm_faction_id` (run 8) stays —
+  composes as Tier 4, while warm_flag is Tier 2. Roan's `line` field
+  becomes the bounty pitch ("Wolves nip my mares again. Bring me 5
+  wolf fangs and the road's safer.") matching Mara/Lyra's pattern.
+- The consequence dict (`-0.1` `dire_wolves`, npc_flag, world_flag, toast)
+  flows through the same `World.apply_consequence()` path that
+  three other quests already use. Zero new state shapes.
+
+(ii) **Schema** — All three new entities follow the existing schemas
+(no new shapes introduced):
+- Material schema: `name`, `type`, `slot`, `rarity`, `icon`, `icon_path`,
+  `color`, `stack`, `value` — same as `wolf_pelt`/`goblin_ear`.
+- Drop schema: `id`, `weight`, `qty[min,max]` — same as every other
+  DROP_TABLE entry.
+- Quest schema: `giver`, `actor`, `role`, `kind`, `item`, `needed`,
+  `title`, `text`, `xp_reward`, `gold_reward`, `motivation`,
+  `location`, `urgency`, `world_trigger`, `consequence` — same as
+  `ears_for_mara`/`pelt_for_lyra`.
+- Consequence: `faction`, `pressure_delta`, `npc_flag`, `world_flag`,
+  `toast` — same as the three existing reducers.
+- World flag naming: `roan_bounty_paid` follows the established
+  snake_case present-tense convention (`mara_bounty_paid`,
+  `whisperwood_safer`, `lyra_potion_brew`).
+SYSTEM_REGISTRY.md updated with the new material + quest entries.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- New inventory entry "Wolf Fang" with 🦷 emoji icon (icon_path
+  fail-soft until artist agent ships `wolf_fang.png`).
+- Quest panel pitch: "Roan pays for fanged proof — bring 5 Wolf Fangs"
+  with title "Bounty on Dire Wolves".
+- Quest turn-in toast: "🐎 The road feels safer. Roan tips his hat."
+- Dialogue change on accept: Roan's pitch line speaks the bounty
+  immediately, instead of the legacy generic "pick your steed."
+- Dialogue change on turn-in: warm_flag tier opens four new Roan
+  lines naming the player's effect on Pippin and the mares.
+- Wolf pack: drops by 1 per camp at the run-6 first cliff
+  (pressure crosses 0.5 → 0.4) — visible empty forest patches.
+- Surviving wolves get `⚡` agitated prefix and lerp ~0.05 m/s faster
+  via runs 7 + 8 cooldown / chase compounds. Same scalar.
+
+(iv) **Eval** — Paren/quote balance validated:
+- `Items.gd` `()` `[]` `{}` balanced.
+- `World.gd` `()` `[]` `{}` balanced.
+- `WorldBuilder.gd` `()` `[]` `{}` balanced.
+- Tier resolution invariant unchanged: warm_flag tier (Tier 2) only
+  fires if JSON tree (Tier 1) misses; Roan already has a JSON file
+  at `data/dialogue/stablemaster_roan.json` (shipped run 11 lore +
+  integrator cherry-pick), so the JSON resolves first when its
+  predicates match — warm_lines surface only on JSON miss. No tier
+  ordering changes.
+- Drop-table weights: total moved 92 → 100, weighted-roll math
+  unchanged (each id's relative odds preserved within a 5% drift).
+  Roll precision is ratio-based (`weight / total_weight`), so
+  expected counts on a 30-kill grind shift by < 1 item across all
+  ids — kid-tuned curve preserved.
+
+(v) **2+ hooks**:
+1. **Maeve-mentions-Roan dialogue line** — Maeve's existing
+   `warm_world_lines` (or a new `warm_world_flag` of `roan_bounty_paid`)
+   could speak "Roan's bounty has the road quiet at last" — purely
+   data, ZERO code changes. Compounds the same flag two villagers
+   already speak on parallel goblin quests.
+2. **"Tamer of the Wolfwoods" achievement** — Achievements.gd's
+   `all_npc_flags` predicate already supports
+   `[["Stablemaster Roan", "first_bounty_done"], ["Herbalist Lyra",
+   "trusts_player"]]`. Single new entry in
+   `Achievements.ACHIEVEMENTS`; pairs nicely with run-15 painterly
+   crest art.
+3. **Third wolf reducer** — pressure now reaches 0.3 after
+   Lyra + Roan. The run-6 third cliff (< 0.15) needs one more 0.1
+   reducer (e.g. Hala teaching defensive form against wolves) to
+   trip 2 → 1 wolf packs. Single new quest, same pattern.
+4. **Smith Edda fang-forging recipe** — `wolf_fang` is now a
+   stackable material with rarity `common`. The forge UI (backlog
+   #2) could consume 3 fangs + 1 leather → "Bone-Stitched Greaves"
+   armor piece. Adds a use for surplus fangs after the bounty.
+5. **Roan visit-memory tier** — run 16 added `npc_memory` per-NPC.
+   Roan is in the cohort that DIDN'T get visit-warmed lines; once
+   the bounty is in, a `warm_memory_visits_min: 4` tier could fire
+   "Saddle's ready before you ask now, friend" — Tier 5, fires only
+   on warm_flag miss. Single data edit.
+
+### Player-reachable state this run
+
+- Walk into Briarwood as a fresh save (level 1+). Visit Roan at the
+  stable (-10, 0, -2). His pitch reads: "Wolves nip my mares again.
+  Bring me 5 wolf fangs and the road's safer."
+- Accept the bounty. Walk into Whisperwood. Wolves drop fangs at
+  ~37% per kill (weight 18 / total 100, stack=true). 5 fangs ≈
+  13-15 wolf kills (or fewer if you're also pelt-grinding — both
+  drop together).
+- Return to Roan. Quest completes; toast appears; Roan's dialogue
+  flips to the warm_flag tier on the very next interaction. The wolf
+  faction pressure drops 0.5 → 0.4 (or 0.4 → 0.3 if Lyra's pelt
+  quest already finished). Wolf pack visibly thins on next world
+  reload — fewer wolves, faster ones.
+
+### Files changed
+- `eldoria-godot/scripts/Items.gd` (+5 lines: wolf_fang material;
+  wolf DROP_TABLE rebalance with new weights + 7-line comment)
+- `eldoria-godot/scripts/World.gd` (+38 lines: wolf_fang_for_roan
+  quest + 18-line authoring comment)
+- `eldoria-godot/scripts/WorldBuilder.gd` (+18 lines: Roan
+  warm_flag/warm_lines + new bounty pitch line + comments)
+- `WORLD_STATE.md` (Top-priority next checked off; faction state
+  Dire Wolves row updated; Active Hooks resolved entry added)
+- `SYSTEM_REGISTRY.md` (wolf_fang material row; wolf_fang_for_roan
+  quest row; wolf DROP_TABLE weight column refresh)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **Maeve-mentions-Roan** — `WorldBuilder.NPCS` Maeve entry adds
+   `warm_world_flag: "roan_bounty_paid"` + 4 lines. Pure data. Closes
+   the second cross-NPC flag-recognition pattern (after Mara's bounty
+   is mentioned in Maeve's existing warmed_world tier? — verify).
+2. **"Tamer of the Wolfwoods" achievement** — Achievements.gd row
+   referencing Roan + Lyra wolf flags. Painterly crest from artist
+   agent's CC0 PNG, fail-soft as usual.
+3. **Hala wolf-defense quest (third reducer)** — third `dire_wolves`
+   reducer hits the run-6 third cliff (2 → 1 wolf packs). Same
+   pattern as Roan's quest, different role. Lights up the FIVE-stage
+   wolf-pressure curve fully.
+4. **Roan visit-memory tier (run-16 carry)** — Roan was on the
+   "didn't get visit-warmed" list. With warm_flag now in place, Tier
+   5 (memory) is the natural fall-through when the player drops by
+   without progress. Single data edit.
+5. **`wolf_fang.png` painterly icon** — artist agent territory.
+   Today the icon falls back to the 🦷 emoji; ResourceLoader.exists
+   guards against the missing PNG (same fail-soft as run-15
+   achievement crests).

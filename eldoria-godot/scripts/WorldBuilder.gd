@@ -315,12 +315,32 @@ const NPCS = [
 	 ],
 	 "use_json_dialogue":true},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
-	 "line":"Faster mounts mean fewer ambushes. Pick your steed.",
+	 # COMPOUND (run 17): `line` becomes the bounty pitch now that Roan is a
+	 # questgiver (`wolf_fang_for_roan`, role `stable`). Pattern matches Mara's
+	 # ear bounty and Lyra's pelt fetch — `line` is the offer text shown when
+	 # the player accepts; `lines` remain the time-of-day greetings the player
+	 # hears between accepting and turning in.
+	 "line":"Wolves nip my mares again. Bring me 5 wolf fangs and the road's safer.",
 	 "lines":[
 		"Faster mounts, fewer ambushes. Pick your steed before sun's up.",
 		"I trust my horses more than most men. They've never lied to me.",
 		"Sun's down — saddle up only if your errand can't wait.",
 		"Riding by moonlight? Bold. Or fool. Or both. Take the gray mare.",
+	 ],
+	 # COMPOUND (run 17): Roan's `warm_flag` tier — Tier 2 in NPC.gd's
+	 # dialogue stack, fires above his existing run-8 faction-tier (Tier 4).
+	 # `first_bounty_done` is set as the npc_flag on the wolf_fang_for_roan
+	 # consequence, so these lines unlock the moment that quest turns in.
+	 # Promotes Roan from a faction-only NPC (run 8) to a full faction +
+	 # warm_flag NPC — same dialogue depth as Mara (`good_customer`) and
+	 # Lyra (`trusts_player`). Composes with run-6 wolf spawn density
+	 # (3 → 2 wolves) and run-7/8 adaptive pacing on the surviving pack.
+	 "warm_flag":"first_bounty_done",
+	 "warm_lines":[
+		"Five fangs as promised — that bounty's coin is yours, and the road thanks you.",
+		"You proved you can ride hard and fight harder. Pick any saddle on the rack.",
+		"Pippin nuzzled me at sunset — first time since spring. Your work, friend.",
+		"The mares slept clean through the night. I owed you a tip; here's two.",
 	 ],
 	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Roan has
 	 # no `warm_flag` and no `warm_world_flag` — this run smoke-tests the

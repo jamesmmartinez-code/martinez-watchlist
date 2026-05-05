@@ -198,6 +198,51 @@ const QUEST_CATALOG := {
 			"toast": "🪙 Word spreads: Mara pays for goblin trophies.",
 		},
 	},
+	# COMPOUND (run 17 — Builder): Roan-issued wolf-bounty quest. SECOND
+	# `dire_wolves` reducer (after `pelt_for_lyra` -0.1). Mirrors `ears_for_mara`
+	# as Mara's second-goblin-reducer pattern. Drops fang fetch onto Wolf's
+	# DROP_TABLE (Items.gd run-17 rebalance). Lights up:
+	#   * Roan dialogue tier 2 (warm_flag `first_bounty_done`, 4 lines added
+	#     in WorldBuilder run 17). Roan goes from faction-only to faction +
+	#     warm_flag — same depth as Mara/Lyra/Maeve.
+	#   * Wolf spawn density: 0.5 → 0.4 (after Lyra) → 0.3 (after this) trips
+	#     the run-6 second cliff (3 wolves → 2). Standalone (no Lyra) hits
+	#     0.5 → 0.4 trips the FIRST cliff (4 → 3) — also visible.
+	#   * Adaptive cooldown (run 7) and chase speed (run 8) both lerp another
+	#     step on the same scalar. Surviving wolves get ⚡-tagged faster.
+	#   * Roan faction-tier (warm_faction_below 0.5 from run 8) stays lit;
+	#     warm_flag tier above takes priority once `first_bounty_done` is set.
+	#   * `roan_bounty_paid` world_flag joins `mara_bounty_paid` /
+	#     `lyra_potion_brew` / `whisperwood_safer` as the FOURTH quest-issued
+	#     world flag — future systems (e.g. evening tavern toasts, achievement
+	#     "Tamer of the Wolfwoods") can consume without code changes.
+	# Reward economy: 50 gold (between Mara's 90 and Lyra's 45) + 65 xp.
+	# `needed: 5` deliberately under Lyra's 4-pelt grind so back-to-back run
+	# is satisfying rather than punitive (5 wolves = 5 pelts + 5 fangs at the
+	# rebalanced drop weights ≈ ~85% expected on a single 5-kill grind).
+	"wolf_fang_for_roan": {
+		"giver": "Stablemaster Roan",
+		"actor": "Stablemaster Roan",
+		"role": "stable",
+		"kind": "fetch",
+		"item": "wolf_fang",
+		"needed": 5,
+		"title": "Bounty on Dire Wolves",
+		"text": "Roan pays for fanged proof — bring 5 Wolf Fangs",
+		"xp_reward": 65,
+		"gold_reward": 50,
+		"motivation": "duty",
+		"location": "Whisperwood",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "dire_wolves",
+			"pressure_delta": -0.1,
+			"npc_flag": ["Stablemaster Roan", "first_bounty_done"],
+			"world_flag": "roan_bounty_paid",
+			"toast": "🐎 The road feels safer. Roan tips his hat.",
+		},
+	},
 }
 
 
