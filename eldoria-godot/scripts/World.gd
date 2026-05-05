@@ -205,6 +205,22 @@ func npc_has_flag(npc_name: String, flag_name: String) -> bool:
 	var arr: Array = npc_flags.get(npc_name, [])
 	return arr.has(flag_name)
 
+# Direct world-flag write — sister to apply_consequence's flag step but with
+# no faction / npc / toast side-effects. Used when an emergent runtime event
+# (e.g. Boss.gd's intro sting firing for the first time, Boss._die landing the
+# kill) needs to mark a world fact that downstream READERS consume — today
+# DialogueDB's `boss_alive` / `boss_slain` / future seasonal calendar keys.
+# Re-runs `_check_achievements()` so any future "Met the Warlord" or
+# "Warlord Slain" achievement keyed on world_flags lights up automatically
+# the moment the flag flips. Same fail-soft pattern as the rest of this
+# class — value defaults to true so the common-case write is one token shorter
+# at the callsite (`world.set_world_flag("seen_warlord")`).
+func set_world_flag(name: String, value: Variant = true) -> void:
+	if name == "":
+		return
+	world_flags[name] = value
+	_check_achievements()
+
 # Runtime item registry helpers ────────────────────────────────────────────
 func register_runtime_item(item: Dictionary) -> String:
 	if not item.has("runtime_id"):

@@ -172,6 +172,63 @@ run easier — what's the *next* thing that compounds?)
   step — single quest, two visible world changes, both readable to a kid.
   Compose with Roan's faction-tier dialogue above to ship a complete
   Roan-arc on the `dire_wolves` compound.
+- ✅ **Resolved 2026-05-05 (run 10): Boss world-flag wire + 3rd JSON opt-in.**
+  Two world flags now flip on Goblin Warlord lifecycle events:
+  - `seen_warlord` — set in `Boss._physics_process` immediately after the
+    intro sting plays (player came within 30m). Reads as "the village has
+    heard the Warlord's banners go up." Permanent for the session.
+  - `warlord_dead` — set in `Boss._die` alongside the existing reward /
+    quest-hook calls. Reads as "the Warlord has fallen." Permanent — never
+    cleared on player respawn (a slain boss stays slain).
+
+  Both flags are written via a new `World.set_world_flag(name, value=true)`
+  helper (single-line callsites) which also runs `_check_achievements()` so
+  any future "Met the Warlord" / "Warlord Slain" achievement unlocks on the
+  same tick the flag flips. `apply_consequence`'s flag step continues to
+  work unchanged — `set_world_flag` is the no-faction / no-toast / no-npc
+  sister for emergent runtime events that aren't quest consequences.
+
+  **Innkeeper Bram opted into JSON dialogue** (`use_json_dialogue: true` on
+  his WorldBuilder.NPCS entry). He becomes the THIRD JSON-resolver NPC
+  alongside Maeve and Edda. With the boss-flag wire above, all three now
+  speak DISTINCT boss_alive and boss_slain lines on the same world tick:
+  - Boss alive: Maeve "Do not fight him angry. Anger is what made him." /
+    Edda "The Warlord rides a blade I'd recognize anywhere. I forged it
+    before I knew better." / Bram "Some folk who walked into the
+    Whisperwood I still set a place for at supper. Habit."
+  - Boss slain: Maeve "*long pause* — *Ai-velin*, traveler. The Whisperwood
+    will sleep tonight." / Edda "*long silence* — You unmade my mistake.
+    *one hard hammer-strike*" / Bram "*sets the mug down very carefully*
+    — Some debts get paid in iron, friend."
+
+  Six dormant authored lines became reachable in the player flow. No new
+  state shape introduced; `world_flags` had been written by quest
+  consequences and now also by boss lifecycle events.
+
+  **DialogueDB consumer count for `world_flags`:** the JSON loader had been
+  the SOLE downstream reader of `seen_warlord` / `warlord_dead` flags
+  before this run — fail-soft, so DialogueDB silently fell through to
+  mood/default tier when the flags were never set. Run 10 makes the flags
+  actually flip, completing the 3-leg compound (Boss.gd writes →
+  `world_flags` carries → DialogueDB reads → JSON line surfaces).
+
+- 🔥 **Top-priority next:** Author Mara / Lyra / Roan / Hala JSON trees and
+  drop them into `data/dialogue/`. Pure data PR — `WorldBuilder.NPCS` adds
+  one `"use_json_dialogue": true` per NPC and DialogueDB picks up the rest.
+  Mara is highest-leverage (her `low_health_player` reads as "she comps a
+  potion" — mechanically distinct from Bram's "no coin tonight, stew first").
+  Roan and Hala have no JSONs authored yet; the lore agent ships first,
+  Builder/WorldBuilder lights up the opt-in switch second.
+- 🔥 **Adjacent next:** Wire a `World.player_renown` int (or reuse
+  `unlocked_achievements.size()`) so Maeve and Edda's already-authored
+  `high_renown` JSON lines fire. DialogueDB reads `world.player_renown >=
+  renown_threshold` (default 100) and the JSONs are pre-authored. Single
+  field write + one quest hook.
+- 🔥 **Adjacent next:** Wire a `World.npc_seen` Dictionary (keyed by
+  npc_name) flipped to true on first interaction in NPC.gd. Lights up the
+  `stranger` JSON keys for first-encounter warmth — Maeve's "*peers up the
+  stick at you* — A face I don't yet know", Edda's "Don't touch the anvil.
+  Ask first.", Bram's "Welcome to the Long Lantern! New face, new tale."
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list

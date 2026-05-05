@@ -228,7 +228,19 @@ const NPCS = [
 		"Bards lie about half their songs. The other half are mine.",
 		"Best ale in three valleys. The other two valleys have no ale, mind.",
 		"Bed's warm. Fire's banked. Stay if you've nowhere safer.",
-	 ]},
+	 ],
+	 # COMPOUND (run 10 — third JSON opt-in): Bram joins Maeve & Edda on the
+	 # JSON-tree resolver. `data/dialogue/innkeeper_bram.json` carries 15 keys
+	 # including all four boss-state lines (the Long Lantern is the village's
+	 # rumor exchange; he learns of the Warlord before Edda sometimes), the
+	 # warmest `low_health_player` line in the village ("Sit. SIT. *guides you
+	 # to the bench* — No coin tonight"), and the `honeysong_eve` festival
+	 # hook. With Boss.gd's run-10 wire of `seen_warlord` / `warlord_dead`,
+	 # all THREE opted-in NPCs now speak distinct boss_alive AND boss_slain
+	 # lines on the same world tick — Maeve grieves the Whisperwood, Edda
+	 # grieves the saber she forged, Bram pours without being asked. The
+	 # variants above stay as the legacy fallback so nothing regresses.
+	 "use_json_dialogue":true},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
 	 "line":"Faster mounts mean fewer ambushes. Pick your steed.",
 	 "lines":[

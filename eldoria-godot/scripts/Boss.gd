@@ -123,6 +123,18 @@ func _physics_process(delta: float) -> void:
 			_intro_played = true
 			get_tree().call_group("world", "play_sfx", "boss_intro")
 			_show_boss_msg("✦ %s appears! ✦" % enemy_name)
+			# COMPOUND (run 10): mark `seen_warlord` so DialogueDB's `boss_alive`
+			# JSON keys (Edda's "The Warlord rides a blade I'd recognize anywhere",
+			# Bram's "Some folk who walked into the Whisperwood I still set a place
+			# for at supper") fire when the player next visits Briarwood. Maeve also
+			# has a `boss_alive` JSON line ("The Warlord is no chieftain. He is a
+			# wound the Whisperwood is still bleeding from") that's been authored
+			# but unreachable until this flag wire. Failsafe: if World ever lacks
+			# `set_world_flag` (older save / partial scene), the call_group is a
+			# no-op and dialogue silently falls through to mood/default tier.
+			var w_intro: Node = get_tree().get_first_node_in_group("world")
+			if w_intro and w_intro.has_method("set_world_flag"):
+				w_intro.set_world_flag("seen_warlord", true)
 
 	# Phase transitions
 	var hp_ratio := float(hp) / float(max_hp)
@@ -360,6 +372,19 @@ func _die(source: Node) -> void:
 	# Hide boss bar
 	get_tree().call_group("world", "hide_boss_hp_bar")
 	get_tree().call_group("world", "_show_toast", "✦ %s slain! ✦" % enemy_name)
+	# COMPOUND (run 10): write `warlord_dead` so DialogueDB's `boss_slain`
+	# JSON keys (Maeve's "*long pause* — *Ai-velin*, traveler. The Whisperwood
+	# will sleep tonight", Edda's "*long silence* — You unmade my mistake.
+	# *one hard hammer-strike*", Bram's "*sets the mug down very carefully*
+	# — Some debts get paid in iron, friend") become the next line each NPC
+	# speaks. The flag also drives the achievements re-evaluation pass inside
+	# `set_world_flag` so any future "Warlord Slain" achievement unlocks on
+	# kill without an additional callsite. Permanent — never cleared, even on
+	# player respawn (a slain boss stays slain). Same fail-soft contract as
+	# `seen_warlord` above; older World autoloads degrade gracefully.
+	var w_die: Node = get_tree().get_first_node_in_group("world")
+	if w_die and w_die.has_method("set_world_flag"):
+		w_die.set_world_flag("warlord_dead", true)
 	# Quest hook
 	get_tree().call_group("quest_listeners", "on_enemy_killed", "goblin_warlord")
 	get_tree().call_group("quest_listeners", "on_enemy_killed", "goblin")  # also counts as a goblin for the basic quest
