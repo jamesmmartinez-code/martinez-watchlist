@@ -139,12 +139,26 @@ const DROP_TABLE = {
 		# is past iron_sword by cave-time" reasoning that drove run-2 goblin tuning.
 		# chainmail trimmed (8 → 6) so it reads as the OCCASIONAL upgrade, not
 		# the default skeleton drop. Total weight preserved at 96.
+		# REFINE: balance — late-game loot tier lift to match Run-10's +20% xp
+		# band on agitated (⚡) skeletons (24 → 29 xp on tamed-faction kills). The
+		# mastery loop only closes if "harder fight = bigger reward" reads on BOTH
+		# axes — xp AND loot. Five knobs tuned in the same direction: rusty_sword
+		# 12 → 10 (-17%, junk pull — by skeleton-depth the player is two tiers past
+		# it); iron_sword 11 → 10 (-9%, same reasoning, smaller pull since iron is
+		# still a sidegrade for some kits); chainmail 6 → 7 (+17%, the cave-tier
+		# intermediate armor lift); steel_blade 5 → 6 (+20%, mirrors the Run-10
+		# agitated xp band exactly — a tamed-faction skeleton kill now rolls the
+		# real-upgrade weapon at 6/97 ≈ 6.2% per kill vs the prior 5/96 ≈ 5.2%, a
+		# +19% relative chance lift); crystal_shard 18 → 20 (+11%, modest pull
+		# toward cave-mana-economy, freed from the junk-tier weight). Total weight
+		# 96 → 97 (+1.0%, rounding-noise inflation — same band shape, just tilted
+		# up-tier).
 		{"id":"hp_potion_s",  "weight":30, "qty":[1,1]},
-		{"id":"crystal_shard","weight":18, "qty":[1,1]},
-		{"id":"rusty_sword",  "weight":12, "qty":[1,1]},
-		{"id":"iron_sword",   "weight":11, "qty":[1,1]},
-		{"id":"chainmail",    "weight":6,  "qty":[1,1]},
-		{"id":"steel_blade",  "weight":5,  "qty":[1,1]},
+		{"id":"crystal_shard","weight":20, "qty":[1,1]},
+		{"id":"rusty_sword",  "weight":10, "qty":[1,1]},
+		{"id":"iron_sword",   "weight":10, "qty":[1,1]},
+		{"id":"chainmail",    "weight":7,  "qty":[1,1]},
+		{"id":"steel_blade",  "weight":6,  "qty":[1,1]},
 		{"id":"mp_potion",    "weight":14, "qty":[1,1]},
 	],
 	"crystal_elemental": [
@@ -158,11 +172,30 @@ const DROP_TABLE = {
 		# rarity tease intact). Total weight 103 → 106 (~3% inflation, acceptable
 		# since these are the dedicated mp-economy enemy and players need the draught
 		# stockpile to engage caster builds at all).
-		{"id":"crystal_shard","weight":58, "qty":[1,2]},
-		{"id":"mp_potion",    "weight":22, "qty":[1,2]},
+		# REFINE: balance — late-game loot tier lift to match Run-10's +20% xp
+		# band on agitated (⚡) crystal elementals (55 → 66 xp on tamed-faction
+		# kills). Same "harder fight = bigger reward on BOTH xp and loot axes"
+		# play as the parallel skeleton edit this run. Four knobs lifted, all on
+		# the trinket / legendary tier (the part of the table the run-10 xp band
+		# actually wants to reward — common pots stay flat): crystal_shard 58 → 60
+		# (+3%, minimal — the dominant baseline drop is already huge in absolute
+		# terms); mp_potion 22 → 23 (+5%, gentle continuation of the previous run's
+		# caster-economy tilt without re-litigating it); ring_focus 10 → 12 (+20%,
+		# matches the Run-10 agitated xp band EXACTLY — a tamed-faction crystal
+		# kill now rolls the caster trinket at 12/112 ≈ 10.7% vs the prior 10/106
+		# ≈ 9.4%, a +14% relative chance lift, bigger band ceiling); frost_saber
+		# 3 → 4 (+33% relative, but still tiny absolute — 4/112 ≈ 3.6% vs prior
+		# 3/106 ≈ 2.83%, the legendary tease lifts at the rare end so a tamed-
+		# faction crystal grind has a slightly higher chance of the chase weapon).
+		# hp_potion_l preserved at 13 (already lifted in the previous run, no need
+		# to relitigate). Total weight 106 → 112 (+5.7%, intentional — the run-10
+		# xp band was +20% so the loot ceiling lifts at the trinket+legendary band
+		# specifically, not uniformly).
+		{"id":"crystal_shard","weight":60, "qty":[1,2]},
+		{"id":"mp_potion",    "weight":23, "qty":[1,2]},
 		{"id":"hp_potion_l",  "weight":13, "qty":[1,1]},
-		{"id":"ring_focus",   "weight":10, "qty":[1,1]},
-		{"id":"frost_saber",  "weight":3,  "qty":[1,1]},
+		{"id":"ring_focus",   "weight":12, "qty":[1,1]},
+		{"id":"frost_saber",  "weight":4,  "qty":[1,1]},
 	],
 	"crystal_guardian": [
 		{"id":"crystal_shard", "weight":80, "qty":[3,5]},
