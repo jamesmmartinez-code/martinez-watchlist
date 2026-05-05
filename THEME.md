@@ -220,3 +220,41 @@ If your output looks like *Call of Duty*, *Cyberpunk 2077*, *Roblox*,
 *Last updated: bootstrap of GitHub-as-source migration. All 10 autonomous
 agents are bound by this document. The Architect agent updates it when
 patterns emerge across runs.*
+
+## 12. MOTION & LIFE — every visible thing must move
+
+Static = dead. Hard rule:
+- Every character (player, NPC, enemy, pet, mount) MUST have an idle animation playing. If a sourced GLB lacks animations, swap to one that has them OR add procedural Y-bob (amplitude 0.02m, period 2.5s).
+- NPCs perform role-specific idle behavior: Maeve sweeps, Smith hammers (sparks), Mara waves, Lyra grinds herbs, Bram polishes mugs, Roan brushes a horse, Hala sword-forms.
+- Props move: banners flap, water ripples, fires flicker, leaves sway, lanterns rock, windmill rotates.
+- Ambient life: butterflies, fireflies at night, birds in V-formations, falling leaves.
+- Pet (Ember) micro-behaviors: scratch, sniff, look at player, sit when idle.
+- BANNED: T-pose characters. Headless mannequins. Static "should-move" props.
+
+## 13. GROUND CONTACT — no half-buried, no floating
+
+Every 3D object MUST rest correctly on its surface. No half-buried. No floating.
+- Character spawns: position.y = 0.0 with model pivot at FEET. If GLB has center pivot, wrap in Node3D and offset by +(model_height/2).
+- Props: rest ON ground at y = (height/2) for box-pivoted, y = 0 for feet-pivoted.
+- Trees: trunk base at ground level, collision capsule matches.
+- After spawning, check AABB.position.y. If negative, asset is sinking — fix offset before pushing.
+- BANNED: NPCs sunk to waist, floating tree roots, buildings clipping terrain, embedded chests, headless characters from clipping.
+- If you find broken geometry in existing code, raise it OR delete it. Nothing > visibly-broken.
+
+## 14. PUSH DISCIPLINE — never push directly to main
+
+To eliminate race conflicts when 10 agents work simultaneously:
+- Each worker agent pushes to a DEDICATED branch named `auto/<agent-name>`:
+  - Builder → `auto/builder`, Polisher → `auto/polisher`, Character → `auto/character`,
+    Environment → `auto/environment`, Art → `auto/art`, Lore → `auto/lore`,
+    Audio → `auto/audio`, QA → `auto/qa`
+- The Integrator agent (every 10 min) merges all auto/* branches into main:
+  ```bash
+  git fetch origin
+  for B in builder polisher character environment art lore audio qa; do
+    git checkout main && git merge --no-ff origin/auto/$B -m "Integrate: auto/$B" || git merge --abort
+  done
+  git push origin main
+  ```
+- GitHub Actions only fires on `main`, so builds only happen ~6/hr instead of ~78/hr.
+- If a worker's push to its own branch fails, it's because two runs of the same agent overlapped — the second should yield (write its work to a patch file and exit) rather than retry.
