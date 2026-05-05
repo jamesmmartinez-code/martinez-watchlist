@@ -1134,12 +1134,16 @@ func _make_npc(data: Dictionary) -> void:
 
 	var label := Label3D.new()
 	label.text = data.name
-	label.font_size = 28
-	label.outline_size = 6
+	# REFINE: character — nameplate font_size 28 → 30 so the kids can read 'Stablemaster Roan' at the back of the screen. Pet.gd's Ember nameplate already lives at 20pt; villager labels deserve a bit more weight.
+	label.font_size = 30
+	# REFINE: character — outline_size 6 → 7 so the nameplate stays legible when a villager stands against the bright sunset HDRI sky-band (THEME §3 — palette is sunset-warm; black outline must hold its own).
+	label.outline_size = 7
 	label.outline_modulate = Color(0, 0, 0)
-	label.modulate = Color(1, 0.85, 0.4)
+	# REFINE: character — nameplate tint (1, 0.85, 0.4) → (1.0, 0.86, 0.46). Slight shift toward THEME §3 sunset-gold (#FFD86B family) — same direction the Chest.gd glow_color was warmed in the previous polish run. Reads as 'lit by the sun' not 'painted yellow'.
+	label.modulate = Color(1.0, 0.86, 0.46)
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.position = Vector3(0, 2.4, 0)
+	# REFINE: character — nameplate y 2.4 → 2.55. At 2.4 the label sat ON the hood of taller villagers (Hala in particular); 2.55 floats it cleanly above every villager silhouette without feeling detached.
+	label.position = Vector3(0, 2.55, 0)
 	label.name = "Label3D"
 	npc.add_child(label)
 
@@ -1148,9 +1152,11 @@ func _make_npc(data: Dictionary) -> void:
 	npc.add_child(area)
 	var acol := CollisionShape3D.new()
 	var ashape := SphereShape3D.new()
-	ashape.radius = 2.5
+	# REFINE: character — InteractArea radius 2.5 → 2.7 m. Alden's low-friction-interaction affinity: a slightly wider 'within talking distance' bubble means he doesn't have to plant himself directly on top of a villager to trigger the prompt. Owen still walks past at speed without spurious triggers (the player_in_range gate clears on body_exit).
+	ashape.radius = 2.7
 	acol.shape = ashape
-	acol.position.y = 1.0
+	# REFINE: character — InteractArea y 1.0 → 1.1. Centers the sphere around the villager's chest rather than waist, so a player approaching from a slope still trips the area on the chest line (THEME §13 ground-contact spirit — geometry follows where bodies actually meet).
+	acol.position.y = 1.1
 	area.add_child(acol)
 
 # ============================================================================
