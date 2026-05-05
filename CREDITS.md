@@ -28,3 +28,14 @@ This is a personal family project not for commercial distribution.
 
 Full attribution backlinks will be added by the Integrator/Architect agents
 in a follow-up commit by querying Sketchfab's API for each model's author and URL.
+
+## Batch 2 (2026-05-05)
+
+- `assets/models/enemies/goblin.glb` — "Orc Tomahawk" by tarik_takasu, Sketchfab CC-BY (4.1MB, 4.4K faces) — used as Goblin Brute variant
+- `assets/models/enemies/wolf.glb` — "Wolf" by oleksabasarab, Sketchfab CC-BY (1.3MB, 7.3K faces)
+- `assets/models/props/windmill.glb` — "Handpainted Windmill Tower" by supertheo, Sketchfab CC-BY (1.4MB, 7.7K faces)
+- `assets/models/npcs/worker_girl.glb` — "Girl with clothes. Worker set" by cattleya, Sketchfab CC-BY (4.5MB) — NPC (Mara/Lyra candidate)
+
+## Notes
+- `skeleton.glb` and `wooden_cart.glb` candidates rejected this batch as off-theme (worker character mislabeled as skeleton; modern platform trolley).
+- Future batches must add stricter theme keywords + verify name in commit before pushing.
