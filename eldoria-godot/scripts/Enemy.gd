@@ -26,7 +26,17 @@ class_name Enemy
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
 # (the model carries its own hand-painted textures — tinting muddies them).
 const KIND_MODELS := {
-	"goblin": preload("res://assets/models/enemies/goblin.glb"),
+	# THEME §4 + §12 — goblin_scout.glb (Sketchfab CC-BY) is the animated
+	# variant: ships with IdleAnimation, WalkAnimation, RunAnimation embedded.
+	# Replaces the static T-pose goblin.glb (Orc Tomahawk) that had ZERO
+	# animations — every goblin in the wood was frozen mid-stride, violating
+	# THEME §12 MOTION. Auto-played by _play_model_idle_anim() (the "IdleAnimation"
+	# name is already first in that function's lookup list, no other code change
+	# needed). The old goblin.glb stays in assets/ for now in case a future run
+	# wants a second silhouette for Brutes; both Scouts and Brutes currently
+	# share this single animated model and rely on per-kind scale + name label
+	# for differentiation (WorldBuilder lines ~1221 and ~1226).
+	"goblin": preload("res://assets/models/enemies/goblin_scout.glb"),
 	# THEME §4 + §12 — wolf.glb (CC-BY) is a real quadruped wolf with embedded
 	# idle/walk/run animations. Replaces the worker_girl.glb fallback that had
 	# been making "Dire Wolves" appear as a humanoid woman model — silhouette-
