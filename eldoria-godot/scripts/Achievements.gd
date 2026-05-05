@@ -25,7 +25,9 @@ class_name Achievements
 # id            : String        (Dictionary key)
 # name          : String        (display label, shown in toast and future panel)
 # desc          : String        (one-sentence flavor)
-# icon          : String        (emoji glyph, child-readable)
+# icon          : String        (emoji glyph, child-readable; legacy fallback)
+# icon_path     : String        (res:// path to 128x128 painterly PNG crest;
+#                                preferred over `icon` when present)
 # title_text    : String        (granted title; "" means no title is granted)
 # title_priority: int           (higher = preferred when multiple titles unlocked)
 # predicate     : Dictionary    (above)
@@ -48,6 +50,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "First Steps",
 		"desc": "Complete your first quest in the realm.",
 		"icon": "🌱",
+		"icon_path": "res://assets/icons/achievements/first_steps.png",
 		"title_text": "the Apprentice",
 		"title_priority": 10,
 		"predicate": {
@@ -64,6 +67,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "Pack Thinner",
 		"desc": "Drive the dire wolves below their first threshold.",
 		"icon": "🐺",
+		"icon_path": "res://assets/icons/achievements/pack_thinner.png",
 		"title_text": "Wolf-Friend",
 		"title_priority": 30,
 		"predicate": {"kind": "faction_below", "faction": "dire_wolves", "value": 0.5},
@@ -73,6 +77,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "Bane of the Whisperwood",
 		"desc": "Push the Whisperwood goblins back from the village.",
 		"icon": "⚔",
+		"icon_path": "res://assets/icons/achievements/goblin_bane.png",
 		"title_text": "Goblin-Bane",
 		"title_priority": 40,
 		"predicate": {"kind": "faction_below", "faction": "whisperwood_goblins", "value": 0.7},
@@ -82,6 +87,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "Trusted by Three",
 		"desc": "Earn the warm regard of Maeve, Lyra, and Mara.",
 		"icon": "🤝",
+		"icon_path": "res://assets/icons/achievements/trusted_three.png",
 		"title_text": "the Trusted",
 		"title_priority": 50,
 		"predicate": {
@@ -99,6 +105,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "Warden of the Realm",
 		"desc": "Both factions humbled, three villagers' trust earned.",
 		"icon": "🏰",
+		"icon_path": "res://assets/icons/achievements/realm_warden.png",
 		"title_text": "Warden of Eldoria",
 		"title_priority": 100,
 		"predicate": {
