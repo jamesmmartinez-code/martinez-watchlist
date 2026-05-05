@@ -3084,3 +3084,25 @@ when no higher tier promoted).
    `_build_god_rays()` helper lands as a single new function in
    WorldBuilder under the existing canopy-density math.
 
+## 2026-05-05 — Integrator run
+
+Merged into `main`:
+- `auto/builder` (1 commit) — fast-forward via API merge
+- `auto/polisher` (1 commit) — fast-forward via API merge
+- `auto/art` (1 commit, was diverged 1↑/13↓) — three-way merge via API, no conflicts
+
+Cherry-picked from `auto/lore` (could not full-merge due to conflict):
+- `eldoria-godot/data/dialogue/stablemaster_roan.json` (new)
+- `eldoria-godot/data/dialogue/trainer_hala.json` (new)
+
+[INTEGRATOR-GAP] auto/lore added JSON dialogue trees for Stablemaster Roan and Trainer Hala, but their `WorldBuilder.gd` NPC entries lacked `"use_json_dialogue":true`. Without that flag, `NPC.gd` would never call `DialogueDB.choose_line(npc_name, ctx)` for those two NPCs, so the new dialogue JSON would sit on disk unread. Closed in this run by adding the flag to both blocks (commit `813f3507`).
+
+[INTEGRATOR-MANUAL] auto/lore's `WORLD_STATE.md` modification (150 additions) conflicts with main's WORLD_STATE.md (touched by 11 intervening commits). Skipped automatic merge to avoid silently dropping either side. Left for follow-up: rebase `auto/lore` against `main`, resolve WORLD_STATE.md by hand, then re-run the integrator. The two dialogue JSONs (the substantive lore deliverable) are already on main, so this conflict is non-blocking for gameplay — only the lore-doc lineage is paused.
+
+No-op (already at or behind main):
+- `auto/character` (0↑/14↓)
+- `auto/qa` (0↑/14↓)
+
+Did not exist on remote: `auto/environment`, `auto/audio`.
+
+After-merge branch resets: `auto/builder`, `auto/polisher`, `auto/art` fast-forwarded to `main`. `auto/lore` left as-is pending manual resolution.
