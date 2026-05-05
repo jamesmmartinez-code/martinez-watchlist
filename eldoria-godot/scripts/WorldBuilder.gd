@@ -343,7 +343,8 @@ const NPCS = [
 	 ],
 	 # COMPOUND (run 11 — schedule): brushes a horse outside the stable in
 	 # the morning, leads the team in for the evening.
-	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)]},
+	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)],
+	 "use_json_dialogue":true},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
 	 "line":"Each level, your spirit grows. Pour it into what you trust.",
 	 "lines":[
@@ -366,7 +367,8 @@ const NPCS = [
 		"You've been here enough to know the form. Today: PRESSURE. Faster.",
 		"Last light's the best teacher. You came back for a reason — show it.",
 		"Past curfew, training under stars. I knew you for the type. Begin.",
-	 ]},
+	 ],
+	 "use_json_dialogue":true},
 ]
 
 const BUILDINGS = [
