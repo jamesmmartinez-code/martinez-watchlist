@@ -504,3 +504,220 @@ reuse these before inventing new ones.
   flickering nightly, three small leather notebooks on a back shelf
   (Bram's verse-attempts — Environment may model them as world-readable
   examinables tied to a future codex page).
+
+---
+
+## Lore Run — 2026-05-05 (Herbalist Lyra)
+
+### Artifact shipped
+
+- `eldoria-godot/lore/npcs/herbalist_lyra.md` — Lyra's full backstory:
+  birth as the 89th knot on Maeve's stick; mother **Wennet** (the
+  village's previous herbalist) dead of lung-fever in Sunpetal Lyra was
+  eight; village raising at Bram's inn, Maeve's hearth, Edda's mortar,
+  Roan's slow horse, Hala's gentle defensive forms; the four Whisperwood
+  years apprenticed to **Aenwyn**, who taught her *mossaen*, the
+  seventeen unlisted herbs and the four wrongly-listed ones, that the
+  Crystal Caves are a *thirre*, that the Whisperwood goblins are
+  faerie-descended, and that the Stag-Court hears every herb-name
+  spoken at midnight inside the deeper Whisperwood; Aenwyn's parting
+  gift of the green-dyed coat at the eastern Foxthaw of the fourth
+  year; Lyra's wound — **Tess Brookhollow** dying in her lap two
+  springs ago of a marsh-fever broken too late by fen-foxglove from the
+  southern marsh-edges; Lyra's secret — she still hears the *listening*
+  in Foxthaw fox-fire, has answered once at twenty-three, wrote down
+  one Old Faerie word in the back of her herb-book and has not in six
+  years looked it up; what she wants — to not be the last reader of
+  the Whisperwood in Briarwood; her relationships to all six other
+  NPCs, including the bilateral closure of Bram's "not gone" line and
+  the canonical pairing of Edda's *unnen* cleavers with Lyra's
+  *wennen* marshmint as the village's most exact small mutual gift.
+
+- `eldoria-godot/data/dialogue/herbalist_lyra.json` — Lyra's
+  mood-keyed surface, tree shape mirroring `smith_edda.json`,
+  `elder_maeve.json`, and `innkeeper_bram.json` exactly so NPC.gd
+  reads all four through a single code path. Two seasonal slots:
+  `greenshield_first_pick` (Lyra's annual heart's-ease + dogwort
+  delivery to Maeve) and `tess_remembrance` (Sunpetal 7 — the
+  shortest line in her tree, herb-shed door closed; the brevity is
+  the grief and Builder MUST NOT extend it).
+
+### Old Faerie words seeded this run
+
+Three new words enter canon, joining *thirre*, *ai-velin*, *kerrithen*
+(`world.md`), *haethe*, *unnen* (`smith_edda.md`), *vael-tor*,
+*thressa-mai* (`elder_maeve.md`), and *vethar*, *haisten*, *breos*
+(`innkeeper_bram.md`):
+
+- **`mossaen`** *(herbalist_lyra.md)* — the listening you do with both
+  hands in the dirt. Not magic; attention. The herbalist's first
+  practice and her last one. The mountain clans are said to use the
+  same word in Stone-Tongue for the listening a stoneworker does to a
+  granite face before the first chisel-stroke. Aenwyn taught it.
+- **`thalen-ai`** *(herbalist_lyra.md)* — the herb that grows where
+  it is needed. The herbalist's working faith — that the right plant
+  comes up in the right place at the right time, if the land trusts
+  the gatherer. Lyra has reluctantly found it mostly true.
+- **`wennen`** *(herbalist_lyra.md)* — to leave something growing for
+  someone else to find. Not a gift; a faith. The word is one letter
+  from Lyra's mother **Wennet's** name. **Lyra has not consciously
+  noticed.** Maeve has. Bram has and assumes Lyra knows. The
+  unconscious naming is canon and surfacing it kills it — see
+  Withholding ledger below.
+
+### Cross-references seeded this run
+
+- **Lyra is the 89th knot** on Maeve's hawthorn walking-stick. (Edda
+  is 62nd. Halsa is 37th. Lyra does not know this and Maeve will not
+  say.) Maeve carved it with her thumb still slightly bandaged from
+  the cutting because Wennet had asked her to.
+- **Maeve washes the dead's hair the way they wore it living.** The
+  pattern is now canonical across three deaths: **Halsa** (`smith_edda.md`),
+  **Wennet** (`herbalist_lyra.md`), **Tess Brookhollow**
+  (`herbalist_lyra.md`). Future writers may use this as a Maeve-rite
+  on any future canonical Briarwood death without re-explaining.
+- **The Vigil round on Longnight is a quartet, not a triptych.** The
+  full ordered round is now Edda's forge → Maeve's hearth → Bram's
+  back door → Lyra at the well, with Lyra carrying the dreamleaf
+  bundle and naming the whole sequence in her `longnight_vigil` line.
+  If Builder co-fires all four lines on the same Longnight tick, the
+  village's quietest scene plays itself across four thresholds with
+  no scripting beyond mood-key resolution. Lyra's *vael-tor-i* call
+  mirrors Maeve's older we-form — the apprentice has begun to sound
+  like the teacher.
+- **Edda's *unnen* + Lyra's *wennen* are now the canonical
+  village-pair example of both words.** The cleavers Edda sends Lyra
+  every Foxthaw are *unnen* (Edda has not called them that aloud).
+  The marshmint Lyra leaves at the forge door every spring is
+  *wennen* (Lyra calls it that only in her head). Cleaner than either
+  NPC's individual canon. Codex pages teaching the words may quote
+  this pair.
+- **Bram's "not gone" line is now bilateral.** Bram canon already
+  named Lyra as the herbalist who said it; Lyra canon now names the
+  moment — the Honeysong after Caedr walked into the Whisperwood,
+  said as a kindness more than a truth, not repeated since. Both of
+  them are lying to each other. Both of them are right.
+- **The `pelt_for_lyra` salve recipient is canonized as Roan.**
+  Lyra has decided alone that the salve will be made and that Roan
+  will receive it without ceremony in a small clay jar at his stable
+  door. Lyra never names him. Future writers wiring the turn-in MUST
+  NOT have Lyra say who the salve is for. The withholding is the
+  kindness. A `roan_received_salve` flag is reserved for Roan's
+  future warmed dialogue.
+- **Roan's slowest horse** is now canon-touched in three NPC files
+  (Maeve, Edda, Lyra). The slowest is the one Lyra rode the night of
+  the fen-foxglove. By Lyra's preference, it is never named —
+  naming a horse a person has ridden hard in grief is, in the older
+  tongue, *kerrithen*-shaped. Roan's other horses, when his backstory
+  ships, may be named freely. Not this one.
+- **The Whisperwood goblins are faerie-descended** is now canonized
+  inside the village's knowledge — Aenwyn told Lyra directly. Lyra is
+  the only NPC in the village who knows. She has not told anyone. She
+  would tell Maeve if asked. She has not been asked. (The hint in
+  `world.md` → The Tongues — *"the Whisperwood goblins were once
+  something else before the Sundering"* — now has an in-village
+  knower.)
+- **The Crystal Caves as *thirre*** is now canonized inside the
+  village's knowledge — Aenwyn taught Lyra. Lyra knows certain plants
+  only grow at the gentle edges of *thirre*-places. Strong codex
+  hook for Priority-5 (a *Whisperwood Herbal* page narrated by
+  Aenwyn).
+- **Lyra ↔ Maeve bridge:** chosen successor; Vigil-rite teaching one
+  candle at a time; the unanswered third question about the forest
+  reserved for the day Maeve dies; the *wennen*/Wennet resonance
+  that only Maeve has noticed and only a late Maeve dialogue moment
+  may surface.
+- **Lyra ↔ Edda bridge:** *unnen* cleavers / *wennen* marshmint
+  mutual gift; Edda taught Lyra to grind a mortar evenly when Lyra
+  was nine and Edda was nineteen and three months earlier
+  motherless; Lyra remembers, Edda has forgotten, Lyra will not
+  remind her.
+- **Lyra ↔ Bram bridge:** dreamleaf at his back door every Longnight;
+  the "not gone" line said once after Caedr's Whisperwood walk; the
+  back hearth Bram banked too high the night Tess died, never used
+  to bank a fire that high since.
+- **Lyra ↔ Mara bridge:** southern-honey jar every spring (empty at
+  Reapmoon, full again at Greenshield, left at the meadow-edge for
+  the Hollow King's ants on Sunpetal 7); Lyra suspects Mara is
+  carrying something she cannot put down (the unopened letter).
+  Lyra is willing to wait.
+- **Lyra ↔ Roan bridge:** he saddled the slow horse the night of
+  the fen-foxglove; he brought her the folded cloak the morning
+  after; she patches his hands when the horses bite; he is the
+  only person besides Maeve who knows by Lyra's face when she is
+  hearing the older tongue; she will give him the salve without
+  ceremony.
+- **Lyra ↔ Hala bridge:** they walk to the meadow at every planting
+  moon; Hala digs, Lyra names; Hala has tried twice to teach Lyra a
+  defensive form and Lyra has gently declined; they are the
+  village's two slowest walkers, and they walk together because the
+  pace matches.
+
+### Withholding ledger (do-not-surface canon)
+
+- **Lyra's *listening*** — the older tongue she still hears when
+  Foxthaw fox-fire kindles. NEVER spoken to anyone. Codex-only via
+  the Aenwyn-narrator track.
+- **The unread word at the back of her herb-book.** Reserved for a
+  late-game codex unlock (gated on Crystal Caves *thirre* + sufficient
+  *mossaen* exposure). The codex page may NAME the word. The codex
+  page MUST NOT translate it. Translation belongs to the Stag-Court.
+- **Lyra's suspicion that the unread word is the Stag-Court's
+  offer-word** — not surfaced until Maeve's third question is asked
+  aloud and answered. Future writers MUST NOT close this loop without
+  Maeve having earned it.
+- **The salve recipient on the `pelt_for_lyra` turn-in is Roan.**
+  Lyra never names him in the line. Future writers MUST NOT have
+  Lyra surface this. The withholding is the kindness.
+- **Tess Brookhollow's name** — appears nowhere in Lyra's spoken
+  lines except inside the `tess_remembrance` slot itself, which is
+  intentionally the shortest line in her tree: *"Not today,
+  traveler. — Tomorrow."* Builder MUST NOT extend it. The brevity
+  is the grief.
+- **The *wennen* / Wennet resonance** — Lyra has not consciously
+  noticed. Maeve has. Bram has and assumes Lyra knows. Reserved for
+  a single late MAEVE dialogue moment after Maeve has answered
+  Lyra's third asking. NOT Lyra's. NOT Edda's. NOT Bram's. Maeve's
+  only.
+
+### Hooks queued for future runs
+
+- **Greenshield first-pick visit** — `seasonal_event:
+  greenshield_first_pick` flag reservable for Builder. Stacks safely
+  with Maeve's morning line; Maeve's tone softens.
+- **Tess anniversary** — `seasonal_event: tess_remembrance` flag,
+  Sunpetal 7. Herb-shed door closed; one short line; no fallback.
+  No quest, no mechanic, no XP, no item. Honor it.
+- **Fen-foxglove side-quest (gentle)** — a future Sunpetal child-fever
+  event in the village (NOT Tess again — a new child, named) where
+  Lyra has the fen-foxglove growing this time. Reward: nothing in
+  the bag. The reward is the child surviving. World flag
+  `briarwood_keeps_a_child` set. Lyra acknowledges with the
+  *thalen-ai* line — *"the land trusted us this season."* THEME §7
+  test for the agent who picks this up.
+- **The unread word codex unlock** — late-game, gated on Crystal
+  Caves *thirre* + *mossaen* exposure. Names the word; does not
+  translate it.
+- **Aenwyn as bardic / herbalist codex narrator** — same convention
+  as Halsa-as-narrator (`smith_edda.md`) and Caedr-as-narrator
+  (`innkeeper_bram.md`): present-tense voice, no body, no death
+  confirmed. Natural narrator for the *Whisperwood Herbal* codex
+  (Priority-5).
+- **Lyra inherits the Vigil — the day Maeve dies.** `world_flag:
+  lyra_inherits_vigil` reserved post-Crystal-Caves, gated on Maeve's
+  third-question loop being closed. If not closed, the hawthorn
+  knot-stick goes to Edda first; Edda refuses it and gives it to
+  Lyra anyway. Quieter scene.
+- **Roan's salve** — `npc_flag: ["Stablemaster Roan",
+  "received_salve"]` set on `pelt_for_lyra` turn-in. Roan's future
+  warmed dialogue may carry one line that does not name Lyra and
+  does not name the salve.
+- **The *wennen* / Wennet resonance** — reserved for a single late
+  Maeve dialogue moment after the third-question loop closes.
+- **Quartet staging on Longnight Vigil.** Edda, Maeve, Bram, AND Lyra
+  now all ship a `longnight_vigil` mood-key. If Builder co-fires all
+  four on the same Longnight tick, the village's quietest scene
+  plays itself in order — Edda doesn't look up, Bram brings the stew,
+  Maeve sets it for the Hollow King, Lyra carries the dreamleaf to
+  the well. No additional scripting required beyond mood-key
+  resolution.
