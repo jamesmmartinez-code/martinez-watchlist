@@ -86,6 +86,23 @@ run easier — what's the *next* thing that compounds?)
   to multiple readers without sprawl. Visible "agitated" ⚡ prefix on the
   floating name fires when cooldown < 1.30 so kids can read pacing change
   per-enemy, not just per-density.
+- ✅ **Resolved 2026-05-04 (run 8):** Adaptive `Enemy.gd.chase_speed` is
+  now a FOURTH reader of `World.faction_pressure(faction_id)`. Multiplicative
+  band — each enemy kind's WorldBuilder-assigned chase_speed lerps up to
+  `+CHASE_SPEED_AGITATION_GAIN` (=0.17, +17%) at pressure 0.0. Goblin Scout
+  4.6 → 5.38, Brute 1.0 → 1.17 (tank role preserved), Wolf 1.05 → 1.23,
+  Skeleton 4.4 → 5.15, Crystal Elemental 3.2 → 3.74, Crystal Guardian 3.4
+  → 3.98. Bandits unmapped → baseline. Same fail-soft contract as run 7;
+  reuses the same `KIND_TO_FACTION` map (single source of truth). NO new
+  visual cue — run 7's `⚡` agitated-name prefix already fires below
+  pressure ~0.625 and now subsumes BOTH adaptive outputs (cooldown AND
+  chase lerp on the same scalar — they trip together). `World.faction_pressure()`
+  now has FIVE consumers (NPC dialogue tier 3, goblin spawn density, wolf
+  spawn density, enemy attack cooldown, **enemy chase speed**) — same
+  scalar drives narrative + density + 2-axis pacing. Mastery threshold
+  for Rule 1 ("compound, don't sprawl") restated: ONE primitive can fan
+  out to 5+ readers without sprawl, provided each reader uses the SAME
+  fail-soft contract and the SAME kind→faction map.
 - 🔥 **Top-priority next:** Roan (Stablemaster) → `dire_wolves` faction tier.
   Smoke-tests the 4-tier dialogue system on an NPC with no warm_flag at
   all. Schema is in place, only WorldBuilder edits required. After runs
@@ -131,9 +148,9 @@ by direct dialogue branches (those READ flags, they don't WRITE them).
 | Faction          | Disposition | Pressure | Notes                          |
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
-| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
-| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) — fires the moment the dungeon ships** |
+| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8)** |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8)** |
+| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) AND chase wired (run-8) — both fire the moment the dungeon ships** |
 
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
 only by `World.apply_consequence({...})`.
@@ -174,6 +191,12 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
   against its faction pressure at spawn (run 7). Visible ⚡ prefix on the
   floating name when cooldown < 1.30 — the third *visible* axis on the
   consequence loop after dialogue (run 4) and spawn density (runs 5–6).
+- Surviving enemy chase pacing (per world load): each remaining enemy of a
+  mapped kind also resolves chase_speed against its faction pressure at
+  spawn (run 8). Multiplicative `+17%` ceiling at pressure 0.0; baseline
+  preserved at pressure 1.0. The same `⚡` prefix subsumes both pacing
+  outputs — kids see ONE marker meaning "this one is faster recovery AND
+  faster chase," not two separate marks. Output #4 on the same scalar.
 - Roads defended: not modeled.
 - Buildings damaged: not modeled.
 
