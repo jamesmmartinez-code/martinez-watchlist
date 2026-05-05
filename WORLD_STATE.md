@@ -29,11 +29,12 @@ run easier — what's the *next* thing that compounds?)
   not. Anyone adding the dungeon should reuse those tables, not redefine them.
 - ✅ **Resolved 2026-05-04:** Faction pressure scalar exists
   (`World.factions[id].pressure`) — three quests already mutate it.
-- 🔥 **Top-priority next:** Reactive dialogue. NPC.gd should consult
-  `World.npc_has_flag(npc_name, flag)` and pick a different `lines[]` entry
-  when warmed. Maeve (`first_quest_done`), Lyra (`trusts_player`), Mara
-  (`good_customer`) all have flags ready to consume — three NPCs × two
-  states unlocked from one wiring change.
+- ✅ **Resolved 2026-05-04 (integrator):** Reactive dialogue wired.
+  NPC.gd now reads `World.npc_has_flag(npc_name, warmed_flag)` and prefers
+  a `warmed_dialogue_variants` (4 entries, same time-of-day buckets) when
+  the flag is set. Maeve (`first_quest_done`), Lyra (`trusts_player`),
+  Mara (`good_customer`) each ship 4 warmed variants in WorldBuilder.NPCS.
+  Every other NPC has empty `warm_*` fields and behaves unchanged.
 - 🔥 **Adjacent next:** Goblin spawn density should read
   `World.faction_pressure("whisperwood_goblins")`. Lower pressure → fewer
   patrols / longer respawn. Single read, big behavior delta.

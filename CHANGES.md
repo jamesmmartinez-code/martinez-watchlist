@@ -7,6 +7,29 @@ Deploy command (run from your Mac terminal):
 cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-sessions/794a2df1-963f-473e-b0d0-194a5b136adf/9d25261c-681d-4498-8c12-d926cbaa244a/local_cdbfb2a3-6ded-4fe9-8a31-53177f14881a/outputs" && bash full-deploy.sh
 ```
 
+
+## Integration 2026-05-04 (integrator) — Quest flags now warm NPC dialogue
+
+### Gap (pattern A)
+- The consequence resolver writes `npc_flags` (Maeve→`first_quest_done`, Lyra→`trusts_player`, Mara→`good_customer`) when their quests complete.
+- WorldBuilder.NPCS just shipped 4 mood-dependent dialogue variants per NPC, picked by `World.time_of_day`.
+- WORLD_STATE.md flagged this as 🔥 **top-priority next**: NPC.gd should consult `World.npc_has_flag()` and pick a different line when warmed.
+- But `NPC.gd._on_interact()` ignored npc_flags entirely — flags were written and never consumed. Two systems, one missing wire.
+
+### Bridge
+- **NPC.gd** — added `warmed_flag: String` and `warmed_dialogue_variants: PackedStringArray` exports. In `_on_interact()`, if a `warmed_flag` is set AND `World.npc_has_flag(npc_name, warmed_flag)` returns true AND warmed variants exist, the same time-of-day bucket is pulled from the warmed array instead of the cold one. Falls back to existing behavior on every other axis (no warm fields → no change).
+- **WorldBuilder.gd** — Maeve, Lyra, Mara each carry a `warm_flag` + 4-entry `warm_lines` array. `_make_npc()` wires them onto the NPC node alongside the existing dialogue_variants assignment.
+- **WORLD_STATE.md** — top-priority hook marked resolved with the wiring detail.
+
+### Effect
+- Three NPCs × four time-of-day moods × cold-or-warmed = **24 reactive lines** unlocked from a single wiring change.
+- No new functions, no balance change, no schema break for the four other NPCs (their `warm_*` fields are absent → array stays empty → variants fall through unchanged).
+- The Crystal Caves faction (`pressure: 0.0`) is now ready to drive its own warm/cold dialogue once an NPC ties to it.
+
+### Open TODOs
+- `[INTEGRATOR-ASK]` — WORLD_STATE.md still lists Crystal Caves with STATUS "planned, not yet placed in world", but commit `bf4934d` actually placed the dungeon NW of village. The Architect agent should update the canon (geography + faction note + remove the entrance hook) on the next world-state pass.
+- `[INTEGRATOR-ASK]` — Goblin spawn density should read `World.faction_pressure("whisperwood_goblins")` per the second 🔥 hook in WORLD_STATE.md. Single-read wiring change in the goblin spawner. Skipped this run to honor the one-integration-per-run rule.
+
 ---
 
 ## 2026-05-04 (autonomous run) — Fantasy hero makeover (Soldier → knight)

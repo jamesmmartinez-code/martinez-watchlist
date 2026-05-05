@@ -8,6 +8,13 @@ class_name NPC
 # Falls back to single `dialogue` line above if this array is empty. WorldBuilder.gd
 # populates these per-NPC so each villager has a small personality detail.
 @export var dialogue_variants: PackedStringArray = PackedStringArray()
+# INTEGRATE (pattern A): when this NPC has earned a memory flag from a quest
+# consequence (Maeve→first_quest_done, Lyra→trusts_player, Mara→good_customer),
+# their lines should warm. `warmed_flag` names the flag to consult on World;
+# `warmed_dialogue_variants` is the same morning/midday/evening/night structure
+# as `dialogue_variants`, used only when the flag is set. Empty = no change.
+@export var warmed_flag: String = ""
+@export var warmed_dialogue_variants: PackedStringArray = PackedStringArray()
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
@@ -47,9 +54,16 @@ func _on_interact() -> void:
 		return
 	# REFINE: choose a mood-dependent line by time-of-day when variants exist;
 	# otherwise emit the single fallback `dialogue` line as before.
+	# INTEGRATE (pattern A): if a `warmed_flag` is set and the World records
+	# that this NPC carries it, prefer the warmed variants of the same shape.
+	# Quest consequences write these flags via World.apply_consequence().
 	var line: String = dialogue
-	if not dialogue_variants.is_empty():
-		var w = get_tree().get_first_node_in_group("world")
+	var w = get_tree().get_first_node_in_group("world")
+	var variants: PackedStringArray = dialogue_variants
+	if warmed_flag != "" and not warmed_dialogue_variants.is_empty() and w and w.has_method("npc_has_flag"):
+		if w.npc_has_flag(npc_name, warmed_flag):
+			variants = warmed_dialogue_variants
+	if not variants.is_empty():
 		var tod: float = 11.0
 		if w and ("time_of_day" in w):
 			tod = float(w.time_of_day)
@@ -62,7 +76,7 @@ func _on_interact() -> void:
 			bucket = 2   # evening
 		else:
 			bucket = 3   # night
-		bucket = min(bucket, dialogue_variants.size() - 1)
-		line = dialogue_variants[bucket]
+		bucket = min(bucket, variants.size() - 1)
+		line = variants[bucket]
 	# Emit a dialog signal that the World scene picks up to show UI
 	get_tree().call_group("world", "show_dialogue", npc_name, line, npc_role)

@@ -113,6 +113,13 @@ const NPCS = [
 		"You smell of pine. Good. Goblins do not. Mind the Warlord.",
 		"I sleep poorly when wolves howl. I hope your blade keeps mine quiet.",
 		"You should be inside. Even my whispers travel further after dark.",
+	 ],
+	 "warm_flag":"first_quest_done",
+	 "warm_lines":[
+		"You came back. The forest sleeps lighter for it. Tea by the hearth?",
+		"Goblins still scratch our edges, but with you about, they keep their distance.",
+		"My old bones thank you — I sleep deeper since you cleared the wood.",
+		"Walk safe — though even the wolves walk softer since your last errand.",
 	 ]},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -129,6 +136,13 @@ const NPCS = [
 		"Trade me proof of six raiders and you'll walk out richer than you walked in.",
 		"Hurry — I count my coin twice before bed and I dislike being interrupted.",
 		"Shop's shut. Knock again at sunrise unless your purse has wings.",
+	 ],
+	 "warm_flag":"good_customer",
+	 "warm_lines":[
+		"Word's out: Mara pays well. You set my ledger humming. Welcome back.",
+		"Six ears as promised — coin's heavy in your pouch and in mine. Trade well.",
+		"I'd shutter for the day, but for you I'll uncross my arms a moment longer.",
+		"Late again, eh? For my favorite buyer, the till's not quite shut.",
 	 ]},
 	{"name":"Herbalist Lyra",    "role":"alchemy", "pos":Vector3( -3,  0, -5), "tint":Color(0.4,0.7,0.35),
 	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
@@ -137,6 +151,13 @@ const NPCS = [
 		"Smell that? Marshmint. Brings me back to my mother's garden — long lost now.",
 		"Bring me pelts before the moss closes. It only opens by daylight.",
 		"Owls are louder than wolves tonight. Bad sign. Travel close to lanterns.",
+	 ],
+	 "warm_flag":"trusts_player",
+	 "warm_lines":[
+		"Your pelts cured well — I owe you the salve, and a stronger one besides.",
+		"Ask if you need a greater potion. For you, the moss opens a little longer.",
+		"The garden in my memory has one more bloom now. Yours, friend.",
+		"Owls still cry, but you've made my shelves richer. Sleep well.",
 	 ]},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
 	 "line":"Pull up a stool. Rest your bones.",
@@ -927,6 +948,10 @@ func _make_npc(data: Dictionary) -> void:
 	npc.dialogue = data.line
 	# REFINE: feed mood-dependent variants if this NPC has them defined.
 	npc.dialogue_variants = PackedStringArray(data.get("lines", []))
+	# INTEGRATE (pattern A): if this NPC carries a quest-warmed dialogue set,
+	# wire the flag name + warm variants so NPC.gd can consult World.npc_has_flag().
+	npc.warmed_flag = String(data.get("warm_flag", ""))
+	npc.warmed_dialogue_variants = PackedStringArray(data.get("warm_lines", []))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()
