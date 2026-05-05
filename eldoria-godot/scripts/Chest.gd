@@ -19,7 +19,6 @@ var _glow_light: OmniLight3D
 var _player_in_range: bool = false
 var _player: Node = null
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
 func _ready() -> void:
 	add_to_group("chests")
@@ -224,17 +223,7 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 	if item.is_empty():
 		return
 	var color: Color = Items.RARITY_COLORS.get(item.get("rarity", "common"), Color.WHITE)
-	var pop := Label3D.new()
-	pop.set_script(DAMAGE_NUMBER_SCRIPT)
-	pop.text = "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""]
-	pop.font_size = 30
-	pop.outline_size = 5
-	pop.outline_modulate = Color(0, 0, 0)
-	pop.modulate = color
-	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	pop.no_depth_test = true
-	pop.position = global_position + Vector3(randf_range(-0.5, 0.5), 1.6, randf_range(-0.3, 0.3))
-	get_tree().current_scene.add_child(pop)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.5, 0.5), 1.6, randf_range(-0.3, 0.3)), "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""], color, 30, 5)
 
 # Subtle idle bob when not opened
 func _process(delta: float) -> void:

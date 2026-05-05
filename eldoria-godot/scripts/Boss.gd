@@ -34,7 +34,6 @@ var _adds_spawned: Array = []
 var _intro_watch: bool = false
 var _intro_played: bool = false
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const ENEMY_SCRIPT = preload("res://scripts/Enemy.gd")
 
 func _ready() -> void:
@@ -304,17 +303,7 @@ func _show_telegraph_line(start: Vector3, dir: Vector3, length: float, dur: floa
 	t.tween_callback(line.queue_free)
 
 func _show_boss_msg(text: String) -> void:
-	var pop := Label3D.new()
-	pop.set_script(DAMAGE_NUMBER_SCRIPT)
-	pop.text = text
-	pop.font_size = 56
-	pop.outline_size = 7
-	pop.outline_modulate = Color(0, 0, 0)
-	pop.modulate = Color(1.0, 0.30, 0.10)
-	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	pop.no_depth_test = true
-	pop.position = global_position + Vector3(0, 4.4, 0)
-	get_tree().current_scene.add_child(pop)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 4.4, 0), text, Color(1.0, 0.30, 0.10), 56, 7)
 	# Also flash a screen toast
 	get_tree().call_group("world", "_show_toast", text)
 
@@ -330,18 +319,8 @@ func take_damage(amount: int, source: Node = null) -> void:
 		_die(source)
 
 func _spawn_damage_number(amount: int) -> void:
-	var dn := Label3D.new()
-	dn.set_script(DAMAGE_NUMBER_SCRIPT)
-	dn.text = str(amount)
 	# REFINE: combat — boss feel: boss damage numbers font 44→50 + warmer/punchier modulate (1.0,0.65,0.30)→(1.0,0.74,0.32); reads as a meatier hit and gives Owen sharper mastery feedback.
-	dn.font_size = 50
-	dn.outline_size = 7
-	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.74, 0.32)
-	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dn.no_depth_test = true
-	dn.position = global_position + Vector3(randf_range(-0.3, 0.3), 2.6, randf_range(-0.3, 0.3))
-	get_tree().current_scene.add_child(dn)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.3, 0.3), 2.6, randf_range(-0.3, 0.3)), str(amount), Color(1.0, 0.74, 0.32), 50, 7)
 
 func _die(source: Node) -> void:
 	_state = "dead"
@@ -366,17 +345,7 @@ func _die(source: Node) -> void:
 				source.inventory.add_item(d.id, d.qty)
 				var item = Items.get_item(d.id)
 				var color: Color = Items.RARITY_COLORS.get(item.get("rarity", "common"), Color.WHITE)
-				var pop := Label3D.new()
-				pop.set_script(DAMAGE_NUMBER_SCRIPT)
-				pop.text = "✦ %s%s" % [item.get("name", d.id), (" x%d" % d.qty) if d.qty > 1 else ""]
-				pop.font_size = 32
-				pop.outline_size = 5
-				pop.outline_modulate = Color(0, 0, 0)
-				pop.modulate = color
-				pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-				pop.no_depth_test = true
-				pop.position = global_position + Vector3(randf_range(-1.5, 1.5), 2.2, randf_range(-1.5, 1.5))
-				get_tree().current_scene.add_child(pop)
+				UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-1.5, 1.5), 2.2, randf_range(-1.5, 1.5)), "✦ %s%s" % [item.get("name", d.id), (" x%d" % d.qty) if d.qty > 1 else ""], color, 32, 5)
 	# Hide boss bar
 	get_tree().call_group("world", "hide_boss_hp_bar")
 	get_tree().call_group("world", "_show_toast", "✦ %s slain! ✦" % enemy_name)

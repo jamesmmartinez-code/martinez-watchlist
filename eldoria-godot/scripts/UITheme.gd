@@ -85,6 +85,18 @@ const OL_TOAST: int  = 7
 const OL_LOCK: int   = 5
 
 # ═════════════════════════════════════════════════════════════════════════
+# Damage / loot / bark / level-up popup script. Eldoria's 12 world-space
+# transient labels (CRIT, -damage, +XP, +HEAL, LEVEL UP, "+ItemName", boss
+# pet bark) all attach this same DamageNumber.gd controller, billboard,
+# disable depth-test, and use Color(0,0,0) outline. Centralized here so
+# future palette / outline tweaks ripple to all 12 sites.  See
+# spawn_damage_popup() below.
+# ═════════════════════════════════════════════════════════════════════════
+
+const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # Asset paths (THEME §3 hand-painted parchment + iron + wood)
 # Procedural source: scripts/art/make_ui_frames.py — CC0, seed 8131.
 # ═════════════════════════════════════════════════════════════════════════
@@ -315,6 +327,47 @@ static func make_toast_label(text: String) -> Label:
 	lbl.offset_top = 0
 	lbl.offset_bottom = 60
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return lbl
+
+# ═════════════════════════════════════════════════════════════════════════
+# World-space damage popup — DRY helper consolidating the 12 inline
+# Label3D.new() blocks previously scattered across Player.gd / Enemy.gd /
+# Boss.gd / Pet.gd / Chest.gd. Each call site went from 11 lines to 1.
+#
+# All popups share: DamageNumber.gd controller, billboard ENABLED,
+# no_depth_test, INK-black outline. Caller varies text, world position,
+# tint color, font_size, outline_size.
+#
+# Usage (from any node with a global_position):
+#     UITheme.spawn_damage_popup(
+#         get_tree().current_scene,
+#         global_position + Vector3(0, 2.4, 0),
+#         "-%d" % dmg,
+#         Color(1.0, 0.30, 0.30),
+#         32, 5)
+#
+# Returns the Label3D in case caller wants to tween it further; not
+# usually needed since DamageNumber.gd self-tweens + queue_frees.
+# ═════════════════════════════════════════════════════════════════════════
+
+static func spawn_damage_popup(
+		parent: Node,
+		world_pos: Vector3,
+		text: String,
+		color: Color,
+		font_size: int = 32,
+		outline_size: int = 5) -> Label3D:
+	var lbl: Label3D = Label3D.new()
+	lbl.set_script(DAMAGE_NUMBER_SCRIPT)
+	lbl.text = text
+	lbl.font_size = font_size
+	lbl.outline_size = outline_size
+	lbl.outline_modulate = Color(0, 0, 0)
+	lbl.modulate = color
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.no_depth_test = true
+	lbl.position = world_pos
+	parent.add_child(lbl)
 	return lbl
 
 # ═════════════════════════════════════════════════════════════════════════

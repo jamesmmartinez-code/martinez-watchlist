@@ -166,7 +166,6 @@ var _model: Node3D
 var _hp_bar: Node3D
 var _label: Label3D
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
 signal died(enemy)
 
@@ -475,18 +474,8 @@ func take_damage(amount: int, source: Node = null) -> void:
 		_die(source)
 
 func _spawn_damage_number(amount: int, is_crit: bool) -> void:
-	var dn := Label3D.new()
-	dn.set_script(DAMAGE_NUMBER_SCRIPT)
-	dn.text = ("%d!" % amount) if is_crit else str(amount)
 	# REFINE: combat-feel — chunkier font + warmer crit gold + brighter normal hit so damage reads at a glance.
-	dn.font_size = 62 if is_crit else 44
-	dn.outline_size = 7
-	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.88, 0.22) if is_crit else Color(1.0, 0.72, 0.32)
-	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dn.no_depth_test = true
-	dn.position = global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3))
-	get_tree().current_scene.add_child(dn)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3)), ("%d!" % amount) if is_crit else str(amount), Color(1.0, 0.88, 0.22) if is_crit else Color(1.0, 0.72, 0.32), 62 if is_crit else 44, 7)
 
 func _die(source: Node) -> void:
 	_state = "dead"
@@ -523,17 +512,7 @@ func _die(source: Node) -> void:
 			var item = Items.get_item(d.id)
 			_spawn_loot_popup(item, d.qty)
 	# Floating "+XP" popup
-	var xp_pop := Label3D.new()
-	xp_pop.set_script(DAMAGE_NUMBER_SCRIPT)
-	xp_pop.text = "+%d XP" % xp_reward
-	xp_pop.font_size = 36
-	xp_pop.outline_size = 5
-	xp_pop.outline_modulate = Color(0, 0, 0)
-	xp_pop.modulate = Color(0.55, 0.95, 0.45)
-	xp_pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	xp_pop.no_depth_test = true
-	xp_pop.position = global_position + Vector3(0, 2.0, 0)
-	get_tree().current_scene.add_child(xp_pop)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.0, 0), "+%d XP" % xp_reward, Color(0.55, 0.95, 0.45), 36, 5)
 	died.emit(self)
 	# Notify quest system
 	get_tree().call_group("quest_listeners", "on_enemy_killed", enemy_kind)
@@ -554,17 +533,7 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 	if item.is_empty():
 		return
 	var color: Color = Items.RARITY_COLORS.get(item.get("rarity", "common"), Color.WHITE)
-	var pop := Label3D.new()
-	pop.set_script(DAMAGE_NUMBER_SCRIPT)
-	pop.text = "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""]
-	pop.font_size = 28
-	pop.outline_size = 5
-	pop.outline_modulate = Color(0, 0, 0)
-	pop.modulate = color
-	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	pop.no_depth_test = true
-	pop.position = global_position + Vector3(0, 2.4, 0)
-	get_tree().current_scene.add_child(pop)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""], color, 28, 5)
 
 # ──────────────────────────────────────────────────────────────────────────
 # Run-7: Adaptive attack cooldown (THIRD output on faction_pressure scalar).

@@ -25,7 +25,6 @@ const BARK_LINES: PackedStringArray = PackedStringArray(["yip!", "arf!", "rrr!",
 # REFINE: character — bark color picks one of two ember tones per bark for visual variety.
 const BARK_COLORS: PackedColorArray = PackedColorArray([Color(1.0, 0.85, 0.30), Color(1.0, 0.62, 0.18)])
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
 func _ready() -> void:
 	add_to_group("pets")
@@ -97,19 +96,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _bark() -> void:
-	var pop := Label3D.new()
-	pop.set_script(DAMAGE_NUMBER_SCRIPT)
 	# REFINE: character — pick a bark line from the catchphrase pool (replaces the single "yip!").
-	pop.text = BARK_LINES[randi() % BARK_LINES.size()]
-	pop.font_size = 24
-	pop.outline_size = 4
-	pop.outline_modulate = Color(0, 0, 0)
 	# REFINE: character — alternating ember tones per bark for tiny visual rhythm.
-	pop.modulate = BARK_COLORS[randi() % BARK_COLORS.size()]
-	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	pop.no_depth_test = true
-	pop.position = global_position + Vector3(0, 1.5, 0)
-	get_tree().current_scene.add_child(pop)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 1.5, 0), BARK_LINES[randi() % BARK_LINES.size()], BARK_COLORS[randi() % BARK_COLORS.size()], 24, 4)
 
 # Normalize 3D model scale so it ends up ~target_height tall.
 # Prevents giants from Sketchfab GLBs with mixed units.

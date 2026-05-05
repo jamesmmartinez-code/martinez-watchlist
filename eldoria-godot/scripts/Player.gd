@@ -51,7 +51,6 @@ var active_quest: Dictionary = {}    # {"target":"goblin", "needed":5, "killed":
 var mounted: bool = false
 var mount_node: Node3D = null
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -349,18 +348,8 @@ func _roll_damage() -> Dictionary:
 
 func _spawn_crit_flash() -> void:
 	# A quick screen-edge flash via a Label3D popup at the player
-	var crit := Label3D.new()
-	crit.set_script(DAMAGE_NUMBER_SCRIPT)
-	crit.text = "CRIT!"
 	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.85,0.20) → (1.0,0.92,0.28) sits squarely in THEME §3 sunset-gold (#FFD86B family) instead of the slightly muddy mustard.
-	crit.font_size = 56
-	crit.outline_size = 8
-	crit.outline_modulate = Color(0, 0, 0)
-	crit.modulate = Color(1.0, 0.92, 0.28)
-	crit.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	crit.no_depth_test = true
-	crit.position = global_position + Vector3(0, 2.6, 0)
-	get_tree().current_scene.add_child(crit)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.0, 0.92, 0.28), 56, 8)
 
 func _play_anim(name: String) -> void:
 	if not animation_player:
@@ -395,17 +384,7 @@ func take_damage(amount: int) -> void:
 	stats_changed.emit()
 	get_tree().call_group("world", "play_sfx", "damage_taken")
 	# Damage number above player
-	var dn := Label3D.new()
-	dn.set_script(DAMAGE_NUMBER_SCRIPT)
-	dn.text = "-%d" % actual
-	dn.font_size = 32
-	dn.outline_size = 5
-	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.30, 0.30)
-	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dn.no_depth_test = true
-	dn.position = global_position + Vector3(0, 2.4, 0)
-	get_tree().current_scene.add_child(dn)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "-%d" % actual, Color(1.0, 0.30, 0.30), 32, 5)
 	if hp <= 0:
 		_die()
 
@@ -464,17 +443,7 @@ func gain_xp(amount: int) -> void:
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		# Level-up celebration popup
-		var pop := Label3D.new()
-		pop.set_script(DAMAGE_NUMBER_SCRIPT)
-		pop.text = "LEVEL UP!"
-		pop.font_size = 56
-		pop.outline_size = 7
-		pop.outline_modulate = Color(0, 0, 0)
-		pop.modulate = Color(1.0, 0.85, 0.30)
-		pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		pop.no_depth_test = true
-		pop.position = global_position + Vector3(0, 3.0, 0)
-		get_tree().current_scene.add_child(pop)
+		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.0, 0.85, 0.30), 56, 7)
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
@@ -704,17 +673,7 @@ func _quick_use_potion() -> void:
 		if slot.id.begins_with("hp_potion"):
 			inventory.use_item(i, self)
 			# Heal popup
-			var pop := Label3D.new()
-			pop.set_script(DAMAGE_NUMBER_SCRIPT)
-			pop.text = "+HEAL"
-			pop.font_size = 36
-			pop.outline_size = 5
-			pop.outline_modulate = Color(0, 0, 0)
-			pop.modulate = Color(0.30, 0.95, 0.45)
-			pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-			pop.no_depth_test = true
-			pop.position = global_position + Vector3(0, 2.6, 0)
-			get_tree().current_scene.add_child(pop)
+			UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "+HEAL", Color(0.30, 0.95, 0.45), 36, 5)
 			return
 
 
