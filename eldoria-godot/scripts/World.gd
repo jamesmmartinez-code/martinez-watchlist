@@ -243,6 +243,72 @@ const QUEST_CATALOG := {
 			"toast": "🐎 The road feels safer. Roan tips his hat.",
 		},
 	},
+	# COMPOUND (run 18 — Builder): Hala-issued wolf-defense kill quest. THIRD
+	# `dire_wolves` reducer (after `pelt_for_lyra` -0.1 and
+	# `wolf_fang_for_roan` -0.1). This is the missing keystone — the previous
+	# Builder run wired Hala's WorldBuilder pitch line, warm_flag, and
+	# warm_lines AND wired the `wolf_tamer` Achievements predicate referencing
+	# `wolf_form_taught` on Hala — but never added the QUEST_CATALOG entry
+	# that ACTUALLY sets the flag. Result: Hala's pitch promised a quest the
+	# engine could never deliver, and the wolf_tamer achievement could never
+	# trip. This entry closes both holes in a single edit.
+	#
+	# Lights up:
+	#   * Hala dialogue tier 2 (warm_flag `wolf_form_taught`, 4 lines already
+	#     authored in WorldBuilder run 18). Quest completion sets the flag,
+	#     which immediately flips Hala's tone from "prove yourself" to
+	#     "I saw it in you" — the rarest flavor for a teacher who never
+	#     gushes. Tier 2 (warm_flag) ranks above tier 5 (memory) so once the
+	#     quest is in, returning trains read the warm lines first.
+	#   * Wolf spawn density: 0.3 (after Lyra + Roan) → 0.2 trips the run-6
+	#     SECOND CLIFF (3 wolves → 2). With all three reducers stacked
+	#     player-side the wolf pack visibly thins to 2 surviving wolves —
+	#     a major Whisperwood quietening beat. The run-6 third cliff
+	#     (< 0.15) is one more reducer away (single mid-run hook for
+	#     downstream).
+	#   * Adaptive cooldown (run 7) and chase speed (run 8) both lerp
+	#     another step on the same scalar. The 2 surviving wolves are now
+	#     ~21% faster and attack ~28% slower than fresh-save wolves — a
+	#     "older, wiser, hungrier" feel that's mechanical, not narrative.
+	#   * `wolf_tamer` Achievement (Achievements.gd:wolf_tamer) was wired
+	#     in run 18 but unreachable until now. Predicate
+	#     `all_npc_flags: [Lyra/trusts_player, Roan/first_bounty_done,
+	#     Hala/wolf_form_taught]` finally resolves to TRUE on this quest's
+	#     completion (assuming the prior two are done). Title "the
+	#     Wolf-Tamer" (priority 35) auto-equips above "Wolf-Friend" (30).
+	#   * `hala_wolf_form_taught` world_flag joins `mara_bounty_paid` /
+	#     `lyra_potion_brew` / `whisperwood_safer` / `roan_bounty_paid`
+	#     as the FIFTH quest-issued world flag — future systems (e.g.
+	#     evening tavern toasts, cross-NPC dialogue references) can
+	#     consume without code changes.
+	# Reward economy: kill quest like Maeve's `whisperwood_cleansing`, but
+	# scaled to wolves (rarer drops, 4 needed instead of 5). 75 xp + 40 gold
+	# matches the pattern: Hala teaches more than she pays. `needed: 4` is
+	# from Hala's authored pitch ("Take down 4 — you'll learn the form by
+	# doing"); changing it would desync the dialogue.
+	"wolf_form_with_hala": {
+		"giver": "Trainer Hala",
+		"actor": "Trainer Hala",
+		"role": "trainer",
+		"kind": "kill",
+		"target": "wolf",
+		"needed": 4,
+		"title": "Wolf Form, Hala's Drill",
+		"text": "Trainer Hala wants 4 wolves felled — learn the form by doing",
+		"xp_reward": 90,
+		"gold_reward": 35,
+		"motivation": "duty",
+		"location": "Whisperwood",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "dire_wolves",
+			"pressure_delta": -0.1,
+			"npc_flag": ["Trainer Hala", "wolf_form_taught"],
+			"world_flag": "hala_wolf_form_done",
+			"toast": "🥋 Hala nods. The form holds.",
+		},
+	},
 }
 
 
