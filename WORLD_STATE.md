@@ -991,3 +991,66 @@ Lyra's file did not seed new words; it composed against the
 existing eight. Future NPC files (Roan, Hala) should aim for 1–2
 new words each, keeping the lexicon growing at roughly the cadence
 established here.
+
+
+---
+
+## 2026-05-05 — Briarwood NPCs become mobile (Builder run 11)
+
+The seven Briarwood villagers now move between role-specific anchors
+across the day. Midday default still matches every existing
+WorldBuilder spawn pos, so prior dialogue lines that say "I'm at the
+forge" / "by the well" / "at the inn" still tell the truth at midday.
+The other three buckets describe new lived-in beats.
+
+| NPC                  | Morning                                | Midday (default)              | Evening                              | Night                                |
+|----------------------|----------------------------------------|-------------------------------|--------------------------------------|--------------------------------------|
+| Elder Maeve          | At the well, blessing the day          | At her hut (6, 3)             | At the hearth, telling stories       | At her hut door, watching the road   |
+| Smith Edda           | Fanning coals at the forge             | Forge, peak hammer            | Forge, finishing strikes             | Quenching trough, banking the fire   |
+| Mara the Merchant    | Setting up the market stall            | Stall (selling)               | Counting coin near her hut           | At the inn (drinks with Bram)        |
+| Herbalist Lyra       | Foraging at the treeline (-7.5, -7.5)  | Hut (-3, -5), grinding herbs  | Hut, brewing                         | Hut, sleeping                        |
+| Innkeeper Bram       | Sweeping the inn doorstep              | Inn, polishing mugs           | Inn, peak service                    | Inn, banking the hearth fire         |
+| Stablemaster Roan    | Brushing horse outside the stable      | Stable (-10, -2)              | Leading the team in                  | Stable, lantern lit                  |
+| Trainer Hala         | Field forms                            | Field, peak training          | Lantern-side practice                | Field watch                          |
+
+### High-leverage observables (the moments that make the village feel real)
+- **Mara joins Bram at the inn at night.** Without schedules she was
+  stuck at her stall with no customers — now she walks ~12m east to
+  the inn at 21:00 and Bram's inn-night line ("Bards lie about half
+  their songs.") plays to an audience.
+- **Lyra walks to the treeline at dawn.** Her morning dialogue
+  variant — *"Four wolf pelts for a healing salve — wolves are bolder
+  at dawn, mind."* — is now spoken AT the treeline where wolves spawn.
+  Spatial truth matches dialogue truth.
+- **Maeve sits at the hearth in the evening.** The hearth is at
+  (0, -2), 6m southwest of her hut. Her evening line previously said
+  "Tea by the hearth?" while she stood 6m from the hearth. Now she's
+  there.
+- **Edda's micro-shifts.** Never strays more than 1m from the forge —
+  she's the smithy. Motion sells dedication rather than relocating her.
+
+### Compounds with parallel-builder's run-11 player_renown
+- All four JSON-opted NPCs (Maeve, Edda, Bram, Lyra) now have:
+  - JSON-tree dialogue resolution (existing)
+  - `high_renown` predicate that fires (parallel-builder run-11)
+  - Spatial position truth (THIS run)
+- Lyra's `high_renown` line is reachable AT the treeline at dawn or AT
+  her hut at midday — wherever the player crosses her path with
+  `unlocked_achievements.size() >= 4`. The line "Mara mentioned a name
+  on her last circuit" plays in two distinct settings depending on
+  when the player meets her.
+
+### Quartet on Longnight Vigil (queued)
+Edda, Maeve, Bram, AND Lyra all ship a `longnight_vigil` mood-key in
+their JSON trees (run-10 lore). With schedules in place, a future
+festival hook can route all four to the well at vigil time — the
+village's quietest scene plays itself with the quartet visibly
+converged. No additional scripting beyond a one-shot `schedule_anchors`
+swap during the vigil window.
+
+### What schedules do NOT do (yet)
+- No walk-anim swap. NPCs play their idle anim while moving. Polisher
+  hook documented for next run.
+- No path-aware avoidance. Schedule walker is straight-line lerp;
+  anchor positions chosen to avoid current fences.
+- No festival overrides. Schedule is uniform across all in-game days.

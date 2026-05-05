@@ -705,3 +705,78 @@ GoldLabel at the same x-offset and font size, in a slightly cooler gold
 a related pair without competing for attention. THEME §12 motion-and-life:
 the label scale-pulses 1.0 → 1.18 → 1.0 over 0.45s on every gain (same
 back-then-sine grammar as damage numbers).
+
+
+---
+
+## NPC schedules (run 11)
+
+Schema for `NPC.schedule_anchors` and the schedule walker. Authored in
+`scripts/NPC.gd` + `scripts/WorldBuilder.gd`.
+
+### Schema: `NPC.schedule_anchors`
+- Type: `Array` (untyped Array of `Vector3`, up to 4 entries).
+- Index meaning (matches the canonical mood-bucket cliffs reused by
+  `dialogue_variants` / `warmed_*` / DialogueDB time-of-day keys):
+    [0] morning  (5.0  ≤ tod < 11.0)
+    [1] midday   (11.0 ≤ tod < 17.0)
+    [2] evening  (17.0 ≤ tod < 21.0)
+    [3] night    (tod < 5.0  OR  tod ≥ 21.0)
+- Empty / missing → legacy stationary behavior. Shorter arrays clamp to
+  last entry — a 1-element array means "always at this anchor".
+- Authored ONLY in `WorldBuilder.NPCS[].schedule`. `_make_npc` filters
+  out non-Vector3 entries before assigning.
+
+### Knobs
+- `NPC.schedule_speed: float` — m/s walk speed. Default 0.8.
+- `NPC.schedule_arrival_radius: float` — within this distance of target,
+  position snaps and walker idles. Default 0.5m. Avoid below 0.25m.
+
+### Internal state
+- `NPC._spawn_y: float` — cached `global_position.y` at `_ready`. Walker
+  preserves this y on every position write so THEME §13 GROUND CONTACT
+  cannot be violated.
+- `NPC._last_bucket: int` — debug / future bucket-change hook.
+
+### Walker semantics
+- Halts when `player_in_range`. Resumes on `body_exited`.
+- xz-only motion; y locked to `_spawn_y`.
+- Faces direction of motion via `look_at(face_at, Vector3.UP)`, guarded
+  against zero-direction degeneracy by 0.001m length check.
+- Free op when `schedule_anchors.is_empty()` — early return in `_process`.
+
+### Author rules
+1. Schedule anchors should be authored on a 5–10m radius around the NPC's
+   spawn pos. Larger walks at 0.8m/s feel sluggish (a 20m walk takes
+   25s real-time at default speed).
+2. Keep `y = 0` in authored anchors. Walker forces `_spawn_y` regardless.
+3. Never anchor an NPC inside a building wall or impassable path —
+   NPCs are `StaticBody3D`, the player capsule will collide.
+4. If an NPC's dialogue *describes* a specific spot ("at the well"),
+   the schedule's matching-bucket anchor should put them there.
+
+### Compound graph as of run 11
+
+```
+World.time_of_day  ──→  4 buckets ──→  dialogue_variants  (legacy mood)
+                                  ──→  warmed_*_dialogue_variants (3 tiers)
+                                  ──→  DialogueDB time-of-day keys
+                                  ──→  NPC.schedule_anchors (NEW THIS RUN)
+
+World.unlocked_achievements (size) ──→ World.player_renown (parallel run)
+                                  ──→ DialogueDB.high_renown predicate
+
+NPC._spawn_y (cached _ready) ──→ schedule walker y-clamp (THEME §13)
+WorldBuilder.NPCS[].schedule ──→ NPC.schedule_anchors (per-NPC author)
+```
+
+### Smoke-test checklist for QA agents
+- Spawn the player, observe each NPC at midday — should match each
+  `NPCS[].pos` value.
+- Set `World.time_of_day = 6.0` → all NPCs walk toward morning anchor
+  over the next ~10s of real time.
+- Set `time_of_day = 22.0` → Maeve at hut door, Bram at inn, Mara at
+  inn (drinks with Bram — high-leverage observable), Lyra at hut,
+  Edda at quenching trough, Roan at stable, Hala at field watch.
+- Approach an NPC — they halt motion within 1 frame of `player_in_range`.
+- Walk away — they resume walking on next `_process` tick.

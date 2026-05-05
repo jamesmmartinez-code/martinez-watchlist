@@ -2012,3 +2012,110 @@ all four opted-in NPCs (Maeve, Edda, Bram, Lyra).
    NEW system in the queue once the integration debt clears.
 
 ### Branch pushed: `auto/builder`
+
+
+---
+
+## 2026-05-05 — BUILDER run 11 (NPC schedules)
+
+### Branch: `auto/builder` — rebased on integrator's run-4 HEAD
+This run's first push lost the lane race to a parallel Builder agent
+shipping `World.player_renown` + Lyra JSON opt-in. The integrator's
+run-4 cycle merged that work into main. This commit rebases the
+SCHEDULE-only deliverable onto the new clean `auto/builder` (off run-4
+integrator HEAD) — duplicates dropped, schedules added.
+
+### Theme gate
+- THEME §12 cited (MOTION & LIFE — every visible thing must move): NPCs
+  were stationary outside their idle-anim loop; this run gives all 7
+  villagers positional motion across the day so their ambient role-
+  behavior plays at the *right place* at the *right time*.
+- THEME §13 cited (GROUND CONTACT): schedule walker preserves spawn-time
+  `y` (`_spawn_y` cached in `_ready`); xz-only motion; no anchor can
+  sink or float an NPC even if a future author writes a nonzero anchor y.
+- Mood-board panel: Briarwood village dawn — Maeve at the well, Edda
+  fanning forge, Bram unlocking inn shutters, Lyra returning from herb-
+  foraging at the treeline.
+
+### Feature shipped
+**NPC SCHEDULES** (backlog item #3). Each visible villager moves between
+role-specific anchor positions over a 24-h in-game day (~6 real-min
+period at the existing `time_of_day` advance rate of `delta * 24/360`).
+Buckets reuse the canonical 4-tier mood-bucket cliffs (5/11/17/21) so a
+schedule transition coincides exactly with a dialogue-tier transition.
+Smooth lerp at 0.8 m/s with 0.5m arrival-radius snap. Halts during
+dialogue range so the player can converse without chasing.
+
+### Files changed (2 .gd + 3 .md)
+- `eldoria-godot/scripts/NPC.gd` — 3 new exports (`schedule_anchors`,
+  `schedule_speed`, `schedule_arrival_radius`), 2 new internal vars
+  (`_spawn_y`, `_last_bucket`), `_process` calls `_tick_schedule(delta)`
+  when anchors non-empty AND player not in range, new `_tick_schedule()`
+  walker + `_bucket_for_tod()` helper. ~70 LOC added; legacy NPCs (no
+  anchors set) untouched.
+- `eldoria-godot/scripts/WorldBuilder.gd`:
+  - `schedule` Vector3-array key authored on all 7 NPCs in `NPCS` const
+    (Maeve, Edda, Mara, Lyra, Bram, Roan, Hala — see WORLD_STATE table).
+  - `_make_npc()` reads `data.get("schedule", null)` and, if Array of
+    Vector3, copies into `npc.schedule_anchors`.
+- `CHANGES.md` — this run log.
+- `SYSTEM_REGISTRY.md` — registered `NPC.schedule_anchors` schema +
+  bucket boundaries + author rules + smoke-test checklist.
+- `WORLD_STATE.md` — Briarwood-mobility table (7 NPCs × 4 buckets) +
+  high-leverage observables.
+
+### Compounds with parallel-builder run 11 (player_renown)
+- The schedule walker reuses the same `World.time_of_day` 4-bucket
+  cliffs that DialogueDB reads for time-of-day mood keys. Since the
+  parallel run shipped `player_renown` + Lyra JSON opt-in, ALL FOUR
+  opted-in NPCs (Maeve, Edda, Bram, Lyra) now have:
+    1. JSON-tree dialogue resolution (run 9 + 10 + 11 lore work)
+    2. `high_renown` predicate that actually fires (parallel run 11)
+    3. Spatial-position truth matching dialogue truth (THIS run)
+- Lyra's morning JSON line about "marshmint at the forest edge" now
+  plays AT the forest edge (anchor at -7.5,-7.5) where the dialogue
+  said she was. Spatial truth ↔ dialogue truth.
+
+### 5-output check
+i.   **INTEGRATION** ✓ — schedule walker reads `World.time_of_day` (run-1
+     primitive); buckets match the canonical 5/11/17/21 cliffs reused by
+     `dialogue_variants`, `warmed_*`, and DialogueDB time-of-day keys.
+ii.  **SCHEMA** ✓ — new `schedule` key in NPCS dict (Array[Vector3], up
+     to 4 entries, clamped). Registered in SYSTEM_REGISTRY.
+iii. **FEEDBACK** ✓ — visible motion at 0.8m/s with face-direction yaw;
+     0.5m arrival radius snap. Idle anim keeps playing throughout walk
+     (walk-anim swap is a documented Polisher hook).
+iv.  **EVAL** ✓ — paren/bracket/brace balance verified on both .gd files.
+     No `:= variant` patterns. Tab indentation consistent. Spawn-y
+     cache locks ground contact; `look_at` guarded against zero-direction
+     degeneracy.
+v.   **HOOKS COMPOUND** ✓ —
+     1. NPC physical position now matches what the dialogue *says*.
+     2. Mara → inn at night puts her in earshot of Bram's evening line.
+     3. Lyra → treeline at dawn matches her morning JSON line about
+        marshmint at the forest edge.
+     4. Future quest predicate `npc_at(name, location)` becomes trivial
+        once schedule anchors are public.
+     5. Festival staging (Longnight Vigil quartet) gains a *spatial*
+        dimension — quartet members can converge on the well at vigil
+        time, not just speak in the same JSON key.
+
+### What next run picks up
+1. **Builder/UI** (carried 4th run) — `assets/ui/eldoria_theme.tres`
+   StyleBoxTexture wrapper for the 8 shipped panel PNGs.
+2. **Builder/Material** (carried 5th run) — wire the 5 PBR roughness
+   maps in WorldBuilder where bark/rock/snow/thatch/wood/stone albedo
+   is set.
+3. **Builder** — Crystal Caves dungeon (entrance NW, Vector3(-50, 0, -40)).
+   Highest-leverage backlog item now that motion + dialogue + faction +
+   achievement + renown stacks all compound.
+4. **Lore** — Mara JSON (`data/dialogue/mara_the_merchant.json`) — only
+   un-JSONed villager with a high-leverage `low_health_player` hook.
+   Schedule anchor lands her at the inn at night where Bram's JSON
+   has dialogue about her.
+5. **Polisher** — walk anim swap-in for NPCs in motion. Detect
+   `velocity.length() > 0.05` (or position delta) and play "Walk"
+   animation if the GLB ships one; else keep current Idle.
+6. **QA** — smoke-test the schedule walker. Set `time_of_day = 6.0` /
+   `13.0` / `19.0` / `22.0` in turn and verify each villager arrives
+   at the registered anchor.
