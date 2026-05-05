@@ -21,6 +21,13 @@ class_name Enemy
 @export var respawn_delay: float = 35.0
 @export var tint: Color = Color(0.45, 0.85, 0.30)
 @export var enemy_model: PackedScene = preload("res://assets/models/RobotExpressive.glb")
+# THEME §4 — per-kind real fantasy models override the placeholder RobotExpressive.
+# Source-credited GLBs (CC-BY) live under assets/models/enemies/. When a kind has
+# a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
+# (the model carries its own hand-painted textures — tinting muddies them).
+const KIND_MODELS := {
+	"goblin": preload("res://assets/models/enemies/goblin_scout.glb"),
+}
 
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
@@ -90,7 +97,11 @@ func _ready() -> void:
 func _spawn_model() -> void:
 	if _model:
 		_model.queue_free()
-	_model = enemy_model.instantiate()
+	# THEME §4: prefer a per-kind hand-crafted GLB (assets/models/enemies/) when present;
+	# fall back to the @export'd placeholder for kinds we haven't sourced yet.
+	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
+	var uses_real_model: bool = src != enemy_model
+	_model = src.instantiate()
 	# Scale by kind
 	match enemy_kind:
 		"goblin":
@@ -109,7 +120,39 @@ func _spawn_model() -> void:
 		_:
 			_model.scale = Vector3(1.0, 1.0, 1.0)
 	add_child(_model)
-	_model.call_deferred("propagate_call", "set", ["modulate", tint])
+	# Real fantasy models carry their own painted textures — applying the
+	# placeholder's green tint would muddy them. Tint only the fallback robot.
+	if not uses_real_model:
+		_model.call_deferred("propagate_call", "set", ["modulate", tint])
+	else:
+		# Auto-play idle animation if the model carries one (e.g. goblin_scout.glb has IdleAnimation).
+		call_deferred("_play_model_idle_anim")
+
+func _play_model_idle_anim() -> void:
+	# Walks the spawned model subtree for an AnimationPlayer and plays an idle-flavored
+	# animation if one exists. Names vary by source GLB — try a few common spellings.
+	if not is_instance_valid(_model):
+		return
+	var ap: AnimationPlayer = _find_animation_player(_model)
+	if ap == null:
+		return
+	for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle"]:
+		if ap.has_animation(n):
+			ap.play(n)
+			return
+	# Fall back to whatever animation the file ships with first.
+	var names := ap.get_animation_list()
+	if names.size() > 0:
+		ap.play(names[0])
+
+func _find_animation_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var found := _find_animation_player(c)
+		if found != null:
+			return found
+	return null
 
 func _make_hp_bar() -> Node3D:
 	var root := Node3D.new()

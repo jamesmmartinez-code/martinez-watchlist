@@ -2,6 +2,7 @@
 
 ## 3D Models — Sketchfab (CC Attribution)
 - **Hero.glb** — "Emma – Stylized Adventure Character" by [sanaullahrais](https://sketchfab.com/sanaullahrais), Sketchfab CC Attribution. https://sketchfab.com/3d-models/790391aec68649dab097e5b83d0351a4
+- **enemies/goblin_scout.glb** — "Goblin Animations" by [codywellman](https://sketchfab.com/codywellman), Sketchfab CC Attribution. Goblin model by Victor-Emmanuel Pancrazi (artstation.com/babichon), rig by Thomas Vialetto (artstation.com/tvialetto), concept by Youssef Zamani (artstation.com/usefzamani). https://sketchfab.com/3d-models/goblin-animations-b9705b05dd6c47b29ec943bc096cbf3a
 
 ## Textures — PolyHaven (CC0)
 ## Audio — Procedurally generated (CC0)

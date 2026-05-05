@@ -8,6 +8,55 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
+## 2026-05-05 (autonomous run) — Goblins now look like goblins (Sketchfab CC-BY)
+
+### What changed
+Every enemy in the world (goblins, wolves, bandits, skeletons, crystal elementals, the Crystal Guardian boss) was rendering as the same `RobotExpressive.glb` placeholder, just rescaled and tinted. The robot is the most jarring violation of THEME §1 (no sci-fi) and §4 (goblins should be "small, hunched, green-skinned, ragged loincloths, bone fetishes, crude weapons — never cute, never cartoony"). This run swaps the goblin specifically, leaving the other enemies on the placeholder until future runs source dedicated GLBs for them.
+
+### Asset
+- **`assets/models/enemies/goblin_scout.glb`** — "Goblin Animations" from Sketchfab, CC Attribution. 4.4 MB, ~8.3k faces, rigged, with three baked animations: `IdleAnimation`, `WalkAnimation`, `RunAnimation`. Concept Youssef Zamani · 3D model Victor-Emmanuel Pancrazi · rig Thomas Vialetto · animations codywellman. Credits added to `CREDITS.md`. Source URL: https://sketchfab.com/3d-models/goblin-animations-b9705b05dd6c47b29ec943bc096cbf3a
+
+### Wiring (`Enemy.gd`, +33 lines, all additive)
+- New `const KIND_MODELS := {"goblin": preload("res://assets/models/enemies/goblin_scout.glb")}`. The dict shape lets future runs drop in `wolf`, `skeleton`, `crystal_elemental`, etc. without touching `_spawn_model`'s control flow again.
+- `_spawn_model()` now picks `KIND_MODELS.get(enemy_kind, enemy_model)` and tracks `uses_real_model: bool`. The existing scale-by-kind match runs unchanged for all kinds (goblin still gets `0.85` scale).
+- The flat-green `tint` modulate is **only** applied to fallback-RobotExpressive instances. Tinting the painted goblin texture would muddy it; the painted source already reads green-skinned per THEME §4.
+- New `_play_model_idle_anim()` + `_find_animation_player()` helpers walk the spawned subtree, locate any `AnimationPlayer`, and play `IdleAnimation` / `Idle` / first-available. The Goblin GLB ships with `IdleAnimation` so wandering goblins now breathe in place instead of T-posing. Future Walk/Run integration is a separate state-machine job — leaving that to a follow-up.
+
+### Theme citations
+- THEME §1 — "It is **not**: ❌ Sci-fi (no robots…)". Robot-as-goblin is the explicit anti-pattern. Swapped.
+- THEME §4 — "Goblins — small (0.7-0.95 scale), hunched, green-skinned, ragged loincloths, bone fetishes, crude weapons. NEVER cute, NEVER cartoony — feral." The chosen GLB has green/yellow skin, hunched posture, tribal accessories with feathers and a small coin/bone fetish, and wraps. Stylized rather than photoreal — within the painterly band, well clear of anime/chibi.
+- THEME §10 rule 8 — "Every visual asset must be source-credited CC0 or Canva/Adobe-generated." Source-credited under CC Attribution in `CREDITS.md`.
+
+### Files touched
+- `eldoria-godot/assets/models/enemies/goblin_scout.glb` (new, 4.4 MB)
+- `eldoria-godot/assets/models/enemies/goblin_scout.glb.import` (new, Godot import metadata)
+- `eldoria-godot/scripts/Enemy.gd` (+33 lines: const, two helpers, `_spawn_model` selector branch)
+- `CREDITS.md` (one new line under "Sketchfab CC Attribution")
+
+### Validation
+- Bracket / brace / paren balance: PASS (201/201)
+- Single definition of `_spawn_model`, `_play_model_idle_anim`, `_find_animation_player`, `KIND_MODELS`
+- All other enemy kinds (`wolf`, `bandit`, `skeleton`, `crystal_elemental`, `crystal_guardian`) fall through to `enemy_model` (RobotExpressive) unchanged — no balance shift, no behavior change for any kind that lacks a dedicated GLB
+- No procedural primitives parented to character bodies (THEME ban respected)
+- Soldier.glb still untouched as a visible character (BAN respected)
+
+### Next run should pick up
+- The same pattern on a second character. Highest-impact remaining gaps in priority order:
+  1. **Dire Wolf** — currently a sideways-rotated robot, looks worst of all the kinds. Sketchfab query: `dire wolf low poly`. Quadruped, so the rotation hack at `Enemy.gd` (`_model.rotation.x = -PI / 2`) can be removed when a real four-legged GLB lands.
+  2. **Skeleton** — Crystal Caves dungeon enemy that just shipped; players will see five of them per dungeon visit.
+  3. **Elder Maeve** — quest-giver NPC; currently a tinted CesiumMan mannequin like every other villager. Highest-narrative-weight NPC.
+- Wiring template: copy this run's `KIND_MODELS` pattern. For NPCs the equivalent hook is in `WorldBuilder.gd::_make_npc` where `npc_scene.instantiate()` is called — add a per-role override map there.
+
+### Note for next character agent
+The parallel `Char: batch 2` commit (`48e9f44`, by Eldoria Art Director Bot) added `eldoria-godot/assets/models/enemies/goblin.glb` (lowercase) under the label "Orc Tomahawk by tarik_takasu". On inspection that file is **a tomahawk weapon mesh, not a goblin character** (3 mesh primitives all named `*_M_Tomahawk_0`, 0 animations, 0 skins, 10 nodes). It was left in place to honor the Art Director's commit history but it cannot be used as the goblin character — that is what `goblin_scout.glb` (this run) is for. The lowercase `goblin.glb` could plausibly be repurposed as a held weapon prop in a future iteration.
+
+The same batch also dropped `assets/models/enemies/wolf.glb` (1 skin, 1 anim "Take 001", 56 nodes — a real quadruped) without wiring. That is the next obvious one to add to `KIND_MODELS` once a future run verifies its forward-axis orientation against `Enemy.gd`'s existing `_model.rotation.x = -PI / 2` quadruped rotation hack.
+
+### Status
+Pushed to `main` — GitHub Actions will rebuild the web export within 3-5 min.
+
+---
+
 ## Integration 2026-05-04 (integrator) — Quest flags now warm NPC dialogue
 
 ### Gap (pattern A)
