@@ -292,7 +292,7 @@ relationship with the player. Flip if play-testing disagrees.
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; **two reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing) |
+| Dire Wolves      | hostile     | 0.5      | mutable; **THREE reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17) + `wolf_form_with_hala` (-0.1, run 18); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier); Hala speaks at <warm_flag `wolf_form_taught` (run-18 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density — all three cliffs now player-reachable in a single save); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8 adaptive pacing); FIRST `all_npc_flags` achievement consumer wired (run-18 `wolf_tamer`) |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) AND chase wired (run-8) — both fire the moment the dungeon ships** |
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
 only by `World.apply_consequence({...})`.
@@ -308,6 +308,7 @@ read by dialogue / spawning / future runs.
 | `lyra_potion_brew`    | pelt_for_lyra         | unset   | future: Lyra unlocks rarer potions in shop |
 | `mara_bounty_paid`    | ears_for_mara         | unset   | future: Mara raises buy prices on goblin loot |
 | `roan_bounty_paid`    | wolf_fang_for_roan    | unset   | future: Maeve cross-NPC mention; Edda fang-stitched greaves recipe (run 17) |
+| `hala_wolf_form_done` | wolf_form_with_hala   | unset   | run 18: `wolf_tamer` achievement reads the npc_flag side; future: Hala teaches an advanced wolf-defense technique unlocking a counter-stance buff |
 
 Read with `World.has_world_flag(name)`. Convention: flag names are
 `snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.

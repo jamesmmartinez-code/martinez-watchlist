@@ -243,6 +243,54 @@ const QUEST_CATALOG := {
 			"toast": "🐎 The road feels safer. Roan tips his hat.",
 		},
 	},
+	# COMPOUND (run 18 — Builder): Hala-issued wolf-form kill quest. THIRD
+	# `dire_wolves` reducer (after pelt_for_lyra -0.1 and wolf_fang_for_roan
+	# -0.1). Standalone path: 0.5 → 0.4 trips the run-6 first cliff (4 → 3
+	# wolves). With Lyra + Roan already in: 0.3 → 0.2 trips the second cliff
+	# (3 → 2). With ALL THREE finished AND `whisperwood_cleansing` already
+	# nudged the goblin pressure, the wolf threat reaches the run-6 third
+	# cliff — packs of 1, the road safely walkable for the first time.
+	# Hala is the FOURTH NPC to ship a quest (after Maeve, Lyra, Mara, Roan);
+	# her role `trainer` was previously quest-blank. Lights up:
+	#   * Hala dialogue tier 2 (warm_flag `wolf_form_taught`, 4 lines added
+	#     in WorldBuilder run 18). Hala goes from memory-only to memory +
+	#     warm_flag, mirroring the depth Lyra/Mara/Roan reached.
+	#   * Wolf spawn density: third reducer fully traverses the curve.
+	#     Adaptive cooldown (run 7) and chase speed (run 8) lerp another
+	#     step on the same scalar — surviving wolves stay ⚡-tagged faster.
+	#   * `hala_wolf_form_done` world_flag joins the four existing
+	#     quest-completion flags. Achievements.gd run-18 ships the FIRST
+	#     consumer ("Tamer of the Wolfwoods"); future runs can compose
+	#     against it without code changes.
+	# Reward economy: Hala is XP-heavy — 90 xp (highest of the four wolves
+	# quests) and 35 gold (lowest). Reflects her role: she trades knowledge,
+	# not coin. `kind: kill` (NOT fetch) — only the SECOND kill quest after
+	# `whisperwood_cleansing`. needed=4 keeps the wolf grind tight (4 kills
+	# ≈ 1.5 fangs + 1.5 pelts at run-17 weights, so Roan + Lyra fetch
+	# quests progress in parallel without re-grinding).
+	"wolf_form_with_hala": {
+		"giver": "Trainer Hala",
+		"actor": "Trainer Hala",
+		"role": "trainer",
+		"kind": "kill",
+		"target": "wolf",
+		"needed": 4,
+		"title": "Wolf-Form, Tested",
+		"text": "Hala bids you fell 4 dire wolves to prove the form",
+		"xp_reward": 90,
+		"gold_reward": 35,
+		"motivation": "duty",
+		"location": "Whisperwood",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "dire_wolves",
+			"pressure_delta": -0.1,
+			"npc_flag": ["Trainer Hala", "wolf_form_taught"],
+			"world_flag": "hala_wolf_form_done",
+			"toast": "🗡️ Hala nods. The form holds. The forest knows.",
+		},
+	},
 }
 
 

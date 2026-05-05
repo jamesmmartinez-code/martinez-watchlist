@@ -1,3 +1,212 @@
+## 2026-05-05 — Builder run 18 (Hala wolf-form quest + Tamer of the Wolfwoods achievement)
+
+### What I'm building
+Hala-issued wolf-form kill quest (`wolf_form_with_hala`) — the THIRD
+`dire_wolves` reducer (after Lyra's pelt fetch and Roan's fang fetch).
+Plus the FIRST consumer of stacked quest-completion npc_flags: the
+`wolf_tamer` achievement ("Tamer of the Wolfwoods" / title "the
+Wolf-Tamer"). One feature; the achievement is the cheap compound hook
+the run 17 next-run TODO list named for free.
+
+### THEME §X cited
+- §1 (warm gravitas): Hala's bounty pitch ("Wolves still circle the
+  road. Take down 4 — you'll learn the form by doing.") names the
+  threat and the lesson in one breath, no speeches.
+- §2 (medieval, no modern): payment is xp + coin from a teacher's
+  purse, no paperwork, no quest log "objectives" jargon. The form is
+  bodily; she'll know if you held it.
+- §4 (silhouette-distinct NPCs): Hala retains her warrior-monk
+  silhouette (warrior.glb @ 1.10 scale, scarred wraps) — no model
+  change. Dialogue is the only identity vector touched.
+- §6 (audio): no new music/SFX; existing kill-confirm chime fires on
+  each wolf takedown — already in canon.
+- §7 (warm gravitas): Hala's warm lines withhold praise behind a
+  craft-mastery frame ("Form held. Few I've taught hold it under
+  teeth. Few."). Matches her established "quiet mastery" voice
+  without breaking into pep-talk territory.
+
+### Mood board panel
+N/A — mood-boards/ directory not present. Cited THEME.md §1, §2, §4,
+§6, §7 directly per the THEME-gate fallback.
+
+### 5-output rule
+
+(i) **Integration** — Plumbed into the existing quest pipeline:
+- `World.gd QUEST_CATALOG`: `wolf_form_with_hala` added below
+  `wolf_fang_for_roan`. Role `trainer` — Hala's existing role, the
+  only trainer-role NPC, so `_quest_for_role("trainer")` returns it
+  unambiguously. Fields match the established quest schema; `kind:
+  kill` and `target: "wolf"` plug into the existing
+  `Player.on_enemy_killed("wolf")` flow that `whisperwood_cleansing`
+  already exercises (the only other kill quest pre-this run).
+- `WorldBuilder.gd NPCS`: Hala's legacy "Each level…" line moves to
+  `lines[0]` (still cycles in generic talk) and `line` becomes the
+  bounty pitch. New `warm_flag: "wolf_form_taught"` + 4 `warm_lines`.
+  Existing `memory_visits_min: 3` (run 16) stays — composes as Tier
+  5, while warm_flag is Tier 2. No schedule/skin changes.
+- `Achievements.gd ACHIEVEMENTS`: `wolf_tamer` added below
+  `pack_thinner`. Predicate uses the existing `all_npc_flags`
+  evaluator — zero new predicate kinds; this is the FIRST achievement
+  to compose three different NPCs' flags into one unlock.
+- The consequence dict (`-0.1` `dire_wolves`, npc_flag, world_flag,
+  toast) flows through the same `World.apply_consequence()` path
+  that four other quests already use. Zero new state shapes.
+
+(ii) **Schema** — All three new entities follow the existing schemas
+(no new shapes introduced):
+- Quest schema: `giver`, `actor`, `role`, `kind`, `target` (kill
+  quests), `needed`, `title`, `text`, `xp_reward`, `gold_reward`,
+  `motivation`, `location`, `urgency`, `world_trigger`,
+  `consequence` — same as `whisperwood_cleansing` (the only other
+  kill quest).
+- Consequence: `faction`, `pressure_delta`, `npc_flag`, `world_flag`,
+  `toast` — same as the four existing reducers.
+- Achievement schema: `name`, `desc`, `icon`, `icon_path`,
+  `title_text`, `title_priority`, `predicate` — same as the five
+  existing entries.
+- Predicate kind `all_npc_flags` is documented in the file header
+  and was already exercised by `trusted_three`. New entry is
+  data-only.
+- World flag naming: `hala_wolf_form_done` follows the established
+  npc_action snake_case convention (`mara_bounty_paid`,
+  `lyra_potion_brew`, `whisperwood_safer`, `roan_bounty_paid`).
+- npc_flag naming: `wolf_form_taught` is the FIRST flag whose name
+  encodes the LESSON rather than the relationship — matches Hala's
+  "trades knowledge, not coin" identity. Lyra → `trusts_player`
+  (relationship), Mara → `good_customer` (transactional), Roan →
+  `first_bounty_done` (achievement-shaped), Hala →
+  `wolf_form_taught` (pedagogical). Each flag name encodes its
+  giver's worldview — a small lore consistency.
+SYSTEM_REGISTRY.md updated with the new quest entry and run-18 note.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- Hala's pitch line speaks the bounty immediately, instead of the
+  legacy generic "spirit grows" koan.
+- Quest panel pitch: "Hala bids you fell 4 dire wolves to prove the
+  form" with title "Wolf-Form, Tested".
+- Quest turn-in toast: "🗡️ Hala nods. The form holds. The forest
+  knows."
+- Dialogue change on turn-in: warm_flag tier opens four new Hala
+  lines naming the player's craft mastery (held form under teeth).
+- Wolf pack: drops by 1 per camp at the run-6 SECOND/THIRD cliff
+  (depending on which other reducers are in). Combined with Lyra +
+  Roan, the wolf pressure can reach 0.2 in a single save — packs of
+  1, the Whisperwood walkable for the first time.
+- Surviving wolves get `⚡` agitated prefix and lerp ~0.05 m/s
+  faster via runs 7 + 8 cooldown / chase compounds. Same scalar.
+- Achievement unlock: when the player has finished Lyra's pelt,
+  Roan's fang, AND Hala's wolf-form, the toast "Tamer of the
+  Wolfwoods" pops with title "the Wolf-Tamer" — title_priority 35
+  takes over from "Wolf-Friend" (30) and yields cleanly to
+  "Goblin-Bane" (40) when the player tackles the goblin curve.
+
+(iv) **Eval** — Paren/quote balance validated programmatically (Python
+script in this run runs the same `(`/`)`, `[`/`]`, `{`/`}` count assert
+the THEME-gate pre-push check uses):
+- `World.gd` `()` `[]` `{}` balanced.
+- `WorldBuilder.gd` `()` `[]` `{}` balanced.
+- `Achievements.gd` `()` `[]` `{}` balanced.
+- Tier resolution invariant unchanged: warm_flag tier (Tier 2) only
+  fires if JSON tree (Tier 1) misses; Hala already has a JSON file
+  at `data/dialogue/trainer_hala.json` (shipped run 11 lore +
+  integrator cherry-pick), so the JSON resolves first when its
+  predicates match — warm_lines surface only on JSON miss. Memory
+  tier (Tier 5) still fires when warm_flag misses. No tier
+  ordering changes.
+- Quest catalog cardinality: 5 quests now (was 4), all `role` values
+  still unique (`quest`, `alchemy`, `shop`, `stable`, `trainer`).
+  `_quest_for_role()` linear scan still O(1) for practical purposes.
+- Achievement evaluator: `wolf_tamer` predicate is already supported
+  by `_eval_predicate_all_npc_flags` — no new predicate kind, no new
+  evaluator branch.
+
+(v) **2+ hooks**:
+1. **Hala visit-memory upgrade** — the existing `memory_visits_min: 3`
+   tier currently fires when warm_flag misses. After warm_flag is in,
+   a `memory_visits_min: 6` tier could fire OVER the warm_flag for
+   "I knew you for the type. The wolves did too." Single data edit;
+   composes against the same memory counter the run-16 system tracks.
+2. **Maeve cross-NPC mention** — Maeve's existing `warm_world_flag`
+   pattern (or new) speaks "the road's quiet at last — I hear them
+   thank you for it." against `hala_wolf_form_done`. Pure data,
+   matching the run-17 next-run TODO #1 for `roan_bounty_paid`.
+3. **Wolf-pelt → "Bone-Stitched Cloak" recipe** — Smith Edda's forge
+   UI (backlog #2) could consume 4 wolf_pelt + 1 leather → cloak
+   item once `wolf_form_taught` is set, gating crafting behind
+   teacher-approval. Lights up Hala's npc_flag as a CRAFTING gate,
+   not just a dialogue gate.
+4. **Adaptive difficulty hook** — wolf pressure 0.2 means
+   surviving-pack speed lerp is at +17% for very few wolves. Pack
+   members could spawn-promote to a `dire_wolf_alpha` variant once
+   pressure < 0.25 — replaces missing pack members with stronger
+   units, keeping the encounter sharp at low density. Lightweight
+   spawn-table edit in `Enemy.gd` plus a new kind.
+5. **"Form-Master" achievement** — once Hala teaches all four future
+   forms (wolf, goblin, bandit, undead) the achievement consumer
+   stacks 4× warm_flag entries. Single new entry in
+   `Achievements.ACHIEVEMENTS`; a spine for future combat-trainer
+   quests Hala-side.
+6. **Title auto-equip ladder** — current ladder is Apprentice (10),
+   Forged (25), Wolf-Friend (30), Wolf-Tamer (35), Goblin-Bane (40),
+   Trusted (50), Warden (100). The 5-step climb 30→35→40→50 is now
+   visible from Owen's earliest play, since each step is a single
+   quest-completion gap. Future runs can fill 60, 70, 80 with cross-
+   faction or cross-region titles.
+
+### Player-reachable state this run
+
+- Walk into Briarwood as a fresh save (level 1+). Visit Hala at the
+  training field (0, 0, -10). Her pitch reads: "Wolves still circle
+  the road. Take down 4 — you'll learn the form by doing."
+- Accept the bounty. Walk into Whisperwood. 4 wolf kills (any kind
+  flagged "wolf") completes the quest — drops happen as before via
+  the run-17 rebalanced DROP_TABLE.
+- Return to Hala. Quest completes; toast appears; Hala's dialogue
+  flips to the warm_flag tier on the very next interaction. Wolf
+  faction pressure drops by 0.1 (compounding with Lyra/Roan). At
+  pressure 0.2, wolf packs are at 1 unit per camp.
+- If Lyra's pelt and Roan's fang quests are also done, the
+  `wolf_tamer` achievement fires on the next `apply_consequence`
+  cycle. Title "the Wolf-Tamer" auto-equips above the player's head
+  (title_priority 35 beats Wolf-Friend's 30).
+
+### Files changed
+- `eldoria-godot/scripts/World.gd` (+39 lines: `wolf_form_with_hala`
+  quest entry + 22-line authoring comment)
+- `eldoria-godot/scripts/WorldBuilder.gd` (+19 lines: Hala bounty
+  pitch + warm_flag/warm_lines + 13-line authoring comments)
+- `eldoria-godot/scripts/Achievements.gd` (+18 lines: `wolf_tamer`
+  achievement + 11-line authoring comment)
+- `WORLD_STATE.md` (Dire Wolves row updated to THREE reducers; new
+  `hala_wolf_form_done` flag row)
+- `SYSTEM_REGISTRY.md` (`wolf_form_with_hala` quest row + run-18
+  note)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **Maeve mentions Hala/Roan** — `WorldBuilder.NPCS` Maeve gets
+   `warm_world_flag: "hala_wolf_form_done"` (or `roan_bounty_paid`)
+   + 4 lines. Pure data. Closes the cross-NPC flag-recognition
+   pattern.
+2. **Hala memory-upgrade tier** — second-tier memory fires AFTER
+   warm_flag at 6+ visits. Pure data.
+3. **Bandit kill quest** — Hala teaches 4 forms (wolf done; goblin,
+   bandit, undead remain). Bandit quest sets up backlog #4 (bandit
+   enemy variety) — wire the bandit GLB next run, then ship the
+   quest the run after.
+4. **Smith Edda fang-cloak recipe** — gates craft behind
+   `wolf_form_taught`; lights up Hala's npc_flag as a crafting gate.
+   Single recipe in the forge UI when it ships (backlog #2).
+5. **`wolf_tamer.png` painterly icon** — artist agent territory.
+   Today the icon falls back to the 🐺 emoji; ResourceLoader.exists
+   guards against the missing PNG (same fail-soft as run-15
+   achievement crests).
+
+---
+
 ## 2026-05-05 — ARCHITECT audit (1h survey @ 13:30 UTC)
 
 **Last hour:** 11 commits across 6 worker agents (5 worker pushes + 5
