@@ -19,6 +19,7 @@ var is_dead: bool = false
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
 var _jam_timer: float = 0.0
+var _input_log_t: float = 0.0  # PX: throttle input-state log
 
 # Stats
 var hp: int = 120
@@ -74,6 +75,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	current_speed = walk_speed
 	add_to_group("player")
+	# PX 2026-05-05: force initial spawn (scene file may have player at village center)
+	call_deferred("set", "global_position", Vector3(0, 3, 10))  # PX initial spawn override
 	add_to_group("quest_listeners")
 	collision_layer = 2  # player layer
 	collision_mask = 1 | 4  # collide with world (1) and enemies (4)
@@ -170,7 +173,28 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= gravity * delta
 
 	# Camera-relative input
+	# Primary input via action map
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	# PX 2026-05-05 fallback: if action map didn't fire (input map missing or broken),
+	# poll raw keys directly. Saves us if project.godot bindings ever drift.
+	if input_dir.length() < 0.01:
+		var rx: float = 0.0
+		var ry: float = 0.0
+		if Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT): rx -= 1.0
+		if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT): rx += 1.0
+		if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP): ry -= 1.0
+		if Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN): ry += 1.0
+		if rx != 0.0 or ry != 0.0:
+			input_dir = Vector2(rx, ry).normalized()
+	# Periodic input-state log (every ~2s @ 60fps) so DevTools shows whether keys are arriving
+	_input_log_t += delta
+	if _input_log_t > 2.0:
+		_input_log_t = 0.0
+		print("[Player] input state: dir=", input_dir, " W=", Input.is_physical_key_pressed(KEY_W),
+		      " A=", Input.is_physical_key_pressed(KEY_A),
+		      " S=", Input.is_physical_key_pressed(KEY_S),
+		      " D=", Input.is_physical_key_pressed(KEY_D),
+		      " pos=", global_position)
 	var cam_basis := camera_pivot.global_transform.basis if camera_pivot else Basis.IDENTITY
 	var direction := (cam_basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	direction.y = 0

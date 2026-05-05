@@ -21,27 +21,53 @@ def main(html_path):
     # 2. add focus manager + hint right before <script src="index.js">
     inject = '''
         <style>
+            #canvas{transition:box-shadow 0.2s;}
+            body.unfocused #canvas{box-shadow:0 0 0 6px #ff4444 inset !important;}
+            body.focused   #canvas{box-shadow:0 0 0 4px #44ff44 inset !important;}
             #focus-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-                background:rgba(255,195,60,0.95);color:#1a0e00;padding:18px 32px;
-                border-radius:12px;font:bold 22px/1.3 system-ui,sans-serif;
-                border:3px solid #1a0e00;cursor:pointer;z-index:9999;display:none;
-                box-shadow:0 6px 20px rgba(0,0,0,0.6);text-align:center;}
-            #focus-hint:hover{background:rgba(255,215,100,1);}
+                background:rgba(255,80,80,0.97);color:#1a0e00;padding:24px 38px;
+                border-radius:14px;font:bold 26px/1.3 system-ui,sans-serif;
+                border:4px solid #1a0e00;cursor:pointer;z-index:9999;display:none;
+                box-shadow:0 8px 28px rgba(0,0,0,0.7);text-align:center;
+                animation:focus-pulse 1s ease-in-out infinite;}
+            @keyframes focus-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
+            #focus-hint:hover{background:rgba(255,120,120,1);}
         </style>
-        <div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:14px;font-weight:normal;">(WASD won't work until you click on the game)</span></div>
+        <div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:16px;font-weight:normal;">(canvas needs keyboard focus for WASD)</span></div>
         <script>
         (function(){
             const c=document.getElementById('canvas');
             const hint=document.getElementById('focus-hint');
-            function focusCanvas(){try{c.focus();}catch(e){}}
-            function checkFocus(){if(document.activeElement!==c){hint.style.display='block';}else{hint.style.display='none';}}
-            window.addEventListener('load',()=>{setTimeout(focusCanvas,300);setTimeout(checkFocus,800);});
-            document.addEventListener('mousedown',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,50);});
-            document.addEventListener('click',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,50);});
-            hint.addEventListener('click',()=>{focusCanvas();checkFocus();});
-            setInterval(checkFocus,2000);
+            let focused=false;
+            function focusCanvas(){try{c.focus({preventScroll:true});}catch(e){}}
+            function checkFocus(){
+                const isFocused=(document.activeElement===c);
+                if(isFocused!==focused){
+                    focused=isFocused;
+                    document.body.classList.toggle('focused',focused);
+                    document.body.classList.toggle('unfocused',!focused);
+                    hint.style.display=focused?'none':'block';
+                    console.log('[Eldoria] focus state:',focused?'FOCUSED (WASD will work)':'NOT FOCUSED');
+                }
+            }
+            // AGGRESSIVE: refocus every 100ms for first 5 seconds (covers Godot init reclaim)
+            let aggressive_count=0;
+            const aggressive=setInterval(()=>{
+                focusCanvas();checkFocus();
+                if(++aggressive_count>=50){clearInterval(aggressive);}
+            },100);
+            // After 5s, drop to gentle 1s polling
+            setTimeout(()=>{setInterval(()=>{checkFocus();if(!focused)focusCanvas();},1000);},5000);
+            // Click anywhere -> focus canvas
+            document.addEventListener('mousedown',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,30);},true);
+            document.addEventListener('click',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,30);},true);
+            hint.addEventListener('click',(e)=>{e.stopPropagation();focusCanvas();checkFocus();});
             window.addEventListener('focus',()=>{focusCanvas();checkFocus();});
-            console.log('[Eldoria] focus manager active — canvas tabindex=1');
+            window.addEventListener('keydown',(e)=>{
+                if(!focused){focusCanvas();checkFocus();}
+                console.log('[Eldoria] keydown:',e.code,'focused:',document.activeElement===c);
+            },true);
+            console.log('[Eldoria] AGGRESSIVE focus manager v2 active');
         })();
         </script>
 '''
