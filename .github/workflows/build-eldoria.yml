@@ -102,6 +102,10 @@ jobs:
           mkdir -p eldoria
           cp -R eldoria-godot/web-export/* eldoria/
 
+      - name: Inject canvas focus-manager into index.html (PX 2026-05-05)
+        run: |
+          python3 .github/scripts/inject-focus-manager.py eldoria/index.html
+
       - name: Split index.pck into <100MB chunks (GitHub blob limit)
         run: |
           python3 .github/scripts/split-pck.py eldoria
