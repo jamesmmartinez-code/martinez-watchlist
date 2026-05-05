@@ -432,6 +432,16 @@ func _setup_dialogue_actions() -> void:
 		turn_in.visible = false
 		turn_in.pressed.connect(_on_turn_in_quest)
 		actions.add_child(turn_in)
+		# COMPOUND (run 12): Smith Edda forge button. Visible only on role==smithy
+		# (set in show_dialogue → _refresh_reforge_button). Disabled with a
+		# reason-string label when player has no weapon, is at max tier, or
+		# lacks the Crystal Shard cost — the button itself teaches the system.
+		var reforge := Button.new()
+		reforge.name = "ReforgeBtn"
+		reforge.text = "🔨 Reforge"
+		reforge.visible = false
+		reforge.pressed.connect(_on_reforge_pressed)
+		actions.add_child(reforge)
 		vbox.add_child(actions)
 		var close_btn := vbox.get_node_or_null("CloseBtn")
 		if close_btn:
@@ -486,6 +496,13 @@ func show_dialogue(speaker: String, text: String, role: String = "") -> void:
 			if q.get("giver", "") == speaker and player.is_quest_ready_to_turn_in():
 				ready_to_turn_in = true
 		turn_in_btn.visible = ready_to_turn_in
+	# COMPOUND (run 12): Smith Edda forge button — only visible when role=="smithy".
+	# `_refresh_reforge_button` handles enabled/disabled + label string from
+	# the player's current weapon/shard state, so the player learns the cost
+	# from the button itself without needing a separate UI panel.
+	var reforge_btn = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/ReforgeBtn")
+	if reforge_btn:
+		_refresh_reforge_button(reforge_btn, role, player)
 	dialogue_panel.visible = true
 
 func close_dialogue() -> void:
@@ -519,6 +536,91 @@ func _on_turn_in_quest() -> void:
 		# Apply downstream world-state mutations (factions, flags, NPC memory)
 		apply_consequence(consequence_dict)
 	close_dialogue()
+
+# ════════════════════════════════════════════════════════════════════════
+# Smith Edda Forge — reforge UI (run 12)
+# ════════════════════════════════════════════════════════════════════════
+# Crystal Caves drop crystal_shards; Smith Edda is the sink. Pressing the
+# 🔨 Reforge button in her dialogue panel calls
+# `Inventory.attempt_reforge(world)` which validates the shard cost, bumps
+# `forge_tiers[weapon_id]` by one, and sets the world flag
+# `first_reforge_done` (which lights up the new "first_forge" achievement
+# in Achievements.gd → +25 renown via the run-11 ladder).
+#
+# THEME §12 motion-and-life: the toast (handled by `_show_toast`) already
+# fades in/out; the existing `play_sfx("sword_hit")` + the renown-label
+# scale-pulse from run 11 fire on the same tick (achievement → renown
+# chain), so the forge moment lands as a layered feedback beat without any
+# new tween code.
+#
+# The button is its own self-teaching label. When the player can't afford
+# the cost, it reads "🔨 Reforge Iron Sword → +1  (need 5 💎, have 2)" so
+# Alden sees the gap rather than getting a silent no-op. When at max tier,
+# it reads "🔨 Iron Sword +3 already — peerless work" so Owen knows the
+# upgrade ladder ends.
+
+func _refresh_reforge_button(btn: Button, role: String, player) -> void:
+	# Smith Edda only. Visible whenever we're talking to her so the player
+	# learns the anvil exists; disabled with a reason string when the action
+	# can't proceed.
+	btn.visible = (role == "smithy")
+	btn.disabled = true
+	if role != "smithy":
+		return
+	if not (player and player.inventory):
+		btn.text = "🔨 Reforge — (anvil cooling)"
+		return
+	var inv = player.inventory
+	var weapon_id: String = inv.equipped_weapon_id()
+	if weapon_id == "":
+		btn.text = "🔨 Reforge — equip a weapon first"
+		return
+	var tier: int = inv.weapon_forge_tier(weapon_id)
+	var bn: String = String(Items.get_item(weapon_id).get("name", weapon_id))
+	if tier >= Items.REFORGE_MAX_TIER:
+		btn.text = "🔨 %s already — peerless work" % Items.forged_name(weapon_id, tier)
+		return
+	var cost: int = Items.forge_next_tier_cost(tier)
+	var shards: int = inv.count_item("crystal_shard")
+	if shards < cost:
+		btn.text = "🔨 Reforge %s → +%d  (need %d 💎, have %d)" % [bn, tier + 1, cost, shards]
+		return
+	btn.text = "🔨 Reforge %s → +%d  (%d 💎)" % [bn, tier + 1, cost]
+	btn.disabled = false
+
+func _on_reforge_pressed() -> void:
+	var player := get_node_or_null("Player")
+	if not (player and player.inventory):
+		return
+	var result: Dictionary = player.inventory.attempt_reforge(self)
+	if result.get("ok", false):
+		var weapon_id: String = String(result.get("weapon_id", ""))
+		var new_tier: int = int(result.get("new_tier", 0))
+		var nm: String = Items.forged_name(weapon_id, new_tier)
+		var dmg: int = int(result.get("new_damage", 0))
+		_show_toast("🔨 Edda hammers the steel — %s sings (%d dmg)" % [nm, dmg])
+		play_sfx("sword_hit")
+		# Refresh the dialogue button immediately so the new state is visible
+		# without re-talking to Edda. _refresh_reforge_button is pure read of
+		# the inv state we just mutated.
+		var reforge_btn = null
+		if dialogue_panel:
+			reforge_btn = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/ReforgeBtn")
+		if reforge_btn:
+			_refresh_reforge_button(reforge_btn, _current_npc_role, player)
+		# Damage HUD readout (player.stats_changed → _refresh_hud).
+		player.stats_changed.emit()
+	else:
+		var reason: String = String(result.get("reason", "unknown"))
+		match reason:
+			"no_weapon":
+				_show_toast("🔨 Equip a weapon before bringing it to the anvil.")
+			"max_tier":
+				_show_toast("🔨 Already +%d — Edda nods. \"This is as far as steel goes.\"" % int(result.get("tier", 3)))
+			"not_enough_shards":
+				_show_toast("🔨 Need %d Crystal Shards (you have %d)." % [int(result.get("need", 0)), int(result.get("have", 0))])
+			_:
+				_show_toast("🔨 The anvil rings hollow.")
 
 func on_quest_accepted(quest: Dictionary) -> void:
 	if quest_panel:

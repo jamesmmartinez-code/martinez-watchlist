@@ -991,3 +991,23 @@ Lyra's file did not seed new words; it composed against the
 existing eight. Future NPC files (Roan, Hala) should aim for 1–2
 new words each, keeping the lexicon growing at roughly the cadence
 established here.
+
+### Forge state (run 12 — Builder)
+
+- **`world_flags["first_reforge_done"] = true`** is set the first time
+  any reforge succeeds via Smith Edda's anvil. Read by the new
+  "first_forge" achievement (Achievements.gd, priority 25, title "the
+  Forged"). Same set/read contract as `boss_alive` / `boss_slain` —
+  written via `World.set_world_flag(...)`, read via `has_world_flag(...)`.
+- **`Inventory.forge_tiers: Dictionary[String, int]`** is a per-player
+  state living on `Player.inventory`, keyed on weapon base id. Persists
+  across equip-swaps so a forged weapon stashed in the bag does not lose
+  its tier on swap-back. Mutated only by `attempt_reforge(world)`. Pure
+  function of the cumulative successful reforges, so future save/load
+  can serialize it directly with no migration.
+- **Crystal Caves loop now closes.** Skeletons, Crystal Elementals and
+  the Crystal Guardian drop crystal_shards (Items.gd DROP_TABLE — runs
+  5 / 11 tuning); Smith Edda's reforge button (run 12) consumes them.
+  The run-5 cave was unconnected to the village economy until now; from
+  this run forward, every cave run produces a tangible village-side
+  upgrade beat.

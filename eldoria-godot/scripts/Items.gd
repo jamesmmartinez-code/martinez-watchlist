@@ -360,3 +360,73 @@ static func roll_chest_loot(pool: String, rng: RandomNumberGenerator, count: int
 					continue
 			results.append(r)
 	return results
+
+# ── Smith Edda forge upgrade ladder (run 12 — Builder) ──────────────────
+# The Crystal-Cave-shard sink. Player brings shards to Smith Edda; she
+# reforges the currently-equipped weapon, adding a flat damage bonus and
+# stamping a "+N" suffix on the display name. Tier is per-weapon-id so
+# swapping weapons doesn't burn progress (Iron Sword +2 stays +2 even if
+# you grab a frost_saber for one fight, then swap back).
+#
+# Capped at +3:
+#   tier 0 → 1 :  5 💎  (+2 dmg)   first reforge reachable in ~1 elemental kill
+#   tier 1 → 2 : 10 💎  (+4 dmg)   second tier ~3-4 kills
+#   tier 2 → 3 : 18 💎  (+6 dmg)   max tier ~7-9 kills
+# Total to fully reforge a weapon: 33 shards (~3 Crystal Caves runs at the
+# table-tuned drop rates set in run 11). 60% damage uplift on iron_sword,
+# ~14% on dragonfang — kid-friendly progression curve, never overpowers
+# the loot pyramid (a forged iron_sword is a steel_blade-tier weapon, NOT
+# a frost_saber-tier one).
+const REFORGE_MAX_TIER: int = 3
+
+# Per-step crystal_shard cost to upgrade FROM tier i to tier i+1.
+# COSTS[0] = first +1, COSTS[1] = second, COSTS[2] = max tier.
+const REFORGE_COSTS: Array[int] = [5, 10, 18]
+
+# Cumulative damage bonus per tier — flat int that adds to weapon.damage.
+# +2/+4/+6 lifts are tuned so even a rusty_sword (3 dmg) at +3 (9 dmg) reads
+# as a real upgrade for Alden's first cave run, while a dragonfang (42 dmg)
+# at +3 (48 dmg) is still inside the same combat tier — Owen's Mastery loop
+# stays meaningful without the forge becoming the dominant damage source.
+const REFORGE_DAMAGE_BONUS: Array[int] = [2, 4, 6]
+
+# Per-tier suffix for HUD/UI display.
+const REFORGE_SUFFIXES: Array[String] = ["+1", "+2", "+3"]
+
+# THEME §3 palette — bronze (T1), brass (T2), crystal-cyan accent (T3).
+# Used by future paperdoll polish to tint the weapon slot border so the
+# tier reads at a glance without reading text.
+const REFORGE_TIER_COLORS: Array[Color] = [
+	Color(0.85, 0.65, 0.30),  # bronze
+	Color(1.00, 0.78, 0.32),  # brass
+	Color(0.55, 0.85, 1.00),  # crystal-tinged
+]
+
+# Pure helper — returns the forged display name for a weapon at a given
+# tier. Tier 0 returns the base name unchanged. Used by Inventory's
+# weapon_display_name() and by the Smith Edda dialogue button label.
+static func forged_name(base_id: String, tier: int) -> String:
+	var base: Dictionary = get_item(base_id)
+	var bn: String = String(base.get("name", base_id))
+	if tier <= 0:
+		return bn
+	var t: int = clampi(tier, 1, REFORGE_MAX_TIER)
+	return "%s %s" % [bn, REFORGE_SUFFIXES[t - 1]]
+
+# Pure helper — flat damage bonus added on top of the base weapon damage.
+# Tier 0 returns 0; reads cleanly inside Inventory.bonus_damage() with no
+# branching at the callsite.
+static func forge_damage_bonus(tier: int) -> int:
+	if tier <= 0:
+		return 0
+	var t: int = clampi(tier, 1, REFORGE_MAX_TIER)
+	return REFORGE_DAMAGE_BONUS[t - 1]
+
+# Pure helper — crystal_shard cost to upgrade FROM `tier` to `tier+1`.
+# Returns 0 if already at max tier (the dialogue button uses this to print
+# either "→ +N (M 💎)" or "already +3 — peerless work" without needing to
+# duplicate the cap logic).
+static func forge_next_tier_cost(tier: int) -> int:
+	if tier >= REFORGE_MAX_TIER:
+		return 0
+	return REFORGE_COSTS[clampi(tier, 0, REFORGE_MAX_TIER - 1)]

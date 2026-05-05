@@ -2012,3 +2012,161 @@ all four opted-in NPCs (Maeve, Edda, Bram, Lyra).
    NEW system in the queue once the integration debt clears.
 
 ### Branch pushed: `auto/builder`
+
+---
+
+## 2026-05-05 — BUILDER run 12 (Smith Edda forge — Crystal Caves loop closure)
+
+### What I'm building
+**Smith Edda's anvil — a per-weapon reforge upgrade ladder that consumes
+Crystal Shards.** The Crystal Caves dropped shards from runs 5–11 with no
+village-side sink; this run wires Smith Edda's dialogue panel with a 🔨
+Reforge button that bumps the equipped weapon's `forge_tier` (1..3),
+adding +2/+4/+6 flat damage and stamping a "+N" suffix on the display
+name. The cave→village gameplay loop closes for the first time.
+
+### THEME compliance cited
+- **§1-9 visual canon** — no new visual content this run; the dialogue
+  button is text-only inside the existing parchment-style DialoguePanel.
+  Bronze/brass/cyan tier-color palette (`Items.REFORGE_TIER_COLORS`)
+  reserved for future paperdoll polish stays inside §3 primary palette.
+- **§7 dialogue tone** — "Edda hammers the steel — Iron Sword +1 sings"
+  toast, "Already +3 — Edda nods. \"This is as far as steel goes.\""
+  on max-tier press. Warm gravitas, no modern register, child-safe.
+- **§12 motion-and-life** — toast scale-fades (existing _show_toast
+  grammar), `play_sfx("sword_hit")` fires on success, and the run-11
+  renown-label pulse triggers on the same tick (achievement → +25 renown
+  chain). Three-layer feedback beat with no new tween code.
+- **§13 ground contact** — N/A (no new 3D geometry placed).
+- **§14 push discipline** — pushing to `auto/builder` only.
+
+### Mood board panel
+N/A — text-only UI compound; no new visual asset required.
+
+### Files changed
+1. `eldoria-godot/scripts/Items.gd`
+   - `+const REFORGE_MAX_TIER: int = 3`
+   - `+const REFORGE_COSTS: Array[int] = [5, 10, 18]`
+   - `+const REFORGE_DAMAGE_BONUS: Array[int] = [2, 4, 6]`
+   - `+const REFORGE_SUFFIXES: Array[String] = ["+1", "+2", "+3"]`
+   - `+const REFORGE_TIER_COLORS: Array[Color]` (THEME §3 palette band)
+   - `+static func forged_name(base_id, tier) -> String` — display helper
+   - `+static func forge_damage_bonus(tier) -> int` — additive helper
+   - `+static func forge_next_tier_cost(tier) -> int` — cap-aware cost
+2. `eldoria-godot/scripts/Inventory.gd`
+   - `+var forge_tiers: Dictionary = {}` — per-weapon-id tier state
+   - `+func weapon_forge_tier(weapon_id="") -> int`
+   - `+func weapon_display_name(weapon_id="") -> String`
+   - `+func attempt_reforge(world: Object) -> Dictionary` — validates
+     cost / tier cap, consumes shards, mutates tier, sets world flag,
+     emits both inventory + equipment signals; returns a structured
+     `{ok, ...}` Dict so the caller pretty-prints success and each
+     failure mode without re-validating
+   - `bonus_damage()` updated to ADD `Items.forge_damage_bonus(tier)`
+     on top of base — pre-run-12 values unchanged when `forge_tiers`
+     is empty (the default).
+3. `eldoria-godot/scripts/World.gd`
+   - `_setup_dialogue_actions()` — appends a `ReforgeBtn` Button below
+     `TurnInQuestBtn`, wired to `_on_reforge_pressed`.
+   - `show_dialogue()` — calls `_refresh_reforge_button(btn, role,
+     player)` so the button label + enabled state reflect the player's
+     current weapon and shard count every time the panel opens.
+   - `+func _refresh_reforge_button(btn, role, player)` — pure read of
+     inventory state. Visibility = (role == "smithy"). Disabled with
+     reason-string label when no weapon, max tier, or insufficient
+     shards. The button itself teaches the system.
+   - `+func _on_reforge_pressed()` — calls
+     `Inventory.attempt_reforge(self)`; on success toasts the new
+     forged name + damage and replays `sword_hit` SFX, then refreshes
+     the button so a back-to-back reforge reads correctly without
+     closing & reopening dialogue. On failure toasts the reason from
+     the structured result Dict.
+4. `eldoria-godot/scripts/Achievements.gd`
+   - `+"first_forge"` entry, slotted between `first_steps` (priority 10)
+     and `pack_thinner` (priority 30) at priority 25. Title "the
+     Forged". Predicate `{"kind": "world_flag", "flag":
+     "first_reforge_done"}` — uses the existing predicate kind, no new
+     evaluator surface.
+5. `SYSTEM_REGISTRY.md` — Forge Schema section: API tables, ladder,
+   authoring rules, hooks consumed / produced.
+6. `WORLD_STATE.md` — Forge state subsection: world_flag, forge_tiers
+   shape, cave-loop closure note.
+7. `CHANGES.md` — this entry.
+
+### 5-output check (Builder rule)
+- (i) **integration** — Smith Edda's role was already wired in
+  `WorldBuilder.NPCS` ("Smith Edda" / role "smithy"). The reforge button
+  hangs off the existing DialoguePanel actions HBoxContainer; no new
+  scene node, no new Main.tscn change. `Inventory` was the natural site
+  for state because the equipped weapon and the bag (where shards live)
+  are already its responsibility.
+- (ii) **schema** — `forge_tiers: Dictionary[String, int]` keyed on
+  weapon base id is the ONLY new state primitive. `Items.REFORGE_*`
+  constants make the cost/damage curve a flat catalog edit. The
+  `attempt_reforge` return shape is documented in code + registered in
+  SYSTEM_REGISTRY for future readers.
+- (iii) **feedback** — three layers fire on success:
+  (1) `_show_toast("🔨 Edda hammers the steel — <name> sings (<dmg>)")`,
+  (2) `play_sfx("sword_hit")`,
+  (3) `player.stats_changed.emit()` → `_refresh_hud()` repaints the
+  damage bonus, which compounds with the run-11 renown-label scale-pulse
+  the moment the "first_forge" achievement unlocks (+25 renown). The
+  button itself is the fourth layer of feedback when the action can't
+  proceed (reason-string label).
+- (iv) **eval** — `Items.forged_name`, `Items.forge_damage_bonus`,
+  `Items.forge_next_tier_cost` are pure static helpers — callable any
+  time, no side effects. `Inventory.attempt_reforge` is idempotent
+  *given the same shard inventory* (a second call with the same shards
+  would correctly fail with `not_enough_shards`); idempotency under the
+  cap `tier == REFORGE_MAX_TIER` is explicit (returns `max_tier`
+  failure, no mutation).
+- (v) **2+ hooks** — (1) DialoguePanel ReforgeBtn (visibility +
+  enabled state + label), (2) HUD damage readout (`bonus_damage()` now
+  composes the tier bonus), (3) world_flags["first_reforge_done"] (new
+  quest-trigger surface via existing world_flag predicate kind), (4)
+  Achievements "first_forge" → renown +25 (run-11 ladder) → DialogueDB
+  `high_renown` corpus (run-9 readers), (5) future
+  `Inventory.weapon_display_name` HUD substitution.
+
+### Player-reachable state this run
+- **Crystal-shard sink** — before run 12: zero (caves drop, bag fills
+  forever). After: 33 shards fully reforges any weapon (~3 cave runs at
+  the run-11 drop-table tuning).
+- **New achievement** — "First Forge" / title "the Forged", priority 25.
+  Sits between "the Apprentice" (10) and "Wolf-Friend" (30) so a player
+  who reforges before slaying any wolves gets briefly titled "the
+  Forged" before the wolves humble enough to upgrade them. Pleasant
+  pacing.
+- **DialogueDB high_renown corpus** — unchanged in word count, but the
+  threshold (default 100) is now reachable one achievement faster: a
+  player who completes a starter quest (10 renown), reforges (25), and
+  bears down on the goblins (40) sits at 75 — one step closer to the
+  "Warden of Eldoria" tier.
+
+### What next run picks up
+1. **Builder/UI (carried, MED):** `assets/ui/eldoria_theme.tres` from the
+   8 shipped parchment/wood UI panels — four integrator runs flagging.
+2. **Builder/Material (carried, MED):** Roughness-texture wire-in across
+   bark/rock/snow/thatch/wood/stone WorldBuilder materials — four
+   integrator runs flagging.
+3. **Builder/UI (carried, MED):** Inventory icon read path
+   (`load(item_data.icon_path)` → Texture2D → slot icon) — five
+   integrator runs flagging.
+4. **Builder (NEW, LOW):** Renown-gated achievement at 100/250 — still
+   unproven this run, the `_check_achievements` call inside `gain_renown`
+   exists but no predicate consumes it.
+5. **Builder/Forge polish:** Inventory paperdoll + bag tooltip should
+   show "+N" on forged weapons. Today the dialogue button and HUD damage
+   readout are the only visible surface; the bag still shows the base
+   name. Quick win.
+6. **Lore:** Smith Edda JSON could gain a `forge_tier_at_least` warmed
+   key — "*looks at your blade and nods*" when she sees her own work
+   come back. Predicate would need adding to DialogueDB; see hook (v).
+7. **NPC schedules** (backlog #3) — still untouched. Highest-leverage
+   NEW system in the queue once the integration debt (carried 1-3)
+   clears.
+8. **Better enemy variety — Skeleton, Bandit GLBs** (backlog #4). The
+   skeleton kind exists in Enemy.gd KIND_TO_FACTION + spawning, but no
+   GLB. Sourcing a CC0/CC-BY skeleton is the wire-up.
+
+### Branch pushed: `auto/builder`
