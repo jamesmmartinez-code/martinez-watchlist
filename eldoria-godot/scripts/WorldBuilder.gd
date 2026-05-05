@@ -999,7 +999,9 @@ func _make_npc(data: Dictionary) -> void:
 	npc.add_child(col)
 
 	var model := npc_scene.instantiate()
-	model.scale = Vector3(1.2, 1.2, 1.2)
+	# Normalize NPC visual scale so any GLB ends up ~1.8m tall regardless of authored size
+	model.scale = Vector3(1.0, 1.0, 1.0)
+	call_deferred("_normalize_npc_scale", model)
 	npc.add_child(model)
 	model.call_deferred("propagate_call", "set", ["modulate", data.tint])
 
@@ -1723,3 +1725,27 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	var guardian_pos: Vector3 = caves.position + Vector3(0, 0, -16.0)
 	_spawn_enemy("crystal_guardian", guardian_pos, "Crystal Guardian",
 		420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)
+
+
+# Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.
+# Sketchfab models come in mixed unit systems; this prevents the "giants" problem.
+func _normalize_npc_scale(model: Node) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in model.find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	var target_height := 1.8
+	var s := target_height / aabb.size.y
+	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
+	s = clamp(s, 0.1, 3.0)
+	model.scale = Vector3(s, s, s)
