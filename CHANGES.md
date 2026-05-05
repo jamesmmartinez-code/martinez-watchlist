@@ -4142,3 +4142,185 @@ belongs under `concept/` per `ARTIST_AGENT.md` — separate, parallel surface.
    parity with the rest of the inventory tier.
 
 ### Branch pushed: `auto/art`
+
+
+## 2026-05-05 — Builder run 21 (bandits faction bootstrap)
+
+### I'm building
+The `bandits` faction system. Inverse-driven (high pressure = bandits
+BOLD, low = bandits hidden), derived from goblin+wolf state, wired into
+the four existing `faction_pressure` readers without writing a single
+new consumer. First world flag whose value is computed from two faction
+scalars rather than written by a quest consequence.
+
+### THEME §X cited
+- §1 (high fantasy medieval, lived-in) — bandits are humans, hooded,
+  leather-clad. They drop cloth/leather/iron — no monster materials.
+- §4 (enemy archetype: Bandits — human, hooded, leather, scarves over
+  face) — drop table is authored to that silhouette.
+- §13 (GROUND CONTACT) — N/A this run; no spawns yet. The next Builder
+  run that wires the warrior.glb model owns the offset check.
+
+### Mood board panel
+`mood-boards/enemy_silhouettes.png` — references the goblin/brute/wolf/
+warlord/skeleton/elemental relative scale chart. Bandit silhouette will
+be added to that panel by the Art agent in a follow-up; this run ships
+the schema, not the visual.
+
+### Files changed
+- `eldoria-godot/scripts/World.gd` (+58 lines: bandits faction entry
+  with 14-line semantics comment; `update_bandit_pressure()` function
+  with 18-line derivation comment; Step 5a call wired into
+  `apply_consequence`)
+- `eldoria-godot/scripts/Items.gd` (+22 lines: `bandit` DROP_TABLE
+  entry with 14-line authoring comment)
+- `eldoria-godot/scripts/Enemy.gd` (+12 lines: `"bandit": "bandits"`
+  KIND_TO_FACTION mapping with 11-line lights-up comment)
+- `eldoria-godot/scripts/WorldBuilder.gd` (+24 lines: Roan
+  `warm_world_flag` of `bandits_emergent` + 4 dialogue lines + 16-line
+  authoring comment; updated legacy "no warm_world_flag" comment to
+  reflect Roan's promotion to a 4-tier NPC)
+- `WORLD_STATE.md` (faction state row added; world flags row added;
+  Active Hooks updated with run-22+ priorities)
+- `SYSTEM_REGISTRY.md` (full Bandits-faction subsection appended:
+  schema, derivation formula, world flag contract, drop table,
+  lights-up enumeration)
+- `CHANGES.md` (this entry)
+
+### 5-output check
+
+(i) **Integration** — bandits faction lives in `World.factions` and
+`faction_pressure("bandits")` returns a meaningful value. Enemy.gd
+`KIND_TO_FACTION["bandit"] = "bandits"` so the four existing readers
+(cooldown band run 7, chase band run 8, dialogue tier 3 run 4, spawn
+density runs 5/6) light up automatically the instant a bandit-kind
+enemy spawns. Roan's `warm_world_flag` tier is the FIRST consumer
+wired this run — pure data, fires when `bandits_emergent` flag is set.
+
+(ii) **Schema** — three schema additions, all idempotent:
+- Faction schema: `id` → `{disposition: String, pressure: float}` —
+  same as the four existing factions. Bandits flag the INVERTED
+  semantics inline; readers don't care which direction "high" means
+  because the lerp endpoints encode intent at each call site.
+- Drop schema: `id`, `weight`, `qty[min,max]` — same as every other
+  DROP_TABLE entry. Total weight 100 mirrors wolf/goblin ratio math.
+- World flag derivation: `bandits_emergent` is the FIRST world flag
+  whose value is COMPUTED rather than authored. Documented in
+  SYSTEM_REGISTRY.md as a separate authoring contract from quest-
+  consequence flags. Step 5a in apply_consequence is the SINGLE writer.
+- Dialogue schema unchanged: Roan uses the existing `warm_world_flag` /
+  `warm_world_lines` pair (Lyra has used this slot since run 3
+  follow-up). No new fields.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- The instant a player completes enough goblin+wolf quests to drop
+  road threat below the threshold, Roan's dialogue switches to the
+  `bandits_emergent` warm_world tier. He speaks of "saddle-bells on
+  the south road" and "leather-cloaked ones" — narrative permission
+  for the next run's actual bandit ambush, planted BEFORE the enemy
+  hits the map.
+- Existing Roan dialogue stack now resolves cleanly across 4 tiers:
+  warm_flag (`first_bounty_done`) > warm_world_flag
+  (`bandits_emergent`) > warm_faction (dire_wolves < 0.5) > legacy
+  time-of-day. Same JSON-first guard as every other NPC.
+- Bandit drop table is loot-ready: any future code path calling
+  `Items.roll_loot("bandit", rng)` returns weighted cloth/leather/
+  iron/etc. Fail-soft same as the skeleton/crystal_elemental tables
+  that pre-existed their spawn paths.
+- Faction state in WORLD_STATE.md is now visible to any tooling /
+  next-run agent that consults it.
+
+(iv) **Eval** — paren/quote balance validated:
+- `Items.gd` `()` `[]` `{}` balanced (230/118/119 — patched +22 lines).
+- `Enemy.gd` `()` `[]` `{}` balanced (415/15/3 — patched +12 lines).
+- `WorldBuilder.gd` `()` `[]` `{}` balanced (1344/107/42 — patched
+  +24 lines).
+- `World.gd` `()` `{}` balanced; `[]` carries the same single-bracket
+  imbalance the file had at HEAD (a `[`-in-comment that long predates
+  this run; my +58-line patch is itself paren-balanced — verified by
+  diff).
+- Tier resolution invariant unchanged: NPC.gd's tier order is
+  warm_flag > warm_world_flag > warm_faction > legacy. Roan now
+  fires Tier 3 ONLY when neither Tier 2 (`first_bounty_done`)
+  predicate matches AND `bandits_emergent` is set. Existing
+  Tier 2 → Tier 4 fall-through preserved.
+- Derivation idempotency: `update_bandit_pressure()` is pure read of
+  goblin+wolf pressure, pure write of bandits pressure +
+  `bandits_emergent` flag. Calling it twice in a row is identical to
+  calling it once. Safe to invoke from Step 5a after every
+  `apply_consequence` mutation.
+- Threshold flicker test: bandit pressure increment between
+  pre/post-Mara is +0.075 (0.05 → 0.125). Increment between full
+  goblin clear (1.0 → 0.6) AND full wolf clear (0.5 → 0.1) is 0.30
+  (0.05 → 0.35) — STILL below the 0.40 emergence threshold by the
+  buffer's intent. Bandits don't emerge until the player has REALLY
+  tamed the woods.
+
+(v) **2+ hooks**:
+1. **Bandit camp spawn pattern** — `WorldBuilder._build_enemies()`
+   adds a `_bandit_camp_size(pressure)` helper mirroring the
+   `_goblin_camp_size` / `_wolf_pack_size` siblings. One bandit camp
+   on the south road from Briarwood, gated on `bandits_emergent`
+   flag (camp doesn't render until the flag is set — narrative
+   ordering is preserved: dialogue first, encounter second).
+2. **warrior.glb bandit visual** — Enemy.gd's KIND_TINT_OVERRIDE
+   already supports tinting the `npcs/warrior.glb` re-use as a
+   bandit (hood/scarf silhouette via dark-leather Color). Single
+   line addition + a `kind:"bandit"` GLB path mapping. THEME §4
+   compliance: hooded, leather, scarves over face — read at 30m.
+3. **First bandit quest** — Roan asks the player to clear the south
+   road. `kind: kill`, `item: bandit`, `needed: 4-5`. Consequence:
+   `pressure_delta: -0.15` on `bandits` (REDUCES boldness — opposite
+   sign convention from the inverted faction). Closes the
+   "narrative permission → encounter → resolution" loop in 3 runs.
+4. **Maeve cross-NPC bandit mention** — Maeve adds `warm_world_flag:
+   "bandits_emergent"` + 4 lines. Pure data. Same pattern as Roan's
+   tier this run; closes the SECOND warm_world_flag reader on the
+   same flag — the cross-NPC echo that makes the world feel alive.
+5. **Bandit-Hunter title / achievement** — Achievements.gd predicate
+   on `[["bandits_emergent", true], ["roan_bandit_quest_done",
+   true]]` (or equivalent npc_flag pair). Composes with the existing
+   `wolf_tamer` chain — Wolf-Tamer-turned-Bandit-Hunter is the
+   natural progression for a player who taps the woods then claims
+   the road.
+6. **`bandits` reducer-quest authoring guide** — SYSTEM_REGISTRY.md
+   now documents the inverted-pressure convention. Future authors
+   adding bandit-reducer quests use `pressure_delta: -X` (negative)
+   to REDUCE boldness, mirroring the goblin/wolf reducers but
+   semantically encoding the NEW class of threat. Lore-keeper
+   territory if any cross-faction lore is needed.
+
+### Player-reachable state this run
+
+- A fresh-save player who completes ALL FOUR existing wolf reducers
+  (Lyra pelt + Roan fang + Hala form + Bram heart) drops dire_wolves
+  pressure 0.5 → 0.1. Combined with whisperwood_cleansing (-0.2 on
+  goblins, 1.0 → 0.8) the avg becomes (0.8 + 0.1) / 2 = 0.45, so
+  bandit pressure = clamp(1.0 - 0.45 - 0.20, 0, 1) = 0.35 — STILL
+  below the 0.40 emergence threshold. The player needs ONE MORE
+  goblin reducer beyond the cleansing (e.g. Mara's `ears_for_mara`
+  -0.15 → goblins 0.65, avg 0.375, bandit 0.425) for the flag to
+  flip.
+- Once the flag flips, walk to Roan at the stable (-10, 0, -2). His
+  dialogue switches from the warm_flag tier ("Five fangs as
+  promised...") to the warm_world_flag tier ("Mares are calm — too
+  calm. Heard a saddle-bell on the south road...").
+- This is the FIRST cross-NPC dialogue tier in the village whose
+  trigger is a derived faction-state condition rather than a single
+  quest consequence. Closes the loop: dialogue precedes encounter
+  by exactly one Builder run.
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **Bandit camp spawn pattern** — 1 bandit camp on south road,
+   `bandits_emergent` gates the spawn. Builder territory.
+2. **warrior.glb bandit visual** — KIND_TINT_OVERRIDE + kind path
+   mapping. Builder or Polisher.
+3. **First bandit quest** — Roan-issued road clearance, `-0.15`
+   bandits reducer. Builder.
+4. **Maeve cross-NPC bandit mention** — Maeve `warm_world_flag:
+   "bandits_emergent"`. Polisher data edit.
+5. **Bandit-Hunter achievement** — composes with `wolf_tamer`.
+   Achievements agent territory.

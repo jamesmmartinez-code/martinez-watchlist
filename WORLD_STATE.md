@@ -24,7 +24,25 @@ and *what has happened*. Update this file whenever the world changes.
 (Future runs pick from this list. A hook is a one-liner that makes the next
 run easier — what's the *next* thing that compounds?)
 
-- **Top-priority next (run 20+):** Maeve cross-NPC mention of Bram's bounty.
+- **Top-priority next (run 22+):** Bandit camp spawn pattern. Run 21 wired
+  the `bandits` faction + `update_bandit_pressure()` derivation +
+  `bandits_emergent` world flag + Roan's dialogue tier 3 reader + bandit
+  drop_table — but no bandit enemy spawns on the map yet. Next Builder run
+  adds a `_bandit_camp_size(pressure)` helper to `WorldBuilder._build_enemies`
+  (mirroring `_goblin_camp_size` and `_wolf_pack_size`), one bandit camp
+  on the south road, and wires the warrior.glb model with a hood + scarf
+  silhouette via Enemy.gd's existing KIND_TINT_OVERRIDE pattern. The cooldown
+  band, chase-speed band, and ⚡ agitated prefix all light up automatically
+  the moment the spawn lands (KIND_TO_FACTION already maps "bandit" →
+  "bandits" as of this run).
+- **Top-priority next (run 22+):** First bandit-themed quest. Roan's dialogue
+  promises bandits emerging — the natural quest is "Roan asks the player
+  to clear the south road" (kind: kill, item: bandit, needed: 4-5).
+  Consequence consumes the inverted-pressure direction: `pressure_delta:
+  -0.15` on `bandits` faction (player REDUCES bandit boldness by clearing
+  the camp). Compounds the existing wolf-quest authoring template — same
+  schema, opposite faction direction, no new code.
+- **Top-priority next (run 22+):** Maeve cross-NPC mention of Bram's bounty.
   Maeve's WorldBuilder entry has an OPEN `warm_world_flag` slot
   (Lyra's existing tier uses `lyra_potion_brew`; Maeve never set one). Wire
   `warm_world_flag: "bram_nights_quiet"` + 4 lines like "even Bram says the
@@ -361,7 +379,7 @@ relationship with the player. Flip if play-testing disagrees.
 
 ## Faction State
 
-(No scalars yet. Listed for downstream runs to wire.)
+(Live scalars in `World.factions`. Bandits row added run 21 — Builder.)
 
 | Faction          | Disposition | Pressure | Notes                          |
 |------------------|-------------|----------|--------------------------------|
@@ -369,8 +387,10 @@ relationship with the player. Flip if play-testing disagrees.
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing)** |
 | Dire Wolves      | hostile     | 0.5      | mutable; **FOUR reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17) + `wolf_form_with_hala` (-0.1, run 18) + `wolf_heart_for_bram` (-0.1, run 19); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier); Hala speaks at <warm_flag `wolf_form_taught` (run-18 personal tier); Bram speaks at <warm_flag `nights_quiet` (run-19 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density — all three cliffs now player-reachable in a single save AND the run-6 third cliff trips on Bram completion: 4 reducers stack to pressure 0.1, packs of 1); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8 adaptive pacing); FIRST `all_npc_flags` achievement consumer wired (run-18 `wolf_tamer`) — Bram is purely additive (curve, not predicate) so Wolf-Tamer title still attainable on the Lyra+Roan+Hala arc |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) AND chase wired (run-8) — both fire the moment the dungeon ships** |
+| Bandits          | hostile     | 0.0      | **NEW (run 21 — Builder)**: INVERTED-pressure faction (high = bandits bold). Single writer is `World.update_bandit_pressure()`, called from Step 5a of `apply_consequence`. Derivation: `clamp(1.0 - 0.5*(goblin + wolf) - 0.20, 0, 1)`. Sets `bandits_emergent` world flag at threshold 0.40. **Roan speaks the emergence at <warm_world_flag `bandits_emergent` (run-21 cross-NPC tier — first world-flag-from-derivation tier ever)**; Enemy.gd cooldown band + chase band wired via `KIND_TO_FACTION["bandit"] = "bandits"` and fire the moment a bandit-kind enemy spawns; drop_table["bandit"] in Items.gd ready (total weight 100). NEXT: spawn pattern + warrior.glb wiring. |
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
-only by `World.apply_consequence({...})`.
+by `World.apply_consequence({...})` (Steps 1, 5a — Step 1 for direct quest
+writes, Step 5a for the derived `bandits` rewrite each consequence).
 
 ## World Flags (Active)
 
@@ -385,6 +405,7 @@ read by dialogue / spawning / future runs.
 | `roan_bounty_paid`    | wolf_fang_for_roan    | unset   | future: Maeve cross-NPC mention; Edda fang-stitched greaves recipe (run 17) |
 | `hala_wolf_form_done` | wolf_form_with_hala   | unset   | run 18: `wolf_tamer` achievement reads the npc_flag side; future: Hala teaches an advanced wolf-defense technique unlocking a counter-stance buff |
 | `bram_nights_quiet`   | wolf_heart_for_bram   | unset   | **run 19**: Bram warm_flag tier reads the npc_flag side; future: Maeve cross-NPC mention via `warm_world_flag` + 4 lines, Bram's nightly bards play a Celtic lute track only when this flag is set |
+| `bandits_emergent`    | **DERIVED** (run 21)  | unset   | **run 21 — Builder**: NOT set by a quest — set/cleared by `World.update_bandit_pressure()` whenever bandit pressure crosses ±0.40. **Roan warm_world_flag tier** is the first reader. Authoring contract: NEVER add this flag to a `consequence.world_flag` — it would be overwritten on next pressure mutation. Future: Maeve adds `warm_world_flag: "bandits_emergent"` for cross-NPC pattern; bandit road-spawn pattern reads the flag as a gate; "Wolf-Tamer turned Bandit-Hunter" achievement chain. |
 
 Read with `World.has_world_flag(name)`. Convention: flag names are
 `snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.
