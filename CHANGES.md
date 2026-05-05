@@ -2897,3 +2897,190 @@ UITheme.gd `()=140/140 []=3/3 {}=0/0 OK`.
 7. **Smith Edda forge UI (backlog #2)** — UITheme.style_panel_parchment
    + tabs is now a clean three-line scaffold; gating on Crystal Shards
    currency.
+
+
+## Run 16 — Builder — NPC visit-memory dialogue tier (2026-05-05)
+
+### I'm building
+The first per-relationship dialogue tier in Eldoria — `World.npc_memory`,
+a per-NPC visit ledger, plus a NEW `warmed_memory_visits_min` export on
+NPC.gd that fires a fifth dialogue tier between faction-pressure and the
+time-of-day default. After three visits, Elder Maeve, Innkeeper Bram, and
+Trainer Hala speak like they know you.
+
+### THEME §X cited
+THEME §7 (warm gravitas dialogue tone — "Studio Ghibli mentor figures, not
+Game of Thrones cynics"; each NPC sounds like ONE specific person with
+their own catchphrase rhythm); THEME §1 (cooperative, lived-in — the
+village remembers the player rather than treating every visit like
+fresh-eyes).
+
+### Mood board panel
+"The kettle's on, dear" — the painter's bench in Briarwood at twilight,
+where Maeve nods recognition without breaking from her sweeping. The mood
+is: hand-painted, weathered, intimate. THEME §3 sunset-gold dominant; no
+new visual assets shipped this run — the system surfaces through the
+existing parchment DialoguePanel built in run-15.
+
+### What shipped
+
+- **`scripts/World.gd`** — three new state fields and four new accessors:
+  - `var world_day: int = 0` — integer day counter, increments inside
+    `_process` when `time_of_day` wraps past midnight (`_prev_tod > 22.0
+    and time_of_day < 2.0`). Pure derivation from the existing 24-hour
+    cycle; no separate timer.
+  - `var _prev_tod: float = 11.0` — private witness for the wrap.
+  - `var npc_memory: Dictionary = {}` — schema documented inline:
+    `{npc_name -> {visits, first_day, last_day, first_tod, last_tod}}`.
+  - `record_npc_visit(name)` — sole public mutator. Increments visit
+    count, sets first-visit fields on the first call, updates last-visit
+    fields on every call.
+  - `npc_visits(name) -> int` — fail-soft 0 for never-met.
+  - `npc_first_visit_day(name) -> int` — fail-soft -1.
+  - `npc_last_visit_day(name) -> int` — fail-soft -1.
+  - `npc_days_since_last_visit(name) -> int` — returns -1 for never-met
+    so callers can distinguish "never" from "talked today" (which is 0).
+
+- **`scripts/NPC.gd`** — visit recording + new dialogue tier:
+  - Two new `@export` fields: `warmed_memory_visits_min: int = 0` (tier
+    threshold; 0 = disabled) and `warmed_memory_dialogue_variants:
+    PackedStringArray` (the four-bucket time-of-day shape, identical to
+    every existing warmed tier).
+  - At the top of `_on_interact`, after `w` is resolved:
+    `if w and w.has_method("record_npc_visit"): w.record_npc_visit(npc_name)`.
+    Records BEFORE tier resolution so the triggering visit counts
+    toward the predicate.
+  - New tier resolution block inserted between the faction-pressure tier
+    and the `if not variants.is_empty():` time-of-day evaluator. Reads
+    `w.npc_visits(npc_name) >= warmed_memory_visits_min` and promotes
+    `variants = warmed_memory_dialogue_variants` when matched. Same
+    fail-soft `has_method` guard as every other tier.
+
+- **`scripts/WorldBuilder.gd`** — wiring + authored content:
+  - In `_make_npc`, two new lines wire the exports through:
+    `npc.warmed_memory_visits_min = int(data.get("memory_visits_min", 0))`
+    and `npc.warmed_memory_dialogue_variants = PackedStringArray(data.get("memory_lines", []))`.
+    Both default to off so existing NPCs are untouched.
+  - **Maeve** (`memory_visits_min: 3`, 4 lines) — "Three mornings now
+    you've come by — I count. The kettle's on, dear." through to "Late
+    again? My door knows your knock by now."
+  - **Bram** (`memory_visits_min: 3`, 4 lines) — "Same stool by the
+    window again? Mug's already on its way, friend." through to
+    "Fire's low, but I'd never bank it before YOU walked in."
+  - **Hala** (`memory_visits_min: 3`, 4 lines) — "Back already, eh?
+    Drills don't care if you're tired — show me." through to "Past
+    curfew, training under stars. I knew you for the type. Begin."
+
+- **`SYSTEM_REGISTRY.md`** — new "NPC Visit Memory schema (run 16 —
+  Builder)" section documents state, API, tier-order update,
+  authored consumers, persistence forward-contract, and four future
+  seams (achievement, returning-after-absence variants, memory-aware
+  quest gating, decay).
+
+- **`WORLD_STATE.md`** — existing "NPC Memory" canon table extended
+  with a "Visit-warmed (run 16)" column; live-data block now lists
+  `World.npc_memory` alongside `World.npc_flags`; full six-tier
+  dialogue priority order documented in canon.
+
+### 5-output rule check
+
+(i) **Integration** — `record_npc_visit` is reachable from any NPC via
+`get_tree().get_first_node_in_group("world")`, the same channel every
+existing tier uses. The NPC.gd resolution path is preserved
+end-to-end; memory is a NEW tier slot at priority 5, not a replacement.
+
+(ii) **Schema** — `npc_memory` entry shape, World API surface (5
+methods), tier ordering, and authoring conventions all documented in
+SYSTEM_REGISTRY.md. `World.npc_memory[name]` becomes the queryable
+read surface for any future system that wants to know "has the player
+ever spoken to this villager."
+
+(iii) **Feedback** — visible IN-GAME after three village rounds:
+Maeve, Bram, and Hala each shift from generic time-of-day lines to
+named-relationship cadence. Same parchment DialoguePanel (run-15
+UITheme) renders the lines, no UI changes needed.
+
+(iv) **Eval** — Paren/quote balance validated:
+World.gd `()=794/794 []=88/88 {}=43/43 OK`,
+NPC.gd `()=134/134 []=9/9 {}=1/1 OK`,
+WorldBuilder.gd `()=1275/1275 []=99/99 {}=41/41 OK`. The visit-counter
+is a pure function of `time_of_day` wraps; given the same delta
+sequence and the same starting `_prev_tod` it produces the same
+`world_day`. Tier resolution is order-independent of the others (each
+tier guards on `variants == dialogue_variants` so memory only fires
+when no higher tier promoted).
+
+(v) **2+ hooks**:
+1. **"Visited every villager" achievement** — `Achievements.gd` could
+   iterate `WorldBuilder.NPCS` and count
+   `World.npc_visits(npc_name) > 0` per entry. The NPC-flag predicate
+   language is already in Achievements.gd; a `min_visits_each` keyword
+   is a small extension.
+2. **Returning-after-absence variants** — `npc_days_since_last_visit`
+   returns the days-gap value; a future tier could fire on
+   `>= 3` for "Where've you BEEN, you stranger?" lines. World API
+   already exposes the predicate.
+3. **Memory-aware quest gating** — quests can declare
+   `requires_visits: {"Smith Edda": 1}` so the forge questline unlocks
+   only after first conversation, closing the "stranger → trusted with
+   errands" loop.
+4. **`world_day` for festivals/seasons** — DialogueDB's existing
+   `festival` predicate has a single integer to key off the day a
+   calendar lands. Today nothing reads `world_day` except memory; the
+   field is in place for the next system that needs it.
+5. **Save/load forward contract** — `npc_memory` serializes as
+   `[visits, first_day, last_day]` per NPC. A `null` map on load is
+   indistinguishable from fresh world; nothing breaks.
+
+### Player-reachable state this run
+
+- Walk into Briarwood as a fresh save. Talk to Maeve, Bram, and Hala
+  twice each — they speak their existing four-bucket time-of-day lines.
+  Talk to any of them a THIRD time and the tone shifts:
+  - Maeve: "Three mornings now you've come by — I count."
+  - Bram: "Same stool by the window again? Mug's already on its way."
+  - Hala: "Back already, eh? Drills don't care if you're tired."
+- The threshold (3) is uniform so all three NPCs warm at the same
+  cadence — by the time you've made three rounds of the village,
+  three relationships are in your "regular" tier simultaneously.
+- The faction-pressure tier still wins on Maeve when
+  `whisperwood_goblins < 0.9` (so a player who completed Mara's
+  bounty and then comes back three times still hears the
+  faction-relief lines, NOT the memory lines).
+
+### Files changed
+- `eldoria-godot/scripts/World.gd` (+83 lines: state + accessors + wrap)
+- `eldoria-godot/scripts/NPC.gd` (+31 lines: exports + record + tier)
+- `eldoria-godot/scripts/WorldBuilder.gd` (+47 lines: wiring + 12 lines)
+- `WORLD_STATE.md` (NPC Memory section rewritten with visit ledger column)
+- `SYSTEM_REGISTRY.md` (new "NPC Visit Memory schema" section)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **"Visited every villager" achievement** — Achievements.gd; uses
+   the new `World.npc_visits(name)` accessor. Closes the "world is
+   warmed up" beat with an explicit award.
+2. **Returning-after-absence dialogue tier** — a NEW NPC.gd tier
+   keyed on `World.npc_days_since_last_visit(name) >= N`. Same
+   four-bucket shape; sits below memory-warmed (or composes via
+   AND). Concept: skipped Bram for 3 in-game days → "Where've you
+   BEEN, stranger?" Lines are easy to author; one-run feature.
+3. **Lyra + Mara + Edda + Roan visit-memory variants** — the four
+   NPCs that DIDN'T get authored memory lines this run. Each has
+   distinct flag-warmed lines already; memory-warmed adds the
+   relationship-cadence layer to round out all 7 villagers.
+4. **Smith Edda forge UI (backlog #2)** — UITheme.style_panel_parchment
+   + tabs is now a clean three-line scaffold. Reforge button (run-12)
+   is already in the dialogue panel; full forge UI promotes that single
+   button into a buy/sell/upgrade/enchant panel gated on Crystal Shards.
+5. **Builder/UI (CARRIED, MED→LOW):** DialoguePanel UITheme migration
+   (run-15 carry).
+6. **Builder/UI (CARRIED):** Inventory paperdoll/bag tooltip "+N"
+   forge-tier suffix on weapons (run-12 carry).
+7. **God-rays through canopy (backlog #5)** — Polisher territory; the
+   `_build_god_rays()` helper lands as a single new function in
+   WorldBuilder under the existing canopy-density math.
+

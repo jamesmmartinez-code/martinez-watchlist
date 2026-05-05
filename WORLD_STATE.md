@@ -238,21 +238,44 @@ run easier — what's the *next* thing that compounds?)
 ## NPC Memory
 
 (Tracks who has spoken to whom, who has been thanked, who has been ignored.
-Populated as runs ship reactive dialogue.)
+Populated as runs ship reactive dialogue. Run 16 added a per-visit ledger
+that complements the flag-derived columns below — see
+`World.npc_memory[name]`.)
 
-| NPC                  | Role     | Player relationship | Reactive lines (run 3) | Memory flags consumed |
-|----------------------|----------|---------------------|------------------------|------------------------|
-| Elder Maeve          | quest    | warms after first quest; senses goblin retreat | ✅ 4 (npc-flag, integrator) + ✅ 4 (faction, run 4) | `first_quest_done` (Whisperwood Cleansing); `whisperwood_goblins` pressure < 0.9 |
-| Smith Edda           | smithy   | neutral             | ❌ (forge UI not shipped) | —                       |
-| Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | `good_customer` (ears_for_mara) |
-| Herbalist Lyra       | alchemy  | warms after pelts   | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | `trusts_player` (pelt_for_lyra), `lyra_potion_brew` (world flag) |
-| Innkeeper Bram       | inn      | neutral             | ❌ (no quest yet) | —                       |
-| Stablemaster Roan    | stable   | warms when wolves quiet | ✅ 4 (faction, run 8) | `dire_wolves` pressure < 0.5 |
-| Trainer Hala         | trainer  | neutral             | ❌ (no quest yet) | —                       |
+| NPC                  | Role     | Player relationship | Flag-warmed lines | Visit-warmed (run 16) | Memory flags consumed |
+|----------------------|----------|---------------------|-------------------|------------------------|------------------------|
+| Elder Maeve          | quest    | warms after first quest; senses goblin retreat; recognizes regulars | ✅ 4 (npc-flag, integrator) + ✅ 4 (faction, run 4) | ✅ 4 @ visits ≥ 3 | `first_quest_done`; `whisperwood_goblins` < 0.9 |
+| Smith Edda           | smithy   | reforge sink (run 12) | ❌ (forge dialogue not warmed) | ❌ (forge button covers cadence) | — |
+| Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | ❌ | `good_customer` (ears_for_mara) |
+| Herbalist Lyra       | alchemy  | warms after pelts; senses brewing | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | ❌ | `trusts_player`, `lyra_potion_brew` |
+| Innkeeper Bram       | inn      | "regular at the bar" cadence after 3 visits | ❌ (no quest yet) | ✅ 4 @ visits ≥ 3 | — |
+| Stablemaster Roan    | stable   | warms when wolves quiet | ✅ 4 (faction, run 8) | ❌ | `dire_wolves` < 0.5 |
+| Trainer Hala         | trainer  | recognizes returning student after 3 sessions | ❌ (no quest yet) | ✅ 4 @ visits ≥ 3 | — |
 
-Live data in `World.npc_flags[npc_name] -> Array[String]`. Read with
-`World.npc_has_flag(npc, flag)`. Mutated by quest consequences only — never
-by direct dialogue branches (those READ flags, they don't WRITE them).
+Live data:
+* `World.npc_flags[npc_name] -> Array[String]` — flag-derived memory.
+  Read with `World.npc_has_flag(npc, flag)`. Mutated by quest consequences
+  only.
+* `World.npc_memory[npc_name] -> {visits, first_day, last_day, first_tod,
+  last_tod}` — visit-derived memory (run 16 — Builder). Read with
+  `World.npc_visits(name)`, `World.npc_first_visit_day(name)`,
+  `World.npc_last_visit_day(name)`, `World.npc_days_since_last_visit(name)`.
+  Mutated by `World.record_npc_visit(name)`, called from NPC.gd's
+  `_on_interact` BEFORE tier resolution so the triggering visit counts.
+* `World.world_day` — integer counter; increments when `time_of_day` wraps
+  past midnight. Pure derivation from `time_of_day`, no separate timer.
+
+The dialogue tier order (highest → lowest priority) is:
+1. JSON-tree (DialogueDB, opt-in via `use_json_dialogue`)
+2. NPC-flag warmed (`warmed_flag` + `warmed_dialogue_variants`)
+3. World-flag warmed (`warmed_world_flag` + `warmed_world_dialogue_variants`)
+4. Faction-pressure warmed (`warmed_faction_id` + `warmed_faction_below` + variants)
+5. **Visit-memory warmed (`warmed_memory_visits_min` + variants — run 16)**
+6. Time-of-day default (`dialogue_variants`, 4 buckets)
+
+Memory sits BELOW faction by deliberate authoring choice: a villager
+reacts to the SHAPE of the world (faction) before the cadence of their
+relationship with the player. Flip if play-testing disagrees.
 
 ## Faction State
 

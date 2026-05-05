@@ -34,6 +34,18 @@ class_name NPC
 @export var warmed_faction_id: String = ""
 @export var warmed_faction_below: float = 1.0
 @export var warmed_faction_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 16 — Builder): a FOURTH warmed tier keyed on visit count.
+# Lower priority than `warmed_faction_id` — used only when none of the
+# personal-flag / world-flag / faction-pressure tiers fired. Lets a villager
+# react to "we've spoken many times" even when the world hasn't moved and the
+# player hasn't completed any specific deed for them. World.npc_memory
+# tracks the visit ledger (run-16 Builder); NPC.gd reads it via
+# `World.npc_visits(npc_name)`. Threshold of 0 = tier disabled (default).
+# Author's threshold convention: 3 = "you again, friend" cadence — third
+# visit triggers the warm bucket so a player who comes by twice still gets
+# fresh-eyes greetings the first two times.
+@export var warmed_memory_visits_min: int = 0
+@export var warmed_memory_dialogue_variants: PackedStringArray = PackedStringArray()
 # COMPOUND (run 9 — JSON dialogue tree): when set true, this NPC's lines are
 # resolved by `DialogueDB.choose_line(npc_name, ctx)` from a JSON tree at
 # `res://data/dialogue/<npc_slug>.json` BEFORE falling back to the
@@ -138,6 +150,13 @@ func _on_interact() -> void:
 	# Quest consequences write these flags via World.apply_consequence().
 	var line: String = dialogue
 	var w = get_tree().get_first_node_in_group("world")
+	# COMPOUND (run 16 — Builder): record this interaction in World.npc_memory
+	# BEFORE tier resolution. Visit count includes the current call, so a
+	# `warmed_memory_visits_min: 3` predicate fires on the third hello (not
+	# the fourth). Fail-soft: older World autoloads without the accessor
+	# (e.g. saved games loaded under a stale version) skip recording silently.
+	if w and w.has_method("record_npc_visit"):
+		w.record_npc_visit(npc_name)
 	# COMPOUND (run 9): JSON-tree dialogue resolves FIRST when opted-in. The
 	# tree supports a richer predicate set (HP, boss state, festival, etc.)
 	# than the four time-of-day mood buckets below. Misses fall through to the
@@ -178,6 +197,18 @@ func _on_interact() -> void:
 		var fp: float = float(w.faction_pressure(warmed_faction_id))
 		if fp < warmed_faction_below:
 			variants = warmed_faction_dialogue_variants
+	# COMPOUND (run 16 — Builder): memory tier fires only when no higher tier
+	# already promoted variants. Reads `World.npc_visits(npc_name)` (the
+	# accessor wraps the internal `npc_memory` dict so future schema changes
+	# don't break this callsite). Threshold of 0 disables the tier — the
+	# default for every NPC, so this is purely additive. The tier sits below
+	# faction-pressure on the assumption that a villager reacts to the SHAPE
+	# of the world before they react to the cadence of their relationship
+	# with the player; tune by reordering if play-testing disagrees.
+	if variants == dialogue_variants and warmed_memory_visits_min > 0 and not warmed_memory_dialogue_variants.is_empty() and w and w.has_method("npc_visits"):
+		var visits: int = int(w.npc_visits(npc_name))
+		if visits >= warmed_memory_visits_min:
+			variants = warmed_memory_dialogue_variants
 	if not variants.is_empty():
 		var tod: float = 11.0
 		if w and ("time_of_day" in w):
