@@ -74,3 +74,24 @@ A suggested travel layout (radial from Briarwood):
 All assets are PNG, painterly procedural style, sunset-warm palette where
 applicable, sized 1024×256 (banners), 512×256 (signposts), 256×256
 (portraits) — drop-in compatible with the existing world art pipeline.
+
+---
+
+## Faction crest sigils (added: art-agent run)
+
+Heraldic 256×256 RGBA sigils for each faction, drawn as painterly escutcheons
+with hand-painted brushwork. Use as billboard above town gates, inline in
+dialogue panels, and as inventory dividers. CC0 procedural — see
+`sigils/ATTRIBUTION.md`.
+
+| Sigil | File | Designed for |
+|-------|------|--------------|
+| Oak leaf over axe | `sigils/briarwood_crest.png` | Briarwood Village |
+| Royal crown | `sigils/goldhaven_crest.png` | Goldhaven (capital) |
+| Hammer + anvil | `sigils/ironhold_crest.png` | Ironhold (forge city) |
+| Elven leaf | `sigils/silverleaf_crest.png` | Silverleaf (elven grove) |
+| Anchor | `sigils/stormwatch_crest.png` | Stormwatch Port |
+| Flame | `sigils/embergrove_crest.png` | Embergrove (desert oasis) |
+| Snowflake | `sigils/frostpeak_crest.png` | Frostpeak Keep |
+
+Re-render: `python3 scripts/art/gen_sigils.py eldoria-godot/assets/banners/sigils/`
