@@ -1813,15 +1813,60 @@ func _normalize_npc_scale(model: Node) -> void:
 # ════════════════════════════════════════════════════════════════════════
 
 func _global_scale_sweep() -> void:
-	await get_tree().create_timer(0.5).timeout
-	var root := get_tree().current_scene
-	if not root:
-		return
-	# Walk all CharacterBody3D + StaticBody3D + their child Node3Ds
-	for body in root.find_children("*", "CharacterBody3D", true):
-		_check_and_normalize(body, _expected_height_for(body))
-	for body in root.find_children("*", "StaticBody3D", true):
-		_check_and_normalize(body, _expected_height_for(body))
+	# Run forever — every 0.6s rescan the world and normalize anything that's
+	# drifted out of bounds. New nodes (loaded async, instanced by quest, etc.)
+	# get caught the next tick. THIS IS A KIDS GAME — nothing should ever look
+	# Frankenstein-sized.
+	while is_inside_tree():
+		await get_tree().create_timer(0.6).timeout
+		var root := get_tree().current_scene
+		if not root:
+			continue
+		# Hard catch-all — anything claiming to be a character body or static
+		# body gets measured. Anything visibly bigger than 12m within those
+		# groups is a SIZE BUG and gets clamped down. Trees/mountains live
+		# under separate "scenery" group and skip this clamp.
+		for body in root.find_children("*", "CharacterBody3D", true):
+			_check_and_normalize(body, _expected_height_for(body))
+		for body in root.find_children("*", "StaticBody3D", true):
+			# Skip terrain + mountain/scenery bodies — they're meant to be huge
+			if body.is_in_group("terrain") or body.is_in_group("scenery") 			   or body.is_in_group("mountain") or body.is_in_group("building"):
+				continue
+			_check_and_normalize(body, _expected_height_for(body))
+		# Hard upper-bound enforcement: ANY node3D in player/npc/enemy/boss/pet
+		# group whose visible AABB exceeds 12m gets emergency-shrunk regardless.
+		for body in root.find_children("*", "Node3D", true):
+			if not (body.is_in_group("player") or body.is_in_group("npcs") 				or body.is_in_group("enemies") or body.is_in_group("bosses") 				or body.is_in_group("pets")):
+				continue
+			var aabb := _measure_aabb(body)
+			if aabb.size.y > 12.0:
+				_emergency_shrink(body, aabb, _expected_height_for(body))
+
+func _measure_aabb(node: Node) -> AABB:
+	var aabb := AABB()
+	var has := false
+	for v in node.find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if not vi: continue
+		var a := vi.get_aabb()
+		a = vi.global_transform * a
+		if not has: aabb = a; has = true
+		else: aabb = aabb.merge(a)
+	return aabb if has else AABB()
+
+func _emergency_shrink(body: Node, aabb: AABB, target_h: float) -> void:
+	# Used when a character is GROSSLY oversized (>12m). Force-shrink the first
+	# Node3D child until target height is reached.
+	if aabb.size.y <= 0.001: return
+	for child in body.get_children():
+		if child is Node3D and child.has_method("get_children"):
+			var c := child as Node3D
+			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
+			var ratio: float = target_h / aabb.size.y
+			var new_s: float = clamp(avg_cur * ratio, 0.02, 3.0)
+			c.scale = Vector3(new_s, new_s, new_s)
+			print("[ScaleSweep] EMERGENCY shrunk %s from %.1fm → %.1fm (s=%.3f)" % [body.name, aabb.size.y, target_h, new_s])
+			break
 
 # SIZE_STANDARDS — see eldoria-godot/SIZE_STANDARDS.md (single source of truth).
 # Tuple = (target_height_m, tolerance_fraction).  Outside band → snap to target.
