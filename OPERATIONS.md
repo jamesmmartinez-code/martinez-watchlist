@@ -118,3 +118,25 @@ to merge agent work in batches.
 **Exception:** the Build Eldoria workflow itself pushes the built `/eldoria/`
 folder to main. That's the ONLY allowed direct main push, and it now has
 rebase-retry built in.
+
+
+---
+
+## §15 — Asset size budget (added 2026-05-05, BLOCKING rule)
+
+Every agent that adds/replaces an asset (Architect, Character, Environment, Builder) MUST verify the resulting file size is **under 25 MiB**.
+
+**Why:** Cloudflare Pages — our future deploy target for the cloud-save Worker and (eventually) the game build — enforces a 25 MiB per-file hard limit. Anything larger fails to upload. We've already lost a session to discovering this with a 41 MB wasm and 94 MB pck files.
+
+**How to apply (every commit that touches `eldoria-godot/assets/`):**
+1. Before commit, run `find eldoria-godot/assets -type f -size +20M -exec ls -lh {} +`
+2. If anything is over 20 MB (a 5 MB safety margin under the 25 MiB cap), DO NOT push. Instead:
+   - Re-export the source GLB at lower vertex/texture density via Meshy "Refine → Reduce" or Godot's import-time mesh compression
+   - Atlas / share textures across multiple meshes
+   - Convert PNG→WebP/AVIF, JPEG quality 85→75
+3. The Godot-compiled `index.pck` and `index.side.wasm` are SEPARATE concerns (they're CI-generated artifacts; not source-controlled file size). For those, the budget guidance is:
+   - Each individual GLB/texture asset should be under 20 MiB
+   - Total uncompressed asset folder under 200 MiB (so the engine can pack-and-compress to a manageable bundle)
+4. QA Triage agent runs a pre-push size audit and rejects any branch that violates the rule.
+
+**Related:** Agents must NEVER bypass this rule with chunking workarounds. The whole point is that downstream tooling (Cloudflare R2/Workers, mobile delivery, etc.) gets simpler when individual files are small.
