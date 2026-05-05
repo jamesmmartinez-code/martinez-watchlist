@@ -268,3 +268,96 @@ reuse these before inventing new ones.
   death-night; Bram's stew). Future seasonal dialogue can lean here.
 - Bram quietly knows Edda forged the Warlord's saber. He has never said.
   This is a relationship hook for Bram's eventual backstory file.
+
+---
+
+## Lore Run — 2026-05-04 (Elder Maeve)
+
+### NPC backstories (`lore/npcs/`) — added this run
+
+| NPC          | File                              | Dialogue tree                                  | Status |
+|--------------|-----------------------------------|------------------------------------------------|--------|
+| Elder Maeve  | `lore/npcs/elder_maeve.md`        | `data/dialogue/elder_maeve.json` (16 keys)     | drafted; awaiting Builder wiring |
+
+### Old Faerie glossary — additions
+
+Two new canonical words enter the language. They sit alongside *thirre*,
+*ai-velin*, *kerrithen* (`world.md`) and *haethe*, *unnen*
+(`smith_edda.md`). Future writers should reuse these before inventing new
+ones.
+
+- **`vael-tor`** *(elder_maeve.md)* — the gathered hearth; the collective
+  warmth a village turns toward a death. Older 'we'-form: *vael-tor-i*.
+  Maeve speaks the *we*-form on Longnight Vigil.
+- **`thressa-mai`** *(elder_maeve.md)* — the unanswered letter; a debt of
+  words owed to one who has gone without farewell.
+
+### Cross-references seeded this run
+
+- **Maeve was Edda's midwife.** She named Edda. She has not crossed the
+  forge threshold since the spring after Halsa's death, when she brought
+  Halsa's cradle. This is the canonical bridge between the two existing
+  NPC files. (`elder_maeve.md` ↔ `smith_edda.md`)
+- **Maeve's brother Cailen** was lost on the High Steppe. A Steppe-rider
+  returned a horseshoe and a pressed sprig of heather; the horseshoe
+  hangs above Maeve's hearth. This makes the Stone Crown reusable for
+  future quests/codex.
+- **Maeve's daughter Aelis** went south to the Iron Crown's smoke-cities
+  eleven years ago and stopped writing. Maeve sends a sealed letter every
+  Lambmoon by **Mara the Merchant**. **Mara is keeping one returned
+  letter** (water-stained, addressed in a hand not Aelis's) — a slow-burn
+  quest seed she has not yet decided what to do with. Mara is canonically
+  expected to give it eventually to Edda for keeping. (Three-way bridge:
+  Maeve ↔ Mara ↔ Edda.)
+- **Roan rode the High Steppe twice** for Maeve, hunting word of Cailen.
+  Maeve paid him in a hand-carved cradle he keeps in the stable loft,
+  unused, against the day Maeve needs it back. (Maeve ↔ Roan bridge.)
+- **Lyra is Maeve's chosen successor.** Maeve is teaching her the
+  Longnight Vigil ritual one candle at a time. Neither has said the word
+  *Elder* aloud. (Maeve ↔ Lyra bridge — strong hook for Lyra's eventual
+  backstory file.)
+- **Bram brings Maeve a Longnight Vigil stew** that Maeve sets out for
+  the Hollow King; the cat eats it. Bram knows. This expands the Vigil
+  tradition first seeded in `smith_edda.md` — Bram's Vigil-stew round
+  goes Edda → Maeve, and is now a canonical village ritual, not a one-NPC
+  detail. (Bram ↔ {Edda, Maeve} bridge.)
+- **The Stag-Court once offered Maeve a seat at the Antler Crown** for
+  the price of one mortal year remembered backwards. She declined. She
+  believes the offer is still open. *This thread is sealed-room canon:*
+  it must NEVER be spoken in a Maeve dialogue line, only ever surfaced as
+  a codex fragment after the player has reached the Crystal Caves (a
+  *thirre*). Future writers please respect the withholding — it is the
+  point of the character.
+- **Maeve's hawthorn walking stick** is canonized as a censusing artifact
+  carrying 111 ringed knots — one per Briarwood-born child since she
+  became Elder. Knot 37 is Halsa, knot 62 is Edda. A future codex entry
+  *"Maeve's Knot-Stick"* is hooked.
+- **Honeysong Eve and Longnight Vigil** are now both anchored to Maeve
+  as their ritual-holder. The Calendar entries in `world.md` should
+  henceforth be read as *Maeve's calendar* in any future flavor pass.
+
+### Withholding ledger (do-not-surface canon)
+
+These canonical facts are *intentionally* never to be spoken by the NPC
+in dialogue. They live in the .md as story fuel and may surface only via
+codex entries, third-party narration, or other NPCs' lines.
+
+- Maeve's Stag-Court offer (Antler Crown). Codex-only, post-Crystal-Caves.
+- Aelis (Maeve's daughter). Mentioned only via Mara's unopened letter
+  arc, never directly by Maeve.
+- Cailen (Maeve's brother). Maeve has not spoken his name since
+  *kerritha-ing* his pressed heather; her dialogue tree must not put it
+  in her mouth.
+
+### Hooks queued for future runs
+
+- **`Cailen's Horseshoe` quest** (Maeve → Stone Crown rider passing
+  through, or burial at Foxthaw on the High Road). Reward: a knot carved
+  into Maeve's stick *for the player.* No other in-game reward needed.
+- **Mara's unopened-letter turn-in** (a Maeve-and-Lyra-only scene; do
+  not surface in casual repeat-talk).
+- **Maeve's Knot-Stick** as a discoverable codex object.
+- **Bram backstory** is now strongly seeded — his Vigil-stew round and
+  his quiet knowing about both Edda's saber and Maeve's letter make him
+  the village's *quiet keeper*. Priority candidate for the next NPC
+  backstory.
