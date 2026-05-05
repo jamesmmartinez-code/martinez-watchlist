@@ -2119,3 +2119,19 @@ v.   **HOOKS COMPOUND** ✓ —
 6. **QA** — smoke-test the schedule walker. Set `time_of_day = 6.0` /
    `13.0` / `19.0` / `22.0` in turn and verify each villager arrives
    at the registered anchor.
+
+---
+
+## 2026-05-05 — Integrator run
+
+**Merged into main this run:** auto/builder (1 commit), auto/character (2 commits), auto/art (1 commit), auto/lore (1 commit). Skipped: none — auto/polisher and auto/qa had nothing ahead of main; auto/environment and auto/audio branches do not exist yet.
+
+**One conflict, manually resolved:** `WORLD_STATE.md` — auto/builder appended a "Briarwood NPCs become mobile (Builder run 11)" section and auto/lore appended a "Run: Lore Keeper — Stablemaster Roan backstory" section, both at the same anchor. Both are purely additive log entries; combined in chronological order (Builder section first, then Lore section). No content discarded.
+
+[INTEGRATOR-GAP] **Achievement crests are authored but the toast UI does not consume them.** Art shipped 5 painterly 128×128 PNGs at `assets/icons/achievements/{first_steps,pack_thinner,goblin_bane,trusted_three,realm_warden}.png` and added `icon_path` to every `Achievements.ACHIEVEMENTS` entry. But `World.gd:282` still pulls `entry.get("icon", "🏆")` — the text glyph — when composing the unlock toast (`"🏆 %s %s — %s"`). The 128×128 crest never reaches a `Texture2D` slot. Single-line forward-fix: add a TextureRect to the toast scene and `load(entry.get("icon_path", ""))` alongside the existing string. **Recommended for next builder/UI run.** Note this echoes the long-standing Items.gd `icon_path` gap — same shape, same one-liner fix once a UI lands.
+
+[INTEGRATOR-GAP] **Stablemaster Roan dialogue JSON is NOT shipped.** Lore canonized Roan's backstory (606-line markdown) and Builder added Roan to the schedule walker (stable in morning/midday, leading the team in the evening, lantern at night). But `data/dialogue/stablemaster_roan.json` does not exist — the four JSON-opted NPCs are still Maeve / Edda / Bram / Lyra. Roan's spoken lines are still the static "wolves bolder this season"-tier strings inlined in WorldBuilder. The backstory exists in canon but does not reach the player through dialogue. **Recommended:** lore drafts `stablemaster_roan.json` next run with the mood-keyed tree (default/morning/midday/evening/night plus low_health, boss_alive, boss_slain, high_renown — and Roan's distinctive longnight_vigil hook since he's the one who lights the stable lantern), then builder flips `"use_json_dialogue":true` on his NPCS entry.
+
+[INTEGRATOR-GAP] **Lore .md backstory files (npcs/*.md) remain canon-only.** Roan's 606-line file joins Maeve / Edda / Bram / Lyra / Mara as static reference markdown — no code path loads `eldoria-godot/lore/npcs/*.md` at runtime. This is by design (the .md is for the writer; the .json is for the engine), but worth flagging since the lore folder has now grown to 6 files (5 NPCs + world.md) and a player encountering Roan in-game will hear nothing of Briar's Run, Tael, Eithne, the Long Mound, or the *thirre*-stone. Bridging this is intentionally JSON's job — see the previous gap.
+
+**Branch reset:** all worker `auto/*` branches fast-forwarded to main after merge so next agent runs start from a clean tip.
