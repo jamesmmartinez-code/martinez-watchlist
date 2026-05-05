@@ -778,3 +778,197 @@ Three new words enter canon, joining *thirre*, *ai-velin*, *kerrithen*
   Maeve sets it for the Hollow King, Lyra carries the dreamleaf to
   the well. No additional scripting required beyond mood-key
   resolution.
+
+---
+
+## Run history — Lore (2026-05-05, run 9)
+
+### Mara the Merchant — backstory shipped (`lore/npcs/mara_merchant.md`)
+
+Fifth of seven canonical NPC backstories. First non-Briarwood-born
+character in the file set. Anchors the southbound side of the village's
+`mhairen` ledger and the courier vector that connects the Iron Crown,
+Cinder Reach, and the High Steppe to the Briarwood player-loop.
+
+#### New facts entering canon
+
+- **Mara is from Cinder Reach**, a courier-town three weeks south of
+  the Briarwood signpost on the road to the Iron Crown's smoke-cities.
+  Cinder Reach is now a named-but-offstage trade origin reservable for
+  southern goods (salt, southern honey, bonded wax, spice-tin contents,
+  courier-grade oilskin).
+- **Yew-and-Lantern** is Mara's family courier-house, three generations
+  deep (grandmother **Reseda**, mother **Yula**, Mara). The
+  red-kid-leather routes-book in Mara's satchel is the canonical
+  artifact; last entry is 28 years out of date in Mara's own hand.
+- **Nessa**, Mara's older sister, rode the High Steppe a third time on
+  a Honeysong and did not return. A water-stained returned letter came
+  back two springs later in a stranger's hand, addressed to a stranger,
+  re-sealed in a wax not the family's. Mara has carried that letter
+  unopened for thirty-one years. *(The first letter.)*
+- **The High Steppe vector now takes three Briarwood-adjacent
+  characters:** Cailen (Maeve's brother), Nessa (Mara's sister), and
+  the two rides Roan made hunting word of Cailen. The Stone Crown is
+  reaffirmed as a vector of loss for the village. Mara has not, in
+  twelve years, confessed the parallel to Maeve. Maeve has not asked.
+  Both of them know.
+- **Mara's water-stained returned Aelis-letter is canonically the
+  *second* such letter she has held.** The first is Nessa's,
+  thirty-one years unopened. Both ride in her satchel on opposite
+  sides of the spice-tin. *They must not touch.*
+- **Mara came to Briarwood twelve years ago** because the Iron Crown's
+  couriers had stopped being honest. Greenshield evening, walked the
+  cart past the signpost, smelled woodsmoke and pond-mint, did not
+  walk back out. The cart sleeps in **Roan's stable loft** — axle-mended
+  twice, oiled by Roan every Reapmoon unasked, paid-loft-rent for nine
+  years.
+- **Mara invokes Erris of the Two Roads** — copper coin on the awning-
+  post (never blown off, even in the Wolfwake gales), under-breath
+  thanks at every closed sale, lantern-to-lantern idiom. She does NOT
+  invoke the Hollow King. The first letter came back in his season.
+- **Mara is the southbound half of the southern-honey jar ritual.**
+  Lyra leaves the empty jar at Reapmoon's last day; Mara fills it from
+  southern apiaries on her southbound route; Mara walks the full jar
+  back on the first Sunpetal morning to the meadow-edge stone for the
+  Hollow King's ants on Sunpetal 7. Both `mara_jar_returned`
+  (Sunpetal 1) and `lyra_jar_emptied` (Reapmoon last day) are now
+  reservable seasonal world-flag pulses.
+- **Mara stocks Trainer Hala's hand-bound practice cudgels** — a row
+  of six against the back wall of the stall, restocked twice a year.
+  Neither is sure who is selling them to whom. New bridge; first
+  Hala-side detail entering canon ahead of Hala's own backstory file.
+
+#### Bridges added or deepened
+
+- **Mara ↔ Maeve bridge:** Lambmoon letter southbound; water-stained
+  letter northbound; Foxthaw tea at Maeve's hearth (the kind two old
+  women drink when one is keeping a thing for the other); the
+  twelve-year postponement of one long quiet conversation about roads
+  and silences.
+- **Mara ↔ Edda bridge:** Mara buys Edda's *seconds* in honest coin
+  at full price, never haggles. Mara has decided — though not yet
+  acted — that **Edda is the canonical eventual keeper of the
+  water-stained letter.** Edda's tongs are the destination.
+- **Mara ↔ Bram bridge:** Bram is the second in-village witness to
+  the second letter. He saw it fall, saw the unbroken seal, saw her
+  face, refilled her cup. He fills her tankard a finger lower than
+  the rest of his guests because she always pays the same and he
+  wants her to feel looked-after, not measured. She knows. Both of
+  them are *kerrithen-*shaped about it, the same shape Bram and Edda
+  share.
+- **Mara ↔ Lyra bridge:** the southern-honey jar ritual is now fully
+  canonized as a year-loop. Lyra opens satchels the way Reseda did
+  (pinch from the bottom, never the top). Lyra is the only person
+  Mara suspects might one day be ready to receive the routes-book.
+  Mara has not yet asked. Lyra knows she has not asked.
+- **Mara ↔ Roan bridge:** the courier-cart in Roan's loft, axle-mended
+  twice, oiled every Reapmoon unasked, paid-rent for nine years and
+  unloaded for none. A canonical *kerrithen* pairing — Roan keeps
+  the cart the way Maeve kept Halsa's cradle. Morning head-tips
+  across the cobble path.
+- **Mara ↔ Hala bridge (new):** the cudgel row of six. Mara stocks
+  them, neither knows who sells them to whom, both seem to need the
+  row to exist. First seed of a withholding the Hala backstory file
+  may carry forward. Reservable flag: `cudgel_row_acknowledged`.
+
+### Withholding ledger (do-not-surface canon)
+
+- **Nessa's name in Mara's mouth** — never spoken aloud to any
+  living person. Future writers MUST NOT have Mara say *Nessa* in
+  dialogue, in quest text, or in turn-in lines. The name may
+  surface in a Reseda-as-narrator codex page and nowhere else.
+- **The first letter (Nessa's)** — stays in the satchel forever.
+  NOT a turn-in, NOT a quest reward, NOT a discoverable codex
+  object. The withholding is the character.
+- **The second letter (Aelis's) turn-in** — to Edda for keeping,
+  one canonical day, witnessed only by Maeve and Lyra, with Bram's
+  pre-tuned reactive in the background. The letter is NEVER opened
+  in-game. Edda receives it, sets it on the highest forge shelf
+  next to her mother's tongs, and does not open it either. The
+  withholding is the kindness.
+- **What is in either letter** — Bram saw the seal of the second;
+  he did not read it. No one in Briarwood knows. No one in
+  Briarwood will. The contents are intentionally unwritable.
+- **The *pendrel* coin's intended recipient** — Mara does not know.
+  The text MUST NOT decide for her. Even the warmest-tier dialogue
+  unlock must leave the recipient open. *"For someone who has not
+  yet asked"* is the canonical formulation.
+- **The Mara/Maeve High-Steppe parallel** — Mara has not in twelve
+  years told Maeve about Nessa. Maeve has not asked. Both know.
+  Future writers MUST NOT have either of them surface this in
+  dialogue. The parallel may be eligible for a Reseda or
+  Caedr-style narrator codex page, but only after the Aelis
+  letter turn-in has shipped.
+
+### Hooks queued for future runs
+
+- **Mara `mara_merchant.json` dialogue tree** — priority-3 next
+  for the Lore agent. Tree-shape mirrors `smith_edda.json` and
+  `innkeeper_bram.json`. Seasonal slot: `sunpetal_first_morning`
+  (the honey-jar walk; line must not name Lyra or the Hollow King).
+  Village-wide `longnight_vigil` line closes the **Vigil quintet**
+  — Edda doesn't look up, Bram brings the stew, Maeve sets it for
+  the Hollow King, Lyra carries the dreamleaf to the well, Mara
+  holds the candle from the stall. The Mara line cues *"Bram's got
+  the stew round"* as the textual relay that the round continues.
+- **Mara-issued `lost_courier_pouch` quest** (kind: fetch). Reduces
+  a future `whisperwood_bandits` faction pressure (when bandits
+  ship); reward: `yew_and_lantern_brass_token` flavor item;
+  consequence flag: `first_pouch_returned`. Use sparingly — Mara is
+  not yet ready to ask anyone to ride for her.
+- **The water-stained letter turn-in scene** — Maeve-and-Lyra-only
+  witnesses; Bram's `bram_letter_acknowledged` reactive in the
+  background; Mara says *"a thing kept too long, and a place to
+  set it down"* and Edda receives it without speaking. The letter
+  goes on the highest forge shelf next to Halsa's tongs. Future
+  writers MUST consult `elder_maeve.md` Withholding Ledger,
+  `innkeeper_bram.md` cross-canon, AND `mara_merchant.md`
+  Withholding Ledger before touching this loop. The first letter
+  (Nessa's) does NOT turn in — that is the point.
+- **The *Yew-and-Lantern* routes-book as a discoverable codex
+  object.** Red kid-leather, last entry 28 years out of date in
+  Mara's hand. Codex page may surface Reseda, Yula, the twenty
+  stables, the four scribe-houses; MUST NOT surface Nessa.
+- **Reseda-as-narrator codex track** — same convention as
+  Halsa-as-narrator (`smith_edda.md`) and Caedr-as-narrator
+  (`innkeeper_bram.md`): present-tense voice, no body, no death
+  confirmed. Natural narrator for codex pages on Erris, the
+  long-road, courier-craft, and (post-Aelis-turn-in only) the
+  High-Steppe-loss parallel.
+- **Honeysong Eve pond pairing with Bram** — both set paper
+  lanterns from opposite banks; do not cross; do not speak; nod
+  once. Never name Nessa or Caedr in the scene.
+- **The *pendrel* coin-row** as a stall environmental detail —
+  bronze fox-and-mark coin + column of coppers beside it,
+  quietly lit by stall lantern. Polisher-flag: do not animate
+  the column knocking over.
+- **Seasonal honey-jar prop placements** at the meadow-edge stone:
+  empty during Reapmoon, full during Sunpetal week one. Same
+  cadence as Maeve's hawthorn knot-stick prop.
+- **Cinder Reach** as a named-but-offstage trade origin. Mara's
+  stall inventory may flavor any southern good as
+  Cinder-Reach-shipped.
+- **`mara_jar_returned`** (Sunpetal 1) and **`lyra_jar_emptied`**
+  (Reapmoon last day) as reservable seasonal world-flag pulses.
+- **Quintet staging on Longnight Vigil.** With Mara's line, all
+  five Briarwood NPCs with backstory files now ship a
+  `longnight_vigil` mood-key. The full ring (Edda → Bram → Maeve →
+  Lyra → Mara) plays itself across five thresholds with no
+  scripting beyond mood-key resolution. Builder hook: co-fire on
+  same Longnight tick.
+
+### New Old Faerie words
+
+- ***pendrel*** *(PEN-druhl)* — "the third coin in the till that
+  does not belong to the day's count." Set aside for someone who
+  has not yet asked. The merchant's *kerrithen.*
+- ***mhairen*** *(MAR-en)* — "what the satchel carries that is not
+  for sale." Things a courier holds in trust.
+
+Total Old Faerie lexicon now 10 words: *thirre, ai-velin, kerrithen*
+(world.md); *haethe, unnen* (smith_edda.md); *vethar, haisten,
+breos* (innkeeper_bram.md); *pendrel, mhairen* (mara_merchant.md).
+Lyra's file did not seed new words; it composed against the
+existing eight. Future NPC files (Roan, Hala) should aim for 1–2
+new words each, keeping the lexicon growing at roughly the cadence
+established here.
