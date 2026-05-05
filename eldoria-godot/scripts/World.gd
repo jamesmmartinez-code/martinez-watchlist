@@ -50,6 +50,20 @@ var factions: Dictionary = {
 var world_flags: Dictionary = {}      # flag_name -> Variant (usually bool/int)
 var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 
+# Achievement / Title state — read-only externally; mutated only by
+# `_check_achievements()` which is invoked at the end of `apply_consequence`
+# and once at `_ready` (so a fresh world boot picks up any pre-existing
+# state — currently always empty since faction/flag state is per-session,
+# but keeps the contract sound for future persistence work).
+#   `unlocked_achievements`: Dictionary[String, bool] — keys are IDs in
+#       `Achievements.ACHIEVEMENTS`. Bool value is always `true`; the
+#       dict shape (rather than Array) makes lookup O(1) and avoids
+#       duplicate-detection logic on the unlock path.
+#   `current_title`: String — auto-equipped title text drawn above the
+#       player's head as a Label3D. "" means no title (default).
+var unlocked_achievements: Dictionary = {}
+var current_title: String = ""
+
 
 # ────────────────────────────────────────────────────────────────────────
 # Quest catalog — every quest available in the realm
@@ -171,6 +185,11 @@ func apply_consequence(consequence: Dictionary) -> void:
 	var toast: String = consequence.get("toast", "")
 	if toast != "":
 		_show_toast(toast)
+	# Step 5: re-evaluate achievements against the freshly-mutated state.
+	# Pure read of factions/world_flags/npc_flags — no further mutation.
+	# Owen + Alden see toast on unlock, and the auto-equipper updates the
+	# title floating above the player's head.
+	_check_achievements()
 
 # Read accessors used by dialogue/spawning/difficulty (queryable schema)
 func faction_pressure(faction_id: String) -> float:
@@ -196,6 +215,64 @@ func register_runtime_item(item: Dictionary) -> String:
 func get_runtime_item(id: String) -> Dictionary:
 	return _runtime_items.get(id, {})
 
+# ────────────────────────────────────────────────────────────────────────
+# Achievements & Title — pure read of world state; on diff, toast and
+# auto-equip the highest-priority unlocked title. Safe to call any time;
+# fail-soft if `Achievements.gd` ever fails to load (returns no unlocks,
+# no crash).
+# ────────────────────────────────────────────────────────────────────────
+func _check_achievements() -> void:
+	var unlocked_now: Array = Achievements.evaluate(self)
+	# Diff against `unlocked_achievements` to find newly-unlocked IDs.
+	var newly_unlocked: Array[String] = []
+	for id_variant in unlocked_now:
+		var id: String = String(id_variant)
+		if not unlocked_achievements.has(id):
+			unlocked_achievements[id] = true
+			newly_unlocked.append(id)
+	# Toast each newly-unlocked achievement with its icon + name + desc.
+	# Spaces them out by 0.6s if multiple unlock at once so kids can read
+	# each one (rare but happens at run-end "warden" trip).
+	var stagger: float = 0.0
+	for id in newly_unlocked:
+		var entry: Dictionary = Achievements.ACHIEVEMENTS.get(id, {})
+		if entry.is_empty():
+			continue
+		var icon: String = String(entry.get("icon", "🏆"))
+		var aname: String = String(entry.get("name", id))
+		var adesc: String = String(entry.get("desc", ""))
+		var msg: String = "🏆 %s %s — %s" % [icon, aname, adesc]
+		if stagger <= 0.0:
+			_show_toast(msg)
+		else:
+			# Defer subsequent toasts so they do not stomp each other.
+			get_tree().create_timer(stagger).timeout.connect(_show_toast.bind(msg))
+		stagger += 0.6
+	# Auto-equip the highest-priority unlocked title. Stable across runs.
+	var new_title: String = Achievements.best_title(unlocked_achievements.keys())
+	if new_title != current_title:
+		current_title = new_title
+		_apply_title_to_player(new_title)
+		# A separate, smaller toast for title changes so they read as a
+		# distinct event from achievement unlocks (which often fire on the
+		# same frame).
+		if new_title != "":
+			get_tree().create_timer(0.3).timeout.connect(
+				_show_toast.bind("✨ Title equipped: %s" % new_title))
+
+# Read-only external accessor — UI panels and future autoload achievements
+# panel can call this without poking the dict directly.
+func has_achievement(id: String) -> bool:
+	return unlocked_achievements.has(id)
+
+# Pushes the current title down to the Player node, if present and ready.
+# Player.gd builds a Label3D nameplate at _ready; this just calls its
+# `set_title` method. Safe before player exists (no-op).
+func _apply_title_to_player(t: String) -> void:
+	var player := get_node_or_null("Player")
+	if player and player.has_method("set_title"):
+		player.set_title(t)
+
 func _ready() -> void:
 	add_to_group("world")
 	add_to_group("audio_listeners")
@@ -214,6 +291,11 @@ func _ready() -> void:
 	_setup_dialogue_actions()
 	# Start village ambient theme
 	call_deferred("play_music", "village")
+	# Bootstrap achievement check — empty on a fresh world, but means future
+	# persistence work (saving factions / flags) "just works" without a
+	# special-case load path. Also pushes any pre-loaded title onto the
+	# player nameplate after a single frame, once Player._ready ran.
+	call_deferred("_check_achievements")
 
 func _setup_dialogue_actions() -> void:
 	if not dialogue_panel: return

@@ -408,3 +408,80 @@ Authoring rules:
 *present-tense fact*: `whisperwood_safer`, `lyra_potion_brew`,
 `mara_bounty_paid`. Never imperative ("save_the_village") and never tied to
 quest IDs ("quest_1_done") — flags outlive specific quests.
+
+## Achievement & Title Schema
+
+`Achievements.gd` (NEW, run 9) declares `const ACHIEVEMENTS: Dictionary`
+keyed by snake_case ID. Each entry has:
+
+| Field            | Type        | Notes                                                                 |
+|------------------|-------------|-----------------------------------------------------------------------|
+| `name`           | String      | Display label, shown in unlock toast and future achievements panel    |
+| `desc`           | String      | One-sentence flavor                                                   |
+| `icon`           | String      | Emoji glyph (child-readable)                                          |
+| `title_text`     | String      | Granted title; `""` = no title is granted by this achievement         |
+| `title_priority` | int         | Higher = preferred when multiple titles unlocked simultaneously       |
+| `predicate`      | Dictionary  | Composable predicate against existing world primitives (see below)    |
+
+`Achievements.evaluate(world: Object) -> Array` returns the IDs of every
+achievement whose predicate is currently satisfied. Pure read; same
+fail-soft contract as the spawn-density helpers (missing world / missing
+accessors → empty array, never crash).
+
+`Achievements.best_title(unlocked_ids: Array) -> String` picks the
+highest-priority unlocked title. Stable ordering: ties broken by ID
+alphabetical so the title above the player's head never flickers.
+
+### Predicate language (queryable schema)
+
+| Kind             | Shape                                                          | Reads from                       |
+|------------------|----------------------------------------------------------------|----------------------------------|
+| `world_flag`     | `{kind, flag: String}`                                         | `World.has_world_flag(flag)`     |
+| `faction_below`  | `{kind, faction: String, value: float}`                        | `World.faction_pressure(faction)`|
+| `faction_above`  | `{kind, faction: String, value: float}`                        | `World.faction_pressure(faction)`|
+| `all_npc_flags`  | `{kind, flags: Array[[npc_name, flag_name]]}`                  | `World.npc_has_flag(name, flag)` |
+| `all_of`         | `{kind, preds: Array[Dictionary]}`                             | (recursive)                      |
+| `any_of`         | `{kind, preds: Array[Dictionary]}`                             | (recursive)                      |
+
+The evaluator is invoked from `World._check_achievements()` which fires
+at the END of `apply_consequence(...)` and once at `_ready()` (deferred so
+Player's nameplate exists). The `unlocked_achievements: Dictionary` keeps
+unlock state. On each new unlock, a toast fires (`🏆 <icon> <name> — <desc>`),
+multiple unlocks on the same frame are staggered 0.6s apart.
+
+Title display: `Player.title_label` is a Label3D anchored at `y = 2.4`
+above the feet pivot, billboarded, gold-leaf modulate (palette §3 burnt
+gold), 8px black outline (matches HUD damage numbers). Hidden when the
+title string is empty. THEME §12 motion-and-life: bound by a looping
+`create_tween()` that bobs `position:y` between 2.40 and 2.46 every 1.5s
+so the label breathes. `Player.set_title(t: String)` is the single setter;
+World calls it via `_apply_title_to_player(t)` which is a no-op if the
+player isn't ready yet.
+
+### Authoring rules
+
+1. **NEVER add a new world primitive in `Achievements.gd`.** If a predicate
+   cannot be expressed against `factions` / `world_flags` / `npc_flags`,
+   add the new READER first (see runs 5–7 for the spawn-density pattern),
+   then write the achievement.
+2. Keep `title_text` ≤ 18 characters. The Label3D is `pixel_size 0.0035`,
+   font_size 28; longer titles wrap and look cluttered.
+3. Use a UNIQUE `title_priority` across achievements that can co-unlock so
+   the auto-equipper's pick is unambiguous. Current ladder:
+   - 10  `the Apprentice` (first quest)
+   - 30  `Wolf-Friend` (wolves down 1 cliff)
+   - 40  `Goblin-Bane` (goblins down 1 cliff)
+   - 50  `the Trusted` (3 NPC trusts)
+   - 100 `Warden of Eldoria` (mastery — both factions tamed + 3 trusts)
+4. Predicate evaluation MUST be PURE. The evaluator runs on every
+   `apply_consequence` and on `_ready` — side effects would cascade.
+
+### Authoring trap captured this run
+
+Predicates that compose `faction_below` with `all_npc_flags` (e.g.
+`realm_warden`) will trip the moment the LAST quest in the chain
+applies its consequence, because `_check_achievements()` runs AFTER all
+consequence steps. Do not order tier-4 achievements assuming an extra
+quest beyond their last input — the unlock fires on the same frame as
+the last input quest's toast. Stagger of 0.6s in the toast queue is the
+only thing keeping the unlock toast from being clobbered.

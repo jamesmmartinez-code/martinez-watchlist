@@ -49,6 +49,14 @@ const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 # Visible weapon attached to the player's body (re-built when equipment changes)
 var weapon_visual: Node3D = null
 
+# Floating title above the player's head — drawn as a Label3D so it
+# tracks the player in 3D space and reads from the cooperative camera at
+# any orbit angle. Hidden until World assigns a title via set_title().
+# THEME §12 motion-and-life: the label has a tiny Y-bob tween so it
+# breathes instead of standing dead. THEME §3 palette: gold-leaf font,
+# black outline (matches HUD numbers + toast text).
+var title_label: Label3D = null
+
 # Procedural fantasy gear (helm, cape, pauldrons, tabard, belt) bolted onto
 # the Vanguard body to make it read as a fantasy hero rather than a soldier.
 signal stats_changed
@@ -73,6 +81,28 @@ func _ready() -> void:
 	if animation_player:
 		await get_tree().process_frame
 		_play_anim("idle")
+	# Floating title (hidden until World assigns one). Anchored at y=2.4
+	# above feet, billboard-mode so it always faces camera. Two-frame
+	# defer so it spawns AFTER the model exists (CharacterDress.gd may
+	# still be wiring helms / capes on first frame).
+	title_label = Label3D.new()
+	title_label.name = "TitleLabel"
+	title_label.text = ""
+	title_label.visible = false
+	title_label.position = Vector3(0, 2.4, 0)
+	title_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title_label.no_depth_test = true
+	title_label.fixed_size = false
+	title_label.pixel_size = 0.0035
+	title_label.modulate = Color(1.0, 0.85, 0.4)         # palette §3 burnt gold
+	title_label.outline_modulate = Color(0, 0, 0, 1)
+	title_label.outline_size = 8
+	title_label.font_size = 28
+	add_child(title_label)
+	# THEME §12: tiny Y-bob so the label breathes. Amplitude 0.04m, period 3s.
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(title_label, "position:y", 2.46, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(title_label, "position:y", 2.4, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Inventory
 	inventory = Node.new()
 	inventory.set_script(INVENTORY_SCRIPT)
@@ -652,6 +682,15 @@ func load_game() -> bool:
 		return false
 	_apply_save_data(data)
 	return true
+
+# Title setter — called by World._apply_title_to_player when an
+# achievement unlocks a higher-priority title. Empty string hides.
+# Safe to call before _ready (no-op until title_label exists).
+func set_title(t: String) -> void:
+	if title_label == null:
+		return
+	title_label.text = t
+	title_label.visible = (t != "")
 
 func reset_save() -> void:
 	# For "New Game" button later
