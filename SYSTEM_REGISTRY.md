@@ -106,8 +106,16 @@ first hit:
    `warm_faction_lines: Array[String]` (4 buckets).
    Fires when `World.faction_pressure(warm_faction_id) < warm_faction_below`
    AND neither flag tier already matched. Faction-shape warmth: "the world
-   has changed in a measurable way." Shipped by run 4. Reads
-   `World.faction_pressure()`, which had no other consumer until now.
+   has changed in a measurable way." Shipped by run 4 (Maeve, secondary
+   tier behind her `warm_flag`); generalized by run 8 (Roan, ONLY warming
+   tier — no `warm_flag` and no `warm_world_flag`). Run 8 proves the
+   schema works as the SOLE warming channel: any NPC can speak any
+   faction's state with a 3-field data edit (`warm_faction_id`,
+   `warm_faction_below`, `warm_faction_lines`). Reads
+   `World.faction_pressure()`, which now has 4 runtime consumers
+   (NPC.gd dialogue tier 3 — multiple NPCs / multiple factions —
+   plus WorldBuilder spawn density — goblins + wolves — plus Enemy.gd
+   adaptive cooldown).
 4. `lines: Array[String]` (the mood-bucketed default).
 5. `line: String` (single fallback).
 
