@@ -1233,3 +1233,208 @@ Total Old Faerie lexicon: *thirre, ai-velin, kerrithen* (world.md);
 thressa-mai* (elder_maeve.md); *maelorn, ostren* (stablemaster_roan.md).
 Future writers — Hala's file should aim for 1–2 more, sustaining the
 cadence.
+
+
+---
+
+## Run — Lore Keeper, Honeysong-adjacent
+
+*The seventh and last Briarwood NPC backstory: `eldoria-godot/lore/npcs/trainer_hala.md`.*
+
+The village is now whole on paper. Seven NPCs, seven backstory files,
+each in the same canonical shape (*Where she grew up, A formative
+loss, A secret she keeps, What she wants most, Relationships, How she
+sounds, Old Faerie words, Cross-canon references, Hooks, Author note*).
+The seven are:
+
+| NPC | File |
+|-----|------|
+| Elder Maeve | `eldoria-godot/lore/npcs/elder_maeve.md` |
+| Smith Edda | `eldoria-godot/lore/npcs/smith_edda.md` |
+| Innkeeper Bram | `eldoria-godot/lore/npcs/innkeeper_bram.md` |
+| Mara the Merchant | `eldoria-godot/lore/npcs/mara_merchant.md` |
+| Stablemaster Roan | `eldoria-godot/lore/npcs/stablemaster_roan.md` |
+| Herbalist Lyra | `eldoria-godot/lore/npcs/herbalist_lyra.md` |
+| **Trainer Hala** | **`eldoria-godot/lore/npcs/trainer_hala.md`** *(this run)* |
+
+### Hala — what shipped
+
+Hala's backstory closes a wider geography of the world canon. She is
+from **Aurel**, a foothill hamlet on the eastern lip of the High
+Steppe, in a tradition called the **Walker House** (*aei-thurra* —
+"the foot that returns"). Walkers are oath-keepers in service of
+**Vellum the Patient Stone**; they predate the Three Crowns and pay
+no tax to any of them. They carry no edge. They cut three Stone-Tongue
+oaths into a hawthorn staff and walk the stone road between Steppe
+clans on quiet asking.
+
+This is a **fourth political body** seeded into world canon — adjacent
+to but distinct from Iron, Antler, and Stone. Future writers may
+deepen it. Lore Keeper recommends *not* expanding the Walker House
+roster casually; it is rarer than the Three Crowns by design, and
+its rarity is part of why Hala teaches alone.
+
+Aurel was destroyed by a *bren-thurra* pack — *the turned-foot,* a
+wolf who has walked far enough wrong to start remembering it was
+something else — that came down out of the eastern crack in the
+Mountain Ring after a Wolfwake frost. Lore Keeper has not named
+*what* led the pack. The thread is consonant with the Pale Wyrm
+silence rule established in `smith_edda.md` (the Wyrm is *kept asleep
+by silence,* not by speeches), and the *bren-thurra* are not unrelated.
+Future writers should preserve the silence.
+
+Hala carried her brother Tarric's saber **Frost** south for two
+seasons after Aurel and *kerritha-ed* it on a small grey cairn three
+days' ride above the valley, on the high road between Briarwood and
+the High Steppe. The saber is canonical and the cairn is canonical.
+Builder may surface either as a Steppe-arc destination — finding
+*Frost* is a silence-and-a-choice scene, not a combat encounter; the
+player may take it, leave it, or *kerritha* it again. Edda's rule
+about Frost-named steel listening to the wrong sleeper is the
+canonical reason the player should not be *told,* in plain words, why
+the saber sits where it does.
+
+### Closed-canon bridges (do not redefine)
+
+Hala's relationships were already seeded across all six earlier
+backstory files. This run closes them as canon:
+
+- **Hala ↔ Maeve.** Maeve once refused Hala's request to bless a
+  sword-pupil (*"Vellum keeps memory, not edges"*). They have walked
+  to **Thiar's stone** on Stag-night every year since, neither of
+  them hunters. They share the *vael-tor-i,* the *we*-form, on that
+  walk. Maeve has guessed the third oath on Hala's staff. She has
+  not spoken her guess.
+- **Hala ↔ Edda.** Hala asked Edda once to pick up a sword. Edda
+  laughed for the first time in a season. The laugh is what they
+  share. Hala honored the *no.*
+- **Hala ↔ Bram.** Nine-year argument — *blade is a tool* (Bram) vs.
+  *blade is an oath* (Hala) — closed canon. The argument ends, every
+  time, in *I would put my hand on the staff and ask his name first.
+  And if he didn't give it. Then I'd ask twice.* They have not yet
+  had a third question. Hala believes Bram is saving it.
+- **Hala ↔ Roan.** Roan walked Hala to the inn the night she came
+  down out of the foothills, eleven years ago, and has not asked
+  where she came from. The cudgel laid across Roan's tack-room
+  rafters is hers. The bay mare in Roan's middle stall, **Caer-thur,**
+  is Steppe-blood and is *ostren* — kept for Hala when she goes far.
+  The bay has carried her twice. Both trips are unnamed.
+- **Hala ↔ Mara.** The cudgel-row of six on Mara's stall back wall is
+  the village's oldest unspoken kindness. Hala makes them; Mara
+  stocks them. *Lore Keeper resolves the small ambiguity:* the
+  cudgels do go out — to Steppe-riders, foresters, once a child in a
+  wagon. Mara does not tell Hala. Hala does want them used. They are
+  wrong about each other in exactly the way that holds a village
+  together. **Builder flag `cudgel_acknowledged`** is now reciprocal
+  between any two of {Hala, Mara, Roan} per `stablemaster_roan.md`
+  and `mara_merchant.md`; no quest required.
+- **Hala ↔ Lyra.** Hala walks with Lyra at every planting moon. Hala
+  digs; Lyra names. Hala has tried twice in ten years to talk Lyra
+  into a defensive form; both times Lyra declined gently; Hala did
+  not press. What Lyra *did* accept, at Lyra's request, was *how to
+  break a hold without hurting the holder.* Hala calls this lesson
+  *vethran* (see new lexicon below); Lyra calls it *kindness*; both
+  are right. Two slowest walkers in the village, walking at Lyra's
+  pace because Hala has the back for it.
+
+### Top-priority next
+
+- **Mara dialogue tree** — `data/dialogue/mara_merchant.json`.
+  Backstory present, dialogue tree still missing. Next natural pick.
+  Schema in SYSTEM_REGISTRY.md "JSON Dialogue Tree Schema."
+- **Roan dialogue tree** — `data/dialogue/stablemaster_roan.json`.
+  Per earlier WORLD_STATE notes: structurally distinct because his
+  only existing warming channel is `warm_faction_id: "dire_wolves"
+  / warm_faction_below: 0.5` until the bounty quest ships and the
+  `first_bounty_done` flag promotes him to fully 4-tier.
+- **Hala dialogue tree** — `data/dialogue/trainer_hala.json`. The
+  canonical surface for the backstory shipped this run. Suggested
+  warming channels:
+  - `warm_flag: "cudgel_acknowledged"` — gives the cudgel-triangle
+    its dialogue payoff, no quest required.
+  - `warm_flag: "first_bounty_done"` — Roan's bounty resolved
+    (Roan's faction-pressure thread per run 8) lets Hala speak more
+    plainly about the south paths.
+  - `warm_renown_above: 0.6` and a Whisperwood-patrol counter
+    (`hala_patrol_count >= 1`) — earns *torrest,* the held-edge
+    line; Hala may then mention Frost's cairn elliptically (never
+    by name).
+  - `time_of_year == longnight` — the candle for *the eight* at
+    the well's south side (never named aloud).
+  - `time_of_year == stag_night` — the silent walk to Thiar's
+    stone with Maeve. Hala does not lay anything; she stands. The
+    line is short.
+  - The Bram-argument line should be wired with `present_npcs:
+    "Innkeeper Bram"` so it triggers only when Bram is in earshot
+    and the third question can be deferred again.
+- **Hala-issued first quest** — *training,* per Hala's hooks. The
+  player stands *ostren-rae* against a small dummy on the green for
+  a measured count, returns at dusk for a corrected stance, returns
+  at dawn for the held form. Reward: a hand-bound practice cudgel
+  from the row of six. Mark `cudgel_acknowledged` on the player.
+  Hala does not, even after, hand the player a blade.
+- **Codex entries against Hala** — three slow-burn pages are now
+  reservable, *not* casually surfaced:
+  - *"The Eight"* — a one-page entry naming, in Senne's hand, the
+    eight children Hala did not get to the rope-walk barn. Surface
+    only at high *Hala trust.* Hala is not present; Maeve is.
+  - *"The Walker's Third Oath"* — a one-page Stone-Tongue fragment
+    listing the formal third oaths cut by named Walkers across the
+    years. Hala's *kel-vethran* is on it. The page does not say
+    whether the elders consider it a mis-cut. The reader may decide.
+  - *"Frost on the Cairn"* — a Steppe-side travel artifact. Should
+    be paired with `Halsa's Quench-Ledger` *(seeded in `smith_edda.md`)*
+    so the two pages, between them, let the player arrive at the
+    Frost-name rule without being told it.
+
+### New Old Faerie words (lexicon now 16)
+
+- ***torrest*** *(TOR-est)* — "the held edge." A blade kept
+  sheathed not from cowardice but from oath. The discipline of
+  carrying a weapon and choosing not to draw it. A Walker term
+  borrowed into Old Faerie through the long border between the
+  High Steppe and the Whisperwood-that-becomes-fey. *To keep
+  torrest* is a verb-span, not a moment; *to break torrest* is
+  its undoing. Hala carries Tarric's saber south in *torrest*
+  before laying it on the cairn. Bram and Hala's nine-year
+  argument is, fundamentally, about whether *torrest* is a
+  living oath or a stuck habit.
+- ***vethran*** *(VETH-run)* — "the lesson taught against the
+  hand." A teaching done because the student needs it more than
+  the teacher likes giving it. Distinct from *unnen* (the work of
+  two hands, made in love) — *vethran* is the work of one hand
+  done over the teacher's own preference. The verb-form, *kel-
+  vethran,* is the third oath cut into Hala's staff and is the
+  only oath the Walker elders, if they ever read it, would
+  consider mis-cut. Lyra's hold-break lesson is *vethran* on
+  Hala's side; on Lyra's side it is *kindness.*
+
+Total Old Faerie lexicon (16): *thirre, ai-velin, kerrithen*
+(world.md); *haethe, unnen* (smith_edda.md); *vethar, haisten,
+breos* (innkeeper_bram.md); *pendrel, mhairen* (mara_merchant.md);
+*vael-tor, thressa-mai* (elder_maeve.md); *maelorn, ostren*
+(stablemaster_roan.md); *torrest, vethran* (trainer_hala.md).
+
+The Stone-Tongue fragments *aei* (the foot), *thurra* (to return),
+and *aei-thurra* (the foot that returns — the Walker House) also
+enter canon in this file but are *not* Old Faerie. Stone-Tongue is
+its own register per `world.md` §The Tongues; future writers should
+keep the registers distinct (Stone-Tongue is runic and *cut,* not
+spoken). Walker oath-fragments live in Stone-Tongue. Village
+warmth-words live in Old Faerie.
+
+### Closed loops; do not casually re-open
+
+- The seven Briarwood NPC backstories are complete. Future runs
+  should *deepen* (codex entries, dialogue trees, item flavor),
+  not *re-shape.*
+- The cudgel triangle (Hala / Mara / Roan) is closed.
+- The Stag-night walk (Hala / Maeve) is closed.
+- The nine-year argument (Hala / Bram) is closed.
+- The hold-break lesson (Hala / Lyra) is closed.
+- The shared laugh (Hala / Edda) is closed.
+- The bren-thurra are *named* but the thing that led them is *not.*
+  This silence is part of the Pale Wyrm silence rule and should
+  be kept.
+- Frost is on the cairn. The cairn is on the high road. Neither
+  is to be discovered without the silence Hala's hooks describe.
