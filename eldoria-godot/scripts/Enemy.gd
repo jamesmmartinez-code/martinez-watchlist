@@ -36,6 +36,26 @@ const KIND_MODELS := {
 	# quadruped would flip the wolf onto its back. Idle anim auto-plays via
 	# _play_model_idle_anim().
 	"wolf":   preload("res://assets/models/enemies/wolf.glb"),
+	# THEME §4 — undead and crystal-cave kinds previously fell back to
+	# worker_girl.glb (a humanoid woman in merchant apron — silhouette-broken
+	# at 30m). Until dedicated skeleton/elemental GLBs are sourced, reuse the
+	# warrior.glb humanoid silhouette and rely on KIND_TINT_OVERRIDE below to
+	# re-color it bone-white / crystal-cyan / frost-pale. warrior.glb ships
+	# with embedded idle animations, so §12 MOTION is satisfied automatically
+	# via _play_model_idle_anim().
+	"skeleton":          preload("res://assets/models/npcs/warrior.glb"),
+	"crystal_elemental": preload("res://assets/models/npcs/warrior.glb"),
+	"crystal_guardian":  preload("res://assets/models/npcs/warrior.glb"),
+}
+
+# THEME §4 — kinds whose KIND_MODELS entry is a *placeholder reuse* (warrior.glb
+# being recolored as skeleton/crystal). For these the per-kind `tint` modulate
+# MUST still apply, even though `uses_real_model` is true. Real role-correct
+# models (goblin, wolf) keep their hand-painted textures untinted.
+const KIND_TINT_OVERRIDE := {
+	"skeleton":          true,
+	"crystal_elemental": true,
+	"crystal_guardian":  true,
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
@@ -183,12 +203,18 @@ func _spawn_model() -> void:
 		_:
 			_model.scale = Vector3(1.0, 1.0, 1.0)
 	add_child(_model)
-	# Real fantasy models carry their own painted textures — applying the
-	# placeholder's green tint would muddy them. Tint only the fallback robot.
-	if not uses_real_model:
+	# Real fantasy models carry their own painted textures — applying a
+	# placeholder tint would muddy them. Tint only the fallback humanoid OR
+	# the kinds in KIND_TINT_OVERRIDE (where warrior.glb is being repurposed
+	# as a skeleton / crystal elemental and the kind's `tint` color is the
+	# whole point of the silhouette).
+	var force_tint: bool = KIND_TINT_OVERRIDE.get(enemy_kind, false)
+	if (not uses_real_model) or force_tint:
 		_model.call_deferred("propagate_call", "set", ["modulate", tint])
-	else:
-		# Auto-play idle animation if the model carries one (e.g. goblin_scout.glb has IdleAnimation).
+	# Auto-play idle animation whenever the model carries one (real role-correct
+	# models AND the placeholder-reuse warrior.glb both ship anims). Static
+	# T-pose enemies are banned per THEME §12.
+	if uses_real_model:
 		call_deferred("_play_model_idle_anim")
 
 func _play_model_idle_anim() -> void:
