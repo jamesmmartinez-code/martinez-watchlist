@@ -8,6 +8,112 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
+## Run 7 2026-05-04 (autonomous) — Adaptive enemy attack cooldown (3rd output on faction_pressure)
+
+### Plan
+WORLD_STATE.md's 🔥 top-priority hook called for the THIRD output on the
+`World.faction_pressure(id)` scalar that already drives NPC.gd dialogue
+tier 3 (run 4) and WorldBuilder spawn density (runs 5–6). One scalar,
+three independent readers — narrative + density + pacing. Picked because
+this is a pure recombination of existing primitives (Rule 1.a), keeps the
+combat hot path untouched, and proves the *generalizability* of the
+faction-pressure pattern past two consumers.
+
+### Build
+- `eldoria-godot/scripts/Enemy.gd` (+64 / -0):
+  - New constants block under `KIND_MODELS`: `KIND_TO_FACTION` map (goblin
+    → whisperwood_goblins, wolf → dire_wolves, skeleton/crystal_elemental/
+    crystal_guardian → crystal_caves; bandit unmapped on purpose since no
+    bandit faction exists yet); `ATTACK_COOLDOWN_BASELINE = 1.45` and
+    `ATTACK_COOLDOWN_MIN = 1.05` (kid-tuned band endpoints; PLAYER_MODEL
+    forbids widening without re-tuning); `AGITATED_COOLDOWN_THRESHOLD = 1.30`
+    (where the visible ⚡ marker fires).
+  - New `_resolve_adaptive_cooldown()` helper called once at the top of
+    `_ready()` (after `hp = max_hp`, before label creation so the ⚡ prefix
+    propagates into `_label.text`). Reads pressure via
+    `world_node.faction_pressure(faction_id)` with the same fail-soft guards
+    used in WorldBuilder spawn density: missing world group, missing
+    accessor, OR unmapped kind ALL fall through to baseline 1.45.
+  - `attack_cooldown` mutated in-place; `_do_attack()` is untouched.
+- `WORLD_STATE.md`: top-priority hook marked Resolved (run 7); new
+  top-priority promoted to Roan dialogue tier (which now has TWO partners:
+  wolf spawn density + wolf cooldown agitation); new adjacent promoted to
+  Roan-issued wolf-bounty quest. Faction-state table now lists cooldown as
+  a 4th consumer of pressure on goblins, wolves, AND crystal_caves (wired
+  prophylactically — fires the moment Crystal Caves ship). Player-impact
+  ledger gains "Surviving enemy aggression" as the third *visible* axis.
+- `SYSTEM_REGISTRY.md`: new "Enemy Cooldown Schema" section between Wolf
+  Spawn Schema and World Flag Conventions, with: kind → faction map table,
+  pressure → cooldown endpoint table at six points (1.0 / 0.85 / 0.65 /
+  0.40 / 0.15 / 0.00), authoring rules (clamp + assert contract,
+  fail-soft pattern, save-reload semantics matching spawn density), and
+  the cosmetic-only ⚡ guarantee (loot tables and quest matching read
+  `enemy_kind`, never `enemy_name`).
+- `PLAYER_MODEL.md`: run-7 addendum spelling out per-kid impact (Alden's
+  recovery valve preserved at fresh save, Owen's mastery rung scales
+  through the same archetypes), output #4 + #5 candidates with the
+  output-#5 PLAYER_MODEL.md gate (damage lerp risks Alden's HP economy;
+  must be paired with symmetric `xp_reward` lerp), and the run-8
+  difficulty-signal candidates (TTK delta on ⚡ vs baseline; deaths-per-
+  quest in late game).
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: WORLD_STATE.md updated — Resolved entry, new top-priority,
+        new adjacent, three faction-state rows updated to list cooldown
+        as a consumer, player-impact ledger gains the third visible axis.
+        Reads from `World.faction_pressure(id)` are now FOUR (NPC dialogue,
+        goblin density, wolf density, enemy cooldown).
+- (ii)  Queryable schema: `KIND_TO_FACTION` Dict + `_resolve_adaptive_cooldown()`
+        helper documented in SYSTEM_REGISTRY.md "Enemy Cooldown Schema."
+        Endpoint table at six pressure points + clamp/assert contract +
+        fail-soft pattern + save-reload semantics. Schema mirror-shape with
+        `_<kind>_pack_size(pressure)` helpers from runs 5–6 so the next
+        engineer learns ONE pattern: "faction → reader."
+- (iii) Player-facing feedback: visible `⚡ ` prefix on the floating name
+        when the enemy's resolved cooldown < 1.30. Pairs with the spawn-
+        density toasts (which announce *count* change) by surfacing
+        *pacing* change at per-enemy granularity. Threshold corresponds
+        to roughly pressure ≤ 0.625 — clearly past the first reducer.
+- (iv)  Evaluation: parens/brackets/braces balance check passes (223/223,
+        8/8, 2/2). All new `var` declarations carry explicit type
+        annotations (`var faction_id: String`, `var world_node: Node`,
+        `var pressure: float`, `var resolved: float`). Runtime assert
+        enforces `resolved ∈ [1.05, 1.45]` — band contract. Fail-soft
+        guards mirror WorldBuilder spawn density (missing world / missing
+        accessor / unmapped kind → baseline, never crash).
+- (v)   Future hooks (≥ 2):
+        1. **Roan dialogue tier 3 on `dire_wolves`** — now has TWO partners
+           in the wolf compound (density + cooldown agitation), so dialogue
+           speaks state that the world ALREADY shows. Schema in place;
+           only WorldBuilder edits to NPCS dictionary required.
+        2. **Roan-issued wolf-bounty quest (-0.1 reducer)** — second
+           reducer for `dire_wolves`, trips wolf-spawn 3 → 2 AND drops
+           cooldown another step. ONE quest, TWO visible world changes.
+        3. **Adaptive `chase_speed`** — output #4 on the same scalar
+           (`lerp(4.6, 5.4, 1.0 - p)`). Tighter band so calmed enemies
+           don't outrun mounted Owen.
+        4. **Adaptive `damage` + symmetric `xp_reward`** — output #5,
+           gated on PLAYER_MODEL.md tuning per the addendum: lerping damage
+           up requires lerping XP up so the harder fight is more rewarding.
+        5. **Skeleton + crystal_elemental + crystal_guardian** all
+           pre-wired to `crystal_caves` cooldown — the moment Crystal Caves
+           ship, dungeon enemies inherit the same pressure→pacing contract
+           with zero new code.
+
+### Phase reached
+Historian — feature shipped, all 4 touched ledgers updated, ready to commit.
+
+### Next run should pick up
+**Roan (Stablemaster) → `dire_wolves` faction tier dialogue.** After run 7,
+the wolf compound now has THREE consumers of `dire_wolves` pressure:
+spawn density + cooldown agitation + (proposed) Roan dialogue. Roan smoke-
+tests the 4-tier dialogue system on an NPC with NO `warm_flag` at all —
+proves the faction-tier path stands alone. After Roan: a Roan-issued
+-0.1 wolf-bounty quest (mirrors `ears_for_mara`) trips the second wolf
+threshold AND drops cooldown another step, a single quest with two
+visible world changes — the readability target for kid-aged co-op play.
+
 ## Integration 2026-05-04 (integrator) — Quest flags now warm NPC dialogue
 
 ### Gap (pattern A)

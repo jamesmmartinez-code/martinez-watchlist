@@ -223,3 +223,43 @@ narrative + density + pacing.
   `World.player_pressure_signal()` ships, a stressed player gets the calmer
   barks ("yip yip!", "yap!") and a calm player gets the alert ones ("rrr!",
   "arf!"). Pure index-filter on the existing pool, no new function needed.
+
+- **2026-05-04 (run 7)** — Adaptive `Enemy.gd.attack_cooldown` (third output
+  on the same `faction_pressure` scalar that drives dialogue tier 3 + spawn
+  density). Lerp `[1.45, 1.05]` keyed on the kind's faction. Wired for
+  goblins, wolves, skeletons, crystal_elementals, crystal_guardians; bandits
+  baseline (no faction yet). Visible `⚡` prefix on the floating name when
+  cooldown < 1.30 — kids can read pacing change per-enemy, not just per-density.
+
+  **Why this serves both kids:**
+  - **Alden (9):** the cooldown floor of 1.05s is still 5× longer than a
+    typical Mario-style "punish frame," so even the fully-tamed Whisperwood
+    goblin remains kid-readable. The recovery-valve baseline of 1.45s is
+    *unchanged at fresh save* — Alden's first hour of play feels identical
+    to runs 1–6, which is the contract for new-saver quality. The visible ⚡
+    prefix tells him "this one's tougher" without requiring memorization
+    of pressure thresholds.
+  - **Owen (11):** as he progresses through the goblin / wolf reducers, the
+    SAME enemy archetype gets *measurably* faster, so his mastery rung keeps
+    rising without us shipping new enemy kinds. The few survivors at
+    pressure 0.0 hit ~28% faster than the fresh-save baseline — readable
+    challenge escalation that emerges from his own gameplay choices, not
+    from a difficulty slider.
+
+  **Mastery-rung budget update:** the run-5/6 forecast was that a single
+  scalar driving 3+ outputs would prove generalizable. Run 7 ships output #3
+  (cooldown). Output #4 candidate: adaptive `chase_speed` with a tighter band
+  (e.g. `lerp(4.6, 5.4, 1.0 - p)`). Output #5 candidate: adaptive `damage`
+  — but flag this as PLAYER_MODEL.md gating: increasing damage past the
+  fresh-save baseline risks breaking Alden's HP economy. If we ship output #5,
+  it should be a *symmetric* lerp on `xp_reward` so the harder fight is also
+  more rewarding.
+
+  **Difficulty signals to watch (run 8 telemetry candidates):**
+  - Time-to-kill on `⚡` enemies vs. baseline enemies — should be roughly
+    equal for Owen (he adapts), longer for Alden (he doesn't yet).
+  - Player deaths-per-quest in late game (faction pressure < 0.4) — if this
+    spikes for Alden, the band needs softening to `[1.20, 1.45]` for him.
+    Per-player band tuning would be the first true *adaptive difficulty*
+    feature in the engine, gating off `PLAYER_MODEL.md` rather than a
+    difficulty menu (kids never see a menu; the world adapts to them).

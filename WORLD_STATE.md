@@ -70,17 +70,35 @@ run easier — what's the *next* thing that compounds?)
   be here" memorial as the empty goblin camps. `World.faction_pressure()`
   now has THREE consumers (NPC.gd dialogue tier 3, goblin spawn density,
   wolf spawn density) — pattern proven generalizable to every faction.
-- 🔥 **Top-priority next:** THIRD output on the same scalar — adaptive
-  `Enemy.gd.attack_cooldown` lerped on faction pressure. One number then
-  drives narrative (dialogue tier 3) + density (spawn helpers) + pacing
-  (enemy aggression). `lerp(1.45, 1.05, 1.0 - pressure)` so a calmed-wood
-  goblin hits faster (Owen's harder fight) while a fresh-save goblin hits
-  slower (Alden's recovery valve). Single line edit on Enemy.gd.
-- 🔥 **Adjacent next:** Roan (Stablemaster) → `dire_wolves` faction tier.
-  Smoke-tests the 4-tier system on an NPC with no warm_flag at all.
-  Schema is in place, only WorldBuilder edits required. After run 6, Roan's
-  faction-tier lines have a NEW partner: spawn density already speaks the
-  state, so dialogue completes the third leg of the same compound.
+- ✅ **Resolved 2026-05-04 (run 7):** Adaptive `Enemy.gd.attack_cooldown`
+  is now a THIRD reader of `World.faction_pressure(faction_id)`. Each enemy
+  resolves its cooldown at spawn via a `KIND_TO_FACTION` map + lerp across
+  `[1.45, 1.05]` keyed on the kind's faction pressure. At fresh-save pressure
+  1.0 a goblin keeps the kid-tuned 1.45s recovery window; at pressure 0.0
+  the few survivors hit at 1.05s — Owen's mastery rung. Goblins, wolves,
+  skeletons, crystal_elementals, crystal_guardians all wired; bandits
+  (no faction yet) keep baseline. Same fail-soft contract as spawn density:
+  unmapped kind / missing world / older `World.gd` → baseline, never crash.
+  `World.faction_pressure()` now has FOUR consumers (NPC.gd dialogue tier 3,
+  goblin spawn density, wolf spawn density, enemy attack cooldown) — the
+  same scalar drives narrative + density + pacing. Mastery threshold for
+  Rule 1 ("compound, don't sprawl") demonstrated: ONE primitive can fan out
+  to multiple readers without sprawl. Visible "agitated" ⚡ prefix on the
+  floating name fires when cooldown < 1.30 so kids can read pacing change
+  per-enemy, not just per-density.
+- 🔥 **Top-priority next:** Roan (Stablemaster) → `dire_wolves` faction tier.
+  Smoke-tests the 4-tier dialogue system on an NPC with no warm_flag at
+  all. Schema is in place, only WorldBuilder edits required. After runs
+  6 + 7, Roan's faction-tier lines now have TWO partners: wolf spawn
+  density already speaks the state AND the surviving wolves visibly
+  agitate (⚡ prefix) — dialogue completes the FOURTH leg of the
+  `dire_wolves` compound (dialogue + density + cooldown + visual marker).
+- 🔥 **Adjacent next:** Roan-issued wolf-bounty quest (-0.1 reducer for
+  `dire_wolves`). Mirrors `ears_for_mara` as the second goblin reducer.
+  Trips the second wolf-spawn threshold (3 → 2) AND drops cooldown another
+  step — single quest, two visible world changes, both readable to a kid.
+  Compose with Roan's faction-tier dialogue above to ship a complete
+  Roan-arc on the `dire_wolves` compound.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
@@ -113,9 +131,9 @@ by direct dialogue branches (those READ flags, they don't WRITE them).
 | Faction          | Disposition | Pressure | Notes                          |
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
-| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density)** |
-| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed |
+| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
+| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) — fires the moment the dungeon ships** |
 
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
 only by `World.apply_consequence({...})`.
@@ -151,6 +169,11 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 - Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
   that NPCs now narrate. `apply_consequence()` is no longer write-only on the
   faction key.
+- Surviving enemy aggression (per world load): each remaining goblin / wolf /
+  skeleton / crystal_elemental / crystal_guardian resolves attack_cooldown
+  against its faction pressure at spawn (run 7). Visible ⚡ prefix on the
+  floating name when cooldown < 1.30 — the third *visible* axis on the
+  consequence loop after dialogue (run 4) and spawn density (runs 5–6).
 - Roads defended: not modeled.
 - Buildings damaged: not modeled.
 

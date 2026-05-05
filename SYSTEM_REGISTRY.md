@@ -270,6 +270,62 @@ Authoring rules:
   this helper pattern: `_<kind>_pack_size(pressure)` returning a Dictionary
   with `{"count": int, ...}` so callers can query named fields, not tuples.
 
+## Enemy Cooldown Schema
+
+✅ **Shipped 2026-05-04 (run 7).** Per-enemy `attack_cooldown` derives from
+`World.faction_pressure(faction_id)` at spawn. Lives in
+`Enemy.gd → _resolve_adaptive_cooldown()`. Map of kind → faction is the
+single source of truth:
+
+| Enemy kind          | Faction id              | Cooldown band         |
+|---------------------|-------------------------|-----------------------|
+| `goblin`            | `whisperwood_goblins`   | `[1.05, 1.45]`        |
+| `wolf`              | `dire_wolves`           | `[1.05, 1.45]`        |
+| `skeleton`          | `crystal_caves`         | `[1.05, 1.45]`        |
+| `crystal_elemental` | `crystal_caves`         | `[1.05, 1.45]`        |
+| `crystal_guardian`  | `crystal_caves`         | `[1.05, 1.45]`        |
+| `bandit`            | (unmapped)              | baseline 1.45 only    |
+
+Resolved value = `lerp(BASELINE, MIN, 1.0 - pressure)` where
+`BASELINE = 1.45` (Alden's recovery valve) and `MIN = 1.05` (Owen's mastery
+rung). Endpoint table:
+
+| Pressure | Cooldown | Co-fires with                                           |
+|----------|----------|---------------------------------------------------------|
+| ≥ 1.0    | 1.45     | (baseline; identical to pre-run-7 behavior)             |
+| 0.85     | 1.39     | (Mara's bounty alone; tiny shift — kid recovery valve)  |
+| 0.65     | 1.31     | (Mara + Maeve goblin path; first noticeable acceleration)|
+| 0.40     | 1.21     | (halfway tamed band)                                    |
+| 0.15     | 1.10     | (definitively tamed; survivors hit fast)                |
+| 0.00     | 1.05     | (faction extinct; the few holdouts hit at the floor)    |
+
+Player-facing feedback: enemy_name is prefixed with `⚡ ` when resolved
+cooldown < `AGITATED_COOLDOWN_THRESHOLD = 1.30`. Reads at a glance to a
+9-year-old as "this one will hit faster" — pairs with the faction-density
+toasts (which announce the *count* change) by surfacing the *pacing* change
+on a per-enemy basis. The threshold corresponds to roughly pressure ≤ 0.625,
+clearly past the first reducer for both goblins and wolves.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
+  guards as spawn density: missing world group, missing accessor, OR
+  unmapped `enemy_kind` ALL fall through to baseline 1.45 (no crash, no
+  hidden behavior change).
+- Resolved value is **clamped** to `[ATTACK_COOLDOWN_MIN, ATTACK_COOLDOWN_BASELINE]`
+  and asserted against the same band. Threshold edits MUST keep the assert
+  passing; widening the band requires a fresh PLAYER_MODEL.md tuning pass.
+- Cooldown is resolved ONCE at first `_ready()`. `_respawn()` does NOT
+  re-sample — same world, same cooldown, until the player reloads. This
+  matches WorldBuilder spawn-density semantics: world reactivity is
+  *save-reload* granular, not real-time.
+- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd`. If the kind's
+  faction id isn't in `World.factions`, behavior is identical to baseline
+  — i.e. it's safe to wire kinds before the dungeon containing them ships
+  (see `crystal_caves` rows above).
+- The `⚡` prefix is purely cosmetic — `Items.roll_loot(enemy_kind, …)` and
+  `quest_listeners.on_enemy_killed(enemy_kind)` operate on `enemy_kind`, not
+  on `enemy_name`, so the prefix never breaks loot tables or quest matching.
+
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a

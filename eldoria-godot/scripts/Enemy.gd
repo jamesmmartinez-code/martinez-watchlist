@@ -29,6 +29,32 @@ const KIND_MODELS := {
 	"goblin": preload("res://assets/models/enemies/goblin_scout.glb"),
 }
 
+# Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
+# When a kind's faction has a `pressure` entry in `World.factions`, the enemy
+# resolves its `attack_cooldown` against that scalar at spawn — the THIRD
+# output on the same scalar that already drives NPC.gd dialogue tier 3 (run 4)
+# and WorldBuilder spawn density (runs 5–6). Kinds NOT in this map (e.g.
+# bandit until a bandit faction exists) keep the @export'd baseline.
+# See SYSTEM_REGISTRY.md "Enemy Cooldown Schema."
+const KIND_TO_FACTION := {
+	"goblin": "whisperwood_goblins",
+	"wolf": "dire_wolves",
+	"skeleton": "crystal_caves",
+	"crystal_elemental": "crystal_caves",
+	"crystal_guardian": "crystal_caves",
+}
+
+# Cooldown band: baseline = kid-friendly recovery valve (Alden's 9-yo timing
+# window). Min = Owen's mastery rung (still readable, but punishing). NEVER
+# widen this band without re-reading PLAYER_MODEL.md — these endpoints are
+# tuned to the 9/11-year-old combat-feel target.
+const ATTACK_COOLDOWN_BASELINE: float = 1.45
+const ATTACK_COOLDOWN_MIN: float = 1.05
+# Threshold below which an enemy reads as "agitated" to the player and earns
+# a ⚡ prefix on its floating name. Corresponds to roughly pressure ≤ 0.625
+# — clearly past the first reducer for either goblins or wolves.
+const AGITATED_COOLDOWN_THRESHOLD: float = 1.30
+
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
 var _player: CharacterBody3D = null
@@ -47,6 +73,10 @@ signal died(enemy)
 
 func _ready() -> void:
 	hp = max_hp
+	# Run-7: faction-pressure-driven attack cooldown. Resolved ONCE at spawn
+	# (not per-frame) so combat hot path stays cheap. Mutates `attack_cooldown`
+	# in-place — the existing _do_attack() path is untouched.
+	_resolve_adaptive_cooldown()
 	_spawn_pos = global_position
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
@@ -380,3 +410,37 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 	pop.no_depth_test = true
 	pop.position = global_position + Vector3(0, 2.4, 0)
 	get_tree().current_scene.add_child(pop)
+
+# ──────────────────────────────────────────────────────────────────────────
+# Run-7: Adaptive attack cooldown (THIRD output on faction_pressure scalar).
+# ──────────────────────────────────────────────────────────────────────────
+# Reads `World.faction_pressure(faction_id)` once at spawn and lerps the
+# enemy's attack_cooldown across the kid-tuned [1.05, 1.45] band. Pressure
+# 1.0 (fresh save) → 1.45 (Alden's recovery valve). Pressure 0.0 (faction
+# tamed) → 1.05 (Owen's mastery rung; the few survivors hit fast). Same
+# fail-soft contract as WorldBuilder spawn density: missing world node,
+# missing accessor, or unmapped kind ALL fall through to baseline — never
+# crash. See SYSTEM_REGISTRY.md "Enemy Cooldown Schema" for the contract.
+func _resolve_adaptive_cooldown() -> void:
+	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
+	if faction_id == "":
+		return  # Unmapped kind (bandit, etc.) → baseline
+	var world_node: Node = get_tree().get_first_node_in_group("world")
+	if world_node == null or not world_node.has_method("faction_pressure"):
+		return  # Older World.gd or world not yet ready → baseline
+	var pressure: float = float(world_node.faction_pressure(faction_id))
+	# pressure ∈ [0,1] guaranteed by World.apply_consequence's clamp, but
+	# we re-clamp defensively in case a future writer bypasses the resolver.
+	pressure = clamp(pressure, 0.0, 1.0)
+	var resolved: float = lerp(ATTACK_COOLDOWN_BASELINE, ATTACK_COOLDOWN_MIN, 1.0 - pressure)
+	resolved = clamp(resolved, ATTACK_COOLDOWN_MIN, ATTACK_COOLDOWN_BASELINE)
+	assert(resolved >= ATTACK_COOLDOWN_MIN and resolved <= ATTACK_COOLDOWN_BASELINE,
+		"Enemy.attack_cooldown out of contract band [1.05, 1.45]")
+	attack_cooldown = resolved
+	# Player-facing feedback (Rule 2.iii): visible ⚡ prefix on the floating
+	# name when this enemy is agitated. Reads at a glance: "this one will
+	# hit faster." Applied via enemy_name BEFORE the label is built later
+	# in _ready(), so the label picks up the prefix automatically.
+	if resolved < AGITATED_COOLDOWN_THRESHOLD:
+		enemy_name = "⚡ " + enemy_name
+
