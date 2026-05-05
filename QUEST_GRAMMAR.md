@@ -64,16 +64,26 @@ fit this grammar; do not invent ad-hoc shapes per quest.
 
 ## Migration Notes
 
-The current quest dictionaries use a SUBSET of the grammar above. They have
-`giver, role, kind, target/item, needed, title, text, xp_reward, gold_reward,
-[reward_item, reward_item_qty]`. They are MISSING `actor`, `motivation`,
-`location`, `urgency`, `world_trigger`, `consequence`. These fields are
-optional today but become mandatory for any new quest type.
+✅ **Shipped 2026-05-04 (run 2):** The 3 existing quests are now backfilled
+with the full grammar (`actor`, `motivation`, `location`, `urgency`,
+`world_trigger`, `consequence`). The `consequence` resolver lives in
+`World.gd → apply_consequence(consequence: Dictionary)` and is invoked from
+`_on_turn_in_quest()` after `complete_quest_if_done()` succeeds. Supported
+consequence keys:
 
-A future run should backfill the existing 3 quests with the full grammar AND
-introduce a `consequence` resolver in World.gd that applies the consequence
-dictionary on `complete_quest_if_done()`. That single addition unlocks NPC
-memory, faction shifts, and reactive dialogue from one entry point.
+- `faction` (String) + `pressure_delta` (float) — adjusts
+  `World.factions[id].pressure`, clamped to [0.0, 1.0].
+- `world_flag` (String) [+ `world_flag_value` (Variant, default true)] —
+  sets `World.world_flags[name]`.
+- `npc_flag` ([npc_name, flag_name]) — appends to `World.npc_flags[npc]`,
+  deduplicated. Dialogue and AI may read these flags.
+- `toast` (String) — optional player-facing message via `_show_toast`.
+
+Read accessors (queryable schema, all on World): `faction_pressure(id)`,
+`has_world_flag(name)`, `npc_has_flag(npc, flag)`.
+
+Any new quest MUST specify `consequence`, even if it is `{}` for an
+explicitly-empty consequence (signals "intentionally inert" to reviewers).
 
 ## Authoring Rules
 
@@ -81,6 +91,6 @@ memory, faction shifts, and reactive dialogue from one entry point.
   `xp_reward`, `gold_reward`, `title`, `text`.
 - A new quest SHOULD specify `motivation`, `location`, `urgency`,
   `world_trigger`.
-- A new quest MUST specify `consequence` once the consequence resolver lands.
+- A new quest MUST specify `consequence` (use `{}` for intentionally inert).
 - Reward items MUST exist in `Items.ITEMS`.
 - Target enemy_kinds MUST exist in `Items.DROP_TABLE`.

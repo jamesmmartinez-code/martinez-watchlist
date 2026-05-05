@@ -360,3 +360,72 @@ Plan: read all 5 ledgers, then pick ONE of:
 
 Recommendation: option (2). It's the smallest change with the highest
 downstream multiplier.
+
+---
+
+## 2026-05-04 — Auto run: Consequence resolver (run 2)
+
+### What
+Implemented the consequence resolver per QUEST_GRAMMAR.md migration notes.
+Quests now mutate persistent world state on turn-in: faction pressure scalars,
+world flags, NPC memory flags, and a player-facing toast — all from a single
+`World.apply_consequence(Dictionary)` entry point. Backfilled the 3 existing
+quests with the full grammar (`actor`, `motivation`, `location`, `urgency`,
+`world_trigger`, `consequence`).
+
+### Why (Rule 1 — compounds, doesn't sprawl)
+This adds exactly ONE new primitive (the consequence resolver) and integrates
+with at least three existing systems:
+1. **Quest grammar** — `complete_quest_if_done()` → `apply_consequence()` is
+   now a closed loop. Every quest is now a *world event*, not just a reward
+   grant.
+2. **Faction state** — promoted from doc-only proposal to live runtime data.
+   Cleansing & ear-bounty quests reduce `whisperwood_goblins.pressure`; pelt
+   quest reduces `dire_wolves.pressure`.
+3. **NPC schema** — `npc_flags[npc] -> Array[String]` is now real data with
+   read accessor (`npc_has_flag`). Reactive dialogue can branch on this.
+
+### Files changed
+- `eldoria-godot/scripts/World.gd` — runtime state vars (factions, world_flags,
+  npc_flags), `apply_consequence()`, three read accessors, QUEST_CATALOG
+  backfill, `_on_turn_in_quest` wiring.
+- `QUEST_GRAMMAR.md` — Migration Notes flipped from "future work" to "shipped".
+- `WORLD_STATE.md` — Faction State + NPC Memory tables now reflect live data;
+  new "World Flags (Active)" section; Active Hooks updated.
+- `SYSTEM_REGISTRY.md` — Faction Schema flipped to shipped; new "Consequence
+  Schema" + "World Flag Conventions" sections.
+- `PLAYER_MODEL.md` — Difficulty Signals notes the faction-pressure feedback
+  loop and how it composes with `player_pressure_signal()`.
+- `CHANGES.md` — this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: `World.factions`, `World.world_flags`, `World.npc_flags`
+        — three persistent stores added and populated by quest completions.
+- (ii)  Queryable schema: `faction_pressure(id)`, `has_world_flag(name)`,
+        `npc_has_flag(npc, flag)` — documented in SYSTEM_REGISTRY.md.
+- (iii) Player-facing feedback: per-quest toast strings (e.g. "🌿 The
+        Whisperwood feels a little safer.") fire after the reward toast.
+- (iv)  Evaluation: parens/quotes balance check passes; explicit type
+        annotations on every Variant-derived `var`; runtime guard
+        `if consequence.is_empty(): return`; clamp on pressure values.
+- (v)   Future hooks (≥ 2):
+        1. NPC.gd reactive dialogue can now branch on `npc_has_flag(...)`
+           — Maeve, Lyra, Mara already have flags ready to consume.
+        2. Goblin spawner can read `faction_pressure("whisperwood_goblins")`
+           to scale patrol density without any further plumbing.
+        3. Smith Edda forge UI can gate enchant tier on `world_flags`.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+Recommendation: **Reactive dialogue** — wire NPC.gd to read
+`World.npc_has_flag(npc_name, flag)` and pick a different greeting/quest
+prompt when the flag is set. Three NPCs × 2 states = 6 unique conversational
+moments unlocked from one wiring change. This compounds *immediately* off
+this run.
+
+Adjacent option: spawn density tied to `faction_pressure` — a single line in
+the goblin spawner that reduces pack size as pressure decays. Lower payoff
+than dialogue but lower risk.
+

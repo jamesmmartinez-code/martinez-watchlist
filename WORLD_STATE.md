@@ -27,27 +27,40 @@ run easier — what's the *next* thing that compounds?)
 - Crystal Caves entrance is undefined → place it once dungeon is ready.
 - Skeleton + Crystal Elemental drop tables exist in Items.gd; spawn paths do
   not. Anyone adding the dungeon should reuse those tables, not redefine them.
-- NPC dialogue is static. First reactive dialogue (after first goblin kill,
-  after first quest turn-in) compounds 7 NPCs × 3+ states.
-- Faction state has no scalar yet. Adding `bandit_pressure: float` to World.gd
-  unlocks Rules 5/6/11/12 of the backlog at once.
+- ✅ **Resolved 2026-05-04:** Faction pressure scalar exists
+  (`World.factions[id].pressure`) — three quests already mutate it.
+- 🔥 **Top-priority next:** Reactive dialogue. NPC.gd should consult
+  `World.npc_has_flag(npc_name, flag)` and pick a different `lines[]` entry
+  when warmed. Maeve (`first_quest_done`), Lyra (`trusts_player`), Mara
+  (`good_customer`) all have flags ready to consume — three NPCs × two
+  states unlocked from one wiring change.
+- 🔥 **Adjacent next:** Goblin spawn density should read
+  `World.faction_pressure("whisperwood_goblins")`. Lower pressure → fewer
+  patrols / longer respawn. Single read, big behavior delta.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
+- Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
+  `hp_potion_g` (greater) at her shop. Today no shop UI exists — pair with
+  Smith Edda's forge UI (backlog #4).
 
 ## NPC Memory
 
 (Tracks who has spoken to whom, who has been thanked, who has been ignored.
 Populated as runs ship reactive dialogue.)
 
-| NPC                  | Role     | Player relationship | Memory flags |
-|----------------------|----------|---------------------|--------------|
-| Elder Maeve          | quest    | neutral             | none         |
-| Smith Edda           | smithy   | neutral             | none         |
-| Mara the Merchant    | shop     | neutral             | none         |
-| Herbalist Lyra       | alchemy  | neutral             | none         |
-| Innkeeper Bram       | inn      | neutral             | none         |
-| Stablemaster Roan    | stable   | neutral             | none         |
-| Trainer Hala         | trainer  | neutral             | none         |
+| NPC                  | Role     | Player relationship | Possible memory flags |
+|----------------------|----------|---------------------|------------------------|
+| Elder Maeve          | quest    | warms after first quest | `first_quest_done` (Whisperwood Cleansing) |
+| Smith Edda           | smithy   | neutral             | (forge UI not shipped)         |
+| Mara the Merchant    | shop     | warms after ear bounty | `good_customer` (ears_for_mara) |
+| Herbalist Lyra       | alchemy  | warms after pelts   | `trusts_player` (pelt_for_lyra) |
+| Innkeeper Bram       | inn      | neutral             | (no quest yet)                 |
+| Stablemaster Roan    | stable   | neutral             | (no quest yet)                 |
+| Trainer Hala         | trainer  | neutral             | (no quest yet)                 |
+
+Live data in `World.npc_flags[npc_name] -> Array[String]`. Read with
+`World.npc_has_flag(npc, flag)`. Mutated by quest consequences only — never
+by direct dialogue branches (those READ flags, they don't WRITE them).
 
 ## Faction State
 
@@ -56,9 +69,26 @@ Populated as runs ship reactive dialogue.)
 | Faction          | Disposition | Pressure | Notes                          |
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
-| Whisperwood Goblins | hostile  | 1.0      | static; raids not yet wired    |
-| Dire Wolves      | hostile     | 0.5      | wander, no pack behavior yet   |
-| Crystal Caves    | hostile     | unset    | dungeon not placed             |
+| Whisperwood Goblins | hostile  | 1.0      | mutable via `pressure_delta`; cleansing & ear bounty quests both reduce |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1 |
+| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed |
+
+Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
+only by `World.apply_consequence({...})`.
+
+## World Flags (Active)
+
+`World.world_flags` is a dict keyed on flag name. Set by quest consequences,
+read by dialogue / spawning / future runs.
+
+| Flag                  | Set by quest          | Default | Used by (downstream) |
+|-----------------------|-----------------------|---------|----------------------|
+| `whisperwood_safer`   | whisperwood_cleansing | unset   | future: roving patrol density |
+| `lyra_potion_brew`    | pelt_for_lyra         | unset   | future: Lyra unlocks rarer potions in shop |
+| `mara_bounty_paid`    | ears_for_mara         | unset   | future: Mara raises buy prices on goblin loot |
+
+Read with `World.has_world_flag(name)`. Convention: flag names are
+`snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.
 
 ## Player Impact Ledger
 

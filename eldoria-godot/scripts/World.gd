@@ -38,11 +38,26 @@ var inv_tooltip: Label = null
 var _runtime_items: Dictionary = {}
 
 # ────────────────────────────────────────────────────────────────────────
+# World-engine runtime state (consequence resolver targets)
+# Populated/mutated by apply_consequence(). Read by NPCs, dialogue, quests.
+# ────────────────────────────────────────────────────────────────────────
+var factions: Dictionary = {
+	"briarwood": {"disposition": "friendly", "pressure": 0.0},
+	"whisperwood_goblins": {"disposition": "hostile", "pressure": 1.0},
+	"dire_wolves": {"disposition": "hostile", "pressure": 0.5},
+	"crystal_caves": {"disposition": "hostile", "pressure": 0.0},
+}
+var world_flags: Dictionary = {}      # flag_name -> Variant (usually bool/int)
+var npc_flags: Dictionary = {}        # npc_name -> Array[String]
+
+
+# ────────────────────────────────────────────────────────────────────────
 # Quest catalog — every quest available in the realm
 # ────────────────────────────────────────────────────────────────────────
 const QUEST_CATALOG := {
 	"whisperwood_cleansing": {
 		"giver": "Elder Maeve",
+		"actor": "Elder Maeve",
 		"role": "quest",
 		"kind": "kill",
 		"target": "goblin",
@@ -51,9 +66,21 @@ const QUEST_CATALOG := {
 		"text": "Slay 5 goblins in the Whisperwood",
 		"xp_reward": 80,
 		"gold_reward": 60,
+		"motivation": "duty",
+		"location": "Whisperwood",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "whisperwood_goblins",
+			"pressure_delta": -0.2,
+			"npc_flag": ["Elder Maeve", "first_quest_done"],
+			"world_flag": "whisperwood_safer",
+			"toast": "🌿 The Whisperwood feels a little safer.",
+		},
 	},
 	"pelt_for_lyra": {
 		"giver": "Herbalist Lyra",
+		"actor": "Herbalist Lyra",
 		"role": "alchemy",
 		"kind": "fetch",
 		"item": "wolf_pelt",
@@ -64,9 +91,21 @@ const QUEST_CATALOG := {
 		"gold_reward": 45,
 		"reward_item": "hp_potion_l",
 		"reward_item_qty": 2,
+		"motivation": "craft",
+		"location": "Briarwood",
+		"urgency": "calm",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "dire_wolves",
+			"pressure_delta": -0.1,
+			"npc_flag": ["Herbalist Lyra", "trusts_player"],
+			"world_flag": "lyra_potion_brew",
+			"toast": "🌱 Lyra trusts you with rarer reagents now.",
+		},
 	},
 	"ears_for_mara": {
 		"giver": "Mara the Merchant",
+		"actor": "Mara the Merchant",
 		"role": "shop",
 		"kind": "fetch",
 		"item": "goblin_ear",
@@ -75,6 +114,17 @@ const QUEST_CATALOG := {
 		"text": "Mara pays well for proof of slain goblins — bring 6 ears",
 		"xp_reward": 60,
 		"gold_reward": 90,
+		"motivation": "greed",
+		"location": "Briarwood",
+		"urgency": "calm",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "whisperwood_goblins",
+			"pressure_delta": -0.15,
+			"npc_flag": ["Mara the Merchant", "good_customer"],
+			"world_flag": "mara_bounty_paid",
+			"toast": "🪙 Word spreads: Mara pays for goblin trophies.",
+		},
 	},
 }
 
@@ -85,6 +135,56 @@ func _quest_for_role(role: String) -> Dictionary:
 		if QUEST_CATALOG[k].role == role:
 			return QUEST_CATALOG[k]
 	return {}
+
+# ────────────────────────────────────────────────────────────────────────
+# Consequence resolver — single entry point that mutates world state when
+# a quest completes. Per QUEST_GRAMMAR.md: faction pressure, world flags,
+# npc flags, and an optional toast. This is THE compound multiplier — every
+# downstream system (dialogue, spawning, difficulty) reads the state it
+# writes.
+# ────────────────────────────────────────────────────────────────────────
+func apply_consequence(consequence: Dictionary) -> void:
+	if consequence.is_empty():
+		return
+	# Step 1: faction pressure, clamped to [0.0, 1.0].
+	var faction_id: String = consequence.get("faction", "")
+	if faction_id != "" and factions.has(faction_id):
+		var delta: float = float(consequence.get("pressure_delta", 0.0))
+		var faction_entry: Dictionary = factions[faction_id]
+		var current: float = float(faction_entry.get("pressure", 0.0))
+		faction_entry["pressure"] = clamp(current + delta, 0.0, 1.0)
+		factions[faction_id] = faction_entry
+	# Step 2: world flag, defaults to true.
+	var world_flag: String = consequence.get("world_flag", "")
+	if world_flag != "":
+		world_flags[world_flag] = consequence.get("world_flag_value", true)
+	# Step 3: NPC flag, appended not overwritten so dialogue can stack memories.
+	var npc_flag: Variant = consequence.get("npc_flag", null)
+	if npc_flag is Array and npc_flag.size() >= 2:
+		var npc_name: String = String(npc_flag[0])
+		var flag_name: String = String(npc_flag[1])
+		var existing: Array = npc_flags.get(npc_name, [])
+		if not existing.has(flag_name):
+			existing.append(flag_name)
+		npc_flags[npc_name] = existing
+	# Step 4: optional toast.
+	var toast: String = consequence.get("toast", "")
+	if toast != "":
+		_show_toast(toast)
+
+# Read accessors used by dialogue/spawning/difficulty (queryable schema)
+func faction_pressure(faction_id: String) -> float:
+	if not factions.has(faction_id):
+		return 0.0
+	var entry: Dictionary = factions[faction_id]
+	return float(entry.get("pressure", 0.0))
+
+func has_world_flag(name: String) -> bool:
+	return world_flags.has(name) and bool(world_flags[name])
+
+func npc_has_flag(npc_name: String, flag_name: String) -> bool:
+	var arr: Array = npc_flags.get(npc_name, [])
+	return arr.has(flag_name)
 
 # Runtime item registry helpers ────────────────────────────────────────────
 func register_runtime_item(item: Dictionary) -> String:
@@ -211,12 +311,16 @@ func _on_accept_quest() -> void:
 func _on_turn_in_quest() -> void:
 	var player := get_node_or_null("Player")
 	if not player: return
-	var quest_title = player.active_quest.get("title", "Quest")
-	var gold_r = player.active_quest.get("gold_reward", 0)
-	var xp_r = player.active_quest.get("xp_reward", 0)
+	var quest_title: String = player.active_quest.get("title", "Quest")
+	var gold_r: int = int(player.active_quest.get("gold_reward", 0))
+	var xp_r: int = int(player.active_quest.get("xp_reward", 0))
+	# Capture consequence BEFORE complete_quest_if_done() wipes active_quest.
+	var consequence_dict: Dictionary = player.active_quest.get("consequence", {})
 	if player.complete_quest_if_done():
 		_show_toast("✨ %s complete! +%d gold, +%d XP" % [quest_title, gold_r, xp_r])
 		quest_panel.visible = false
+		# Apply downstream world-state mutations (factions, flags, NPC memory)
+		apply_consequence(consequence_dict)
 	close_dialogue()
 
 func on_quest_accepted(quest: Dictionary) -> void:

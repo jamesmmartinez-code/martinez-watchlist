@@ -62,6 +62,17 @@ in a rolling 90-second window inside World.gd, and expose them as
 `World.player_pressure_signal(): float` in [0,1]. Then enemy spawners can
 read it to dampen or escalate. Telegraph timing should be the FIRST knob.
 
+### Faction-pressure feedback (shipped 2026-05-04, run 2)
+
+`World.faction_pressure(id)` now exists and is mutated by quest consequences.
+This is the *world's* pressure on the player (how hostile the region feels),
+distinct from `player_pressure_signal()` (how stressed the player looks).
+
+The two SHOULD be combined when a future run lands adaptive difficulty:
+final spawn intensity = `lerp(low, high, faction_pressure * (1.0 - player_pressure))`.
+This makes "I'm winning" loops feel like the world calms, and "I'm dying"
+loops feel like the world relents — both child-friendly outcomes per Rule 6.
+
 ## Hard Constraints (NEVER violate)
 
 - No FOMO. No "this disappears if you don't act now" timers in the world.

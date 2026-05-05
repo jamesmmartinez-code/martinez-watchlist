@@ -97,13 +97,50 @@ midnight). Full cycle = 360s. NPC schedules should consume this.
 
 ## Faction Schema
 
-*Reserved.* Proposed:
-```
-World.factions = {
-  "briarwood":      { disposition: 1.0, pressure: 0.0 },
-  "whisperwood_goblins": { disposition: -1.0, pressure: 1.0 },
-  "dire_wolves":    { disposition: -1.0, pressure: 0.5 },
+✅ **Shipped 2026-05-04 (run 2).** Live runtime state on World:
+```gdscript
+var factions: Dictionary = {
+  "briarwood":           {"disposition": "friendly", "pressure": 0.0},
+  "whisperwood_goblins": {"disposition": "hostile",  "pressure": 1.0},
+  "dire_wolves":         {"disposition": "hostile",  "pressure": 0.5},
+  "crystal_caves":       {"disposition": "hostile",  "pressure": 0.0},
 }
 ```
-First system to land faction state should add a per-frame decay/recovery and
-expose `World.get_faction_pressure(id)` for downstream consumers.
+- **Pressure** is a float clamped to [0.0, 1.0]. Higher = more aggressive,
+  more spawns, bolder patrols (consumers TBD).
+- **Disposition** is a String label. Today it's documentation; later may
+  drive NPC reactions to fellow factions.
+
+Read: `World.faction_pressure(id: String) -> float`.
+Mutate: ONLY via `World.apply_consequence({"faction": id, "pressure_delta": float})`.
+A future run should add per-frame decay toward a faction-specific equilibrium.
+
+## Consequence Schema (Quest → World mutation)
+
+✅ **Shipped 2026-05-04 (run 2).** Single entry point for quest completions to
+mutate world state. Lives at `World.apply_consequence(consequence: Dictionary)`.
+Supported keys (all optional; empty dict is a no-op):
+
+| Key                | Type      | Effect                                             |
+|--------------------|-----------|----------------------------------------------------|
+| `faction`          | String    | id of faction in `World.factions` (paired w/ `pressure_delta`) |
+| `pressure_delta`   | float     | added to `factions[id].pressure`, clamped [0,1]    |
+| `world_flag`       | String    | sets `World.world_flags[name] = world_flag_value`  |
+| `world_flag_value` | Variant   | optional; defaults to `true`                       |
+| `npc_flag`         | [Str,Str] | `[npc_name, flag_name]`; appended to `npc_flags[npc]` (deduped) |
+| `toast`            | String    | optional UI message; calls `_show_toast(toast)`    |
+
+Read accessors:
+- `World.faction_pressure(id) -> float`
+- `World.has_world_flag(name) -> bool`
+- `World.npc_has_flag(npc_name, flag_name) -> bool`
+
+Authoring rule: dialogue + AI READ flags; only `apply_consequence` WRITES.
+This guarantees one place to audit world-state churn.
+
+## World Flag Conventions
+
+`World.world_flags: Dictionary` is keyed by `snake_case` strings naming a
+*present-tense fact*: `whisperwood_safer`, `lyra_potion_brew`,
+`mara_bounty_paid`. Never imperative ("save_the_village") and never tied to
+quest IDs ("quest_1_done") — flags outlive specific quests.
