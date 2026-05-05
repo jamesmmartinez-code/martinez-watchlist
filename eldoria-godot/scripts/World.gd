@@ -11,6 +11,13 @@ class_name World
 @onready var dialogue_text_label: RichTextLabel = $UI/DialoguePanel/MarginContainer/VBox/TextLabel
 @onready var dialogue_close_btn: Button = $UI/DialoguePanel/MarginContainer/VBox/CloseBtn
 @onready var sun: DirectionalLight3D = $WorldEnvironment/Sun
+# REFINE: visual — outdoor — grab the moon-fill light + WorldEnvironment so the
+# day/night cycle can breathe atmosphere (fog, glow, moon energy) — not just
+# rotate the sun. THEME §3 calls for sunset-warm dominance with cool tones
+# reserved for night/mist; modulating these per-frame lets the same scene
+# read warm at dusk and cool/blue at midnight without re-authoring assets.
+@onready var moon_fill: DirectionalLight3D = $WorldEnvironment/MoonFill
+@onready var world_env: WorldEnvironment = $WorldEnvironment
 @onready var hud: Control = $UI/HUD
 @onready var hp_bar: ProgressBar = $UI/HUD/HPBar
 @onready var mp_bar: ProgressBar = $UI/HUD/MPBar
@@ -525,12 +532,51 @@ func _process(delta: float) -> void:
 		var azim := (time_of_day - 6.0) / 24.0 * TAU
 		sun.rotation = Vector3(-elev * 0.9, azim, 0)
 		sun.light_energy = clamp(0.2 + elev * 1.6, 0.05, 1.9)
-		if elev < 0.18 and elev > -0.05:
-			sun.light_color = Color(1.0, 0.62, 0.30)
-		elif elev <= -0.05:
-			sun.light_color = Color(0.30, 0.45, 0.80)
-		else:
-			sun.light_color = Color(1.0, 0.95, 0.78)
+		# REFINE: visual — outdoor — smooth tri-band sun color instead of the old
+		# three-state if/elif "snap". `dusk_w` peaks near horizon (sunrise + sunset),
+		# `night_w` peaks below horizon, `day_w` is the remainder. The old code
+		# popped between three discrete colors as elev crossed 0.18 / -0.05; the
+		# blended weights produce a continuous sunset-orange→day-cream→twilight-blue
+		# arc. THEME §3: sunset gold/wine dominant with cool tones reserved for
+		# night — the LERP keeps us in palette through the transition instead of
+		# punching through a "wrong" intermediate hue.
+		var dusk_w: float = clamp(1.0 - abs(elev) / 0.30, 0.0, 1.0)        # peaks at horizon
+		var night_w: float = clamp(-elev / 0.30, 0.0, 1.0)                 # below horizon
+		var day_w: float = clamp(1.0 - dusk_w - night_w, 0.0, 1.0)
+		var dusk_color := Color(1.00, 0.62, 0.30)   # sunset gold/orange (THEME §3 burnt orange)
+		var day_color := Color(1.00, 0.95, 0.78)    # warm cream daylight
+		var night_color := Color(0.30, 0.45, 0.80)  # cool stone-blue twilight (THEME §3 stone grey-blue accent)
+		sun.light_color = dusk_color * dusk_w + day_color * day_w + night_color * night_w
+		# REFINE: visual — outdoor — gentle dusk dimmer. Pure geometric energy was
+		# fine for noon but still felt "lit" at sunset; multiplying by 0.92+0.08*day_w
+		# at the horizon shaves ~8% off the sun output during the warm-color band so
+		# the painterly sky panorama (eldoria_sunset_sky_2k) reads as the dominant
+		# light source, not the directional lamp. Effect at noon: zero (day_w≈1).
+		sun.light_energy *= 0.92 + 0.08 * day_w
+	# REFINE: visual — outdoor — moon-fill breathes with the cycle. Main.tscn
+	# parks MoonFill at a flat 0.50 energy 24/7 which produced a "lit by 2 suns"
+	# look at noon. Tying it to night_w lets the cool blue fill take over when
+	# the warm sun is below horizon (THEME §3: cool tones reserved for night).
+	if moon_fill:
+		var mw: float = clamp(-(sin((time_of_day - 6.0) * PI / 12.0)) / 0.30, 0.0, 1.0)
+		moon_fill.light_energy = 0.10 + mw * 0.55     # 0.10 day → 0.65 deep night
+	# REFINE: visual — outdoor — atmospheric breathing. Density and glow drift
+	# with elevation so dawn/dusk gets a slightly heavier painterly haze (god-ray
+	# friendly), midday is crisp, and night is moody-blue. THEME §1 painterly +
+	# §11 BotW-style watercolor mood. Conservative deltas (~±25%) so no scene
+	# disappears into pea soup; the value bands stay inside the Main.tscn baseline.
+	if world_env and world_env.environment:
+		var e := world_env.environment
+		var elev2: float = sin((time_of_day - 6.0) * PI / 12.0)
+		var dusk_w2: float = clamp(1.0 - abs(elev2) / 0.30, 0.0, 1.0)
+		var night_w2: float = clamp(-elev2 / 0.30, 0.0, 1.0)
+		# Fog: thicker at horizon (dusk haze), thinner at midday, slightly thicker
+		# at night for distance-blue. Baseline in tscn = 0.0032.
+		e.fog_density = 0.0028 + dusk_w2 * 0.0014 + night_w2 * 0.0006
+		# Volumetric fog energy — pop the warm emission glow at sunset, fade at noon
+		# (so direct sun reads cleanly) and at deep night (so it doesn’t over-warm
+		# a cool scene). Baseline tscn emission_energy = 0.16.
+		e.volumetric_fog_emission_energy = 0.10 + dusk_w2 * 0.18
 
 # ════════════════════════════════════════════════════════════════════════
 # Dialogue
