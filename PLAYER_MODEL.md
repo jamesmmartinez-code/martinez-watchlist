@@ -195,3 +195,31 @@ output coupling — `Enemy.gd.attack_cooldown = lerp(1.45, 1.05, 1.0 - p)`.
 A calmed-wood goblin hits faster (Owen's harder fight); a fresh-save
 goblin hits slower (Alden's recovery valve). One scalar, three outputs:
 narrative + density + pacing.
+
+- **2026-05-04 (polish run 6)** — Polished **character — Pet.gd / Ember the fox**
+  (no new functions; pure parameter tuning + two const arrays for bark variety,
+  every edit tagged `# REFINE: character`). Pet.gd had been overlooked through
+  five prior polish rounds and was the highest-ROI character target left.
+  Changes:
+  - `follow_distance` 2.5 → 2.2 (Ember sits closer; reads as more attentive).
+  - `max_speed` 8.0 → 8.5 (keeps up on Owen's sprint without teleport-snap).
+  - `bark_radius` 8.0 → 9.0 (warns *before* the goblin reaches the player).
+  - Settle damping 0.85 → 0.80 (stickier stop; Ember plants instead of skating).
+  - Bark cadence: flat `2.5` → `randf_range(1.8, 2.6)` (alive, not metronomic).
+  - Bark text: single `"yip!"` → 5-line `BARK_LINES` pool (yip!, arf!, rrr!,
+    yip yip!, yap!) — Ember's catchphrase pool, picked uniformly per bark.
+  - Bark color: fixed `(1.0, 0.85, 0.30)` → 2-tone `BARK_COLORS` pool
+    (warm-gold + ember-orange) picked per bark.
+  - Nameplate: font 18 → 20pt (Alden can read it from the back of the screen);
+    color (1.0, 0.65, 0.25) → (1.0, 0.55, 0.18) hotter ember tone.
+
+  Why this serves both kids: Ember directly serves **Alden** (frog kid, high
+  Companions affinity — pets that emote and have variety feel alive instead
+  of looped). The wider bark perimeter and snappier follow also serve **Owen**
+  (race kid) — when he sprints into a goblin camp, Ember warns earlier and
+  catches up faster, so the companion stops being a drag on his pace. No
+  combat numbers, no XP, no balance touched. **Adaptive proposal for the next
+  run:** the same `BARK_LINES` pool could be filtered by mood — when
+  `World.player_pressure_signal()` ships, a stressed player gets the calmer
+  barks ("yip yip!", "yap!") and a calm player gets the alert ones ("rrr!",
+  "arf!"). Pure index-filter on the existing pool, no new function needed.

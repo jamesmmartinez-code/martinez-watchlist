@@ -4,9 +4,12 @@ class_name Pet
 # A companion fox that follows the player, gives a small XP buff (passive)
 # and barks at nearby enemies (visual only — no damage).
 
-@export var follow_distance: float = 2.5
-@export var max_speed: float = 8.0
-@export var bark_radius: float = 8.0
+# REFINE: character — tighter sit-stay so Ember feels attentive (Alden's companion affinity).
+@export var follow_distance: float = 2.2
+# REFINE: character — tiny speed bump so Ember keeps up on Owen's sprint without teleport-snap.
+@export var max_speed: float = 8.5
+# REFINE: character — wider bark perimeter so Ember warns *before* the goblin reaches the player.
+@export var bark_radius: float = 9.0
 @export var pet_model: PackedScene = preload("res://assets/models/Fox.glb")
 
 var _player: Node3D = null
@@ -14,6 +17,13 @@ var _gravity: float = 20.0
 var _bark_t: float = 0.0
 var _model: Node3D
 var _label: Label3D
+
+# REFINE: character — five-bark catchphrase pool so Ember stops sounding like a tape loop.
+# Picked uniformly per bark; no schedule change. Same bark cadence the rest of the script
+# already enforces — just visual variety.
+const BARK_LINES: PackedStringArray = PackedStringArray(["yip!", "arf!", "rrr!", "yip yip!", "yap!"])
+# REFINE: character — bark color picks one of two ember tones per bark for visual variety.
+const BARK_COLORS: PackedColorArray = PackedColorArray([Color(1.0, 0.85, 0.30), Color(1.0, 0.62, 0.18)])
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -36,10 +46,12 @@ func _ready() -> void:
 
 	_label = Label3D.new()
 	_label.text = "🦊 Ember"
-	_label.font_size = 18
+	# REFINE: character — nameplate +2pt so Alden can read "Ember" from the back of the screen.
+	_label.font_size = 20
 	_label.outline_size = 4
 	_label.outline_modulate = Color(0, 0, 0)
-	_label.modulate = Color(1.0, 0.65, 0.25)
+	# REFINE: character — slightly hotter ember tone so Ember's nameplate reads as fire-fox in dusk.
+	_label.modulate = Color(1.0, 0.55, 0.18)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label.position = Vector3(0, 1.2, 0)
 	add_child(_label)
@@ -67,13 +79,15 @@ func _physics_process(delta: float) -> void:
 		var target_basis := Basis.looking_at(dir, Vector3.UP)
 		global_transform.basis = global_transform.basis.slerp(target_basis, 8.0 * delta)
 	else:
-		velocity.x *= 0.85
-		velocity.z *= 0.85
+		# REFINE: character — stickier stop so Ember settles next to the player instead of skating past.
+		velocity.x *= 0.80
+		velocity.z *= 0.80
 
 	# Bark at nearby enemies every couple seconds
 	_bark_t -= delta
 	if _bark_t <= 0:
-		_bark_t = 2.5
+		# REFINE: character — jittered bark cadence (was a flat 2.5s metronome) so Ember sounds alive.
+		_bark_t = randf_range(1.8, 2.6)
 		for e in get_tree().get_nodes_in_group("enemies"):
 			if e.global_position.distance_to(global_position) < bark_radius:
 				_bark()
@@ -84,11 +98,13 @@ func _physics_process(delta: float) -> void:
 func _bark() -> void:
 	var pop := Label3D.new()
 	pop.set_script(DAMAGE_NUMBER_SCRIPT)
-	pop.text = "yip!"
+	# REFINE: character — pick a bark line from the catchphrase pool (replaces the single "yip!").
+	pop.text = BARK_LINES[randi() % BARK_LINES.size()]
 	pop.font_size = 24
 	pop.outline_size = 4
 	pop.outline_modulate = Color(0, 0, 0)
-	pop.modulate = Color(1.0, 0.85, 0.30)
+	# REFINE: character — alternating ember tones per bark for tiny visual rhythm.
+	pop.modulate = BARK_COLORS[randi() % BARK_COLORS.size()]
 	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	pop.no_depth_test = true
 	pop.position = global_position + Vector3(0, 1.5, 0)
