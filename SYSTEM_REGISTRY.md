@@ -274,6 +274,49 @@ JSON wins when opted in. Authors can migrate per-NPC at their own pace.
    Dictionary (line + portrait_path + voice_clip) if any future JSON adds
    those fields. Tree schema is already extensible — added keys are ignored.
 
+## World API additions (run 10)
+
+`World.set_world_flag(name: String, value: Variant = true) -> void`
+
+Direct world-flag write — sister to `apply_consequence`'s flag step but
+without faction / NPC / toast side-effects. Sets `world_flags[name] =
+value` and re-runs `_check_achievements()`. Used by `Boss.gd` to mark
+emergent-runtime facts (`seen_warlord`, `warlord_dead`) that don't come
+from a quest turn-in. Returns immediately on empty name. Same fail-soft
+contract as the rest of the World API.
+
+Callsites today:
+- `Boss._physics_process` — sets `seen_warlord` when the player's distance
+  to the boss first drops below 30m (one-shot per session, gated by
+  `_intro_played`).
+- `Boss._die` — sets `warlord_dead` once the Warlord's HP reaches 0.
+
+DialogueDB.gd consumes both flags via `World.has_world_flag(name)` to
+gate the JSON `boss_alive` / `boss_slain` lines (predicate priority slots
+2 and 3).
+
+## NPC JSON dialogue — opted-in NPCs (run-10 update)
+
+Three NPCs now resolve dialogue via `DialogueDB.choose_line()` first,
+falling back to the legacy `dialogue_variants` / `warmed_*` system on miss:
+
+| NPC | JSON file | Opted in (run) |
+|-----|-----------|----------------|
+| Elder Maeve | `data/dialogue/elder_maeve.json` | run 9 |
+| Smith Edda | `data/dialogue/smith_edda.json` | run 9 |
+| Innkeeper Bram | `data/dialogue/innkeeper_bram.json` | **run 10** |
+
+Opt-in is a single field on the WorldBuilder.NPCS entry:
+`"use_json_dialogue": true`. WorldBuilder copies it onto the NPC node as
+`use_dialogue_json`, which gates the DialogueDB consult in `_on_interact`.
+
+Future NPCs (Mara, Lyra, Roan, Hala) need only:
+1. A JSON file named after the slug (`mara_the_merchant.json`, etc.)
+2. `"use_json_dialogue": true` on the NPCS entry
+
+No code edits required — DialogueDB's loader walks `res://data/dialogue/`
+and picks up any new file matching the slug pattern.
+
 ## Time Schema
 
 `World.time_of_day: float` — 0.0..1.0 (0.0 dawn, 0.25 noon, 0.5 dusk, 0.75

@@ -1,3 +1,138 @@
+## 2026-05-05 (run 10) — Boss world-flag wire (`seen_warlord` / `warlord_dead`) + Bram JSON opt-in
+
+### Build target picked
+- Read THEME.md fully (§1–14 visual canon + §12 motion/life + §13 ground
+  contact + §14 push discipline).
+- THEME §7 cited: "Each NPC sounds like ONE specific person (catchphrases,
+  speech rhythm). Old Faerie / Common-tongue distinction." This run lights
+  up six dormant authored lines — three NPCs each speaking a distinct
+  boss_alive line and a distinct boss_slain line — that were sitting in
+  `data/dialogue/*.json` reachable in code but unreachable in play because
+  no system was writing the gating world flags.
+- Mood-board panel: N/A — sparse-checkout for this run excludes
+  `mood-boards/`. File zone is .gd + .md only.
+- Backlog item: NOT one of backlog 1–11. Promoted from CHANGES.md run-9
+  ("Auto: JSON dialogue trees made live — DialogueDB.gd … Fail-soft on 4
+  World fields not yet shipped"). Two of those fail-soft fields
+  (`seen_warlord` for boss_alive, `warlord_dead` for boss_slain) are wired
+  in this run by Boss.gd writes to `World.world_flags`. The other two
+  (player_renown, npc_seen) are flagged as next-priority hooks in
+  WORLD_STATE.md so a follow-up Builder/Polisher run picks them up.
+
+### Build
+- `eldoria-godot/scripts/World.gd` (+15): new public method
+  `func set_world_flag(name: String, value: Variant = true) -> void`.
+  Sister of `apply_consequence`'s flag step — same `world_flags[name] =
+  value` write + `_check_achievements()` re-run, but with no faction /
+  NPC / toast side-effects. For emergent runtime events that aren't
+  quest consequences. Returns immediately on empty name.
+- `eldoria-godot/scripts/Boss.gd` (+24 / -0):
+  - In `_physics_process`, immediately after `_intro_played = true`
+    (the once-per-session intro sting at <30m), call
+    `world.set_world_flag("seen_warlord", true)`. Wraps the call in a
+    `has_method` guard so older World autoloads (test scenes / partial
+    builds) silently fall through.
+  - In `_die`, after the existing `hide_boss_hp_bar` / `_show_toast`
+    calls and BEFORE the `quest_listeners.on_enemy_killed` hook, call
+    `world.set_world_flag("warlord_dead", true)`. Same `has_method`
+    guard. Permanent — never cleared on player respawn.
+- `eldoria-godot/scripts/WorldBuilder.gd` (+13 / -0):
+  - Innkeeper Bram's NPCS entry gains `"use_json_dialogue":true`. Bram
+    is now the THIRD opted-in NPC. His JSON (`innkeeper_bram.json`)
+    carries 15 keys including all four boss-state lines, the warmest
+    `low_health_player` line in the village, and the `honeysong_eve`
+    festival hook — all already authored, all now reachable.
+- `WORLD_STATE.md`: new ✅ Resolved entry (run 10) under Active Hooks
+  with the boss-flag wire details, the Bram opt-in, and three new 🔥
+  top-priority hooks (Mara/Lyra/Roan/Hala JSON authoring; player_renown
+  field wire; npc_seen tracker for `stranger` keys).
+- `SYSTEM_REGISTRY.md`: new section "World API additions (run 10)"
+  documenting `set_world_flag`, plus an updated NPC-JSON-opt-in table
+  showing Bram joining Maeve and Edda.
+- `CHANGES.md`: this entry.
+
+### 5-output rule
+- (i)   **Integration with world state:** Two flags newly written
+        (`seen_warlord`, `warlord_dead`); both are queried by DialogueDB
+        TODAY but nothing was writing them yet — this run closes the
+        write half of the loop. New READER count for `world_flags`
+        unchanged (still DialogueDB + has_world_flag callsites); new
+        WRITER paths added in `Boss._physics_process` and `Boss._die`.
+        WORLD_STATE.md `Active Hooks` updated with Resolved entry +
+        three follow-up hooks.
+- (ii)  **Queryable schema:** `World.set_world_flag(name, value=true)`
+        is a new public method, documented in SYSTEM_REGISTRY.md "World
+        API additions (run 10)". Same shape as `apply_consequence` step
+        2 minus the side-effects, so Achievements still re-runs on
+        every flag flip. NPC opt-in table updated to show three NPCs.
+- (iii) **Player feedback (visible/audible/UI):** Six dormant authored
+        lines now reachable in the player flow. On boss-encounter:
+        Maeve, Edda, Bram each speak a unique `boss_alive` line on the
+        same world tick the player crosses 30m of the Warlord. On boss
+        death: same three NPCs speak distinct `boss_slain` lines on the
+        same tick the Warlord's HP reaches 0. UI path is unchanged
+        (same `show_dialogue` group call); the resolver simply has more
+        keys to match. Edda's tic *hammer-clang* + *one hard
+        hammer-strike* on the post-kill line is the catchphrase
+        payoff THEME §7 promised.
+- (iv)  **Evaluation:** Naive paren-balance check
+        (`src.count(o)==src.count(c)` for `()`, `[]`, `{}`) passes on
+        all three modified files: World.gd 426/426 paren, 60/60
+        bracket, 29/29 brace; Boss.gd 231/231 paren, 4/4 bracket, 0/0
+        brace; WorldBuilder.gd 1131/1131 paren, 83/83 bracket, 37/37
+        brace. New `var` declarations carry explicit type annotations
+        (Godot 4.6 strict-mode compliant) — `var w_intro: Node`,
+        `var w_die: Node`. The `set_world_flag` signature uses
+        `value: Variant = true` so the common-case call is one token
+        shorter at the callsite, and `name == ""` early-returns to
+        match the rest of World.gd's empty-string guard pattern. Both
+        Boss callsites guard on `has_method("set_world_flag")` so a
+        partial-build World silently degrades rather than crashing.
+- (v)   **Future hooks (≥ 2):**
+        1. **Author Mara / Lyra / Roan / Hala JSON trees** — pure data
+           PR. Lore Keeper lane. Each new JSON gives the NPC the same
+           9-key DialogueDB priority surface; one `use_json_dialogue`
+           toggle in WorldBuilder lights it up. Mara is highest-leverage
+           (only NPC who trades, so `low_health_player` reads as "she
+           comps a potion" — mechanically distinct).
+        2. **Wire `World.player_renown: int`** (or alias
+           `unlocked_achievements.size()` as a read-only computed property).
+           DialogueDB's `high_renown` predicate reads
+           `world.player_renown >= renown_threshold` (default 100); JSON
+           lines for Maeve and Edda are pre-authored. Single field
+           addition + one quest hook → two more dormant lines reachable.
+        3. **Wire `World.npc_seen: Dictionary`** flipped on first
+           interaction in NPC.gd. Lights up the `stranger` JSON keys
+           for every JSON-opted NPC. Two-line patch on `_on_interact`
+           (mark seen at end of function).
+        4. **"Met the Warlord" / "Warlord Slain" achievements** —
+           drop a predicate matching `world_flag == "seen_warlord"`
+           and another matching `world_flag == "warlord_dead"` into
+           `Achievements.ACHIEVEMENTS`. The `set_world_flag` already
+           re-runs `_check_achievements()`, so the unlock toast fires
+           the moment the flag flips. Pure data add — no engine code.
+        5. **Boss-defeat consequence on factions** — extend `Boss._die`
+           to write `factions["whisperwood_goblins"].pressure = 0.0`
+           (or call `apply_consequence` with the right payload). The
+           Warlord dying should crater the goblin faction pressure,
+           which then cascades to the FIVE existing pressure consumers
+           (NPC dialogue tier 3, goblin spawn density, wolf spawn
+           density, enemy attack cooldown, enemy chase speed). One
+           write → five visible world changes.
+
+### Phase reached
+Builder — feature shipped, 5/5 ledgers updated (World.gd, Boss.gd,
+WorldBuilder.gd, WORLD_STATE.md, SYSTEM_REGISTRY.md, CHANGES.md), ready
+to commit to `auto/builder`.
+
+### Next run should pick up
+**Mara / Lyra / Roan / Hala JSON authoring** (lore agent, parallel) and
+**player_renown wire** (Builder, single field). Both compound on this
+run with no new dialogue-code edits. The JSON-resolver path is now the
+data path; future authoring is content, not engineering.
+
+---
+
 ## 2026-05-05 — QA: Player.gd indent fix
 Parse error at Player.gd:314 — `call_deferred("save_game")` was inserted at 1-tab indent inside the while loop, orphaning all the level-up effects (max_hp/mp gain, LEVEL UP popup) at the wrong indent level. Re-indented level-up effects back into the while loop body and moved `call_deferred` to run once after all level-ups complete (1 tab, before `stats_changed.emit()`). This unblocks NPC.gd and WorldBuilder.gd which depend on the Player class.
 
