@@ -1,3 +1,6 @@
+## 2026-05-05 — QA: Player.gd indent fix
+Parse error at Player.gd:314 — `call_deferred("save_game")` was inserted at 1-tab indent inside the while loop, orphaning all the level-up effects (max_hp/mp gain, LEVEL UP popup) at the wrong indent level. Re-indented level-up effects back into the while loop body and moved `call_deferred` to run once after all level-ups complete (1 tab, before `stats_changed.emit()`). This unblocks NPC.gd and WorldBuilder.gd which depend on the Player class.
+
 # Realm of Eldoria — Build Ledger
 
 Running record of what's been built, what's deployed, what's next. Append new entries at the top.
@@ -1085,4 +1088,3 @@ goblin scalar that already drives dialogue tier 3 (run 4) + spawn density
 fresh-save goblin still telegraphs at child-readable speed. After that,
 Roan's `dire_wolves` faction-tier dialogue (4 lines, mirrors Maeve) +
 a Roan-issued -0.1 wolf-bounty quest, both of which compose with run-6.
-
