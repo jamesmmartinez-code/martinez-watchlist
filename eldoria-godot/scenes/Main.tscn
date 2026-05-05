@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/CameraController.gd" id="3_camera"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="4_npc"]
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
-[ext_resource type="PackedScene" path="res://assets/models/hero_lange.glb" id="8_hero"]
+[ext_resource type="PackedScene" path="res://assets/models/Owen.glb" id="8_hero"]
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
 [ext_resource type="Texture2D" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="9_sky_panorama"]
 

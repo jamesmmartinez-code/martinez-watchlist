@@ -85,6 +85,13 @@ func _ready() -> void:
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
 		animation_player = _find_animation_player(self)
+	# THEME §13 ground contact + size discipline — Owen.glb / hero_lange.glb are
+	# Meshy/Sketchfab exports at native units (often cm), so they spawn 3-4×
+	# normal size if not normalized. Walks the visible AABB and uniformly
+	# scales the Hero subtree to ~1.8m, then lifts so feet sit at body-local
+	# y=0. Mirrors the Enemy.gd / Boss.gd pattern. No-op if the model is
+	# already in the right range.
+	call_deferred("_normalize_player_model", 1.8)
 	# Auto-play idle on first frame so character doesn't stand T-pose
 	if animation_player:
 		await get_tree().process_frame
@@ -763,3 +770,65 @@ func reset_save() -> void:
 	# For "New Game" button later
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
+
+
+# THEME §13 ground contact / SIZE_STANDARDS — normalize the visible Hero subtree
+# (the GLB instanced under the Player CharacterBody3D) so its AABB height is
+# `target_height` meters and its bottom sits at body-local y=0. Two-pass:
+# (1) uniform-scale to hit the height,
+# (2) lift to plant the feet.
+# Skip if the AABB is already within ±20% of target (the model was authored
+# at a sane height — most likely a hand-tuned KayKit/Quaternius hero).
+func _normalize_player_model(target_height: float) -> void:
+	await get_tree().process_frame
+	# Find the visible Hero node (any Node3D child of self with mesh content).
+	# Falls back to scanning all children if the conventional name is missing.
+	var hero: Node3D = get_node_or_null("Hero") as Node3D
+	if hero == null:
+		for c in get_children():
+			if c is Node3D and not (c is CollisionShape3D) and c != camera_pivot:
+				if (c as Node).find_children("*", "VisualInstance3D", true).size() > 0:
+					hero = c
+					break
+	if hero == null:
+		return
+	# Pass 1: world-space AABB → uniform scale to target height.
+	var aabb := AABB()
+	var has := false
+	for v in hero.find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if not vi: continue
+		var a := vi.global_transform * vi.get_aabb()
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	# Skip the rescale if already in tolerance band — preserves authored-correct
+	# models from being subtly resized.
+	if aabb.size.y >= target_height * 0.80 and aabb.size.y <= target_height * 1.20:
+		# Still run pass 2 to fix ground contact even if size is fine.
+		pass
+	else:
+		var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
+		hero.scale = hero.scale * s
+		await get_tree().process_frame
+	# Pass 2: lift so visible bottom sits at body-local y=0 (THEME §13).
+	if not is_instance_valid(hero):
+		return
+	var local_min_y: float = INF
+	var local_has := false
+	var inv_xform: Transform3D = hero.global_transform.affine_inverse()
+	for v2 in hero.find_children("*", "VisualInstance3D", true):
+		var vi2 := v2 as VisualInstance3D
+		if not vi2: continue
+		var a2 := (inv_xform * vi2.global_transform) * vi2.get_aabb()
+		if not local_has:
+			local_min_y = a2.position.y
+			local_has = true
+		else:
+			local_min_y = min(local_min_y, a2.position.y)
+	if local_has and local_min_y < -0.05:
+		var lift: float = clamp(-local_min_y, 0.0, 2.0)
+		hero.position.y = lift
