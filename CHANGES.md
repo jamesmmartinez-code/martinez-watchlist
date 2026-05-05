@@ -303,3 +303,60 @@ A scheduled task (`eldoria-nightly-builder`) runs every minute, picking from a r
 2. Quest system wired through Maeve
 3. Inventory/equipment slots with visible gear swap on Soldier
 4. Audio — CC0 ambient music + SFX
+
+---
+
+## 2026-05-04 — Auto run: Bootstrap world-engine ledgers
+
+### What
+Created the 5 architectural artifacts that replace the old "CHANGES.md alone"
+governance model:
+- `DESIGN_PHILOSOPHY.md` — operational distillation of the 6 rules
+- `WORLD_STATE.md` — canon, NPC memory, faction state, player impact, hooks
+- `SYSTEM_REGISTRY.md` — verbs, item schema, stat schema, drop tables, reserved schemas
+- `QUEST_GRAMMAR.md` — single unified quest data model (current shipped + reserved)
+- `PLAYER_MODEL.md` — Alden, Owen, co-op constraints, difficulty signals, open questions
+
+### Why
+Per DESIGN_PHILOSOPHY Rule 3, every run now reads these 5 files before
+planning, and updates them as part of every commit. This is the pivot from
+"ship features faster" to "compound the world engine."
+
+### Files changed
+- `DESIGN_PHILOSOPHY.md` ✨ NEW
+- `WORLD_STATE.md` ✨ NEW
+- `SYSTEM_REGISTRY.md` ✨ NEW
+- `QUEST_GRAMMAR.md` ✨ NEW
+- `PLAYER_MODEL.md` ✨ NEW
+- `CHANGES.md` (this entry)
+
+### Phase reached
+Historian — bootstrap complete. No backlog feature shipped this run by design;
+Rule 3 says ledgers must exist before any feature work compounds.
+
+### Future hooks seeded
+- `WORLD_STATE.md → Active Hooks` lists 5 concrete next-run anchors (Crystal
+  Caves placement, reactive dialogue, faction scalar, housing plot, drop
+  table reuse).
+- `QUEST_GRAMMAR.md → Migration Notes` specifies the next quest-system
+  refactor: a `consequence` resolver in World.gd. One change unlocks NPC
+  memory, faction shifts, and reactive dialogue from a single entry point.
+- `PLAYER_MODEL.md → Difficulty Signals` specifies the first telemetry
+  primitive (`World.player_pressure_signal()`) and which knob to tune first
+  (telegraph timing).
+
+### Next run should pick up
+Plan: read all 5 ledgers, then pick ONE of:
+1. Reactive dialogue scaffold — adds `npc.lines` map keyed on world flags +
+   3 example follow-up lines for Maeve, Lyra, Mara. Touches: WorldBuilder
+   NPCS, NPC.gd, World.gd flag store. Compounds 7 NPCs × first quest events.
+2. Consequence resolver — implements `consequence` in QUEST_GRAMMAR; backfill
+   the 3 existing quests with `motivation`/`location`/`urgency` fields.
+   Compounds: enables every future quest to mutate world state on completion.
+3. Bandit pressure scalar — adds `World.factions["whisperwood_goblins"]
+   .pressure: float` with decay/recovery + a single observable consequence
+   (campfire visibility / patrol density). Compounds: enemy spawning, NPC
+   dialogue, and adaptive difficulty all read this scalar.
+
+Recommendation: option (2). It's the smallest change with the highest
+downstream multiplier.
