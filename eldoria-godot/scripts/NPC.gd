@@ -89,6 +89,29 @@ class_name NPC
 # one-frame mismatch on `_last_bucket` is harmless.
 var _last_bucket: int = -1
 var _spawn_y: float = 0.0
+# REFINE: character — animation timing. Cache the AnimationPlayer's idle/walk
+# anim names at _ready so the schedule walker (below) can swap between them
+# WITHOUT re-scanning each tick. Empty string = anim not found (graceful no-op).
+# THEME §12 MOTION & LIFE: a body that slides between anchors with a static
+# Idle anim looking forward is "skating". Caching Walk lets us actually swing
+# legs when walking, then settle into Idle when arriving. Sourced GLBs name
+# the walk clip variously (Walk / Walking / Run / WalkForward / mixamo.com),
+# so we scan a handful of common spellings.
+var _walk_anim_name: String = ""
+var _idle_anim_name: String = ""
+# REFINE: character — animation timing. Random per-NPC phase so when several
+# villagers stand in shot together (e.g. Bram + Mara at the well at midday)
+# their breathing doesn't sync into one mechanical rise-fall. THEME §12 calls
+# for "subtle Y-bob breathing" specifically when a sourced GLB lacks anims;
+# we apply this fallback only when no AnimationPlayer is found, so animated
+# NPCs keep their authored skeleton motion intact and never double-bob.
+var _breathe_phase: float = 0.0
+# REFINE: character — animation timing. Whether the schedule walker is
+# currently in transit (true) vs idling at an anchor (false). Toggled by
+# _tick_schedule so the anim swap fires ON THE TRANSITION rather than
+# every frame, which would constantly restart the AnimationPlayer (visible
+# as a stiff first-frame snap) and waste the playback queue.
+var _is_walking_schedule: bool = false
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
@@ -110,6 +133,32 @@ func _ready() -> void:
 	# Idle anim if available
 	if anim and anim.has_animation("Idle"):
 		anim.play("Idle")
+	# REFINE: character — animation timing. Resolve and cache idle/walk
+	# clip names from whichever AnimationPlayer this NPC actually owns
+	# (the @onready `anim` only sees a *direct* child named "AnimationPlayer";
+	# GLB-imported NPCs hide theirs deeper in the rig). Falls back to
+	# scanning the full subtree via _find_first_anim_player() so authored
+	# Walk/Idle clips survive the import-path lottery.
+	var ap_resolved: AnimationPlayer = anim if anim != null else _find_first_anim_player(self)
+	if ap_resolved != null:
+		var names := ap_resolved.get_animation_list()
+		# Prefer common spellings in order of likelihood, then fall back to
+		# the first list entry for "Idle" so even unusually-named clips like
+		# "ArmatureAction.001" (Mixamo default) still pin something.
+		for n in ["Idle", "idle", "IdleAnimation", "Standing"]:
+			if ap_resolved.has_animation(n):
+				_idle_anim_name = n
+				break
+		if _idle_anim_name == "" and names.size() > 0:
+			_idle_anim_name = String(names[0])
+		for n in ["Walk", "walk", "Walking", "WalkForward", "Run", "run"]:
+			if ap_resolved.has_animation(n):
+				_walk_anim_name = n
+				break
+	# REFINE: character — animation timing. Per-NPC breathe phase prevents
+	# group-sync "rise/fall in unison" effect when multiple anim-less NPCs
+	# share frame (THEME §12 — life should look incidental, not metronomic).
+	_breathe_phase = randf() * TAU
 	# COMPOUND (run 11): cache spawn-time y so schedule walker preserves it.
 	# WorldBuilder spawns NPCs at y=0 with the collision capsule's y-offset
 	# of 0.9 putting feet on ground — schedule must not re-base y or the
@@ -125,6 +174,29 @@ func _process(delta: float) -> void:
 	# empty (legacy NPCs).
 	if not schedule_anchors.is_empty() and not player_in_range:
 		_tick_schedule(delta)
+	else:
+		# REFINE: character — animation timing. When the schedule walker isn't
+		# driving motion (no anchors, OR player is mid-conversation), make sure
+		# the anim state is "Idle" rather than whatever Walk frame we left mid-
+		# stride. Without this, an NPC interrupted at mid-step holds a weird
+		# T-lean until the next bucket flip. Guard on the toggle so we don't
+		# re-issue play() every frame.
+		if _is_walking_schedule:
+			_is_walking_schedule = false
+			if anim != null and _idle_anim_name != "" and anim.current_animation != _idle_anim_name:
+				anim.play(_idle_anim_name)
+	# REFINE: character — animation timing. THEME §12 fallback: NPCs sourced
+	# from GLBs that ship without animations would otherwise be perfectly
+	# static (hard-banned by §12). Apply a subtle Y-bob (~2cm amplitude,
+	# ~2.5s period — exactly the spec) layered on top of `_spawn_y` so feet
+	# never lift more than a sock-thickness off the cobble. Skip when an
+	# AnimationPlayer is present (authored skeleton anims handle breathing)
+	# and skip while the schedule walker is moving us (it overwrites .y
+	# anyway and we'd just be fighting it for a frame).
+	if anim == null and not _is_walking_schedule:
+		var t: float = float(Time.get_ticks_msec()) / 1000.0
+		var bob: float = sin(t * 2.513 + _breathe_phase) * 0.018
+		global_position.y = _spawn_y + bob
 
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
@@ -279,18 +351,43 @@ func _tick_schedule(delta: float) -> void:
 	var dist: float = to_target.length()
 	if dist <= schedule_arrival_radius:
 		global_position = Vector3(target.x, _spawn_y, target.z)
+		# REFINE: character — animation timing. Arriving at an anchor: settle
+		# into the idle clip. Edge-trigger via `_is_walking_schedule` so we
+		# only call play() once per arrival, not every frame the NPC is
+		# parked. THEME §12: each role has a specific idle (Maeve sweeps,
+		# Smith hammers) — those role-anims are still authored externally;
+		# this just makes sure we're playing whatever idle the rig owns.
+		if _is_walking_schedule:
+			_is_walking_schedule = false
+			if anim != null and _idle_anim_name != "" and anim.current_animation != _idle_anim_name:
+				anim.play(_idle_anim_name)
 		return
 	var step: float = min(schedule_speed * delta, dist)
 	var dir: Vector3 = to_target / dist
 	var new_pos: Vector3 = here + dir * step
 	new_pos.y = _spawn_y
 	global_position = new_pos
-	# Face direction of motion (gentle yaw — NPCs are StaticBody3D so this
-	# is a free transform op). Avoid look_at when target is exactly aligned
-	# with up axis to dodge the up-vector singularity warning.
-	var face_at: Vector3 = global_position + Vector3(dir.x, 0.0, dir.z)
-	if (face_at - global_position).length() > 0.001:
-		look_at(face_at, Vector3.UP)
+	# REFINE: character — animation timing. We're traversing: prefer the Walk
+	# clip if the rig has one, else stay on Idle (better than nothing). Edge-
+	# triggered: only re-play() on the transition idle→walk, not every tick.
+	if not _is_walking_schedule:
+		_is_walking_schedule = true
+		if anim != null:
+			var want: String = _walk_anim_name if _walk_anim_name != "" else _idle_anim_name
+			if want != "" and anim.current_animation != want:
+				anim.play(want)
+	# REFINE: character — animation timing. Smooth yaw instead of snap.
+	# The original `look_at(face_at, UP)` re-aimed the NPC every frame to
+	# the live motion direction — which during diagonal turns produced a
+	# visible jolt as the heading vector rotated. lerp_angle (5 rad/s
+	# convergence) lets the body lead with shoulders rather than flick like
+	# a turret, matching THEME §1's "lived-in" pacing. Singularity guard
+	# preserved: we still skip when motion magnitude is sub-mm.
+	if to_target.length() > 0.001:
+		var desired_yaw: float = atan2(dir.x, dir.z)
+		var current_yaw: float = rotation.y
+		var smoothed: float = lerp_angle(current_yaw, desired_yaw, clamp(delta * 5.0, 0.0, 1.0))
+		rotation.y = smoothed
 
 func _bucket_for_tod(tod: float) -> int:
 	if tod >= 5.0 and tod < 11.0:
