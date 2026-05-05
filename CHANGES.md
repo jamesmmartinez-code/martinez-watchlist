@@ -9,6 +9,53 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 
 ---
 
+## 2026-05-04 (autonomous run) — Fantasy hero makeover (Soldier → knight)
+
+### What changed
+The Soldier.glb is the Mixamo Vanguard — a sci-fi-looking trooper with a glowing visor that didn't fit the medieval-fantasy world. Inspected the GLB structure (68 nodes, 2 meshes: `vanguard_Mesh` body + `vanguard_visor`) and confirmed there's no separate rifle node, so the "soldier" feel comes entirely from the visor + tactical body texture. Approach: hide the visor and bolt on a full set of procedural fantasy gear so the player reads as a knight/adventurer.
+
+### New systems in `Player.gd` (+170 lines, all appended)
+- **`_apply_fantasy_makeover()`** — `call_deferred`d from `_ready()` so it runs after the GLB instance is fully spawned
+- **`_hide_modern_bits(node)`** — recursively walks the Soldier scene tree; any MeshInstance3D whose name (case-insensitive) contains `visor`, `rifle`, `gun`, `barrel`, `magazine`, `scope`, `muzzle`, `ammo`, `bullet`, `pistol`, or `trigger` is set `visible = false`. The vanguard's visor is hidden by name; the helper is also future-proof for any other rigged weapon meshes that show up later
+- **`_build_fantasy_gear()`** — builds a `FantasyGear` Node3D under the Player and populates it with procedural armor pieces using shared StandardMaterial3D instances (bronze, gold w/ subtle emission, crimson cloth, dark leather)
+
+### Gear pieces (all rigid in player-space — placed on torso/head only so walk-cycle bone deformation doesn't make them pop)
+- **Bronze knight's helm** — tapered cylinder cap covering head & visor (top_radius 0.16, bottom_radius 0.21, height 0.24)
+- **Crown** — 5 gold prism spikes ringing the helm rim at radius 0.17
+- **Gold forehead band** — flat cylinder, gold material, sits at the helm/face boundary
+- **Crimson cape** — 0.60 × 1.05 × 0.04 box, slight 8° backward tilt, hangs at +Z (back of player)
+- **Gold cape collar** — gold trim across the top of the cape
+- **Bronze pauldrons** — hemispheres (radius 0.14) on both shoulders, each with a small gold rivet on top
+- **Crimson tabard** — 0.34 × 0.72 chest panel at -Z (front) covering the tactical-looking torso
+- **Gold tabard emblem** — prism-shaped diamond at chest center
+- **Dark-leather belt** — 0.58 × 0.10 × 0.44 box around the waist
+- **Gold belt buckle** — small gold square on the front of the belt
+
+### Files changed
+- `scripts/Player.gd` (+170 lines: `var fantasy_gear` declaration, two new `call_deferred` calls in `_ready()`, three new functions)
+
+### Validation
+- Bracket/brace/quote balance: PASS for all 12 GDScripts
+- All new declarations use explicit types or `:=` against typed constructors (`StandardMaterial3D.new()`, `MeshInstance3D.new()` etc.) — no Variant strict-mode violations
+- `for sx in sides:` iteration uses an `Array[float]` so `sx` is properly typed
+- All new nodes are children of a single `FantasyGear` Node3D so the gear can be torn down or toggled cleanly later (e.g., for an "armor swap" feature)
+
+### Notes for next run
+- Gear is rigid in player-space. The torso barely moves during walk so this looks fine, but if the kids notice the cape "floats" on running, the next iteration could parent the gear to BoneAttachment3D nodes (Hips bone for belt, Spine2 for tabard, Head for helm) using the imported skeleton path `Soldier/Character/mixamorig:Hips`
+- The body's skin texture still has tactical detailing under the tabard — fine for now, since the tabard + pauldrons cover most of the visible torso
+- Did NOT touch Main.tscn — all changes are runtime so the scene file is unchanged
+- Did NOT replace the Soldier.glb with a CC0 alternative — the procedural makeover gets us 80% of the way there with zero asset download/import overhead
+
+### Status
+✅ Pushed to `main` — GitHub Actions auto-builds within 3-5 min
+
+### Next run should pick up
+- **Backlog item 3: Better trees** — current cone+sphere stack looks placeholder-tier. Either source Kenney Nature Kit or rewrite `_make_tree` for irregular foliage with multiple jittered spheres + branching trunks, applying the existing bark PBR texture
+- **Backlog item 4: Smith Edda forge UI** — buy/sell/upgrade weapons, enchant action that costs gold + Crystal Shards (we now have a steady source from the caves!)
+- **Optional iteration on this run**: bone-attach the fantasy gear to the Mixamo skeleton so it animates with the body during walk/run/attack
+
+---
+
 ## 2026-05-04 (autonomous run) — Crystal Caves dungeon (NW of village)
 
 ### New zone: Crystal Caves
