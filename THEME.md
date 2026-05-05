@@ -220,34 +220,3 @@ If your output looks like *Call of Duty*, *Cyberpunk 2077*, *Roblox*,
 *Last updated: bootstrap of GitHub-as-source migration. All 10 autonomous
 agents are bound by this document. The Architect agent updates it when
 patterns emerge across runs.*
-
-## 12. MOTION & LIFE — every visible thing must move
-
-The world must feel ALIVE. Static = dead. Hard rule:
-
-- **Every character MUST have an idle animation playing.** If a sourced GLB has none, swap to one that does, OR add procedural breathing motion (Y-bob amplitude 0.02m, period 2.5s).
-- **NPCs must perform role-specific idle behavior**: Maeve sweeps, Smith hammers (sparks), Mara waves at approaching player, Lyra grinds herbs, Bram polishes mugs, Roan brushes a horse, Hala practices sword forms.
-- **Props move where natural**: banners flap (sin-wave), water ripples (UV displacement), fires flicker (light_energy mod), leaves sway, lanterns rock, windmill rotates.
-- **Ambient life**: butterflies arc near flowers, fireflies drift at night, birds fly V-formations every ~30 sec, falling leaves drift through canopies.
-- **Pet (Ember the fox)** does micro-behaviors when idle: scratch ear, sniff, look at player, sit when player stops, head-tilt at sound.
-- **Banned**: T-pose characters. Headless mannequins. Static props that "should" move.
-
-If a feature is purely visual without motion, either give it motion or don't ship it.
-
-## 13. GROUND CONTACT — no half-buried, no floating
-
-Every 3D object MUST rest correctly on the ground or its supporting surface. **No half-buried, no floating.**
-
-- Character spawns: `position.y = 0.0` with model pivot at FEET. If sourced GLB has center pivot, wrap in a Node3D and offset model's local position by `+(model_height / 2)`.
-- Props (chests, barrels, lanterns, wells, mushrooms, rocks): rest ON ground at `y = (height/2)` if box-pivoted, or `y = 0` if feet-pivoted.
-- Trees: trunk base at ground level. Collision capsule bottom matches.
-- After spawning, inspect AABB.position.y. If negative → asset is sinking → fix offset before pushing.
-
-Banned:
-- ❌ NPCs sunk to the waist
-- ❌ Trees with roots floating in air
-- ❌ Buildings clipping into terrain
-- ❌ Loot chests embedded in cobblestone
-- ❌ Headless characters (head clipped offscreen above)
-
-If you find half-buried/floating assets in existing code, either raise them OR delete them from spawn lists. Nothing is better than visibly-broken geometry.

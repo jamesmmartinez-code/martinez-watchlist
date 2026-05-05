@@ -1,0 +1,193 @@
+# World State — Realm of Eldoria
+
+Canonical facts about the world. This is the source of truth for *what exists*
+and *what has happened*. Update this file whenever the world changes.
+
+## World Canon
+
+### Geography
+- **Briarwood Village** (origin, friendly hub). 7 named NPCs, 6 buildings,
+  cobble path network, well, pond, windmill, market stalls, lanterns, banners,
+  campfires. Mountain ring (36 inner + 28 outer peaks with snow caps).
+- **Whisperwood Forest** — wilderness north/west of Briarwood. Currently hosts
+  3 goblin camps (each: 4 Goblin Scouts + 1 Goblin Brute + glowing campfire)
+  and 4 wandering Dire Wolves. The Goblin Warlord (boss) lairs deep within.
+- **Crystal Caves** — dungeon, NW Whisperwood entrance. STATUS: planned, not
+  yet placed in world. Planned inhabitants: skeletons, crystal elementals.
+
+### Time
+- Day/night cycle: 6 real-minute full rotation (sped up from default).
+- `World.time_of_day` is the canonical clock. NPC schedules consume it.
+
+## Active Hooks
+
+(Future runs pick from this list. A hook is a one-liner that makes the next
+run easier — what's the *next* thing that compounds?)
+
+- Crystal Caves entrance is undefined → place it once dungeon is ready.
+- Skeleton + Crystal Elemental drop tables exist in Items.gd; spawn paths do
+  not. Anyone adding the dungeon should reuse those tables, not redefine them.
+- ✅ **Resolved 2026-05-04:** Faction pressure scalar exists
+  (`World.factions[id].pressure`) — three quests already mutate it.
+- ✅ **Resolved 2026-05-04 (integrator):** Reactive dialogue wired.
+  NPC.gd now reads `World.npc_has_flag(npc_name, warmed_flag)` and prefers
+  a `warmed_dialogue_variants` (4 entries, same time-of-day buckets) when
+  the flag is set. Maeve (`first_quest_done`), Lyra (`trusts_player`),
+  Mara (`good_customer`) each ship 4 warmed variants in WorldBuilder.NPCS.
+  Every other NPC has empty `warm_*` fields and behaves unchanged.
+- ✅ **Resolved 2026-05-04 (run 3 follow-up):** World-flag warmed dialogue
+  tier added to NPC.gd as a SECOND lower-priority warmed layer
+  (`warmed_world_flag` / `warmed_world_dialogue_variants`). Lyra now has 4
+  extra lines that fire on `lyra_potion_brew`. Composes with the integrator's
+  `warmed_flag` tier — NPC-flag warm beats world-flag warm beats time-of-day.
+  Consumes `World.world_flags` which had no other readers until now.
+- ✅ **Resolved 2026-05-04 (run 4):** Faction-pressure dialogue tier wired
+  as NPC.gd Tier 3 (between world-flag warm and time-of-day variants).
+  Maeve carries 4 lines fired by `whisperwood_goblins` pressure < 0.9; the
+  tier reaches her on the "ears-before-cleansing" path (Mara's bounty drops
+  pressure to 0.85 before Maeve's `first_quest_done` flag locks in tier 1).
+  `World.faction_pressure(id)` now has its first reader after 2 runs of being
+  written-only. Authoring trap captured in SYSTEM_REGISTRY.md: never pair a
+  faction reducer with the same quest that issues the NPC's warm_flag.
+- ✅ **Resolved 2026-05-04 (run 5):** Goblin spawn density reads
+  `World.faction_pressure("whisperwood_goblins")` in `WorldBuilder._build_enemies()`.
+  Per-camp population now derives from a `_goblin_camp_size(pressure)` helper
+  with thresholds at 0.9 / 0.7 / 0.4 / 0.15 — co-fired with NPC.gd's tier-3
+  dialogue so dialogue *speaks* the faction state and spawning *enacts* it.
+  At fresh-save pressure 1.0 the camp population is identical to pre-run-5
+  (4 scouts + 1 brute per camp); at 0.85 (Mara's bounty alone) goblins drop
+  by 1 per camp; at 0.65 (Mara + Maeve) by 2 per camp; brute disappears
+  below 0.4. The empty camp prop (campfire, huts) persists as a memorial.
+  `World.faction_pressure()` now has TWO consumers (NPC.gd dialogue tier 3,
+  WorldBuilder spawn density) — the consequence-resolver loop is closed on
+  both narrative and pacing axes.
+- ✅ **Resolved 2026-05-04 (run 6):** Wolf spawn density reads
+  `World.faction_pressure("dire_wolves")` in `WorldBuilder._build_enemies()`.
+  `_wolf_pack_size(pressure)` mirror of the goblin helper with thresholds at
+  0.5 / 0.3 / 0.15 — wolves drop from 4 → 3 the moment `pelt_for_lyra` ships
+  (-0.1 takes pressure 0.5 → 0.4, < 0.5 trips the first threshold). Empty
+  forest patches where a wolf used to roam serve as the same "they used to
+  be here" memorial as the empty goblin camps. `World.faction_pressure()`
+  now has THREE consumers (NPC.gd dialogue tier 3, goblin spawn density,
+  wolf spawn density) — pattern proven generalizable to every faction.
+- 🔥 **Top-priority next:** THIRD output on the same scalar — adaptive
+  `Enemy.gd.attack_cooldown` lerped on faction pressure. One number then
+  drives narrative (dialogue tier 3) + density (spawn helpers) + pacing
+  (enemy aggression). `lerp(1.45, 1.05, 1.0 - pressure)` so a calmed-wood
+  goblin hits faster (Owen's harder fight) while a fresh-save goblin hits
+  slower (Alden's recovery valve). Single line edit on Enemy.gd.
+- 🔥 **Adjacent next:** Roan (Stablemaster) → `dire_wolves` faction tier.
+  Smoke-tests the 4-tier system on an NPC with no warm_flag at all.
+  Schema is in place, only WorldBuilder edits required. After run 6, Roan's
+  faction-tier lines have a NEW partner: spawn density already speaks the
+  state, so dialogue completes the third leg of the same compound.
+- Player housing has no anchor point. A flat plot east of Briarwood (positive
+  X, near +12,0,+4) is reserved for it.
+- Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
+  `hp_potion_g` (greater) at her shop. Today no shop UI exists — pair with
+  Smith Edda's forge UI (backlog #4).
+
+## NPC Memory
+
+(Tracks who has spoken to whom, who has been thanked, who has been ignored.
+Populated as runs ship reactive dialogue.)
+
+| NPC                  | Role     | Player relationship | Reactive lines (run 3) | Memory flags consumed |
+|----------------------|----------|---------------------|------------------------|------------------------|
+| Elder Maeve          | quest    | warms after first quest; senses goblin retreat | ✅ 4 (npc-flag, integrator) + ✅ 4 (faction, run 4) | `first_quest_done` (Whisperwood Cleansing); `whisperwood_goblins` pressure < 0.9 |
+| Smith Edda           | smithy   | neutral             | ❌ (forge UI not shipped) | —                       |
+| Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | `good_customer` (ears_for_mara) |
+| Herbalist Lyra       | alchemy  | warms after pelts   | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | `trusts_player` (pelt_for_lyra), `lyra_potion_brew` (world flag) |
+| Innkeeper Bram       | inn      | neutral             | ❌ (no quest yet) | —                       |
+| Stablemaster Roan    | stable   | neutral             | ❌ (no quest yet) | —                       |
+| Trainer Hala         | trainer  | neutral             | ❌ (no quest yet) | —                       |
+
+Live data in `World.npc_flags[npc_name] -> Array[String]`. Read with
+`World.npc_has_flag(npc, flag)`. Mutated by quest consequences only — never
+by direct dialogue branches (those READ flags, they don't WRITE them).
+
+## Faction State
+
+(No scalars yet. Listed for downstream runs to wire.)
+
+| Faction          | Disposition | Pressure | Notes                          |
+|------------------|-------------|----------|--------------------------------|
+| Briarwood        | friendly    | 0.0      | safe hub                       |
+| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density)** |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density)** |
+| Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed |
+
+Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
+only by `World.apply_consequence({...})`.
+
+## World Flags (Active)
+
+`World.world_flags` is a dict keyed on flag name. Set by quest consequences,
+read by dialogue / spawning / future runs.
+
+| Flag                  | Set by quest          | Default | Used by (downstream) |
+|-----------------------|-----------------------|---------|----------------------|
+| `whisperwood_safer`   | whisperwood_cleansing | unset   | future: roving patrol density |
+| `lyra_potion_brew`    | pelt_for_lyra         | unset   | future: Lyra unlocks rarer potions in shop |
+| `mara_bounty_paid`    | ears_for_mara         | unset   | future: Mara raises buy prices on goblin loot |
+
+Read with `World.has_world_flag(name)`. Convention: flag names are
+`snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.
+
+## Player Impact Ledger
+
+(Cumulative consequences of player actions. Empty until reactive systems exist.)
+
+- Goblins killed (lifetime): tracked per-save in Player.kills_by_kind, not yet
+  surfaced to NPCs. (Adjacent compound: a kills-derived faction-pressure decay
+  could route per-kill impact into the dialogue tier 3 channel.)
+- Goblins spawned (per world load): now scales from baseline 15 (3 camps × 5)
+  down to 3 (3 × 1) as `whisperwood_goblins` pressure drops. Ledger of *what
+  the world LOOKS like to the player on save reload* now reflects their work.
+- Wolves spawned (per world load): scales from baseline 4 down to 1 as
+  `dire_wolves` pressure drops. Position list is stable — wolves vanish
+  from the END of `wolf_spots` first, so re-loading the same save shows
+  the SAME wolves missing from the SAME forest patches. (Run 6.)
+- Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
+  that NPCs now narrate. `apply_consequence()` is no longer write-only on the
+  faction key.
+- Roads defended: not modeled.
+- Buildings damaged: not modeled.
+
+## Recent Run Summary
+
+See CHANGES.md for the human-readable run log.
+
+## Lore Artifacts
+
+(Append-only ledger of canonical written lore. The Lore Keeper agent owns
+this section. Files live under `eldoria-godot/lore/`, `eldoria-godot/data/`.)
+
+### NPC backstories (`lore/npcs/`)
+
+| NPC          | File                              | Dialogue tree                                  | Status |
+|--------------|-----------------------------------|------------------------------------------------|--------|
+| Smith Edda   | `lore/npcs/smith_edda.md`         | `data/dialogue/smith_edda.json` (16 keys)      | drafted; awaiting Builder wiring |
+
+### Old Faerie glossary (cumulative)
+
+Canonical words, in the order they entered canon. Future writers should
+reuse these before inventing new ones.
+
+- **`thirre`** *(world.md)* — memory of stone; a place where time pools.
+- **`ai-velin`** *(world.md)* — the long path; the river of stars / a mortal life.
+- **`kerrithen`** *(world.md)* — to lay down so the land may hold it.
+- **`haethe`** *(npcs/smith_edda.md)* — the song iron remembers; a properly-tempered blade's hum.
+- **`unnen`** *(npcs/smith_edda.md)* — the work of two hands; the highest praise of the smith tradition.
+
+### Cross-references seeded this run
+
+- Smith Edda's mother **Halsa** (deceased; Longnight death) is now seedable
+  for codex narration about iron and the *haethe*.
+- The **Goblin Warlord's saber** is canonized as Edda's badly-forged early
+  work. Builder may, when ready, wire `boss_slain` to drop it as a unique
+  quest-turn-in to Edda. Her dialogue tree's `boss_slain` line is pre-tuned.
+- **Longnight Vigil** is now the most loaded day in Edda's year (Halsa's
+  death-night; Bram's stew). Future seasonal dialogue can lean here.
+- Bram quietly knows Edda forged the Warlord's saber. He has never said.
+  This is a relationship hook for Bram's eventual backstory file.
