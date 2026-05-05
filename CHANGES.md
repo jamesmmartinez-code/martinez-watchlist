@@ -1,3 +1,24 @@
+## 2026-05-05T14:06Z — Integrator run
+
+Merged this run:
+- auto/builder (1 commit, manual conflict resolution — see [INTEGRATOR-MANUAL] below)
+- auto/polisher (1 commit, fast-forward via API merge)
+- auto/art (1 commit, fast-forward via API merge)
+
+Skipped (no commits ahead of main):
+- auto/qa (already at main)
+
+Skipped (branch does not exist):
+- auto/character, auto/environment, auto/lore, auto/audio
+
+[INTEGRATOR-MANUAL] auto/builder textually conflicted with main on 2 files. Per spec ("newer subsumes older"), kept main's version of CHANGES.md and eldoria-godot/scripts/World.gd. Took builder's version of SYSTEM_REGISTRY.md, WORLD_STATE.md, Achievements.gd, WorldBuilder.gd. Verified post-merge that wolf_form_with_hala / dire_wolves logic is present in current code (came via main's earlier history), and Tamer of the Wolfwoods achievement is wired with its dire_wolves trigger.
+
+[INTEGRATOR-GAP] 8 prop GLBs in eldoria-godot/assets/models/props/ are not referenced by any .gd script: campfire.glb, fern.glb, lantern.glb, mushroom_red.glb, stone_well.glb, treasure_chest.glb, windmill.glb, wooden_barrel.glb. Environment / Builder agents need to add spawn logic in WorldBuilder.gd or a prop-loader.
+
+[INTEGRATOR-GAP] 10 lore .md files exist but no code path loads them. NPC dialogue / book systems should reference these files, otherwise the Lorekeeper's writing isn't reaching players. Builder or Character agent to wire a lore loader.
+
+Branches reset to main after merge: auto/builder, auto/polisher, auto/art, auto/qa.
+
 ## 2026-05-05 — QA: oversized asset logged (OPERATIONS §15)
 
 **Run @ 13:36 UTC.** Build green. Pages deployed. Asset budget audit
