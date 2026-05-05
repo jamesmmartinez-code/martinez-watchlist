@@ -4324,3 +4324,71 @@ wired this run — pure data, fires when `bandits_emergent` flag is set.
    "bandits_emergent"`. Polisher data edit.
 5. **Bandit-Hunter achievement** — composes with `wolf_tamer`.
    Achievements agent territory.
+
+## 2026-05-05 — Art run 22 (bandit silhouette → enemy_silhouettes)
+
+### I'm shipping
+The bandit silhouette into `mood-boards/enemy_silhouettes.png`. Builder run 21
+(bandits faction bootstrap, same day) noted the schema-only delivery and
+explicitly deferred the visual: *"Bandit silhouette will be added to that
+panel by the Art agent in a follow-up; this run ships the schema, not the
+visual."* This is that follow-up.
+
+### THEME §X cited
+- §4 (enemy archetype: Bandits — human, hooded, leather, scarves over
+  face) — silhouette renders all three signatures: hooded head peak,
+  triangular scarf wedge across lower face, leather-pant legs. Dagger on
+  right hip distinguishes from goblin spear-tip and warlord axe-blade.
+- §4 (silhouette-distinct rule — read at 30m, distinct at 5m) — bandit
+  reads as "hooded human with weapon" against the existing seven figures.
+  Player and Skeleton are bare-headed at 1.00×; Bandit is hooded at 1.00×,
+  so the hood IS the read at distance.
+
+### Pipeline used
+Pure PIL, deterministic. No Firefly, no Canva, no stock — same authoring
+canon as `_generate.py`'s `render_palette()`. Follows the bootstrap-fixed
+note in `_generate.py`: future panel mods are themselves bootstrap-fixes
+authored alongside the patch. Source script lives in this entry's adjacent
+art-run notebook (not committed; the canonical artifact is the PNG).
+
+### Files changed
+- `mood-boards/enemy_silhouettes.png` — extended canvas 1280→1460 (right
+  +180px), bandit drawn in the new slot, gradient continued from x=W-1
+  column. Existing 1280×600 pixels preserved byte-for-byte (verified by
+  sha256 of the cropped region equalling the source).
+- `CHANGES.md` (this entry)
+
+### 5-output check
+
+(i) **Integration** — `enemy_silhouettes.png` now answers Builder's
+`bandit` enemy_kind with a visual target. The ARTIST_AGENT.md §"npcs/"
+contract ("painted, painterly, warm — what the Character agent matches
+when picking a GLB") is upheld; future Character runs that wire a
+`bandit.glb` model can match this silhouette at 1.00× scale, hooded,
+leather-clad.
+
+(ii) **Schema** — panel layout schema unchanged: each figure occupies
+~180px horizontally, feet on the same baseline (y=440), label at y=557
+(bold name) + y=580 (`≈X.XX× player` subtitle). Bandit follows the same
+schema. Canvas grew 180px to accommodate; the title bar at top still
+reads cleanly because the existing title was already truncated at the
+right edge of the 1280-wide bootstrap.
+
+(iii) **Feedback** — visible immediately to any agent reading the
+mood-board. Builder run 22+ that wires bandit spawns into Whisperwood
+or the road-network has a 1.00×-scale hooded silhouette to match. The
+run-21 Roan dialogue (`bandits_emergent` warm_world tier) now has a
+visual partner; lore + faction state + silhouette are all aligned on
+the same archetype.
+
+(iv) **Eval** — existing region preservation verified by sha256 of the
+cropped (0,0,1280,600) region against the source PNG bytes; identical.
+Label positioning matches the existing seven labels (sampled y values
+from the source). No edits to `_generate.py` because the script's
+existing comment explicitly notes the bootstrap-fixed status of all
+non-palette panels.
+
+(v) **Branch** — pushed to `auto/art` (force-create; branch did not
+exist prior to this run).
+
+### Branch pushed: `auto/art`
