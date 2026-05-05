@@ -2,7 +2,7 @@
 """
 Realm of Eldoria — procedural achievement crest icon generator.
 
-Produces 5 painterly 128x128 PNG heraldic crests, one per entry in
+Produces 6 painterly 128x128 PNG heraldic crests, one per entry in
 Achievements.ACHIEVEMENTS. Each crest is a hand-painted-feel disc with
 a stylised symbol in the achievement's themed palette per THEME.md §3.
 
@@ -14,7 +14,7 @@ Style targets (THEME.md):
   - §5 hand-painted look, not crisp vector. Soft brushstroke rim,
     Gaussian-softened edges.
 
-Output: 5 RGBA PNGs at 128x128, transparent background.
+Output: 6 RGBA PNGs at 128x128, transparent background.
 
 Slugs (mirror Achievements.ACHIEVEMENTS keys):
   - first_steps      the Apprentice       — sprout on parchment
@@ -22,6 +22,7 @@ Slugs (mirror Achievements.ACHIEVEMENTS keys):
   - goblin_bane      Goblin-Bane          — crossed swords
   - trusted_three    the Trusted          — three interlocking rings
   - realm_warden     Warden of Eldoria    — keep tower with banner
+  - first_forge      the Forged           — anvil + crossed hammer with sparks
 
 License: CC0 — generated procedurally with Pillow, no external assets.
 
@@ -304,12 +305,161 @@ def _paint_keep(draw, seed):
 	draw.ellipse((sx - 4, sy - 4, sx + 4, sy + 4), fill=col)
 
 
+def _paint_anvil_hammer(draw, seed):
+	r = _rand(seed)
+	cx, cy = W // 2, W // 2
+
+	# Anvil body — classic London-pattern silhouette: top face, waist, base block.
+	# Iron-grey core with darker shading underneath; sits in lower half of disc
+	# so the crossed hammer above clears the rim.
+	top_y = cy - int(W * 0.04)
+	top_w = int(W * 0.46)
+	top_h = int(W * 0.07)
+	waist_w = int(W * 0.14)
+	waist_h = int(W * 0.10)
+	base_w = int(W * 0.32)
+	base_h = int(W * 0.10)
+
+	# Top face (with a curved horn on the right per traditional anvil shape).
+	horn_w = int(W * 0.14)
+	top_pts = [
+		(cx - top_w // 2, top_y),
+		(cx + top_w // 2, top_y),
+		(cx + top_w // 2 + horn_w, top_y + top_h // 2),
+		(cx + top_w // 2, top_y + top_h),
+		(cx - top_w // 2, top_y + top_h),
+	]
+	col = (60, 64, 72, 250)
+	draw.polygon(top_pts, fill=col)
+
+	# Highlight strip along the upper edge of the anvil face — hammered metal sheen.
+	col = (170, 178, 188, 220)
+	draw.line(
+		(cx - top_w // 2 + 8, top_y + 6, cx + top_w // 2 - 8, top_y + 6),
+		fill=col,
+		width=4,
+	)
+
+	# Waist (narrowing column under the face).
+	waist_y = top_y + top_h
+	col = (50, 54, 62, 250)
+	draw.polygon(
+		[
+			(cx - top_w // 4, waist_y),
+			(cx + top_w // 4, waist_y),
+			(cx + waist_w // 2, waist_y + waist_h),
+			(cx - waist_w // 2, waist_y + waist_h),
+		],
+		fill=col,
+	)
+
+	# Base block (heavy plinth).
+	base_y = waist_y + waist_h
+	col = (44, 48, 54, 250)
+	draw.rectangle(
+		(cx - base_w // 2, base_y, cx + base_w // 2, base_y + base_h),
+		fill=col,
+	)
+	# Base-shadow cast onto the disc (slight darken under the anvil).
+	col = (20, 16, 14, 90)
+	draw.ellipse(
+		(cx - int(base_w * 0.6), base_y + base_h - 4,
+		 cx + int(base_w * 0.6), base_y + base_h + 12),
+		fill=col,
+	)
+
+	# Hammered-metal pock-marks on the anvil face — soft circular dabs.
+	for _ in range(28):
+		x = cx + r.randint(-top_w // 2 + 10, top_w // 2 - 10)
+		y = top_y + r.randint(4, top_h - 4)
+		col = (90, 96, 104, r.randint(100, 170))
+		draw.ellipse((x - 3, y - 3, x + 3, y + 3), fill=col)
+
+	# Crossed hammer above the anvil — short-handled smith's hammer angled down-left
+	# so its head meets the anvil face. Painted in two passes (handle, head) so
+	# brass-banded head reads against the brown haft.
+	handle_len = int(W * 0.42)
+	handle_ang = math.radians(-30)  # pointing up-right from grip to head
+	grip_x = cx - int(math.cos(handle_ang) * handle_len * 0.55)
+	grip_y = cy + int(math.sin(handle_ang) * handle_len * 0.55) + int(W * 0.02)
+	head_x = cx + int(math.cos(handle_ang) * handle_len * 0.45)
+	head_y = cy - int(math.sin(handle_ang) * handle_len * 0.45) - int(W * 0.10)
+
+	# Handle (oak haft) — series of soft brown blobs with grain shading.
+	for i in range(34):
+		t = i / 34.0
+		x = int(grip_x + (head_x - grip_x) * t)
+		y = int(grip_y + (head_y - grip_y) * t)
+		thickness = int(7 * (0.55 + 0.45 * math.sin(t * math.pi)))
+		col = (BEAR_BROWN[0], BEAR_BROWN[1], BEAR_BROWN[2], 240)
+		draw.ellipse((x - thickness, y - thickness, x + thickness, y + thickness), fill=col)
+	# Grip wrap (leather binding) at the bottom — three darker bands.
+	for band in range(3):
+		t = 0.06 + band * 0.07
+		x = int(grip_x + (head_x - grip_x) * t)
+		y = int(grip_y + (head_y - grip_y) * t)
+		col = (40, 26, 18, 230)
+		draw.ellipse((x - 8, y - 8, x + 8, y + 8), fill=col)
+
+	# Hammer head — broad block of dark iron with brass-band collar where head
+	# meets the haft, plus a brighter top edge to read as forged steel.
+	head_w = int(W * 0.16)
+	head_h = int(W * 0.10)
+	perp = handle_ang + math.pi / 2
+	def _rotated_rect(rx, ry, rw, rh, ang):
+		hx = rw / 2.0
+		hy = rh / 2.0
+		corners = [(-hx, -hy), (hx, -hy), (hx, hy), (-hx, hy)]
+		out = []
+		for (px, py) in corners:
+			nx = math.cos(ang) * px - math.sin(ang) * py
+			ny = math.sin(ang) * px + math.cos(ang) * py
+			out.append((rx + nx, ry + ny))
+		return out
+	head_pts = _rotated_rect(head_x, head_y, head_w, head_h, handle_ang)
+	col = (54, 58, 66, 250)
+	draw.polygon(head_pts, fill=col)
+	# Brass collar where head joins haft.
+	collar_x = head_x - int(math.cos(handle_ang) * head_w * 0.45)
+	collar_y = head_y + int(math.sin(handle_ang) * head_w * 0.45)
+	collar_pts = _rotated_rect(collar_x, collar_y, head_w * 0.18, head_h * 1.05, handle_ang)
+	col = (BRASS[0], BRASS[1], BRASS[2], 250)
+	draw.polygon(collar_pts, fill=col)
+	# Forged-steel top edge highlight on hammer head.
+	hi_pts = _rotated_rect(head_x, head_y - head_h * 0.30, head_w * 0.85, 3, handle_ang)
+	col = (180, 188, 198, 220)
+	draw.polygon(hi_pts, fill=col)
+
+	# Sparks — bright ember dabs radiating outward from impact point on the
+	# anvil face just below the hammer head. Placed asymmetrically with random
+	# scatter so the painterly forge moment reads as a single instant.
+	impact_x = cx - int(W * 0.04)
+	impact_y = top_y + 2
+	for _ in range(22):
+		ang = r.uniform(-math.pi * 0.85, -math.pi * 0.15)  # upper hemisphere
+		rr = r.uniform(W * 0.02, W * 0.18)
+		x = impact_x + int(math.cos(ang) * rr)
+		y = impact_y + int(math.sin(ang) * rr)
+		size = r.randint(2, 5)
+		# Hot core (bright sunset gold) over a wider amber halo.
+		col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], r.randint(80, 140))
+		draw.ellipse((x - size * 2, y - size * 2, x + size * 2, y + size * 2), fill=col)
+		col = (255, 230, 160, r.randint(200, 250))
+		draw.ellipse((x - size, y - size, x + size, y + size), fill=col)
+	# A single bigger glow dab at the actual impact point — anchors the eye.
+	col = (255, 200, 80, 220)
+	draw.ellipse((impact_x - 14, impact_y - 14, impact_x + 14, impact_y + 14), fill=col)
+	col = (255, 240, 200, 250)
+	draw.ellipse((impact_x - 6, impact_y - 6, impact_x + 6, impact_y + 6), fill=col)
+
+
 CRESTS = {
 	"first_steps":   {"seed": 9101, "base_dark": (60, 90, 45, 255),  "base_light": MOSS_LT,              "rim": BRASS,             "painter": _paint_sprout},
 	"pack_thinner":  {"seed": 9102, "base_dark": (50, 60, 70, 255),  "base_light": (130, 145, 160, 255), "rim": SILVER,            "painter": _paint_wolf_head},
 	"goblin_bane":   {"seed": 9103, "base_dark": WINE,                "base_light": (180, 60, 50, 255),  "rim": BRASS,             "painter": _paint_crossed_swords},
 	"trusted_three": {"seed": 9104, "base_dark": PARCHMENT_DK,        "base_light": PARCHMENT,           "rim": (110, 80, 30, 255),"painter": _paint_three_rings},
 	"realm_warden":  {"seed": 9105, "base_dark": SUNSET_DK,           "base_light": SUNSET_GOLD,         "rim": (110, 60, 20, 255),"painter": _paint_keep},
+	"first_forge":   {"seed": 9106, "base_dark": (90, 40, 18, 255),  "base_light": (200, 110, 50, 255), "rim": BRASS,            "painter": _paint_anvil_hammer},
 }
 
 

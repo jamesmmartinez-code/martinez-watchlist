@@ -70,6 +70,7 @@ const ACHIEVEMENTS: Dictionary = {
 		"name": "First Forge",
 		"desc": "Bring Edda to the anvil — feel her hammer.",
 		"icon": "🔨",
+		"icon_path": "res://assets/icons/achievements/first_forge.png",
 		"title_text": "the Forged",
 		"title_priority": 25,
 		"predicate": {"kind": "world_flag", "flag": "first_reforge_done"},
