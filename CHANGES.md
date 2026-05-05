@@ -1,3 +1,204 @@
+## 2026-05-05T16:41Z — BUILDER run 18 (keystone close-out)
+
+I'm building: `wolf_form_with_hala` quest entry — THIRD `dire_wolves`
+reducer, third leg of the wolf-pressure curve (0.3 → 0.2), and the
+keystone that finally activates Hala's pre-authored warm_flag tier and
+the `wolf_tamer` Achievement.
+
+THEME §X cited: §1 (high fantasy, NPC-as-mentor), §7 (warm gravitas
+dialogue voice — "Hala nods. The form holds."), §10 (no new world
+primitive — pure data add to existing QUEST_CATALOG).
+
+Mood board panel: not applicable (no `mood-boards/` in repo this run).
+Visual canon held by reuse — no new model, no new texture, no new color.
+
+### Commit
+*Auto: wolf_form_with_hala — Hala's keystone quest closes the
+dire_wolves curve and unlocks the Wolf-Tamer title.*
+
+### Phase reached + feature shipped
+**Phase: Faction-curve completion — `dire_wolves` is now the FIRST
+faction with all three reducers landed.** Goblin curve still has 2 of 3
+(Maeve cleansing + Mara ears; no third reducer yet). The wolf line
+becomes the canonical reference shape: 3 reducers × 0.1 = 0.3 of a 0.5
+fresh-save scalar player-reachable in a single save, lighting up two
+of the three run-6 spawn cliffs (4→3 at 0.5, 3→2 at 0.3) and leaving
+the third cliff (2→1 at 0.15) as a single-quest hook for downstream.
+
+### 5-output check
+
+(i) **Integration** — purely additive, single file:
+- `World.gd` `QUEST_CATALOG` gets one new key `wolf_form_with_hala`
+  matching the schema of the 4 existing entries.
+- Pre-existing readers WIRE THEMSELVES with no edits required:
+  - `World._quest_for_role("trainer")` already called from
+    `WorldBuilder` Hala dialogue resolution — was returning {} until
+    today, now returns this entry. Hala's pitch line authored in
+    run 18 (`"Wolves still circle the road. Take down 4 — you'll
+    learn the form by doing."`) was a promise the engine couldn't
+    keep; it's keepable now.
+  - `Player.on_enemy_killed("wolf")` already handles `kind:"kill"`
+    quests with `target:"wolf"` — no Player.gd edit needed.
+  - `World.apply_consequence()` is the single resolver — sets the
+    npc_flag `wolf_form_taught` on Hala, drops `dire_wolves` pressure
+    -0.1, sets world_flag `hala_wolf_form_done`, fires the toast.
+  - `Achievements.wolf_tamer` predicate (`all_npc_flags`:
+    Lyra/trusts_player + Roan/first_bounty_done + Hala/wolf_form_taught)
+    was unreachable until today; this quest's completion sets the
+    third leg.
+  - Dialogue tier 2 (`warm_flag: wolf_form_taught`) on Hala
+    fires immediately on next interact — 4 warm_lines authored run 18.
+
+(ii) **Schema** — no new primitive, all existing fields:
+- Quest schema: `giver`, `actor`, `role`, `kind`, `target`, `needed`,
+  `title`, `text`, `xp_reward`, `gold_reward`, `motivation`,
+  `location`, `urgency`, `world_trigger`, `consequence` — same as
+  all 4 prior entries. No new keys, no new types.
+- Consequence: `faction`, `pressure_delta`, `npc_flag`, `world_flag`,
+  `toast` — same as the 4 prior reducers.
+- World flag naming: `hala_wolf_form_done` follows the established
+  snake_case present-tense convention (`mara_bounty_paid`,
+  `lyra_potion_brew`, `roan_bounty_paid`, `whisperwood_safer`).
+- Reward shape (`xp_reward: 90, gold_reward: 35`) is XP-heavy /
+  coin-light — first kill quest with that ratio. Befits a teacher
+  who trades knowledge over coin (Mara's quest is the inverse:
+  60 xp / 90 g).
+SYSTEM_REGISTRY.md was already authored in run 18 with this row in
+place; the code now MATCHES the documentation, not the other way
+around. (Pattern note: documentation-first authoring is OK as long
+as the keystone code lands within one run — leaving it longer
+creates phantom state where readers exist for unreachable writes.)
+
+(iii) **Feedback** — visible in-game on a single grind:
+- Walk into Briarwood as a fresh save. Talk to Trainer Hala (-10, 0,
+  -10). Her pitch line already reads as a quest offer (run 18 prior:
+  "Wolves still circle the road. Take down 4 — you'll learn the
+  form by doing.") — accept now resolves to a real quest.
+- Quest panel pitch: "Wolf Form, Hala's Drill — Trainer Hala wants
+  4 wolves felled — learn the form by doing"
+- Walk into Whisperwood. Kill 4 wolves. Each kill ticks the quest
+  via the existing `kind:"kill" target:"wolf"` `on_enemy_killed`
+  hook in `Player.gd`.
+- Return to Hala. Quest completes; toast: "🥋 Hala nods. The form
+  holds." Reward: 90 xp + 35 gold.
+- Hala's dialogue flips on the very next interaction to her
+  pre-authored warm_flag tier (4 lines: "Form held. Few I've taught
+  hold it under teeth. Few." etc.).
+- IF the player has already done Lyra's pelts + Roan's fangs, the
+  `wolf_tamer` Achievement unlocks at the same instant
+  (`apply_consequence` calls `_check_achievements` after writing
+  the npc_flag). Title "the Wolf-Tamer" floats above player's
+  head, priority 35, auto-equipping above "Wolf-Friend" (30).
+- Wolf pack: drops by 1 per cliff. With all three reducers landed
+  the pack is 2 wolves (down from 4 fresh-save), each ~21% faster
+  and ~28% slower-attacking — the visible "wiser predators" beat.
+
+(iv) **Eval** — Paren/quote balance validated PER-EDIT:
+- `World.gd` per-edit delta: +18/+18 `()`, +2/+2 `[]`, +3/+3 `{}`.
+  All three pairs balanced WITHIN the diff. (The file's overall
+  `[]` count differs by 1 from `]` even pre-edit — a single
+  unbalanced `]` in an existing comment that predates this run;
+  not introduced or aggravated by this edit.)
+- Tier resolution invariant unchanged: warm_flag tier (Tier 2) only
+  fires if JSON tree (Tier 1) misses; Hala has `use_json_dialogue:
+  true` and a JSON file at `data/dialogue/trainer_hala.json` (run 11
+  lore + integrator cherry-pick), so the JSON resolves first when
+  its predicates match — warm_lines surface only on JSON miss. No
+  tier ordering changes.
+- Achievement predicate already validated by run 18: the
+  `all_npc_flags` evaluator iterates entries and short-circuits on
+  the first miss, so today's npc_flag write is the third (and last)
+  needed leg — no new predicate kind, no new evaluator.
+- World-flag namespace: `hala_wolf_form_done` is unique vs. the 4
+  prior world_flags (greppable: 0 prior matches in `world_flags`).
+- Drop-table weights: untouched. Wolf table still 100, fangs/pelts
+  drop in parallel — a single ~13-15-kill grind covers all three
+  wolf quests if the player accepts in series.
+
+(v) **2+ hooks** for downstream:
+1. **Hala visit-memory tier** — Hala already has memory_visits_min: 3
+   (run 16). With `wolf_form_taught` flag now flippable, the memory
+   tier (Tier 5) becomes the natural fall-through when the player
+   trains repeatedly without progress. Single data edit only —
+   no code change.
+2. **Fourth `dire_wolves` reducer (run-6 third cliff)** — pressure
+   now reaches 0.2 at full-clear. The run-6 third cliff (< 0.15) is
+   ONE more 0.05+ reducer away (e.g. Stablemaster Roan teaching a
+   horseback-riding evasion technique, OR an Innkeeper Bram quest
+   feeding the village wolfhounds). Single new quest entry, same
+   pattern.
+3. **Maeve-mentions-Hala dialogue line** — Maeve's
+   `warm_world_flag` could speak `hala_wolf_form_done`: "Old Hala
+   has a new student worth bragging on. The road remembers." Pure
+   data, ZERO code changes. Closes the third cross-NPC
+   flag-recognition pattern (Maeve ↔ Mara, Maeve ↔ Lyra existing).
+4. **`hala_wolf_form_done` painterly-toast variants** — the toast
+   could randomize between 3 lines for re-runs: "🥋 Hala nods. The
+   form holds." / "🥋 The drill is in your blood now." / "🥋 Old
+   Hala's mark on you. Wear it." — single Toast.gd update
+   (random_toast variant).
+5. **"Quiet Whisperwood" achievement** — `dire_wolves` < 0.15
+   would be the natural FIRST `faction_below: 0.15` predicate
+   (existing Achievements use 0.5 thresholds). Title "the
+   Whisperer" at priority 45 (above Wolf-Tamer 35, below
+   Goblin-Bane 40). Single Achievements.gd row.
+6. **Title display when no faction warmth applies** — with
+   Wolf-Tamer auto-equipping, the title auto-equipper now has its
+   FIRST 3-flag-conjunction trigger. Worth a Polisher pass to
+   verify the title-priority sort still picks Wolf-Tamer (35) over
+   Forged (25) and Apprentice (10) when all three are unlocked.
+
+### Player-reachable state this run
+
+- Walk into Briarwood as a fresh save (level 1+). Visit Trainer Hala
+  at the training field (0, 0, -10). Her pitch reads: "Wolves still
+  circle the road. Take down 4 — you'll learn the form by doing."
+- Accept the drill. Walk into Whisperwood. Wolves count toward
+  the kill quest as the player fells them — same `on_enemy_killed`
+  hook used by Maeve's `whisperwood_cleansing` (kind: "kill",
+  target: "wolf").
+- Return to Hala. Quest completes; toast appears; Hala's dialogue
+  flips to the warm_flag tier on the very next interaction. Wolf
+  faction pressure drops 0.5 → 0.4 (or 0.4 → 0.3, or 0.3 → 0.2
+  depending on Lyra/Roan completion). Wolf pack visibly thins on
+  next world reload.
+- IF Lyra + Roan are also done: `wolf_tamer` Achievement unlocks
+  the same frame, "the Wolf-Tamer" title floats above the player.
+
+### Files changed
+- `eldoria-godot/scripts/World.gd` (+72 lines: `wolf_form_with_hala`
+  quest entry + 47-line authoring comment documenting the keystone
+  pattern)
+- `WORLD_STATE.md` (Resolved 2026-05-05 run-18 entry under the
+  Active Hooks block)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **Maeve-mentions-Hala dialogue line** — single `warm_world_flag:
+   "hala_wolf_form_done"` + 4 lines on Maeve's WorldBuilder.NPCS
+   entry. Pure data. Closes the Maeve cross-reference pattern for
+   the wolf curve (she already speaks `mara_bounty_paid` / could
+   speak `roan_bounty_paid` and now `hala_wolf_form_done`).
+2. **Fourth `dire_wolves` reducer** — final wolf reducer trips the
+   run-6 third cliff (2 → 1 wolves). Same pattern as Hala's quest,
+   different role (Bram's wolfhound feeding, OR Roan's riding
+   evasion drill, OR a fresh NPC). Lights up the FIVE-stage
+   wolf-pressure curve fully.
+3. **"Quiet Whisperwood" / Whisperer achievement** —
+   `faction_below: 0.15` predicate, first FAR-cliff achievement.
+   Title at priority 45.
+4. **`hala_wolf_form_done.png` painterly icon** — artist agent
+   territory. Today the achievement uses the wolf_tamer crest;
+   the world_flag itself has no icon.
+5. **Goblin curve symmetry** — `whisperwood_goblins` has only 2
+   reducers (Maeve cleansing + Mara ears). A third (e.g. Edda
+   forging anti-goblin steel, OR Bram's feast for the militia)
+   would parity the wolf curve and unlock a "Goblin Bane" cliff
+   achievement.
+
 ## 2026-05-05T14:08Z — ARCHITECT refactor (Job 2 follow-through)
 
 Acted on the `Label3D.new()` ×19 audit finding from the previous run

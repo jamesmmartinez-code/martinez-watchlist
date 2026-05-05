@@ -148,6 +148,30 @@ run easier — what's the *next* thing that compounds?)
   moment the quest turns in. `line` field updated to the bounty pitch
   ("Wolves nip my mares again. Bring me 5 wolf fangs and the road's
   safer.") matching the Mara/Lyra offer-line convention.
+- ✅ **Resolved 2026-05-05 (run 18 — Builder):** `wolf_form_with_hala`
+  quest shipped — THIRD `dire_wolves` reducer (`-0.1`). Closes the
+  authoring gap left by the previous run: Hala's WorldBuilder pitch
+  line, `warm_flag: wolf_form_taught`, and four `warm_lines` were
+  ALREADY shipped, AND `Achievements.wolf_tamer` predicate was wired
+  referencing `wolf_form_taught` on Hala — but `World.QUEST_CATALOG`
+  had no `role: trainer` entry, so the engine could never deliver the
+  pitched quest and the achievement could never trip. Single edit in
+  World.gd adds the entry with values matching SYSTEM_REGISTRY.md
+  run-18 documentation (90 xp / 35 g / `hala_wolf_form_done`
+  world_flag). Wolf pressure now tracks 0.5 → 0.4 (Lyra) → 0.3 (Roan)
+  → 0.2 (Hala), trips the run-6 SECOND cliff (3 → 2 wolves) on the
+  full path. The two surviving wolves are ~21% faster (run-8 chase
+  lerp) and ~28% slower-attacking (run-7 cooldown lerp) — older,
+  wiser, hungrier. With Lyra+Roan+Hala done, `Achievements.wolf_tamer`
+  finally resolves TRUE — Owen unlocks "the Wolf-Tamer" title at
+  priority 35, auto-equipping above "Wolf-Friend" (30). Hala's
+  authored `warm_flag` tier 2 lines (run 18 prior) light up on the
+  very next training visit. Closes the FIRST quest where dialogue,
+  warm-flag tier, achievement predicate, and reward economy were
+  all pre-authored across multiple files BEFORE the keystone quest
+  entry — a useful pattern for downstream "data-first" runs (write
+  the registry / dialogue / achievement first, drop the World.gd
+  entry last).
 - ✅ **Resolved 2026-05-04 (run 8):** Adaptive `Enemy.gd.chase_speed` is
   now a FOURTH reader of `World.faction_pressure(faction_id)`. Multiplicative
   band — each enemy kind's WorldBuilder-assigned chase_speed lerps up to
