@@ -1415,11 +1415,13 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 		mat.albedo_color = color
 		mat.emission_enabled = true
 		mat.emission = color
-		mat.emission_energy_multiplier = 2.4
+		# REFINE: visual — Crystal Caves — push shards toward stained-glass:
+		# stronger emission + a touch more translucent so the inner light leaks.
+		mat.emission_energy_multiplier = 3.2
 		mat.metallic = 0.20
 		mat.roughness = 0.18
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_color.a = 0.85
+		mat.albedo_color.a = 0.72
 		shard.material_override = mat
 		var ang: float = (float(i) / float(shard_count)) * TAU + rng.randf_range(-0.4, 0.4)
 		var r_off: float = rng.randf_range(0.0, 0.4) * base_scale
@@ -1467,8 +1469,10 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	dm.radius = 24.0; dm.height = 22.0
 	dome.mesh = dm
 	var dome_mat := StandardMaterial3D.new()
-	dome_mat.albedo_color = Color(0.06, 0.08, 0.14)
-	dome_mat.roughness = 0.95
+	# REFINE: visual — Crystal Caves — push interior shell darker and more matte
+	# so the cave feels oppressively dim and the crystal emissives carry the look.
+	dome_mat.albedo_color = Color(0.04, 0.05, 0.10)
+	dome_mat.roughness = 0.98
 	dome_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render the inside
 	dome.material_override = dome_mat
 	dome.position = Vector3(0, 4.0, 0)
@@ -1499,29 +1503,36 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	beacon_mat.albedo_color = crystal_blue
 	beacon_mat.emission_enabled = true
 	beacon_mat.emission = crystal_blue
-	beacon_mat.emission_energy_multiplier = 3.0
+	# REFINE: visual — Crystal Caves — beacon throws further so the cave reads
+	# as a destination from the village edge (helps Alden spot the entrance).
+	beacon_mat.emission_energy_multiplier = 4.0
 	beacon.material_override = beacon_mat
 	beacon.position = Vector3(0, 8.0, 22.0)
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
 	beacon_light.light_color = crystal_blue
-	beacon_light.light_energy = 2.5
-	beacon_light.omni_range = 14.0
+	# REFINE: visual — Crystal Caves — beacon light reaches the village treeline
+	beacon_light.light_energy = 3.2
+	beacon_light.omni_range = 18.0
 	beacon_light.position = Vector3(0, 8.0, 22.0)
 	caves.add_child(beacon_light)
 
 	# ── Ambient blue cave light ──
 	var amb := OmniLight3D.new()
 	amb.light_color = crystal_blue
-	amb.light_energy = 0.85
+	# REFINE: visual — Crystal Caves — dimmer chamber ambient (was 0.85) so the
+	# crystal clusters do the heavy lifting; cave reads as cave, not as lit room.
+	amb.light_energy = 0.62
 	amb.omni_range = 28.0
 	amb.position = Vector3(0, 9.0, 0)
 	caves.add_child(amb)
 	# Secondary deep-violet light at the boss room end
 	var boss_amb := OmniLight3D.new()
 	boss_amb.light_color = crystal_violet
-	boss_amb.light_energy = 1.6
-	boss_amb.omni_range = 18.0
+	# REFINE: visual — Crystal Caves — stronger violet pool around the Guardian;
+	# helps the boss room read as cinematic without changing combat numbers.
+	boss_amb.light_energy = 2.4
+	boss_amb.omni_range = 24.0
 	boss_amb.position = Vector3(0, 4.0, -16.0)
 	caves.add_child(boss_amb)
 
@@ -1531,8 +1542,10 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	pm_floor.top_radius = 22.0; pm_floor.bottom_radius = 22.0; pm_floor.height = 0.4
 	floor_mesh.mesh = pm_floor
 	var floor_mat := StandardMaterial3D.new()
-	floor_mat.albedo_color = Color(0.18, 0.20, 0.26)
-	floor_mat.roughness = 0.95
+	# REFINE: visual — Crystal Caves — cooler, wetter-looking stone floor.
+	# Lower roughness so the crystal glow catches a faint sheen on the rock.
+	floor_mat.albedo_color = Color(0.12, 0.14, 0.20)
+	floor_mat.roughness = 0.78
 	floor_mesh.material_override = floor_mat
 	floor_mesh.position = Vector3(0, 0.05, 0)
 	caves.add_child(floor_mesh)
@@ -1586,8 +1599,10 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 		sm2.radius = 0.20; sm2.height = 0.32
 		skull.mesh = sm2
 		var sklm := StandardMaterial3D.new()
-		sklm.albedo_color = Color(0.85, 0.80, 0.72)
-		sklm.roughness = 0.85
+		# REFINE: visual — Crystal Caves — older / chalkier bone tint reads
+		# clearer under the cool blue ambient than the warmer arena-skull color.
+		sklm.albedo_color = Color(0.92, 0.86, 0.74)
+		sklm.roughness = 0.92
 		skull.material_override = sklm
 		skull.position = Vector3(rng.randf_range(-1.4, 1.4), 0.18, -16.0 + rng.randf_range(-1.4, 1.4))
 		caves.add_child(skull)

@@ -144,3 +144,15 @@ loops feel like the world relents — both child-friendly outcomes per Rule 6.
   faster (Owen gets the harder fight he wants), stressed-faction enemies
   give more breathing room (Alden gets the recovery valve). One scalar,
   two outputs, both player-models served.
+
+- **2026-05-04 (polish run)** — Polished **visual — Crystal Caves atmosphere** (no new functions; pure number/color tweaks tagged `# REFINE: visual — Crystal Caves`). The dungeon shipped recently with placeholder lighting that read as "lit room with crystals" rather than "oppressive cavern dimly powered by crystals." Changes in `WorldBuilder.gd`:
+  - **Cavern dome** albedo (0.06, 0.08, 0.14) → (0.04, 0.05, 0.10), roughness 0.95 → 0.98 — interior shell now darker and more matte so emissive crystals carry the room.
+  - **Entrance beacon** emission 3.0 → 4.0; beacon OmniLight energy 2.5 → 3.2, omni_range 14 → 18 — the beacon now actually beacons from the Whisperwood treeline (helps **Alden** spot the cave entrance from his exploration wanders).
+  - **Chamber ambient** OmniLight energy 0.85 → 0.62 (range unchanged at 28m) — dims the room so the crystal clusters do the lighting work.
+  - **Boss-room violet** OmniLight energy 1.6 → 2.4, omni_range 18 → 24 — stronger violet pool around the Crystal Guardian; boss room reads as cinematic. No combat numbers touched.
+  - **Cave floor** albedo (0.18, 0.20, 0.26) → (0.12, 0.14, 0.20), roughness 0.95 → 0.78 — cooler, faintly damp gloss so crystal glow catches a sheen on the rock.
+  - **Crystal cluster shards** emission_energy_multiplier 2.4 → 3.2, alpha 0.85 → 0.72 — pushes them toward stained-glass: stronger glow + more translucent so inner light leaks through.
+  - **Cave skull pile** albedo (0.85, 0.80, 0.72) → (0.92, 0.86, 0.74), roughness 0.85 → 0.92 — chalkier ivory tint reads clearer under cool blue ambient than the warmer arena-skull color (boss-arena skull pile in `_build_boss_arena` is intentionally untouched — different lighting context).
+  - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, the chamber ambient (`amb.light_energy`) is the right knob to *temporarily* lift on respawn-after-death (lerp 0.62 → 0.85 over ~6s) — gives a stressed player one round of clearer footing without changing the cave's resting mood. Pure number knob, fits the existing rule of thumb.
+
+  Why this serves both kids: the darker, crystal-driven look gives **Alden** (frog kid, exploration affinity) a richer "wow, look at this place" beat without raising any combat difficulty. The brighter beacon and violet boss pool give **Owen** (racer / mastery affinity) a more cinematic boss-room reveal — boss arenas should feel like arenas. None of the cave's gameplay numbers (HP, dmg, XP, gold, aggro, telegraph) changed; this is pure mood polish.
