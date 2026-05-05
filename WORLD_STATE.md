@@ -5,6 +5,29 @@ and *what has happened*. Update this file whenever the world changes.
 
 ## World Canon
 
+### Foundational Lore (canon, see `eldoria-godot/lore/world.md`)
+- **The Sundering** — cataclysm that shaped the world. The Pale Wyrm broke
+  against Vellum the Patient Stone; the mountains are Vellum's spine, the
+  Whisperwood is the Wyrm's exhalation, the Crystal Caves are the wound.
+  The Pale Wyrm sleeps but is not dead. (Connects to: existing `frost_saber`
+  flavor, `dragonfang`/`dragonscale` legendary tier.)
+- **The Three Crowns** — Iron Crown (mortal kings, distant south), Antler
+  Crown (fey Stag-Court, deep Whisperwood), Stone Crown (mountain clans of
+  the High Steppe). Briarwood pays tribute to none of them.
+- **The Wild Pantheon** — Brigid the Forge-Mother (Smith Edda's anvil bears
+  her mark), Thiar the Stag (hunters' god), Vellum the Patient Stone
+  (oaths), the Hollow King (winter), Erris of the Two Roads (chance,
+  travel, songs).
+- **The Calendar** — 12 moons of 28 nights. Honeysong (midsummer) and
+  Longnight (midwinter) are the two great festivals.
+- **The Tongues** — Common (trade), Old Faerie (rare; Stag-Court), Goblin
+  Cant (broken descendant of Old Faerie — the goblins were once *something
+  else*), Stone-Tongue (mountain clans).
+- **Old Faerie words now in canon** — `thirre` (memory of stone, a place
+  where time pools), `ai-velin` (the long path / starlight / a life from
+  cradle to cairn), `kerrithen` (to lay something down so the land may
+  hold it). NPCs and codex entries should use these consistently.
+
 ### Geography
 - **Briarwood Village** (origin, friendly hub). 7 named NPCs, 6 buildings,
   cobble path network, well, pond, windmill, market stalls, lanterns, banners,
