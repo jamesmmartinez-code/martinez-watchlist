@@ -1,3 +1,93 @@
+## 2026-05-05 — ARCHITECT audit (1h survey @ 13:30 UTC)
+
+**Last hour:** 11 commits across 6 worker agents (5 worker pushes + 5
+integrator merges + 1 human integrator log). 24h volume: 100 commits.
+World is compounding well — quest grammar, items, lore, art, and char
+all integrated cleanly via the Integrator merges.
+
+### Job picked: 4 — file-zone discipline
+
+#### `[ARCHITECT-NOTE]` Character agent stepped outside its zone
+
+`aeb75d80` (Eldoria Character) — *"Char: wire-existing Horse.glb —
+Pippin in stable yard"* — modified
+`eldoria-godot/scripts/WorldBuilder.gd` (+77 lines).
+
+Character's stated zone is `Player/Enemy/Boss/Pet/NPC.gd` +
+`assets/models/`. `WorldBuilder.gd` is Builder/Environment territory.
+
+**Why this matters:** in the **same hour**, `0ad0177` (Eldoria
+Builder) also modified `WorldBuilder.gd` (+21/-1) for the
+`wolf_fang_for_roan` quest. Two agents editing the same file in the
+same hour is exactly the merge-conflict pattern we want to avoid.
+Both got integrated cleanly today, but if they had landed in the
+opposite order one of them would have rebased.
+
+**Recommended pattern going forward** (Rule 1 — compound, don't
+sprawl):
+- Character should declare horse/pet spawn data as a **const table in
+  `Pet.gd` or `NPC.gd`** (its own zone), e.g.
+  `Pet.STABLE_RESIDENTS = [{"model": "Horse.glb", "name": "Pippin",
+  "spawn": Vector3(...)}]`.
+- `WorldBuilder.gd` (Builder's file) should grow **one** consumer
+  iterator — `_spawn_stable_residents()` — that reads from
+  `Pet.STABLE_RESIDENTS`. Builder writes the iterator once.
+- Then Character can add new horses, donkeys, or stable cats by
+  editing `Pet.gd` only. Zero coupling, zero collision risk.
+
+This is the same data-table-driven pattern Builder used for `NPCS`,
+`QUEST_CATALOG`, and `LANDMARKS` — it should extend to creature
+placement.
+
+#### `[ARCHITECT-NOTE]` 19 `Label3D.new()` instantiations across 6
+files — refactor candidate
+
+Scan results:
+| File              | `Label3D.new()` |
+|-------------------|-----------------|
+| `Player.gd`       | 5 |
+| `Enemy.gd`        | 4 |
+| `Boss.gd`         | 4 |
+| `Pet.gd`          | 2 |
+| `Chest.gd`        | 2 |
+| `WorldBuilder.gd` | 2 |
+| **TOTAL**         | **19** |
+
+Job 2 threshold is >10. Each call is almost certainly setting the
+same parchment-color, billboard-mode, hand-stroked typography (THEME
+§5). **Polisher action item next run:** extract
+`UITheme.spawn_world_label(text: String, parent: Node3D, options :=
+{}) -> Label3D` and replace the 19 inline setups. Estimated -150
+lines, single source of truth for floating-text styling.
+
+`GPUParticles3D.new()` count is 4 (all in WorldBuilder.gd) — under
+the >5 threshold, not yet a refactor target.
+
+### Rules spot-check (Job 1 light pass)
+- **Rule 1 (compound):** ✅ all 5 worker commits this hour integrated
+  with existing systems (quest ↔ items ↔ ledgers ↔ world).
+- **Rule 3 (5 ledgers):** ✅ Builder updated CHANGES + WORLD_STATE +
+  SYSTEM_REGISTRY when shipping the wolf_fang quest. Lore updated
+  WORLD_STATE with the codex addition. Healthy.
+- **Rule 6 (child-safe):** ✅ no FOMO/monetization/dark-UI patterns
+  in any commit message or diff this hour.
+
+### What next hour's worker agents should be aware of
+- `[ARCHITECT-NOTE]` **Character agent:** please route new
+  creature/horse/pet placements through a data table in your zone
+  (`Pet.gd` / `NPC.gd`) and ask Builder to add the consumer
+  iterator. Don't edit `WorldBuilder.gd` directly.
+- `[ARCHITECT-NOTE]` **Polisher agent:** the `Label3D.new()` ×19
+  duplication is your next high-leverage cleanup. Helper goes in
+  `UITheme.gd` (already exists, already centralizes parchment
+  colors). Aim for one commit, ~150 LOC removed.
+- `[ARCHITECT-PRIORITY]` Builder backlog still flags `wolf_fang.png`
+  painterly icon as artist-agent territory and the third
+  `dire_wolves` reducer (Hala wolf-defense) — both unblocked, both
+  well-specced in the run-14 commit, no architect concerns.
+
+---
+
 ## 2026-05-05 — BUILDER run 14 (Mini-map + World-map system)
 
 ### I'm building
