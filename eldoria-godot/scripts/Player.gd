@@ -299,9 +299,14 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
-		max_hp += 14
+		# REFINE: balance — chunkier per-level HP gain (14 → 18) so Alden has more
+		# survivability headroom across a 30-kill session, and Owen's "I just leveled"
+		# beat reads as a meaningful step rather than a sliver.
+		max_hp += 18
 		hp = max_hp
-		max_mp += 8
+		# REFINE: balance — slightly bigger MP step (8 → 10) so caster-curious play
+		# doesn't run dry mid-fight after a few level-ups.
+		max_mp += 10
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		# Level-up celebration popup
@@ -319,7 +324,11 @@ func gain_xp(amount: int) -> void:
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
-	return 100 + level * 60 + level * level * 8
+	# REFINE: balance — eased curve (100→85, level*60→*55, level²*8→*7).
+	# Cuts ~12% off every gate so the first 4 level-ups arrive faster and a
+	# 30-mixed-kill grind reliably lands at level 3-4. Late-game still scales
+	# (quadratic term preserved, just gentler).
+	return 85 + level * 55 + level * level * 7
 
 func accept_quest(quest: Dictionary) -> void:
 	active_quest = quest.duplicate()

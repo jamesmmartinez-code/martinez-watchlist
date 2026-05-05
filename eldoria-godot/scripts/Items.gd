@@ -77,20 +77,25 @@ const ITEMS = {
 # Drop tables — used by Enemy on death to roll loot
 const DROP_TABLE = {
 	"goblin": [
-		{"id":"hp_potion_s", "weight":35, "qty":[1,1]},
-		{"id":"goblin_ear",  "weight":40, "qty":[1,1]},
-		{"id":"rusty_sword", "weight":12, "qty":[1,1]},
-		{"id":"iron_sword",  "weight":7,  "qty":[1,1]},
+		# REFINE: balance — drop table tuned for upgrade momentum across a 30-kill
+		# grind. Trimmed pots/junk slightly, doubled steel_blade chance from 2 → 4.
+		{"id":"hp_potion_s", "weight":36, "qty":[1,1]},
+		{"id":"goblin_ear",  "weight":38, "qty":[1,1]},
+		{"id":"rusty_sword", "weight":8,  "qty":[1,1]},
+		{"id":"iron_sword",  "weight":9,  "qty":[1,1]},
 		{"id":"cloth",       "weight":8,  "qty":[1,1]},
 		{"id":"leather",     "weight":4,  "qty":[1,1]},
-		{"id":"steel_blade", "weight":2,  "qty":[1,1]},
+		{"id":"steel_blade", "weight":4,  "qty":[1,1]},
 	],
 	"wolf": [
-		{"id":"hp_potion_s", "weight":25, "qty":[1,2]},
-		{"id":"wolf_pelt",   "weight":50, "qty":[1,1]},
-		{"id":"leather",     "weight":10, "qty":[1,1]},
-		{"id":"chainmail",   "weight":4,  "qty":[1,1]},
-		{"id":"steel_blade", "weight":3,  "qty":[1,1]},
+		# REFINE: balance — wolf table tilted slightly toward gear (chainmail/
+		# steel_blade) since they're the mid-tier challenge enemy. Total weight
+		# unchanged at 92.
+		{"id":"hp_potion_s", "weight":22, "qty":[1,2]},
+		{"id":"wolf_pelt",   "weight":48, "qty":[1,1]},
+		{"id":"leather",     "weight":12, "qty":[1,1]},
+		{"id":"chainmail",   "weight":6,  "qty":[1,1]},
+		{"id":"steel_blade", "weight":4,  "qty":[1,1]},
 	],
 	"goblin_warlord": [
 		{"id":"frost_saber",   "weight":15, "qty":[1,1]},
