@@ -71,6 +71,8 @@ signal stats_changed
 signal interact_pressed
 
 func _ready() -> void:
+	# PX hardening 2026-05-05: run input handler even if World pauses or scene gets paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	current_speed = walk_speed
 	add_to_group("player")
 	add_to_group("quest_listeners")
@@ -209,6 +211,18 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _input(event: InputEvent) -> void:
+	# ─── PANIC KEYS — fire BEFORE is_dead early-return AND before any other gating ───
+	# PX hardening 2026-05-05: kids reported "nothing works when stuck". Root cause:
+	#   (a) is_dead early-return below blocked Backspace/F1/F2 if dead-stuck,
+	#   (b) UI panels (DialoguePanel, WorldMap, Achievements) with focus could
+	#       call accept_event() and silently eat the keys.
+	# Fix: handle panic keys at the very top, force-close every UI panel, and
+	# also re-handle them in _unhandled_key_input as a belt-and-suspenders.
+	if event is InputEventKey and event.pressed and not event.echo:
+		var pk: int = event.keycode
+		if pk == KEY_BACKSPACE or pk == KEY_F1 or pk == KEY_F2 or pk == KEY_BRACKETRIGHT:
+			_panic_unstick(pk)
+			return
 	if is_dead:
 		return
 	if event.is_action_pressed("interact"):
@@ -220,44 +234,56 @@ func _input(event: InputEvent) -> void:
 		if k == KEY_I:
 			get_tree().call_group("world", "toggle_inventory")
 		elif k == KEY_J:
-			# Journal / Achievements panel — surfaces the painterly crests
-			# Art shipped to assets/icons/achievements/ and lets the player
-			# browse locked entries to plan what to chase next. World.gd
-			# owns the build/refresh; this is just the trigger surface.
+			# Journal / Achievements panel
 			get_tree().call_group("world", "toggle_achievements")
 		elif k == KEY_Q:
-			# Quaff health potion (the first hp_potion_s/l in bag)
 			_quick_use_potion()
 		elif k == KEY_N:
-			# Builder run 14 — World Map (full parchment scroll). N for "Navigation".
-			# Mini-map is always-on in the top-right HUD; this opens the big map.
 			get_tree().call_group("world", "toggle_world_map")
 		elif k == KEY_M:
-			# Mount/dismount toggle
 			get_tree().call_group("world", "toggle_mount")
-		elif k == KEY_BACKSPACE:
-			# Full unstick: clear all transient state, teleport to spawn, reset save.
-			print("[Player] BACKSPACE — full unstick")
-			is_dead = false
-			is_attacking = false
-			mounted = false
-			mount_node = null
-			velocity = Vector3.ZERO
-			global_position = Vector3(0, 2, 0)
-			hp = max(1, hp)
-			_attack_timeout = 0.0
-			_dead_timer = 0.0
-			_jam_timer = 0.0
-		elif k == KEY_F1:
-			# Soft unstick: just reset position to spawn.
-			print("[Player] F1 — teleport to spawn")
-			velocity = Vector3.ZERO
-			global_position = Vector3(0, 2, 0)
-		elif k == KEY_F2:
-			# Nuclear option: wipe save and reload.
-			print("[Player] F2 — wiping save")
-			reset_save()
-			get_tree().reload_current_scene()
+
+# ─── PANIC KEY HANDLER ──────────────────────────────────────────────────────
+# Centralized so we can call it from BOTH _input (high priority) and
+# _unhandled_key_input (catches whatever a UI panel didn't handle).
+func _panic_unstick(keycode: int) -> void:
+	# Force-close every panel that could be stealing focus
+	get_tree().call_group("world", "_force_close_all_panels")
+	var tree := get_tree()
+	if tree.paused:
+		tree.paused = false
+		print("[Player] panic: scene was PAUSED — un-paused")
+	if keycode == KEY_BACKSPACE or keycode == KEY_BRACKETRIGHT:
+		print("[Player] PANIC (Backspace/']') — full unstick")
+		is_dead = false
+		is_attacking = false
+		mounted = false
+		mount_node = null
+		velocity = Vector3.ZERO
+		global_position = Vector3(0, 2, 0)
+		hp = max(1, hp)
+		_attack_timeout = 0.0
+		_dead_timer = 0.0
+		_jam_timer = 0.0
+	elif keycode == KEY_F1:
+		print("[Player] PANIC F1 — teleport to spawn")
+		velocity = Vector3.ZERO
+		global_position = Vector3(0, 2, 0)
+		is_attacking = false
+		is_dead = false
+		hp = max(1, hp)
+	elif keycode == KEY_F2:
+		print("[Player] PANIC F2 — wiping save + reload")
+		reset_save()
+		get_tree().reload_current_scene()
+
+# Belt-and-suspenders: if a focused UI Control swallowed the key,
+# _unhandled_key_input still fires after _input + UI had their pass.
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		var k2: int = event.keycode
+		if k2 == KEY_BACKSPACE or k2 == KEY_F1 or k2 == KEY_F2 or k2 == KEY_BRACKETRIGHT:
+			_panic_unstick(k2)
 
 func _attack() -> void:
 	if is_attacking or is_dead:

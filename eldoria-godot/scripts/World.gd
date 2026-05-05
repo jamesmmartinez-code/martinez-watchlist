@@ -1014,6 +1014,23 @@ const SLOT_LAYOUT := [
 	{"slot":"trinket", "label":"💍 Trinket", "x":24,  "y":204},
 ]
 
+# ─── PX panic-key helper — closes every UI panel that could be eating input ───
+# Called by Player.gd when Backspace / F1 / F2 / ']' is pressed.
+# Safe to call repeatedly; missing nodes are skipped.
+func _force_close_all_panels() -> void:
+	if dialogue_panel and is_instance_valid(dialogue_panel):
+		dialogue_panel.visible = false
+	if inventory_panel and is_instance_valid(inventory_panel) and inventory_panel.visible:
+		inventory_panel.visible = false
+	for m in get_tree().get_nodes_in_group("world_maps"):
+		if is_instance_valid(m):
+			m.visible = false
+	var ach := get_node_or_null("UI/AchievementsPanel")
+	if ach and ach.visible:
+		ach.visible = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	print("[World] _force_close_all_panels: all UI panels hidden")
+
 func toggle_inventory() -> void:
 	if inventory_panel == null:
 		_build_inventory_ui()
