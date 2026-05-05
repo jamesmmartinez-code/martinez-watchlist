@@ -273,6 +273,19 @@ func _check_achievements() -> void:
 		if not unlocked_achievements.has(id):
 			unlocked_achievements[id] = true
 			newly_unlocked.append(id)
+	# Stash the most-recently-unlocked id so the AchievementsPanel can
+	# pulse the matching card on next open. Highest title_priority wins
+	# when multiple unlock on the same tick — lines up with which entry
+	# the player most likely just saw the title-equip toast for.
+	if newly_unlocked.size() > 0:
+		var pulse_pick: String = newly_unlocked[0]
+		var pulse_pri: int = int(Achievements.ACHIEVEMENTS.get(pulse_pick, {}).get("title_priority", 0))
+		for nid in newly_unlocked:
+			var p: int = int(Achievements.ACHIEVEMENTS.get(nid, {}).get("title_priority", 0))
+			if p > pulse_pri:
+				pulse_pri = p
+				pulse_pick = nid
+		_last_achievement_unlocked = pulse_pick
 	# Toast each newly-unlocked achievement with its icon + name + desc.
 	# Spaces them out by 0.6s if multiple unlock at once so kids can read
 	# each one (rare but happens at run-end "warden" trip).
@@ -1068,3 +1081,324 @@ func toggle_mount() -> void:
 		player.walk_speed = 13.0
 		player.run_speed = 22.0
 		_show_toast("🐎 Mounted! Speed boost engaged")
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Achievements & Titles Panel — built lazily on first toggle. Key: J.
+#
+# PURPOSE — Backlog #6 (Achievements + Title system) finally gets a
+# rendering surface. The Achievements.gd evaluator + ACHIEVEMENTS dict has
+# shipped (run 11), the title auto-equipper has shipped (run 11), Art has
+# shipped 6 painterly 128×128 PNG crests (assets/icons/achievements/), and
+# `_check_achievements()` toasts unlocks. But until this run there was NO
+# way for the player to BROWSE the catalog — to see what's locked, see
+# what's unlocked, and see the descriptions that hint at how to earn the
+# rest. The integrator has flagged this gap on FOUR consecutive runs as
+# "the painterly crests sit on disk waiting for one builder run to ship
+# the achievement panel UI."
+#
+# THIS PANEL — closes that gap. It is the FIRST UI surface in the game
+# that calls `load(icon_path) -> Texture2D -> TextureRect`. The pattern
+# replicates 1:1 to NPC portraits (13 unrendered PNGs), enemy portraits
+# (8 unrendered PNGs), item icons (~40 unrendered PNGs), and achievement
+# crests are the canonical first instance because:
+#   (a) the catalog is small (6 entries — the panel fits in one screen),
+#   (b) the schema (Achievements.ACHIEVEMENTS) already carries icon_path,
+#   (c) the unlock state is computable from world state with no new
+#       primitive (per Achievements.gd authoring rule §1).
+#
+# 5-OUTPUT RULE
+#   (i)  INTEGRATION — calls Achievements.evaluate(self) for live unlock
+#        state, reads `self.unlocked_achievements` for persisted unlocks,
+#        reads `self.current_title` for the equipped-title strip, reads
+#        `assets/icons/achievements/*.png` painterly crests via
+#        ResourceLoader-guarded load. Adds zero new world primitives.
+#   (ii) SCHEMA — registers an `ach_card_widgets[id]` Dictionary with the
+#        shape `{root: PanelContainer, crest: TextureRect, name: Label,
+#        desc: Label, lock: Label, pulse: Tween|null}`. Documented in
+#        SYSTEM_REGISTRY.md so future panels can replicate the layout.
+#   (iii) FEEDBACK — every entry shows a 96×96 painterly crest (vs the
+#        emoji-only fallback today), name in palette §3 burnt gold, desc
+#        in parchment cream, locked entries dimmed to 0.45 modulate with
+#        a 🔒 overlay, equipped title prominent at the top, "Earned X /
+#        N" count below it, animated pulse on the most-recently-unlocked
+#        card so the player's eye lands on the new entry first (THEME §12
+#        — every visible thing must move).
+#   (iv) EVAL — _refresh_achievements_ui re-runs Achievements.evaluate()
+#        on every open, so unlocking-then-immediately-opening shows the
+#        fresh state. Unit-testable: the same `is_unlocked` predicate
+#        used at render time is `unlocked_achievements.has(id) or
+#        Achievements.evaluate(self).has(id)`, both pure functions of
+#        existing world primitives.
+#   (v)  2+ HOOKS —
+#        (1) Player.gd KEY_J → call_group("world", "toggle_achievements"),
+#        (2) world.unlocked_achievements → unlocked_set rendering,
+#        (3) world.current_title → equipped-title strip,
+#        (4) Achievements.ACHIEVEMENTS.icon_path → TextureRect (UNBLOCKS
+#            the same pattern for portraits + item icons in future runs),
+#        (5) world._last_achievement_unlocked → animated pulse on most
+#            recent unlock (NEW state field; written by _check_achievements
+#            in addition to the existing unlock toast).
+# ════════════════════════════════════════════════════════════════════════
+
+const ACH_CARD_SIZE: Vector2 = Vector2(330, 132)
+const ACH_CREST_SIZE: Vector2 = Vector2(96, 96)
+const ACH_GOLD: Color = Color(1.0, 0.85, 0.4)            # palette §3 burnt gold
+const ACH_PARCHMENT_CREAM: Color = Color(0.92, 0.85, 0.65)
+const ACH_DIM_GREY: Color = Color(0.65, 0.6, 0.55)
+const ACH_LOCK_MOD: Color = Color(0.45, 0.45, 0.45, 0.85)
+
+var achievements_panel: Panel = null
+var ach_grid_container: GridContainer = null
+var ach_title_label: Label = null
+var ach_count_label: Label = null
+var ach_card_widgets: Dictionary = {}    # id (String) -> Dictionary widget bundle
+var _last_achievement_unlocked: String = ""    # consumed by panel pulse, written by _check_achievements
+
+func toggle_achievements() -> void:
+	if achievements_panel == null:
+		_build_achievements_ui()
+	achievements_panel.visible = not achievements_panel.visible
+	if achievements_panel.visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_refresh_achievements_ui()
+	else:
+		# Clear the pulse highlight so the next open doesn't re-fire on a stale id
+		_last_achievement_unlocked = ""
+
+# Stable priority-ordered ID list. Lower title_priority renders first
+# (top-left), highest renders last (bottom-right) — mirrors the title
+# ladder so kids see the journey from "the Apprentice" to "Warden of
+# Eldoria" left-to-right, top-to-bottom.
+func _achievements_in_priority_order() -> Array:
+	var ids: Array = []
+	for k in Achievements.ACHIEVEMENTS.keys():
+		ids.append(String(k))
+	ids.sort_custom(func(a, b) -> bool:
+		var pa: int = int(Achievements.ACHIEVEMENTS[String(a)].get("title_priority", 0))
+		var pb: int = int(Achievements.ACHIEVEMENTS[String(b)].get("title_priority", 0))
+		if pa != pb:
+			return pa < pb
+		return String(a) < String(b)
+	)
+	return ids
+
+func _build_achievements_ui() -> void:
+	achievements_panel = Panel.new()
+	achievements_panel.name = "AchievementsPanel"
+	achievements_panel.anchor_left = 0.5
+	achievements_panel.anchor_right = 0.5
+	achievements_panel.anchor_top = 0.5
+	achievements_panel.anchor_bottom = 0.5
+	achievements_panel.offset_left = -370
+	achievements_panel.offset_right = 370
+	achievements_panel.offset_top = -290
+	achievements_panel.offset_bottom = 290
+	achievements_panel.visible = false
+	$UI.add_child(achievements_panel)
+
+	# Header — "Achievements & Titles" in palette §3 burnt gold
+	var header := Label.new()
+	header.text = "📜  Achievements & Titles"
+	header.add_theme_font_size_override("font_size", 24)
+	header.add_theme_color_override("font_color", ACH_GOLD)
+	header.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	header.add_theme_constant_override("outline_size", 4)
+	header.position = Vector2(20, 10)
+	header.size = Vector2(640, 32)
+	achievements_panel.add_child(header)
+
+	# Close button (mirror inventory panel layout)
+	var close := Button.new()
+	close.text = "✕"
+	close.position = Vector2(700, 10)
+	close.size = Vector2(36, 30)
+	close.pressed.connect(toggle_achievements)
+	achievements_panel.add_child(close)
+
+	# Equipped-title strip — shows whatever the auto-equipper picked
+	ach_title_label = Label.new()
+	ach_title_label.position = Vector2(20, 50)
+	ach_title_label.size = Vector2(700, 26)
+	ach_title_label.add_theme_font_size_override("font_size", 16)
+	ach_title_label.add_theme_color_override("font_color", ACH_GOLD)
+	achievements_panel.add_child(ach_title_label)
+
+	# Earned X of N
+	ach_count_label = Label.new()
+	ach_count_label.position = Vector2(20, 78)
+	ach_count_label.size = Vector2(700, 22)
+	ach_count_label.add_theme_font_size_override("font_size", 14)
+	ach_count_label.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	achievements_panel.add_child(ach_count_label)
+
+	# Grid — 2 cols × 3 rows for the current 6 achievements; GridContainer
+	# auto-flows so a 7th/8th land on row 4 without code changes.
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 14)
+	grid.add_theme_constant_override("v_separation", 12)
+	grid.position = Vector2(16, 110)
+	grid.size = Vector2(708, 440)
+	achievements_panel.add_child(grid)
+	ach_grid_container = grid
+
+	for id_v in _achievements_in_priority_order():
+		_build_one_achievement_card(String(id_v))
+
+	# Footer hint — kid-readable instructions (THEME §7 warm gravitas, §5 UI text rules)
+	var hint := Label.new()
+	hint.text = "J to close  •  Earn titles by exploring the realm  •  Highest priority equips automatically"
+	hint.position = Vector2(20, 558)
+	hint.size = Vector2(700, 22)
+	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	achievements_panel.add_child(hint)
+
+func _build_one_achievement_card(id: String) -> void:
+	var entry: Dictionary = Achievements.ACHIEVEMENTS.get(id, {})
+	if entry.is_empty():
+		return
+	var root := PanelContainer.new()
+	root.custom_minimum_size = ACH_CARD_SIZE
+	ach_grid_container.add_child(root)
+
+	var hbox := HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	root.add_child(hbox)
+
+	# Crest column — TextureRect loads icon_path; fail-soft if missing.
+	# This is THE callsite that closes the four-run integrator gap.
+	var crest_wrap := Control.new()
+	crest_wrap.custom_minimum_size = ACH_CREST_SIZE
+	hbox.add_child(crest_wrap)
+
+	var crest := TextureRect.new()
+	crest.name = "Crest"
+	crest.custom_minimum_size = ACH_CREST_SIZE
+	crest.size = ACH_CREST_SIZE
+	crest.position = Vector2(0, 6)
+	crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_path: String = String(entry.get("icon_path", ""))
+	if icon_path != "" and ResourceLoader.exists(icon_path):
+		var tex: Texture2D = load(icon_path) as Texture2D
+		if tex != null:
+			crest.texture = tex
+	crest_wrap.add_child(crest)
+
+	# Lock overlay — dim 🔒 over the crest. Visibility flips in _refresh.
+	var lock_lbl := Label.new()
+	lock_lbl.name = "Lock"
+	lock_lbl.text = "🔒"
+	lock_lbl.add_theme_font_size_override("font_size", 36)
+	lock_lbl.position = Vector2(30, 30)
+	lock_lbl.size = Vector2(40, 40)
+	lock_lbl.add_theme_color_override("font_color", Color(0.15, 0.15, 0.15, 0.95))
+	lock_lbl.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.6, 0.8))
+	lock_lbl.add_theme_constant_override("outline_size", 4)
+	crest_wrap.add_child(lock_lbl)
+
+	# Right column — name, desc, awarded-title hint
+	var right := VBoxContainer.new()
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(right)
+
+	var name_lbl := Label.new()
+	name_lbl.name = "AName"
+	name_lbl.text = "%s %s" % [String(entry.get("icon", "🏆")), String(entry.get("name", id))]
+	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.add_theme_color_override("font_color", ACH_GOLD)
+	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	name_lbl.add_theme_constant_override("outline_size", 3)
+	right.add_child(name_lbl)
+
+	var desc_lbl := Label.new()
+	desc_lbl.name = "ADesc"
+	desc_lbl.text = String(entry.get("desc", ""))
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.custom_minimum_size = Vector2(200, 56)
+	desc_lbl.add_theme_font_size_override("font_size", 12)
+	desc_lbl.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	right.add_child(desc_lbl)
+
+	# Title hint line — "Grants: ✨ the Apprentice" so the player can see
+	# WHICH title each achievement unlocks. Empty for entries that grant none.
+	var title_hint := Label.new()
+	title_hint.name = "ATitle"
+	var t_text: String = String(entry.get("title_text", ""))
+	if t_text != "":
+		title_hint.text = "✨ Grants: \"%s\"" % t_text
+	else:
+		title_hint.text = ""
+	title_hint.add_theme_font_size_override("font_size", 11)
+	title_hint.add_theme_color_override("font_color", Color(0.85, 0.65, 0.3))
+	right.add_child(title_hint)
+
+	ach_card_widgets[id] = {
+		"root": root,
+		"crest": crest,
+		"name": name_lbl,
+		"desc": desc_lbl,
+		"title_hint": title_hint,
+		"lock": lock_lbl,
+	}
+
+# Pure read-and-render. Pulls live unlock state from Achievements.evaluate
+# AND persisted unlocks from `unlocked_achievements`, so a player who
+# unlocks something then opens the panel sees fresh state regardless of
+# whether `_check_achievements` happened to fire on this exact tick.
+func _refresh_achievements_ui() -> void:
+	if achievements_panel == null:
+		return
+	var unlocked_set: Dictionary = {}
+	# Persisted unlocks (the canonical source — written by _check_achievements)
+	for k in unlocked_achievements.keys():
+		unlocked_set[String(k)] = true
+	# Live re-eval (fail-soft if Achievements.evaluate ever returns junk;
+	# evaluate() returns [] on duck-type miss per its own contract)
+	var live: Array = Achievements.evaluate(self)
+	for id_v in live:
+		unlocked_set[String(id_v)] = true
+
+	var unlocked_count: int = 0
+	var total_count: int = Achievements.ACHIEVEMENTS.size()
+
+	for id_variant in ach_card_widgets.keys():
+		var id: String = String(id_variant)
+		var w: Dictionary = ach_card_widgets[id]
+		var is_unlocked: bool = unlocked_set.has(id)
+		if is_unlocked:
+			unlocked_count += 1
+		var crest_node = w.get("crest", null)
+		var name_node = w.get("name", null)
+		var lock_node = w.get("lock", null)
+		var root_node = w.get("root", null)
+		if crest_node is TextureRect:
+			(crest_node as TextureRect).modulate = (Color(1, 1, 1, 1) if is_unlocked else ACH_LOCK_MOD)
+		if name_node is Label:
+			(name_node as Label).add_theme_color_override("font_color",
+				(ACH_GOLD if is_unlocked else ACH_DIM_GREY))
+		if lock_node is Label:
+			(lock_node as Label).visible = not is_unlocked
+		# THEME §12 — animated pulse on the most-recently-unlocked card
+		if is_unlocked and id == _last_achievement_unlocked and root_node is Control:
+			_pulse_card(root_node as Control)
+
+	if ach_title_label != null:
+		var t: String = current_title if current_title != "" else "—"
+		ach_title_label.text = "Equipped Title:  ✨ %s" % t
+	if ach_count_label != null:
+		ach_count_label.text = "Earned: %d of %d" % [unlocked_count, total_count]
+
+# Soft 0.5→1.1→1.0 modulate pulse, two cycles. Uses Tween, parallel-safe.
+# Identifies the just-unlocked card so the player's eye lands on it first
+# when they open the panel right after a toast.
+func _pulse_card(node: Control) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	var base_mod: Color = node.modulate
+	var pulse_mod: Color = Color(1.25, 1.15, 0.85, base_mod.a)
+	var tw: Tween = create_tween().set_loops(2)
+	tw.tween_property(node, "modulate", pulse_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(node, "modulate", base_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
