@@ -1,3 +1,379 @@
+## 2026-05-05T19:25Z — BUILDER run 20 (npc_seen / stranger predicate wire)
+
+I'm building: `World.npc_seen` Dictionary + `mark_npc_seen(name)` writer
++ `is_stranger(name)` reader. Wires DialogueDB's pre-existing 5th-tier
+`stranger` predicate to in-game state. All seven NPCs already carry
+authored `stranger` JSON keys (Lore Keeper, 2026-05-04); seven dormant
+lines become live in the player flow on a single field+method add.
+
+THEME §X cited: §1 (high fantasy, NPC-as-mentor — "stranger" tone is
+the warm-gravitas first-meet beat the JSONs already carry), §7 (warm
+gravitas dialogue voice, child-safe — Maeve's *peers up the stick at
+you* / Lyra's *both hands open* are exactly the §7 register), §10 hard
+rule 1 (read THEME first; nothing in the canon edited).
+
+Mood board panel: not applicable (run 20 is data wiring — no new model,
+no new texture, no new color, no new asset). Visual canon held by
+non-edit.
+
+### Commit
+*Auto: npc_seen wire — DialogueDB stranger predicate now lights up for
+every JSON-opted NPC on first hello.*
+
+### Phase reached + feature shipped
+**Phase: dormant-predicate activation, second axis.** Run 11 wired
+`World.player_renown` to light up DialogueDB's `high_renown` predicate.
+Run 20 wires `World.npc_seen` to light up the `stranger` predicate.
+Both fields share the same shape: per-session, World-owned, one
+mutator, one reader, fail-soft for older saves, NO HUD/UX surface,
+ENTIRELY in service of routing already-authored JSON tiers to
+already-authored predicates. Pattern proven generalizable: world-state
+fields whose ONLY consumer is DialogueDB don't need their own visible
+surface and still carry meaningful in-game weight.
+
+### 5-output check
+
+(i) **Integration** — single file edit + two doc updates:
+- `World.gd` gains `var npc_seen: Dictionary = {}`, `mark_npc_seen(name)`,
+  `is_stranger(name)`, plus a single `mark_npc_seen(speaker)` callsite
+  inside `show_dialogue` AFTER `dialogue_panel.visible = true`.
+- Pre-existing readers WIRE THEMSELVES with no edits required:
+  - `DialogueDB.choose_line()` step 5 (run 9): the `"npc_seen" in
+    world_node` guard had been fail-soft — when the field didn't exist,
+    the predicate skipped silently. Now that it does, every NPC's
+    authored `stranger` key fires on first encounter and only on first
+    encounter.
+  - `NPC.gd::_on_interact` is unchanged. The dialogue resolution chain
+    (record_npc_visit → DialogueDB.choose_line → show_dialogue) is
+    preserved verbatim; the new mark happens at the END of show_dialogue,
+    so it's a strict post-condition with no race window.
+
+(ii) **Schema** — no new primitive. Reuses existing patterns:
+- Field shape mirrors `world_flags`, `npc_flags`, `npc_memory`: a
+  Dictionary on the World autoload, default `{}`, mutated via a single
+  named writer.
+- Method signatures mirror `has_world_flag(name) -> bool`,
+  `npc_has_flag(npc, flag) -> bool`, `npc_visits(name) -> int`:
+  predictable accessor pattern.
+- DialogueDB integration shape mirrors run-11's `player_renown`: an
+  int/dict on World, a fail-soft `"<field>" in world_node` predicate
+  in DialogueDB, no DialogueDB edits needed because the guard was
+  authored ahead of the field.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- Walk into Briarwood as a fresh save. Talk to Elder Maeve. Her FIRST
+  line reads as the authored `stranger` JSON key:
+  *"*peers up the stick at you* — A face I don't yet know. Sit, then.
+  Tell me your village before you tell me your business — that is how
+  it's done in Briarwood."* (vs. the prior generic morning/midday line).
+- Talk to Maeve again immediately. The `stranger` predicate has now
+  flipped — falls through to the legacy mood bucket / warmed-flag
+  resolution, exactly as before.
+- Repeat for Lyra (rises from her bundle, "Heart's-ease for what aches
+  inside, dogwort for what aches outside"), Roan (curt — "Aye. Stable's
+  open. Mind the bay. Don't touch the lintel."), Hala (watches your
+  feet cross the green twice — "Pick the staff up before the blade,
+  traveler. The staff forgives. The blade does not."), Edda (terse —
+  "Don't touch the anvil. Ask first."), Bram (warm — "Welcome to the
+  Long Lantern! New face, new tale."), and Mara (a merchant's pitch,
+  authored). Seven distinct first-meet beats now reach the player.
+
+(iv) **Eval** — gd-script bracket / paren / quote balance preserved:
+- World.gd `(` vs `)` delta: 0 (orig) → 0 (patched).
+- World.gd `[` vs `]` delta: −1 (orig, from `[i]"%s"[/i]` strings) → −1
+  (patched). My added text contributes one `[` and one `]` from the
+  `is_stranger()` accessor's docstring example.
+- World.gd `{` vs `}` delta: 0 (orig) → 0 (patched).
+- No JSON files edited (all 7 stranger keys already on disk and
+  syntactically valid — verified via `python3 -c json.load` on each).
+
+(v) **Hooks (≥ 2)** — concrete next-run hooks unlocked:
+1. **"Met every villager" achievement** — `Achievements.gd` predicate
+   could iterate WorldBuilder.NPCS and check `not World.is_stranger(name)`
+   for each. Pairs with the run-16 "Visited every villager" hook
+   (different threshold: 1 vs N visits). The accessor already exists.
+2. **`stranger_no_longer` world flag** — fires once `npc_seen.size()
+   >= 7`, opens cross-NPC dialogue lines that reference the entire
+   village having met the player. Pure derivation from `npc_seen`,
+   one new constant, no schema change.
+3. **Per-NPC first-met-day extension** — extend the value type from
+   `bool` to `Dictionary {seen: true, met_day: int, met_tod: float}`
+   to let NPCs say "you've been around three days now". Caller
+   surface stays stable (`is_stranger(name)` continues to return bool)
+   so this is forward-compatible.
+4. **JSON-tree predicate audit pass** — three DialogueDB predicates
+   were authored with fail-soft guards (run 9): `high_renown` (wired
+   run 11), `stranger` (wired today), `current_festival` (still
+   dormant — needs a calendar/festival system). The festival hook is
+   the last unwired predicate; its activation cost is one int field
+   + one date-based update loop.
+
+### Files changed
+
+```
+M  eldoria-godot/scripts/World.gd        (+45 lines: 1 field + 2 methods + 1 callsite + comments)
+M  WORLD_STATE.md                         (run-19 resolved entry; live-data table updated; tier-order note expanded)
+M  SYSTEM_REGISTRY.md                     (new "NPC Stranger schema (run 20 — Builder)" section, ~70 lines)
+M  CHANGES.md                             (this entry)
+```
+## 2026-05-05T18:30Z — BUILDER run 19 (4th wolf reducer — Bram's bounty)
+
+I'm building: `wolf_heart_for_bram` quest entry — FOURTH `dire_wolves`
+reducer, the fourth leg of the wolf-pressure curve (0.2 → 0.1) that
+finally trips the run-6 THIRD CLIFF (packs of 1, "the alpha that
+wouldn't be hunted"). New RARE-rarity material `wolf_heart` joins
+`wolf_pelt` + `wolf_fang` on the wolf drop table; Bram's role `inn`
+goes from quest-blank to questgiver-with-warm-tier in a single edit.
+
+THEME §X cited: §1 (high fantasy painterly NPC-as-host with hearth +
+mug), §4 (Bram silhouette: "Round, jolly, white apron, mug-in-hand,
+ruddy cheeks"), §7 (warm gravitas dialogue voice — "the bards finished
+their set last night, first time in months"), §10 (no new world
+primitive — pure data add to existing QUEST_CATALOG, Items.gd MATERIALS,
+Items.gd DROP_TABLE; existing readers wire themselves).
+
+Mood board panel: not applicable (no `mood-boards/` in repo this run).
+Visual canon held by reuse — no new model, no new texture, only one new
+material item with painterly-icon fallback to 🫀 emoji.
+
+### Commit
+*Auto: wolf_heart_for_bram — Bram's heart-bounty trips the dire_wolves
+third cliff and unlocks his warm_flag tier.*
+
+### Phase reached + feature shipped
+**Phase: Faction-curve saturation — `dire_wolves` is now the FIRST
+faction whose ALL THREE run-6 spawn cliffs are player-reachable in a
+single save.** All four wolf reducers (Lyra + Roan + Hala + Bram) stack
+0.5 → 0.1, dropping packs from 4 → 3 → 2 → 1 across the four turn-ins.
+Goblin curve still has 2 of 3 reducers (Maeve cleansing + Mara ears),
+so wolves remain the canonical reference shape for the saturation arc.
+The single surviving wolf at pressure 0.1 reads as "the alpha that
+wouldn't be hunted" — a boss-feeling fight without a boss-spawn, pure
+compound on the run-7 cooldown and run-8 chase scalars (cooldown ~1.07s,
+chase_speed +15% at pressure 0.1).
+
+### 5-output check
+
+(i) **Integration** — purely additive across three script files:
+- `World.gd` `QUEST_CATALOG` gets one new key `wolf_heart_for_bram`
+  matching the schema of the 5 existing entries.
+- `Items.gd` `MATERIALS` gets one new key `wolf_heart` matching the
+  schema of the 5 existing material entries (rarity bumped to "rare"
+  to differentiate the inventory-tooltip beat from common pelts/fangs).
+- `Items.gd` `DROP_TABLE["wolf"]` gets one new entry `wolf_heart` at
+  weight 8; existing weights for wolf_pelt (38 → 35), wolf_fang (18 →
+  15), and leather (12 → 10) trimmed to fund it. Total stays at 100.
+- `WorldBuilder.gd` `NPCS` Bram entry: `line` swapped from "Pull up a
+  stool. Rest your bones." to the bounty pitch ("Wolves spoil the
+  bards' songs. Bring me 3 wolf hearts and the deep barrel's yours.").
+  4 new `warm_lines` authored under `warm_flag: "nights_quiet"`.
+- Pre-existing readers WIRE THEMSELVES with no edits required:
+  - `World._quest_for_role("inn")` was returning {} in runs 1-18
+    (Bram's role had no QUEST_CATALOG entry); now returns this entry,
+    so the Accept Quest button finally appears on his dialogue panel.
+  - `Player.on_enemy_killed` / `Player.on_loot_picked` already handle
+    `kind:"fetch"` quests with `item:"wolf_heart"` — Items.gd's new
+    material registers via `Items.MATERIALS` lookup the same way
+    `wolf_fang` did in run 17.
+  - `Enemy._roll_drops` reads `Items.DROP_TABLE["wolf"]` at every wolf
+    death — the new entry rolls naturally on the rebalanced weights.
+  - `World.apply_consequence()` is the single resolver — sets the
+    npc_flag `nights_quiet` on Bram, drops `dire_wolves` pressure
+    -0.1, sets world_flag `bram_nights_quiet`, fires the toast.
+  - Dialogue tier 2 (`warm_flag: nights_quiet`) on Bram fires
+    immediately on next interact — 4 warm_lines authored this run.
+    Bram's existing memory tier (Tier 5, run 16) sits below warm_flag
+    so the quest-aware lines win once the bounty turns in.
+
+(ii) **Schema** — no new world primitive. Reuses every field already
+defined by `pelt_for_lyra`/`wolf_fang_for_roan`/`wolf_form_with_hala`:
+- Quest schema: `giver`, `actor`, `role`, `kind`, `item`, `needed`,
+  `title`, `text`, `xp_reward`, `gold_reward`, `motivation`,
+  `location`, `urgency`, `world_trigger`, `consequence` — same as
+  `wolf_fang_for_roan`/`pelt_for_lyra`.
+- Material schema: `name`, `type`, `slot`, `rarity`, `icon`,
+  `icon_path`, `color`, `stack`, `value` — same as `wolf_fang`/
+  `wolf_pelt`. `rarity: "rare"` is a value already used by
+  `chainmail` and several weapons; no new rarity tier.
+- Consequence: `faction`, `pressure_delta`, `npc_flag`, `world_flag`,
+  `toast` — same as the four existing wolf reducers.
+- World flag naming: `bram_nights_quiet` follows the established
+  snake_case present-tense convention (`mara_bounty_paid`,
+  `whisperwood_safer`, `lyra_potion_brew`, `roan_bounty_paid`,
+  `hala_wolf_form_done`).
+SYSTEM_REGISTRY.md updated with the new material + quest entries +
+refreshed wolf DROP_TABLE row breakdown.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- New inventory entry "Wolf Heart" with 🫀 emoji icon (icon_path
+  fail-soft until artist agent ships `wolf_heart.png`). Rare rarity
+  triggers the blue chip in the inventory tooltip — a different visual
+  beat from the common pelts and fangs sitting alongside it.
+- Quest panel pitch: "Bram trades the deep barrel for 3 Wolf Hearts —
+  proof the howling has thinned" with title "Quiet Nights at the Long
+  Lantern".
+- Quest turn-in toast: "🍻 The Long Lantern's bards play through to
+  dawn now."
+- Dialogue change on accept: Bram's pitch line speaks the bounty
+  immediately, instead of the legacy "Pull up a stool. Rest your
+  bones." (preserved as `lines[0]` so it still cycles in the time-of-
+  day pool, matching THEME §7 voice continuity).
+- Dialogue change on turn-in: warm_flag tier opens four new Bram
+  lines naming the player's effect on the songhouse, the bards, and
+  the late-night fires.
+- Wolf pack: drops by 1 per run-6 cliff (pressure crosses 0.5 → 0.4 →
+  0.3 → 0.2 → 0.1 across the four wolf quests). The fourth turn-in
+  takes pressure from 0.2 to 0.1, tripping the run-6 third cliff
+  (2 wolves → 1) — a major Whisperwood quietening beat.
+- Surviving wolf: at pressure 0.1 the lone survivor lerps to cooldown
+  ~1.07s (max-agitated, ⚡ prefix) and chase_speed +15% — boss-
+  feeling pacing on a regular wolf-spawn skeleton.
+
+(iv) **Eval** — Paren/quote balance validated post-edit:
+- `Items.gd` `()` `[]` `{}` balanced (deltas +18/+1/+2 each side, even).
+- `World.gd` new quest block isolated balance: `()` `[]` `{}` balanced
+  (20/1/4 pairs); pre-existing string-literal asymmetries (BBCode
+  tag content, comment chars) unchanged from HEAD.
+- `WorldBuilder.gd` `()` `[]` `{}` fully balanced (deltas +8/+2/+1
+  each side, even).
+- Drop-table weights: total preserved at 100 (run-17 → run-19 same
+  total). Each existing id's relative odds drift by < 4% — kid-tuned
+  curve preserved across runs:
+  - wolf_pelt: 38/100 = 38.0% → 35/100 = 35.0% (Δ -3 pp)
+  - wolf_fang: 18/100 = 18.0% → 15/100 = 15.0% (Δ -3 pp)
+  - leather:   12/100 = 12.0% → 10/100 = 10.0% (Δ -2 pp)
+  - hp_potion_s, chainmail, steel_blade unchanged.
+  - wolf_heart NEW at 8/100 = 8.0%.
+  Expected counts on a 12-kill grind: ~4.2 pelts, ~1.8 fangs, ~0.96
+  hearts — back-to-back-to-back-to-back Lyra+Roan+Hala+Bram pacing
+  satisfied within a single ~12-kill loop.
+- Tier resolution invariant unchanged: warm_flag tier (Tier 2) only
+  fires if JSON tree (Tier 1) misses; Bram's `use_dialogue_json: true`
+  resolves first when its predicates match — warm_lines surface only
+  on JSON miss. Memory tier (Tier 5, run 16) sits below warm_flag
+  so once `nights_quiet` is set, the quest-aware lines win over the
+  generic third-visit warm. No tier ordering changes.
+
+(v) **2+ hooks**:
+1. **Maeve-mentions-Bram dialogue line** — Maeve's WorldBuilder entry
+   has an OPEN `warm_world_flag` slot (no current value). Wire
+   `warm_world_flag: "bram_nights_quiet"` + 4 lines like "Even Bram
+   says the Lantern's bards finished a set last night — quite a
+   thing." Pure data, ZERO code changes. Compounds the FOURTH
+   cross-NPC flag-recognition pattern after Mara/Lyra/Roan world
+   flags.
+2. **Heartwood Mead consumable** — the run-19 Bram quest references
+   "the deep barrel" but the toast/reward is gold-only. A
+   `heartwood_mead` consumable in Items.gd (heal 60 + brief mp regen)
+   shipped as a one-shot quest reward closes the bards-and-mead motif.
+   Pure data + one Items.gd entry. Polisher territory.
+3. **"Quiet Songhouse" achievement** — Achievements.gd's
+   `all_npc_flags` predicate already supports a 4-NPC entry. New
+   single entry referencing all four wolf-quest NPC flags
+   (`Lyra/trusts_player`, `Roan/first_bounty_done`, `Hala/wolf_form_taught`,
+   `Bram/nights_quiet`). Pairs nicely with run-15 painterly crest
+   art. Title text "the Songhouse-Keeper" or "the Quiet-Bringer"
+   (priority 38, between Wolf-Tamer 35 and Goblin-Bane 40).
+4. **Bram visit-memory tier rebalance** — Bram already has a memory
+   tier (Tier 5, run 16, threshold 3 visits). With warm_flag now in
+   place, the memory lines fire BEFORE the bounty (cold-rep) and
+   FALL THROUGH AFTER (`nights_quiet` wins). Authoring is fine; a
+   future run could split the memory pool into pre/post-bounty
+   buckets if play-testing wants more variety.
+5. **Bandit faction (backlog #9)** — with all four wolf reducers
+   landed, the Whisperwood is "quiet" by faction-pressure metrics.
+   This is the natural moment for the "bandit boldness scales with
+   road defense" backlog item to land — bandits get bold WHEN
+   `dire_wolves < 0.2` AND `whisperwood_goblins < 0.4`. Compounds
+   on the freshly-completed wolf curve as a cross-faction reactor.
+   Larger system change (new faction, new GLB tinting via
+   warrior.glb reuse, new road-spawn pattern) — assign to a fresh
+   Builder run.
+
+### Player-reachable state this run
+
+- Walk into Briarwood as a fresh save (level 1+). Visit Bram at the
+  Long Lantern (10, 0, -2). His pitch reads: "Wolves spoil the bards'
+  songs. Bring me 3 wolf hearts and the deep barrel's yours."
+- Accept the bounty. Walk into Whisperwood. Wolves drop wolf_heart at
+  ~8% per kill (weight 8 / total 100, stack=true). 3 hearts ≈ 12-13
+  wolf kills (or fewer if you're also pelt/fang grinding — all four
+  drop together; a single 13-kill grind expects ~4.2 pelts + ~1.8
+  fangs + ~1.0 hearts, satisfying Lyra's 4 + Roan's 5 + Bram's 3 in
+  ONE LOOP at the rebalanced weights).
+- Return to Bram. Quest completes; toast appears; Bram's dialogue
+  flips to the warm_flag tier on the very next interaction. The wolf
+  faction pressure drops 0.2 → 0.1 (or wherever it was — Bram is the
+  fourth available reducer in any order). At pressure 0.1 the wolf
+  pack visibly thins to ONE surviving wolf — the apex/scarred alpha,
+  +15% chase, ~1.07s cooldown, ⚡ agitated prefix.
+
+### Files changed
+- `eldoria-godot/scripts/Items.gd` (+12 lines: wolf_heart material
+  with 8-line authoring comment; wolf DROP_TABLE rebalance with new
+  weights + 14-line authoring comment, total weights preserved at 100)
+- `eldoria-godot/scripts/World.gd` (+47 lines: wolf_heart_for_bram
+  quest + 36-line authoring comment threading the existing 5
+  consumers and 6th world flag)
+- `eldoria-godot/scripts/WorldBuilder.gd` (+22 lines: Bram pitch line
+  swap + warm_flag/warm_lines + 18-line authoring comment)
+- `WORLD_STATE.md` (Active Hooks top-priority-next entries refreshed
+  for run 20+; Dire Wolves faction row updated to FOUR reducers;
+  Wolves spawned ledger entry rewritten for the saturation arc;
+  bram_nights_quiet world flag row added)
+- `SYSTEM_REGISTRY.md` (wolf_heart material row; Live wolf table
+  rebalanced (run 17 → run 19) with all id/weight/notes refreshed;
+  wolf_heart_for_bram quest catalog row + new ⭐ note explaining the
+  fourth-reducer compound and the wolf_tamer-still-attainable invariant)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **`current_festival` wire** — last fail-soft DialogueDB predicate
+   waiting for a World field. Authored seasonal keys
+   (`longnight_vigil`, `honeysong_eve`, `spring_first_warm_day`,
+   `tess_remembrance`, `greenshield_first_pick`, etc.) sit dormant
+   in 5 of the 7 NPC JSONs. A single calendar field + a per-day update
+   tick lights up ~20 dormant lines.
+2. **"Met every villager" achievement** — single-row addition to
+   `Achievements.gd`. `Achievements.met_every_villager` predicate
+   reads `not World.is_stranger(name)` for each NPC in
+   WorldBuilder.NPCS. Renown reward 50, fits the existing tier
+   ladder.
+3. **`stranger_no_longer` world flag** — derived flag from
+   `npc_seen.size() >= 7`. Future cross-NPC dialogue lines read it
+   via existing `has_world_flag()` accessor. Single-line check
+   inside `mark_npc_seen` after the dict write.
+4. **NPC schedules** (backlog #3) — still unimplemented. Use
+   `World.time_of_day`. Maeve sweeps at dawn, Smith hammers
+   midday, Lyra grinds herbs in evening — THEME §12 demands every
+   visible NPC moves; current state is single idle anim only.
+1. **Maeve mentions Bram** — `WorldBuilder.NPCS` Maeve entry adds
+   `warm_world_flag: "bram_nights_quiet"` + 4 lines. Pure data. Closes
+   the FOURTH cross-NPC flag-recognition pattern (after Mara, Lyra,
+   Roan world flags). Maeve's `warm_world_flag` slot was empty in
+   runs 1-19 — this is the highest-impact data hook left on her entry.
+2. **Heartwood Mead consumable** — Items.gd MATERIALS gets a
+   `heartwood_mead` consumable (heal 60 + brief mp regen). Bram's
+   `wolf_heart_for_bram` quest gets a `reward_item: "heartwood_mead",
+   reward_item_qty: 2` field — closes the bards-and-mead motif of
+   the pitch line. Polisher territory.
+3. **"Quiet Songhouse" achievement** — Achievements.gd row referencing
+   all 4 wolf-quest NPC flags. Painterly crest from artist agent's
+   CC0 PNG, fail-soft as usual. Title "the Songhouse-Keeper"
+   priority 38.
+4. **Bandit faction** — backlog #9. Now is the natural moment.
+   `dire_wolves < 0.2` is achievable; bandit boldness predicate
+   has a real signal to read. New faction in World.factions, new
+   road-spawn pattern in WorldBuilder, warrior.glb reuse with a
+   different tint per Enemy.gd's existing `kind:"bandit"` plumbing.
+5. **`wolf_heart.png` painterly icon** — artist agent territory.
+   Today the icon falls back to the 🫀 emoji; ResourceLoader.exists
+   guards against the missing PNG (same fail-soft as run-15
+   achievement crests and run-17 wolf_fang icon).
+
 ## 2026-05-05T16:41Z — BUILDER run 18 (keystone close-out)
 
 I'm building: `wolf_form_with_hala` quest entry — THIRD `dire_wolves`

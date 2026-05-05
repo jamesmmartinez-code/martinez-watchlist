@@ -82,6 +82,39 @@ var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 # all enter through the same accessor surface.
 var npc_memory: Dictionary = {}
 
+# Run 20 (Builder) — npc_seen: per-NPC "have we ever met?" ledger.
+# Schema: { npc_name -> bool }. An entry of `true` means the player has
+# completed at least one full _on_interact tick with this NPC (i.e. dialogue
+# was actually shown — recorded inside `show_dialogue`, AFTER DialogueDB has
+# already chosen its line, so the FIRST hello fires the JSON `stranger` key).
+#
+# WRITES: `mark_npc_seen(name)` only — invoked from `show_dialogue` AFTER
+# the line is set on the panel. Calling it earlier would race with
+# DialogueDB.choose_line and the `stranger` predicate would never fire.
+# Idempotent: re-marking an already-seen NPC is a no-op.
+#
+# READS:
+#   * DialogueDB.gd `stranger` predicate (5th tier — see DialogueDB.gd
+#     priority list). Fail-soft contract was already in place: when the
+#     field didn't exist, the predicate skipped silently; now that it
+#     does, every NPC's `stranger` JSON key fires on first encounter
+#     and only on first encounter. All 7 NPC JSONs already author this
+#     key (lore agent, 2026-05-04), so wiring this field lights up
+#     7 already-on-disk lines with no JSON edit required.
+#   * `is_stranger(name)` accessor — symmetry with `npc_visits()` /
+#     `has_world_flag()` / `npc_has_flag()`. Future quest predicates
+#     keyed on "first meeting" route through here, not the raw dict.
+#
+# Distinct from `npc_memory.visits` because:
+#   * `visits` increments at the TOP of _on_interact (run 16) — by the
+#     time DialogueDB resolves, visits is already ≥ 1 for the current
+#     visit, so the first-visit window is invisible to a `visits == 0`
+#     predicate.
+#   * `npc_seen` flips at the END of dialogue display, so the `stranger`
+#     check during DialogueDB resolution sees the OLD (false) value on
+#     the first call and the NEW (true) value from the second onward.
+var npc_seen: Dictionary = {}
+
 # Achievement / Title state — read-only externally; mutated only by
 # `_check_achievements()` which is invoked at the end of `apply_consequence`
 # and once at `_ready` (so a fresh world boot picks up any pre-existing
@@ -309,6 +342,73 @@ const QUEST_CATALOG := {
 			"toast": "🥋 Hala nods. The form holds.",
 		},
 	},
+	# COMPOUND (run 20 — Builder): Bram-issued wolf-heart bounty quest. FOURTH
+	# `dire_wolves` reducer (after `pelt_for_lyra` -0.1, `wolf_fang_for_roan`
+	# -0.1, and `wolf_form_with_hala` -0.1). Trips the run-6 THIRD CLIFF
+	# (< 0.15 → packs of 1) — at fresh-save 0.5, all four reducers stack to
+	# 0.1, which is the lowest a player can drive the wolf scalar without a
+	# fifth quest existing. From here the only wolf left in the Whisperwood
+	# is the apex/scarred survivor — a "she's the one who got away" beat
+	# that downstream lore can name. Bram is the village rumor-exchange
+	# (THEME §4 silhouette: "Round, jolly, white apron, mug-in-hand"); his
+	# nightly bards stop singing when wolves howl on the road, so a heart-
+	# trade is the inn-flavored slot in the wolf reducer chain — different
+	# motive (peace for the songhouse) than Lyra (medicine), Roan (mares),
+	# or Hala (mastery). Lights up:
+	#   * Bram dialogue tier 2 (warm_flag `nights_quiet`, 4 lines added in
+	#     WorldBuilder run 19). Bram goes from a memory-only NPC (run 16)
+	#     to a full warm_flag + memory NPC — same dialogue depth as Maeve.
+	#   * Bram's role `inn` was QUEST-BLANK before this entry — the existing
+	#     `_quest_for_role("inn")` resolver returned `{}`, the Accept Quest
+	#     button never appeared on Bram's dialogue panel. Now matches every
+	#     other major NPC in dialogue depth + questgiver behavior.
+	#   * Wolf spawn density: 0.2 (after the prior three) → 0.1 trips the
+	#     run-6 THIRD CLIFF (2 wolves → 1). The single surviving wolf reads
+	#     as "the alpha that wouldn't be hunted" — pacing-wise, at pressure
+	#     0.1 cooldown lerps to ~1.07s and chase_speed lifts ~+15%, so the
+	#     last wolf is *the* fastest, *the* hungriest. A boss-feeling fight
+	#     without a boss-spawn — pure compound on existing scalars.
+	#   * Achievement "wolf_tamer" (Achievements.gd, run 18 wire) still
+	#     fires on Lyra+Roan+Hala without Bram — Bram is purely additive
+	#     to the curve, not a fourth flag in the predicate. Keeps the
+	#     "Wolf-Tamer" title attainable on the main three-trade arc.
+	#   * `bram_nights_quiet` world_flag joins `mara_bounty_paid` /
+	#     `lyra_potion_brew` / `whisperwood_safer` / `roan_bounty_paid` /
+	#     `hala_wolf_form_done` as the SIXTH quest-issued world flag —
+	#     future systems (e.g. evening tavern toasts, cross-NPC mentions
+	#     of Bram's bounty in Maeve's warm_world tier) can consume without
+	#     code changes.
+	# Reward economy: 70 xp + 55 gold. Sits between Roan (65/50) and Lyra
+	# (70/45 + 2x hp_potion_l) on the wolf-quest reward curve. `needed: 3`
+	# wolf_hearts at drop weight 8/100 ≈ ~12.5 wolf kills — same wolf-time
+	# as Roan's 5-fang grind (~13.9 kills), so back-to-back-to-back-to-back
+	# (Lyra + Roan + Hala + Bram) is satisfying rather than punitive. The
+	# Heartwood Mead consumable is a future Polisher hook (a strong heal +
+	# brief mp regen) that Bram pours on completion; for run 19 the reward
+	# is the gold + xp + the world-state cascade.
+	"wolf_heart_for_bram": {
+		"giver": "Innkeeper Bram",
+		"actor": "Innkeeper Bram",
+		"role": "inn",
+		"kind": "fetch",
+		"item": "wolf_heart",
+		"needed": 3,
+		"title": "Quiet Nights at the Long Lantern",
+		"text": "Bram trades the deep barrel for 3 Wolf Hearts — proof the howling has thinned",
+		"xp_reward": 70,
+		"gold_reward": 55,
+		"motivation": "duty",
+		"location": "Whisperwood",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"consequence": {
+			"faction": "dire_wolves",
+			"pressure_delta": -0.1,
+			"npc_flag": ["Innkeeper Bram", "nights_quiet"],
+			"world_flag": "bram_nights_quiet",
+			"toast": "🍻 The Long Lantern's bards play through to dawn now.",
+		},
+	},
 }
 
 
@@ -421,6 +521,29 @@ func npc_days_since_last_visit(npc_name: String) -> int:
 	if last < 0:
 		return -1
 	return max(0, world_day - last)
+
+# Run 20 (Builder) — `mark_npc_seen` is the SOLE writer of `npc_seen`.
+# Called from `show_dialogue` AFTER the dialogue panel has been updated, so
+# DialogueDB.choose_line (which runs BEFORE show_dialogue, inside NPC.gd's
+# _on_interact) sees the OLD npc_seen state — i.e. on the very first hello
+# the entry is still missing/false and the JSON `stranger` key fires.
+# Idempotent: re-marking an already-seen NPC is a no-op (Dictionary
+# overwrite, no event side effects).
+func mark_npc_seen(npc_name: String) -> void:
+	if npc_name == "":
+		return
+	npc_seen[npc_name] = true
+
+# Symmetric read accessor for the rest of the engine. Returns true the
+# FIRST time it's called for a never-met NPC — quest predicates and
+# achievement triggers should consume this rather than reaching into the
+# raw dict so future schema changes (e.g. tracking *which day* you first
+# met them, or *what tier* they were warmed at on first contact) can
+# extend the entry from `bool` to `Dictionary` without breaking callers.
+func is_stranger(npc_name: String) -> bool:
+	if npc_name == "":
+		return true
+	return not bool(npc_seen.get(npc_name, false))
 
 # Direct world-flag write — sister to apply_consequence's flag step but with
 # no faction / npc / toast side-effects. Used when an emergent runtime event
@@ -806,6 +929,14 @@ func show_dialogue(speaker: String, text: String, role: String = "") -> void:
 	if reforge_btn:
 		_refresh_reforge_button(reforge_btn, role, player)
 	dialogue_panel.visible = true
+	# COMPOUND (run 20 — Builder): mark this NPC seen AFTER the panel is
+	# populated. show_dialogue is called from NPC.gd::_on_interact AFTER
+	# DialogueDB.choose_line has already resolved the line, so the `stranger`
+	# predicate in DialogueDB sees the OLD npc_seen state on the first hello
+	# and the NEW state on every subsequent hello. Pure post-condition: the
+	# moment a player has ACTUALLY heard a line from this NPC, they are no
+	# longer a stranger. Fail-soft on bare/empty speaker names.
+	mark_npc_seen(speaker)
 
 func close_dialogue() -> void:
 	if dialogue_panel:

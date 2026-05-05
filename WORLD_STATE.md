@@ -24,6 +24,26 @@ and *what has happened*. Update this file whenever the world changes.
 (Future runs pick from this list. A hook is a one-liner that makes the next
 run easier — what's the *next* thing that compounds?)
 
+- **Top-priority next (run 20+):** Maeve cross-NPC mention of Bram's bounty.
+  Maeve's WorldBuilder entry has an OPEN `warm_world_flag` slot
+  (Lyra's existing tier uses `lyra_potion_brew`; Maeve never set one). Wire
+  `warm_world_flag: "bram_nights_quiet"` + 4 lines like "even Bram says the
+  Lantern's bards finished a set last night — quite a thing." Pure data,
+  zero new schema. Compounds the FOURTH cross-NPC flag-recognition pattern
+  after Mara/Lyra/Roan world flags. Pairs nicely with the run-15 painterly
+  crest art if the Lore Keeper lands a "Quiet Songhouse" name beat.
+- **Top-priority next (run 20+):** Heartwood Mead consumable. The run-19
+  Bram quest references "the deep barrel" but the toast/reward is gold-
+  only; a `heartwood_mead` consumable in Items.gd (heal 60 + brief mp
+  regen) shipped as a one-shot quest reward (set on `complete_quest_if_done`)
+  closes the loop on the bards-and-mead motif. Pure data + one Items.gd
+  entry. Polisher territory.
+- **Top-priority next (run 20+):** Faction-state bandit boldness. Backlog
+  item — bandits scale with road defense (i.e. when wolves+goblins are
+  quiet, bandits get bold). Requires NEW `bandits` faction in
+  World.factions, NEW bandit GLB or warrior.glb-tinted reuse (Enemy.gd
+  already has `kind:"bandit"` plumbed but unmapped), NEW road-spawn pattern
+  in WorldBuilder. Larger system change — assign to a fresh Builder run.
 - Crystal Caves entrance is undefined → place it once dungeon is ready.
 - Skeleton + Crystal Elemental drop tables exist in Items.gd; spawn paths do
   not. Anyone adding the dungeon should reuse those tables, not redefine them.
@@ -255,11 +275,29 @@ run easier — what's the *next* thing that compounds?)
   `high_renown` JSON lines fire. DialogueDB reads `world.player_renown >=
   renown_threshold` (default 100) and the JSONs are pre-authored. Single
   field write + one quest hook.
-- 🔥 **Adjacent next:** Wire a `World.npc_seen` Dictionary (keyed by
-  npc_name) flipped to true on first interaction in NPC.gd. Lights up the
-  `stranger` JSON keys for first-encounter warmth — Maeve's "*peers up the
-  stick at you* — A face I don't yet know", Edda's "Don't touch the anvil.
-  Ask first.", Bram's "Welcome to the Long Lantern! New face, new tale."
+- ✅ **Resolved 2026-05-05 (run 20 — Builder):** `World.npc_seen` Dictionary
+  + `mark_npc_seen(name)` writer + `is_stranger(name)` reader, all
+  session-scoped on the World autoload. Wired into `World.show_dialogue`
+  as a POST-condition (after `dialogue_panel.visible = true`) so
+  DialogueDB.choose_line — which runs BEFORE show_dialogue inside
+  NPC.gd::_on_interact — sees the OLD `npc_seen` state on the FIRST
+  hello and the NEW state from the SECOND onward. Lights up DialogueDB's
+  pre-existing 5th-tier `stranger` predicate for every NPC opted into
+  JSON dialogue: all 7 villagers (Maeve, Edda, Mara, Lyra, Bram, Roan,
+  Hala) carry an authored `stranger` key written by the Lore Keeper on
+  2026-05-04. Seven dormant lines become reachable in the player flow
+  in a single field+method add. No NPC.gd or DialogueDB.gd edits
+  required (DialogueDB had a fail-soft `"npc_seen" in world_node` guard
+  in place from run 9; the predicate had been waiting for the field
+  to land). `World.npc_seen` joins `World.player_renown` (run 11) as
+  the SECOND DialogueDB-only consumer field — both shipped with no
+  in-game UI surface, both purely route authored dialogue tiers to
+  authored predicates. Pattern proven: world-state fields whose ONLY
+  consumer is DialogueDB don't need their own HUD/UX and still carry
+  meaningful in-game weight. `stranger` predicate priority sits ABOVE
+  the time-of-day mood bucket so the FIRST hello to any never-met NPC
+  is guaranteed to surface the authored stranger line, not a generic
+  morning/midday greeting.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
@@ -295,9 +333,22 @@ Live data:
   `_on_interact` BEFORE tier resolution so the triggering visit counts.
 * `World.world_day` — integer counter; increments when `time_of_day` wraps
   past midnight. Pure derivation from `time_of_day`, no separate timer.
+* `World.npc_seen[npc_name] -> bool` — per-NPC "have we ever met?" ledger
+  (run 20 — Builder). Read with `World.is_stranger(name)`. Mutated by
+  `World.mark_npc_seen(name)` only, called from `World.show_dialogue`
+  AFTER `dialogue_panel.visible = true` so DialogueDB.choose_line (which
+  runs BEFORE show_dialogue, inside NPC.gd::_on_interact) sees the OLD
+  state on the FIRST hello and the NEW state on every subsequent hello.
+  First reader is DialogueDB's pre-existing 5th-tier `stranger` predicate
+  (run 9, fail-soft on missing field — now active). All 7 villagers carry
+  authored `stranger` JSON keys (Lore Keeper, 2026-05-04), reachable in
+  the player flow as of this run.
 
 The dialogue tier order (highest → lowest priority) is:
-1. JSON-tree (DialogueDB, opt-in via `use_json_dialogue`)
+1. JSON-tree (DialogueDB, opt-in via `use_json_dialogue`) — internal
+   predicate sub-priority: low_health_player → boss_slain → boss_alive →
+   high_renown → **stranger (run 20 — wired via `World.npc_seen`)** →
+   festival keys → after_first_quest_complete → mood bucket → default.
 2. NPC-flag warmed (`warmed_flag` + `warmed_dialogue_variants`)
 3. World-flag warmed (`warmed_world_flag` + `warmed_world_dialogue_variants`)
 4. Faction-pressure warmed (`warmed_faction_id` + `warmed_faction_below` + variants)
@@ -316,7 +367,7 @@ relationship with the player. Flip if play-testing disagrees.
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; **THREE reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17) + `wolf_form_with_hala` (-0.1, run 18); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier); Hala speaks at <warm_flag `wolf_form_taught` (run-18 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density — all three cliffs now player-reachable in a single save); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8 adaptive pacing); FIRST `all_npc_flags` achievement consumer wired (run-18 `wolf_tamer`) |
+| Dire Wolves      | hostile     | 0.5      | mutable; **FOUR reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17) + `wolf_form_with_hala` (-0.1, run 18) + `wolf_heart_for_bram` (-0.1, run 19); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier); Hala speaks at <warm_flag `wolf_form_taught` (run-18 personal tier); Bram speaks at <warm_flag `nights_quiet` (run-19 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density — all three cliffs now player-reachable in a single save AND the run-6 third cliff trips on Bram completion: 4 reducers stack to pressure 0.1, packs of 1); attack cooldown lerps 1.45→1.05 (run-7); chase_speed lerps +17% (run-8 adaptive pacing); FIRST `all_npc_flags` achievement consumer wired (run-18 `wolf_tamer`) — Bram is purely additive (curve, not predicate) so Wolf-Tamer title still attainable on the Lyra+Roan+Hala arc |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) AND chase wired (run-8) — both fire the moment the dungeon ships** |
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
 only by `World.apply_consequence({...})`.
@@ -333,6 +384,7 @@ read by dialogue / spawning / future runs.
 | `mara_bounty_paid`    | ears_for_mara         | unset   | future: Mara raises buy prices on goblin loot |
 | `roan_bounty_paid`    | wolf_fang_for_roan    | unset   | future: Maeve cross-NPC mention; Edda fang-stitched greaves recipe (run 17) |
 | `hala_wolf_form_done` | wolf_form_with_hala   | unset   | run 18: `wolf_tamer` achievement reads the npc_flag side; future: Hala teaches an advanced wolf-defense technique unlocking a counter-stance buff |
+| `bram_nights_quiet`   | wolf_heart_for_bram   | unset   | **run 19**: Bram warm_flag tier reads the npc_flag side; future: Maeve cross-NPC mention via `warm_world_flag` + 4 lines, Bram's nightly bards play a Celtic lute track only when this flag is set |
 
 Read with `World.has_world_flag(name)`. Convention: flag names are
 `snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.
@@ -350,11 +402,14 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 - Wolves spawned (per world load): scales from baseline 4 down to 1 as
   `dire_wolves` pressure drops. Position list is stable — wolves vanish
   from the END of `wolf_spots` first, so re-loading the same save shows
-  the SAME wolves missing from the SAME forest patches. (Run 6.) Two
-  reducers now drive this: `pelt_for_lyra` (-0.1, run 6) AND
-  `wolf_fang_for_roan` (-0.1, run 17). Running both takes pressure
-  0.5 → 0.3, trips the second cliff (3 → 2 wolves), and lights up
-  Roan's warm_flag tier on the same turn-in.
+  the SAME wolves missing from the SAME forest patches. (Run 6.) FOUR
+  reducers now drive this: `pelt_for_lyra` (-0.1, run 6) + `wolf_fang_for_roan`
+  (-0.1, run 17) + `wolf_form_with_hala` (-0.1, run 18) + `wolf_heart_for_bram`
+  (-0.1, run 19). Running all four takes pressure 0.5 → 0.1, trips ALL
+  THREE cliffs, and the Whisperwood ends with a single surviving wolf —
+  the apex/scarred alpha that wouldn't be hunted. At pressure 0.1 that
+  last wolf has cooldown ~1.07s and chase_speed +15%: a boss-feeling
+  fight without a boss-spawn, pure compound on existing scalars.
 - Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
   that NPCs now narrate. `apply_consequence()` is no longer write-only on the
   faction key.
