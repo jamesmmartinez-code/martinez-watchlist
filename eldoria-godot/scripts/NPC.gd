@@ -15,6 +15,15 @@ class_name NPC
 # as `dialogue_variants`, used only when the flag is set. Empty = no change.
 @export var warmed_flag: String = ""
 @export var warmed_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 3 follow-up): a SECOND warmed tier keyed on a *world* flag
+# rather than an NPC flag. Lower priority than `warmed_flag` — used only when
+# the NPC-flag warm doesn't fire. Lets villagers react to global story beats
+# (e.g. Lyra → `lyra_potion_brew`: "the greater salve recipe is loose in the
+# village") even before the player has personally helped them. Reuses pattern
+# A's mood-bucket array shape; consumes `World.world_flags` (run 2) which had
+# no other readers until now.
+@export var warmed_world_flag: String = ""
+@export var warmed_world_dialogue_variants: PackedStringArray = PackedStringArray()
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
@@ -63,6 +72,12 @@ func _on_interact() -> void:
 	if warmed_flag != "" and not warmed_dialogue_variants.is_empty() and w and w.has_method("npc_has_flag"):
 		if w.npc_has_flag(npc_name, warmed_flag):
 			variants = warmed_dialogue_variants
+	# COMPOUND: only consult the world-flag tier if the NPC-flag tier didn't
+	# already promote the variants. This keeps "you helped me personally" louder
+	# than "you helped the world" when both are true.
+	if variants == dialogue_variants and warmed_world_flag != "" and not warmed_world_dialogue_variants.is_empty() and w and w.has_method("has_world_flag"):
+		if w.has_world_flag(warmed_world_flag):
+			variants = warmed_world_dialogue_variants
 	if not variants.is_empty():
 		var tod: float = 11.0
 		if w and ("time_of_day" in w):

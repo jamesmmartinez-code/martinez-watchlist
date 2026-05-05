@@ -86,9 +86,38 @@ A quest may grant any combination of:
 
 Defined in `WorldBuilder.NPCS`. Fields:
 - `name: String`, `role: String`, `pos: Vector3`, `tint: Color`,
-  `line: String` (default dialogue)
-- *Reserved for reactive dialogue*: `lines: Dictionary` keyed by world flag
-  (e.g. `"first_goblin_killed": "..."`). Not yet wired.
+  `line: String` (default dialogue, used as last-resort fallback)
+- `lines: Array[String]` — 4 mood-bucketed time-of-day variants
+  (morning / midday / evening / night).
+
+✅ **Shipped 2026-05-04 (run 3 — integrator + follow-up): Reactive dialogue.**
+NPC.gd consults World on each interaction and walks 3 tiers, picking the
+first hit:
+
+1. `warm_flag: String` + `warm_lines: Array[String]` (4 buckets).
+   Fires when `World.npc_has_flag(npc_name, warm_flag)` returns true.
+   Personal warmth: "you helped *me*". Shipped by integrator.
+2. `warm_world_flag: String` + `warm_world_lines: Array[String]` (4 buckets).
+   Fires when `World.has_world_flag(warm_world_flag)` returns true AND
+   tier 1 didn't already match. World warmth: "you helped our cause."
+   Shipped by run-3 follow-up. Reads `World.world_flags`, which had no
+   other consumer until now.
+3. `lines: Array[String]` (the mood-bucketed default).
+4. `line: String` (single fallback).
+
+`_make_npc()` copies these fields onto the NPC node:
+- `npc.warmed_flag` ← `data.warm_flag`
+- `npc.warmed_dialogue_variants` ← `data.warm_lines`
+- `npc.warmed_world_flag` ← `data.warm_world_flag`
+- `npc.warmed_world_dialogue_variants` ← `data.warm_world_lines`
+
+Authoring rules:
+- `warm_flag` MUST match a flag actually written by some quest's
+  `consequence` — see WORLD_STATE.md "NPC Memory" table for the live set.
+- `warm_world_flag` MUST match a key in `World.world_flags` — see
+  WORLD_STATE.md "World Flags (Active)".
+- Warmed arrays SHOULD have exactly 4 entries (one per time bucket); a
+  shorter array clamps to its last entry via `min(bucket, size-1)`.
 
 ## Time Schema
 

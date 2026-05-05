@@ -35,6 +35,19 @@ run easier — what's the *next* thing that compounds?)
   the flag is set. Maeve (`first_quest_done`), Lyra (`trusts_player`),
   Mara (`good_customer`) each ship 4 warmed variants in WorldBuilder.NPCS.
   Every other NPC has empty `warm_*` fields and behaves unchanged.
+- ✅ **Resolved 2026-05-04 (run 3 follow-up):** World-flag warmed dialogue
+  tier added to NPC.gd as a SECOND lower-priority warmed layer
+  (`warmed_world_flag` / `warmed_world_dialogue_variants`). Lyra now has 4
+  extra lines that fire on `lyra_potion_brew`. Composes with the integrator's
+  `warmed_flag` tier — NPC-flag warm beats world-flag warm beats time-of-day.
+  Consumes `World.world_flags` which had no other readers until now.
+- 🔥 **Top-priority next:** Faction-pressure dialogue. NPC.gd already
+  resolves the World node and has the precedent of consulting it inside
+  `_on_interact()`. One more tier — between world-flag warm and time-of-day
+  variants — could let Maeve sense `World.faction_pressure("whisperwood_goblins")
+  < 0.4` and say "the Whisperwood is forgetting the goblins." Closes the
+  consequence-resolver loop: factions go from "written by quests" to
+  "spoken by NPCs" without any new primitive.
 - 🔥 **Adjacent next:** Goblin spawn density should read
   `World.faction_pressure("whisperwood_goblins")`. Lower pressure → fewer
   patrols / longer respawn. Single read, big behavior delta.
@@ -49,15 +62,15 @@ run easier — what's the *next* thing that compounds?)
 (Tracks who has spoken to whom, who has been thanked, who has been ignored.
 Populated as runs ship reactive dialogue.)
 
-| NPC                  | Role     | Player relationship | Possible memory flags |
-|----------------------|----------|---------------------|------------------------|
-| Elder Maeve          | quest    | warms after first quest | `first_quest_done` (Whisperwood Cleansing) |
-| Smith Edda           | smithy   | neutral             | (forge UI not shipped)         |
-| Mara the Merchant    | shop     | warms after ear bounty | `good_customer` (ears_for_mara) |
-| Herbalist Lyra       | alchemy  | warms after pelts   | `trusts_player` (pelt_for_lyra) |
-| Innkeeper Bram       | inn      | neutral             | (no quest yet)                 |
-| Stablemaster Roan    | stable   | neutral             | (no quest yet)                 |
-| Trainer Hala         | trainer  | neutral             | (no quest yet)                 |
+| NPC                  | Role     | Player relationship | Reactive lines (run 3) | Memory flags consumed |
+|----------------------|----------|---------------------|------------------------|------------------------|
+| Elder Maeve          | quest    | warms after first quest | ✅ 4 (npc-flag, integrator) | `first_quest_done` (Whisperwood Cleansing) |
+| Smith Edda           | smithy   | neutral             | ❌ (forge UI not shipped) | —                       |
+| Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | `good_customer` (ears_for_mara) |
+| Herbalist Lyra       | alchemy  | warms after pelts   | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | `trusts_player` (pelt_for_lyra), `lyra_potion_brew` (world flag) |
+| Innkeeper Bram       | inn      | neutral             | ❌ (no quest yet) | —                       |
+| Stablemaster Roan    | stable   | neutral             | ❌ (no quest yet) | —                       |
+| Trainer Hala         | trainer  | neutral             | ❌ (no quest yet) | —                       |
 
 Live data in `World.npc_flags[npc_name] -> Array[String]`. Read with
 `World.npc_has_flag(npc, flag)`. Mutated by quest consequences only — never

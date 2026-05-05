@@ -158,6 +158,16 @@ const NPCS = [
 		"Ask if you need a greater potion. For you, the moss opens a little longer.",
 		"The garden in my memory has one more bloom now. Yours, friend.",
 		"Owls still cry, but you've made my shelves richer. Sleep well.",
+	 ],
+	 # COMPOUND (run 3 follow-up): world-flag warmed tier. Fires when the
+	 # village knows the recipe (`lyra_potion_brew`) even if the player
+	 # personally hasn't pelted yet. Lower priority than `warm_flag` above.
+	 "warm_world_flag":"lyra_potion_brew",
+	 "warm_world_lines":[
+		"The greater salve is brewing — come back at dusk for the first batch.",
+		"Word of the salve has reached two villages. I'll need more pelts soon.",
+		"Lanterns are lit late. The mortar is loud. Good problems, these.",
+		"Even at this hour the kettle bubbles. Try a sip, on the house.",
 	 ]},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
 	 "line":"Pull up a stool. Rest your bones.",
@@ -952,6 +962,11 @@ func _make_npc(data: Dictionary) -> void:
 	# wire the flag name + warm variants so NPC.gd can consult World.npc_has_flag().
 	npc.warmed_flag = String(data.get("warm_flag", ""))
 	npc.warmed_dialogue_variants = PackedStringArray(data.get("warm_lines", []))
+	# COMPOUND (run 3 follow-up): also wire the lower-priority world-flag tier
+	# so an NPC can react to global story beats (`World.world_flags`) when the
+	# player hasn't personally earned a memory yet.
+	npc.warmed_world_flag = String(data.get("warm_world_flag", ""))
+	npc.warmed_world_dialogue_variants = PackedStringArray(data.get("warm_world_lines", []))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()

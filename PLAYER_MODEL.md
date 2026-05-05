@@ -113,3 +113,13 @@ loops feel like the world relents — both child-friendly outcomes per Rule 6.
   - `Items.gd` `DROP_TABLE.goblin`: trimmed `rusty_sword` (12 → 8) and `goblin_ear` (40 → 38), doubled `steel_blade` (2 → 4), lifted `hp_potion_s` (35 → 36) and `iron_sword` (7 → 9). Less junk-on-pickup since the player spawns with iron_sword equipped; real upgrade chance from goblin grind doubles.
   - `Items.gd` `DROP_TABLE.wolf`: shifted 3 weight points from pots/pelts into the gear band (`leather` 10 → 12, `chainmail` 4 → 6, `steel_blade` 3 → 4); pots 25 → 22, pelts 50 → 48. Wolves now feel like the mid-tier upgrade enemy the world model implies. Total weight preserved at 92.
   - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, `xp_for_next_level()` could *also* read it — the constants `85 / 55 / 7` would become `lerp(80, 95, pressure)` etc., letting a stressed player ding faster (more frequent power spikes = recovery valve) without softening for a calm player.
+
+- **2026-05-04 (run 3 follow-up)** — Layered a world-flag warmed dialogue
+  tier on top of the integrator's pattern-A NPC-flag tier. Lyra now has 4
+  extra lines that fire on `lyra_potion_brew` (a *world* flag, not a
+  personal one) so even on a brand-new save where the player hasn't pelted
+  yet, the village feels like it has continuity — the recipe is "loose."
+  This serves **Alden** in a slightly different way than personal warming
+  serves him: it treats the village itself as a character he can know,
+  separate from any one NPC liking him. **Owen**'s playstyle is unaffected
+  (still one-button interact, no friction added).

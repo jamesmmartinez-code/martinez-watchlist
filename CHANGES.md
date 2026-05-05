@@ -452,3 +452,105 @@ Adjacent option: spawn density tied to `faction_pressure` — a single line in
 the goblin spawner that reduces pack size as pressure decays. Lower payoff
 than dialogue but lower risk.
 
+
+
+## 2026-05-04 — Auto run: Reactive dialogue follow-up — world-flag tier (run 3 follow-up)
+
+### Context
+The integrator commit (`8380282 — Integrate: pattern A`) shipped the NPC-flag
+warmed dialogue layer ahead of this run, using a `warmed_flag: String` /
+`warmed_dialogue_variants: PackedStringArray` schema. This run was about to
+land a parallel Dictionary-based version of the same feature. Per Rule 1
+("compound, don't sprawl") I dropped that commit completely and instead
+layered ONE genuinely new tier on top of pattern A's schema.
+
+### What
+Added a SECOND warmed tier to NPC.gd, keyed on a *world* flag rather than an
+NPC flag. It uses pattern A's exact array shape — singular `warmed_world_flag:
+String` and `warmed_world_dialogue_variants: PackedStringArray` — so the two
+tiers compose naturally instead of competing. Lookup precedence in
+`_on_interact()`:
+  1. NPC-flag warmed line (integrator) — "you helped *me* personally"
+  2. World-flag warmed line (this run)  — "you helped the world / our cause"
+  3. Time-of-day variant (run 2 polish) — ambient personality
+  4. Single fallback `dialogue` line
+
+Lyra picks up 4 new lines on the new tier, gated by `lyra_potion_brew` (a
+world flag set by `pelt_for_lyra`'s `consequence`). Result: even before a
+specific player has personally pelted, if any prior save unlocked the recipe
+for the village, Lyra's lines reflect it.
+
+### Why (Rule 1 — compounds, doesn't sprawl)
+ONE new primitive (world-flag-keyed warmed lines) wired into TWO existing
+systems:
+1. **Integrator's warmed dialogue** (just-shipped) — same export shape
+   (`String` flag name + 4-bucket `PackedStringArray`), same time-of-day
+   bucket math, same `_make_npc()` plumbing pattern.
+2. **`World.world_flags` store** (run 2) — a map that has been written by
+   3 quests but had ZERO consumers until this run. Pattern A reads
+   `npc_flags`; this tier reads `world_flags`. Together they consume both
+   stores the consequence resolver writes.
+
+This satisfies Rule 5 (endlessness from memory + reaction, not new tiles):
+the world now contains a fact ("the salve recipe is loose") that surfaces
+through dialogue independently of any individual player's history.
+
+### Files changed
+- `eldoria-godot/scripts/NPC.gd` — added `warmed_world_flag` /
+  `warmed_world_dialogue_variants` exports; in `_on_interact()`, inserted
+  the world-flag check between the NPC-flag check and the variant render,
+  guarded by `variants == dialogue_variants` so tier 1 always wins when both
+  fire. Runtime guards on `has_method("has_world_flag")` keep older saves /
+  older `World` autoloads from crashing.
+- `eldoria-godot/scripts/WorldBuilder.gd` — Lyra's `NPCS` entry gains
+  `warm_world_flag` + 4 `warm_world_lines`. `_make_npc()` copies the new
+  fields onto the NPC node (mirrors the integrator's existing two lines).
+- `WORLD_STATE.md` — NPC Memory table now shows Lyra's two reactive layers;
+  Active Hooks reset (faction-pressure dialogue is now top-priority).
+- `SYSTEM_REGISTRY.md` — NPC Schema rewritten to document the full 4-tier
+  precedence (was still marked "Reserved for reactive dialogue" before).
+- `PLAYER_MODEL.md` — polish note: world-flag tier serves Alden by making
+  the village feel like it remembers events even on first-time interactions.
+- `CHANGES.md` — this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `world_flags` finally
+        consumes a store that has been writable since run 2 with no readers.
+        WORLD_STATE.md updated to reflect the new consumer.
+- (ii)  Queryable schema: `NPC.warmed_world_flag: String` +
+        `NPC.warmed_world_dialogue_variants: PackedStringArray` —
+        documented in SYSTEM_REGISTRY.md "NPC Schema" alongside pattern A's
+        fields, with full 4-tier precedence rules.
+- (iii) Player-facing feedback: 4 new dialogue strings (Lyra × 4 buckets)
+        surfaced through the existing `World.show_dialogue` panel; total
+        warmed strings in production = 16 (integrator's 12 + this run's 4).
+- (iv)  Evaluation: parens/quotes balance check passes for both touched
+        files; runtime `has_method("has_world_flag")` guard so an older
+        World autoload still falls through cleanly to tier 3; the
+        `variants == dialogue_variants` short-circuit guarantees tier 1 is
+        never demoted by tier 2.
+- (v)   Future hooks (≥ 2):
+        1. Faction-pressure dialogue: NPC.gd already has the World node
+           reference and the tier-stacking pattern. A new tier between
+           "world-flag warm" and "time-of-day variant" reading
+           `World.faction_pressure(...)` would close the consequence loop
+           — factions become *spoken* by NPCs, not just data.
+        2. Smith Edda forge UI (backlog #4) can now branch its enchant menu
+           greeting on a future `edda_forge_open` world flag using the same
+           `warm_world_flag` field. No NPC.gd changes needed.
+        3. The 4 still-neutral NPCs (Edda, Bram, Roan, Hala) get reactive
+           dialogue automatically the moment they get quests — schema is
+           in place, code path is exercised, only WorldBuilder edits left.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Faction-pressure dialogue** — see WORLD_STATE.md top-priority hook. The
+runway is shorter than ever: NPC.gd already touches the World node, already
+walks tiers, already short-circuits. One read of `World.faction_pressure()`,
+one new tier slot, and the consequence resolver loop is fully closed.
+
+Adjacent option: faction pressure → spawn density. Lower payoff than
+dialogue (player feels it less directly than a line of speech) but lower
+risk and would close the same unread-output gap.
