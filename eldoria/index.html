@@ -110,56 +110,34 @@ body {
 		</div>
 
 		
-		<style>
-			#focus-hint {
-				position: fixed;
-				top: 50%; left: 50%;
-				transform: translate(-50%, -50%);
-				background: rgba(255, 195, 60, 0.95);
-				color: #1a0e00;
-				padding: 18px 32px;
-				border-radius: 12px;
-				font: bold 22px/1.3 system-ui, sans-serif;
-				border: 3px solid #1a0e00;
-				cursor: pointer;
-				z-index: 9999;
-				display: none;
-				box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-				text-align: center;
-			}
-			#focus-hint:hover { background: rgba(255, 215, 100, 1); }
-		</style>
-		<div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:14px;font-weight:normal;">(WASD won't work until you click on the game)</span></div>
-		<script>
-		(function() {
-			const c = document.getElementById('canvas');
-			const hint = document.getElementById('focus-hint');
-			function focusCanvas() { try { c.focus(); } catch(e){} }
-			function checkFocus() {
-				if (document.activeElement !== c) {
-					hint.style.display = 'block';
-				} else {
-					hint.style.display = 'none';
-				}
-			}
-			// Auto-focus on load
-			window.addEventListener('load', () => { setTimeout(focusCanvas, 300); setTimeout(checkFocus, 800); });
-			// Re-focus on ANY click anywhere on page
-			document.addEventListener('mousedown', () => { setTimeout(focusCanvas, 0); setTimeout(checkFocus, 50); });
-			document.addEventListener('click', () => { setTimeout(focusCanvas, 0); setTimeout(checkFocus, 50); });
-			// Click the hint to focus
-			hint.addEventListener('click', () => { focusCanvas(); checkFocus(); });
-			// Periodic re-check (in case something else stole focus)
-			setInterval(checkFocus, 2000);
-			// Re-focus when window/tab regains focus
-			window.addEventListener('focus', () => { focusCanvas(); checkFocus(); });
-			console.log('[Eldoria] focus manager active — canvas tabindex=1, click anywhere to focus');
-		})();
-		</script>
+        <style>
+            #focus-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+                background:rgba(255,195,60,0.95);color:#1a0e00;padding:18px 32px;
+                border-radius:12px;font:bold 22px/1.3 system-ui,sans-serif;
+                border:3px solid #1a0e00;cursor:pointer;z-index:9999;display:none;
+                box-shadow:0 6px 20px rgba(0,0,0,0.6);text-align:center;}
+            #focus-hint:hover{background:rgba(255,215,100,1);}
+        </style>
+        <div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:14px;font-weight:normal;">(WASD won't work until you click on the game)</span></div>
+        <script>
+        (function(){
+            const c=document.getElementById('canvas');
+            const hint=document.getElementById('focus-hint');
+            function focusCanvas(){try{c.focus();}catch(e){}}
+            function checkFocus(){if(document.activeElement!==c){hint.style.display='block';}else{hint.style.display='none';}}
+            window.addEventListener('load',()=>{setTimeout(focusCanvas,300);setTimeout(checkFocus,800);});
+            document.addEventListener('mousedown',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,50);});
+            document.addEventListener('click',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,50);});
+            hint.addEventListener('click',()=>{focusCanvas();checkFocus();});
+            setInterval(checkFocus,2000);
+            window.addEventListener('focus',()=>{focusCanvas();checkFocus();});
+            console.log('[Eldoria] focus manager active — canvas tabindex=1');
+        })();
+        </script>
 
-		<script src="index.js"></script>
+        <script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":152123124,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":152123076,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
