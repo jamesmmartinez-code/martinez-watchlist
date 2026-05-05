@@ -46,9 +46,12 @@ class_name Achievements
 
 const ACHIEVEMENTS: Dictionary = {
 	# Tier 1 — first quest completed (any of three starter quests trip this).
+	# REFINE: character — desc warmed from imperative ("Complete your first quest…")
+	# to a Ghibli-mentor observation per THEME §7 ("warm gravitas"). One sentence,
+	# child-readable (Alden 9), no mechanical "first quest" phrasing.
 	"first_steps": {
 		"name": "First Steps",
-		"desc": "Complete your first quest in the realm.",
+		"desc": "A first errand done. The road has begun to know your step.",
 		"icon": "🌱",
 		"icon_path": "res://assets/icons/achievements/first_steps.png",
 		"title_text": "the Apprentice",
@@ -68,7 +71,9 @@ const ACHIEVEMENTS: Dictionary = {
 	# yields cleanly when the player earns a faction-driven title.
 	"first_forge": {
 		"name": "First Forge",
-		"desc": "Bring Edda to the anvil — feel her hammer.",
+		# REFINE: character — desc made specific to Edda's soot and spark
+		# (THEME §4 — Smith Edda silhouette: "soot-streaked, leather apron, hammer").
+		"desc": "Edda's hammer, your spark. The first reforge holds.",
 		"icon": "🔨",
 		"icon_path": "res://assets/icons/achievements/first_forge.png",
 		"title_text": "the Forged",
@@ -78,7 +83,10 @@ const ACHIEVEMENTS: Dictionary = {
 	# Tier 2 — wolves driven below the run-6 first cliff (4 -> 3 wolves).
 	"pack_thinner": {
 		"name": "Pack Thinner",
-		"desc": "Drive the dire wolves below their first threshold.",
+		# REFINE: character — desc swapped from threshold-jargon to a painterly
+		# observation per THEME §1 ("painterly", "lived-in"). The number stays in
+		# the predicate; the toast no longer leaks designer vocabulary at the player.
+		"desc": "The pack grows wary. The Whisperwood breathes a little easier.",
 		"icon": "🐺",
 		"icon_path": "res://assets/icons/achievements/pack_thinner.png",
 		"title_text": "Wolf-Friend",
@@ -115,7 +123,10 @@ const ACHIEVEMENTS: Dictionary = {
 	# Tier 2 — goblins driven below the run-5 second cliff (cleansing landed).
 	"goblin_bane": {
 		"name": "Bane of the Whisperwood",
-		"desc": "Push the Whisperwood goblins back from the village.",
+		# REFINE: character — desc warmed from "push back" to drums-and-quiet
+		# imagery per THEME §6 ("distant goblin drums" is in the canonical SFX set)
+		# and §8 (Briarwood as lived-in hamlet). Still one sentence.
+		"desc": "The drums fall quiet. Briarwood's nights stretch longer in peace.",
 		"icon": "⚔",
 		"icon_path": "res://assets/icons/achievements/goblin_bane.png",
 		"title_text": "Goblin-Bane",
@@ -125,7 +136,11 @@ const ACHIEVEMENTS: Dictionary = {
 	# Tier 3 — earned trust of three core villager NPCs.
 	"trusted_three": {
 		"name": "Trusted by Three",
-		"desc": "Earn the warm regard of Maeve, Lyra, and Mara.",
+		# REFINE: character — desc warmed; "warm regard" is correct but flat.
+		# Names them as people who *speak* the player's name (THEME §7 "old
+		# promises, mended trust"; PLAYER_MODEL Alden affinity for being
+		# named-by-NPCs). Stays under 90 chars to fit a toast.
+		"desc": "Maeve, Lyra, and Mara say your name without caution.",
 		"icon": "🤝",
 		"icon_path": "res://assets/icons/achievements/trusted_three.png",
 		"title_text": "the Trusted",
@@ -143,7 +158,11 @@ const ACHIEVEMENTS: Dictionary = {
 	# the most prestigious so the auto-equipper picks it once Owen gets here.
 	"realm_warden": {
 		"name": "Warden of the Realm",
-		"desc": "Both factions humbled, three villagers' trust earned.",
+		# REFINE: character — desc gathers the prior beats into one warm
+		# closing line per THEME §1 ("hopeful — the world is wounded but
+		# worth saving") and §7 (Ghibli mentor cadence). Owen's mastery
+		# rung deserves the most evocative copy in the file.
+		"desc": "Two factions stilled, three trusts kept. The realm rests easier with you in it.",
 		"icon": "🏰",
 		"icon_path": "res://assets/icons/achievements/realm_warden.png",
 		"title_text": "Warden of Eldoria",
