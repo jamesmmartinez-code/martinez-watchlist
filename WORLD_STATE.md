@@ -1930,3 +1930,138 @@ Old Faerie lexicon now: 19 words. Stone-Tongue lexicon now: 3 words.
   decision-not-yet-made about Briarwood is the load-bearing seed.
 - A **third fragment** is *allowed* but should be deferred at least
   one Lore run; let the pair sit.
+
+## Lore Run 10 — Item flavor seeded; Old Faerie lexicon at 22
+
+*Tuesday 2026-05-05.* Priority 4 (`data/items_flavor.json`) is shipped — the
+single artifact this run. All 25 entries in `Items.gd → ITEMS` now have
+hand-painted prose under `data/items_flavor.json`, keyed 1:1 by item id.
+Schema is `_meta` + `items.<id>.{name, flavor, whisper, attribution,
+origin, glossary}`. Canonical voice (THEME §7) preserved; no NPC's bible
+contradicted.
+
+### What is now canon (load-bearing)
+
+- **Three new Old Faerie words enter canon**, all object-shaped:
+  - ***haelen*** *(HAY-len)* — "the holding-warm." A thing that has held
+    warmth long enough to remember it: a banked fire at first light, a
+    hand-me-down cloak, a tea cup at the third sip. Used of `cloth`,
+    `talisman_oak`, `wolf_pelt`. Lyra's natural register; Maeve's at
+    Vigil; Bram knows it without saying.
+  - ***mor-vaere*** *(MOHR VAIR-uh)* — "twice-given." An object that was
+    a gift before it was a hand-me-down — the gentlest word for a thing
+    worn first by someone who loved you. Used of `leather` (Roan's
+    saddler-stock, Tael-cut). Roan's register; would also fit Maeve.
+  - ***thrennen*** *(THREN-en)* — "the keeping-edge." The patience of a
+    blade whose edge does not blunt because someone hones it every
+    Foxthaw without fail; said also of the keeping of small promises.
+    Used of `iron_sword`. Edda's register.
+- **Old Faerie lexicon now: 22 words.** (Was 19; +3 this run.)
+- **Stone-Tongue lexicon held at 3 words.** No new entries; cap respected.
+- **`steel_blade` is canonically Edda's *haethe*-blade.** The first that
+  rang true after Halsa. Item flavor pins it; future writers must not
+  contradict (no second "haethe-blade" item, no other smith's *haethe*
+  steel).
+- **`hp_potion_l` is canonically Lyra's *thalen-ai* salve.** The "second
+  jar" Lyra slides across in `after_first_quest_complete` is now
+  formally the same recipe the bag carries — Wennet's coat-pocket
+  lineage. Builder may, on `pelt_for_lyra` turn-in, prefer to award one
+  `hp_potion_l` rather than two if a future variant wants the
+  not-named-Roan-jar handoff to read as the ONE jar that left her
+  shelf.
+- **`emberforge` carries the Brigid-blood drop.** Edda's unnamed
+  forge-secret (smith_edda.md) is now load-bearing on a single bag item.
+  This is the first time the dream-blood appears in canon outside her
+  bible; its presence is implied by *flavor* prose ("a single drop of
+  the smith's own blood ... where her thumb-scar tells"), never stated.
+  Future writers MUST keep it implied. The flavor never says "Edda."
+- **`guardian_core` and `dragonscale` are Sundering-relics.** Both pin
+  to `lore/world.md` (Vellum, the Pale Wyrm). They are the only two bag
+  items rated as pre-Sundering by canon; future legendaries should
+  consider whether they need to be a third or whether referencing one
+  of these two suffices.
+- **`crystal_shard` carries the cave-thirre and Edda's reforge ladder
+  (Items.gd §Smith Edda forge).** The flavor explicitly does not name
+  where the grindstone-dust goes; it is *kerritha-ed*. Builder/UI must
+  not surface a "shard dust" mechanic.
+
+### Cross-references seeded this run
+
+- **Smith Edda**: every Edda-made item references her bible (Halsa, the
+  haethe, Brigid's mark, the dream-blood). `iron_sword`, `steel_blade`,
+  `frost_saber`, `ember_axe`, `emberforge` all carry her hand. Builder
+  may, on a future Edda-warm dialogue tier, gate one extra line on
+  `bag_contains_haethe_blade` (i.e. player carries a `steel_blade`):
+  *"You carry the song. Mind the kettle's on."*
+- **Herbalist Lyra**: `hp_potion_s`, `hp_potion_l`, `mp_potion`,
+  `wolf_pelt`, `talisman_oak` all carry her register. The thalen-ai
+  pin on `hp_potion_l` formalizes the canon already implied by her
+  dialogue tree.
+- **Stablemaster Roan**: `leather`, `wolf_fang`, `crit_amulet` all carry
+  his register and his Briar's Run / Stone Crown lineage. The
+  *Hawk's Amulet* specifically references his never-worn one — a hook
+  for a future "Roan's amulet" optional turn-in.
+- **Mara the Merchant**: `goblin_ear`, `ring_focus`, `warlord_horn` all
+  pass through her ledger. *"Honest count, honest pay"* — line is in
+  her register and reusable.
+- **Elder Maeve**: `guardian_core`, `warlord_horn` named in her voice;
+  the long memory NPC, by canon. Maeve does NOT speak of items she
+  forged or grew — she speaks of items the village has lived around.
+- **The Pale Wyrm and Vellum**: load-bearing on `frost_saber`,
+  `dragonfang`, `dragonscale`, `guardian_core`. Future Sundering-tier
+  legendaries should reference one of these gods, not invent new ones.
+
+### Withholding ledger (preserved this run)
+
+- The Antler-King is not named; no item references the Stag-Court's
+  authority. *Holds.*
+- The Steppe-rider of the Caves fragment is not named; no item carries
+  his hand or his kin's name. *Holds.*
+- Cailen's Horseshoe is referenced only obliquely (the Hawk's Amulet
+  flavor stays in Stone Crown register without naming Maeve's brother).
+  The horseshoe remains a hook for a future quest run, not an in-bag
+  item this run. *Holds.*
+- Nothing past the forest-line is described. *Holds.*
+- Stone-Tongue cap at 10 words held; no new entries this run.
+- Edda's dream-blood drop (smith_edda.md §"A secret she keeps") is
+  preserved as implied-only. The flavor on `emberforge` does not say
+  "Brigid told her in a dream." *Holds.*
+
+### Hooks queued for future runs
+
+- **Cailen's Horseshoe** — still the cleanest next quest anchor.
+  Destination is a *thirre*-stone on the High Steppe (per Run 9
+  withholding ledger). Any future writer should ship the quest text
+  before adding the horseshoe as an in-bag material — it should enter
+  canon as a quest-finished trophy, not a drop.
+- **Edda's reforge dialogue** — `Items.gd` ships the forge ladder
+  (REFORGE_COSTS, REFORGE_DAMAGE_BONUS) but Edda's dialogue tree does
+  not yet surface it. A `forge_offer` line keyed on
+  `bag.crystal_shard >= 5` is the natural compound between this run's
+  flavor canon and the existing forge mechanics.
+- **`bag_contains_haethe_blade` warm tier** — see Edda cross-reference
+  above. The single line is small, the hook is large; it would close a
+  fifth NPC dialogue tier (after warm_flag, warm_world_flag,
+  warm_faction, time-of-day).
+- **A third codex fragment** is *still* allowed but should be deferred
+  another Lore run. Two fragments and a flavor file in one season is
+  enough; let the pair sit, let the flavor land.
+- **Audio**: when player picks up a `crystal_shard` for the first time,
+  a single low Vellum-pitch note (matching the run-9 cave audio cue).
+  Audio agent owns; this run's flavor opens the door.
+
+### Top-priority next (refresh)
+
+- **Faction politics** (priority 6) — still not started. Iron Crown's
+  decision-not-yet-made about Briarwood is the load-bearing seed.
+  This is the cleanest next big lore run — three Crowns, three
+  factions, one decision about the valley.
+- **Codex entry on the *haethe*** (LOREKEEPER hook from
+  smith_edda.md §lore_hooks) — Edda is the natural narrator. The
+  `steel_blade` flavor this run is *adjacent* to that codex but does
+  not replace it. Future Lore run could ship the codex page and
+  back-reference this flavor file.
+- **Item flavor v2** — the four `chest_*` and `*_warlord` entries above
+  could grow optional `lore_unlock` and `seasonal_flavor` fields if a
+  Builder run wants them. Current schema accommodates additions
+  without breaking; next writer should add fields, not change keys.
