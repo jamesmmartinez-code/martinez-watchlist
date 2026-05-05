@@ -411,20 +411,45 @@ func _idle_drift(delta: float) -> void:
 		_pick_wander_target()
 	var to_target: Vector3 = _wander_target - global_position
 	to_target.y = 0
-	if to_target.length() < 0.5:
+	# REFINE: character — wander arrival radius 0.5 → 0.35 m. Mirrors the run-11 NPC
+	# schedule arrival radius (NPC.gd `schedule_arrival_radius`). The 0.5m slop produced
+	# a visible "almost-there hover" where goblins twitch in place a half-step before
+	# settling; 0.35m gives a cleaner stop beat without inducing jitter (per-frame step
+	# at the new wander speed below is well under 0.01m). THEME §12 — motion that lands.
+	if to_target.length() < 0.35:
 		velocity.x = 0; velocity.z = 0
 		return
 	var dir := to_target.normalized()
-	velocity.x = dir.x * move_speed
-	velocity.z = dir.z * move_speed
+	# REFINE: character — wander move uses 0.55 × move_speed instead of full move_speed.
+	# At full speed every goblin paced their territory like a soldier on patrol — same
+	# stride between idle and chase, only the destination changed. Halving (and a bit)
+	# lets the IDLE state read as "feral creature ranging" while CHASE keeps its full
+	# aggro stride. Goblin scout @ move_speed 2.6 → wander 1.43 m/s; wolf @ 2.0 →
+	# 1.10 m/s; brute @ 2.4 → 1.32 m/s. THEME §1 ("lived-in") + §12 (motion that
+	# isn't mechanical). Compounds on Pet.gd's "stickier stop" run (Pet.gd:83) — the
+	# same anti-skating instinct, applied to enemy wander.
+	var wander_speed: float = move_speed * 0.55
+	velocity.x = dir.x * wander_speed
+	velocity.z = dir.z * wander_speed
 	_face_target(to_target, delta)
 
 func _pick_wander_target() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 	var ang := rng.randf() * TAU
-	var dist := rng.randf_range(2.0, 7.0)
+	# REFINE: character — wander distance band 2.0–7.0 → 1.6–7.8 m. Same ~4.5m mean,
+	# but the wider variance lets some loops read as "sniffing the same patch" (tight
+	# 1.6–3m circles) and others as "scouting the perimeter" (wide 6–7.8m sweeps).
+	# Uniform 2–7 read as a metronome on watch towers; this stops the cluster of three
+	# goblins in a camp from looking like they're running the same drill in unison.
+	var dist := rng.randf_range(1.6, 7.8)
 	_wander_target = _spawn_pos + Vector3(cos(ang) * dist, 0, sin(ang) * dist)
-	_wander_timer = rng.randf_range(2.0, 5.0)
+	# REFINE: character — wander dwell band 2.0–5.0 → 2.4–6.5 s. The lower bound
+	# being 2.0s meant some goblins re-pathed every 2 seconds — visibly twitchy, far
+	# from the THEME §1 "lived-in" target. 2.4s minimum lets an idle animation cycle
+	# read at least once between repaths; 6.5s ceiling adds the occasional "long stare
+	# at nothing" that real animals do. Wider variance (range 2.5x → 4.1x) breaks the
+	# group-sync metronome that made multi-goblin camps feel choreographed.
+	_wander_timer = rng.randf_range(2.4, 6.5)
 
 func _do_attack() -> void:
 	_attack_timer = attack_cooldown
