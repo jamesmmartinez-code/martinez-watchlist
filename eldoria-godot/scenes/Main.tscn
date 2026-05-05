@@ -218,6 +218,18 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 text = "Gold: 50"
 
+[node name="RenownLabel" type="Label" parent="UI/HUD"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 158.0
+offset_right = 280.0
+offset_bottom = 186.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.78, 0.32, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Renown: 0"
+
 [node name="QuestPanel" type="Panel" parent="UI"]
 visible = false
 anchor_left = 1.0
