@@ -158,7 +158,15 @@ const NPCS = [
 		"You hear that midday hush? That's a forest with fewer wicked things in it.",
 		"The light slants through the trees and not a goblin lantern in sight — beautiful.",
 		"Owls again at last — they only sing when the wood is theirs again. Sleep well.",
-	 ]},
+	 ],
+	 # COMPOUND (run 9 — JSON dialogue tree): opt Maeve into the JSON-tree
+	 # resolver. NPC.gd consults `data/dialogue/elder_maeve.json` first; on
+	 # miss (no matching predicate) it falls back to the variants above.
+	 # Lights up `low_health_player`, `boss_slain`, `after_first_quest_complete`,
+	 # plus seasonal hooks (`longnight_vigil`, `honeysong_eve`) the day a
+	 # festival/calendar system lands. Lines above are kept as fallback so
+	 # nothing regresses if the JSON ever fails to load.
+	 "use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
 	 "lines":[
@@ -166,7 +174,13 @@ const NPCS = [
 		"*hammer-clang* — Steel won't shape itself. Got ore, or just standing there?",
 		"Forge cools by sundown. Last orders, friend.",
 		"Coals are banked. Come back when you've slept.",
-	 ]},
+	 ],
+	 # COMPOUND (run 9 — JSON dialogue tree): opt Edda into the JSON-tree
+	 # resolver. NPC.gd consults `data/dialogue/smith_edda.json` first; on
+	 # miss falls back to the four lines above. Lights up `low_health_player`,
+	 # `boss_alive`, `boss_slain`, `after_first_quest_complete`, plus seasonal
+	 # hooks (`longnight_vigil`, `spring_first_warm_day`).
+	 "use_json_dialogue":true},
 	{"name":"Mara the Merchant", "role":"shop",    "pos":Vector3(  3,  0, -5), "tint":Color(0.7,0.5,0.25),
 	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
 	 "lines":[
@@ -1032,6 +1046,9 @@ func _make_npc(data: Dictionary) -> void:
 	npc.warmed_faction_id = String(data.get("warm_faction_id", ""))
 	npc.warmed_faction_below = float(data.get("warm_faction_below", 1.0))
 	npc.warmed_faction_dialogue_variants = PackedStringArray(data.get("warm_faction_lines", []))
+	# COMPOUND (run 9 — JSON dialogue tree): opt-in flag for JSON-tree
+	# resolution via DialogueDB. Defaults false so legacy NPCs are untouched.
+	npc.use_dialogue_json = bool(data.get("use_json_dialogue", false))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()

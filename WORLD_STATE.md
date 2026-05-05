@@ -102,6 +102,30 @@ run easier — what's the *next* thing that compounds?)
   Maeve-on-goblins-pattern reuse + future bandit/skeleton schema all
   validate the run-7 mastery threshold). Pattern proven: ANY NPC can
   speak ANY faction's state via data-only edits.
+- ✅ **Resolved 2026-05-04 (run 9):** JSON dialogue trees made live.
+  New `DialogueDB.gd` static helper reads `data/dialogue/<npc_slug>.json`
+  and applies a 9-step predicate priority (low_health_player → boss_slain →
+  boss_alive → high_renown → stranger → festival → after_first_quest_complete
+  → mood bucket → default). Maeve and Edda are opted in via
+  `"use_json_dialogue": true` in `WorldBuilder.NPCS`. The mood-keyed JSONs
+  shipped from `auto/lore` on 2026-05-04 (and flagged dormant by the
+  integrator) are now the FIRST tier of NPC.gd's dialogue resolution —
+  above all 4 existing tiers (warm_flag / warm_world_flag /
+  warm_faction_id / mood bucket). Misses fall through cleanly so opt-in is
+  purely additive. Four predicates (`boss_alive`, `high_renown`, `stranger`,
+  festival keys) are fail-soft on World fields not yet shipped (`player_renown`,
+  `npc_seen`, `current_festival`, `seen_warlord`); they LIGHT UP the day
+  those fields land — no DialogueDB / JSON edit required, and Maeve & Edda
+  already author lines for them. Closes the integrator-noted gap from
+  2026-05-04: lore-keeper output is no longer canon-only.
+- 🔥 **Top-priority next:** ship JSON dialogue trees for the other 5 NPCs
+  (**Mara the Merchant**, **Herbalist Lyra**, **Innkeeper Bram**,
+  **Stablemaster Roan**, **Trainer Hala**). Pure data work — drop a
+  `data/dialogue/<slug>.json` file with the schema documented in
+  SYSTEM_REGISTRY.md "JSON Dialogue Tree Schema" + flip
+  `"use_json_dialogue": true` in `WorldBuilder.NPCS`. Each NPC gets the
+  same 9-tier predicate space without a single GDScript edit. Highest-leverage
+  next move because the SYSTEM is already shipped and tested on 2 NPCs.
 - 🔥 **Top-priority next:** Roan-issued wolf-bounty quest (-0.1 reducer
   for `dire_wolves`). Mirrors `ears_for_mara` as the second goblin reducer.
   After run 8, the dialogue tier is in place but Roan still has no QUEST
