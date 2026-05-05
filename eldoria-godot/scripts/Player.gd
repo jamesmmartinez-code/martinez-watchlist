@@ -1,18 +1,6 @@
 extends CharacterBody3D
 class_name Player
 
-# SAFE_SPAWN — clear open spot SOUTH of the well, on the main N-S path.
-# Verified clearance against every entry in WorldBuilder.gd:
-#   campfire (0,0,-2):    13m S — clear
-#   well (0,0,6):          4m S — clear of 1.1m radius well structure
-#   market stalls (±2.5,0,0): >10m S — clear
-#   Trainer Hala (0,0,-10): 20m S — clear (was the bug in v1 of this fix)
-#   nearest building (6,0,6): 7.2m diagonal — clear
-#   path: ON the north-south path z=-12..12, x=0
-# Old spawn (0,2,0) put player BETWEEN the stalls; old respawn (0,1,6.5)
-# put them INSIDE the well water. PX 2026-05-05.
-const SAFE_SPAWN := Vector3(0, 3.0, 10)
-
 # Realm of Eldoria — Player controller (third-person)
 # WASD or Arrow keys to move, Space to jump, E to interact, left-click to attack
 
@@ -63,7 +51,6 @@ var active_quest: Dictionary = {}    # {"target":"goblin", "needed":5, "killed":
 var mounted: bool = false
 var mount_node: Node3D = null
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -83,7 +70,6 @@ signal stats_changed
 signal interact_pressed
 
 func _ready() -> void:
-	print("[Player] BOOT: PX panic-key build add6ab5+ — keys: Backspace, F1, F2, ] (right-bracket)")
 	# PX hardening 2026-05-05: run input handler even if World pauses or scene gets paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	current_speed = walk_speed
@@ -149,7 +135,7 @@ func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = SAFE_SPAWN
+		global_position = Vector3(0, 3, 10)  # PX SAFE_SPAWN — clear of village
 		velocity = Vector3.ZERO
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
@@ -168,29 +154,20 @@ func _physics_process(delta: float) -> void:
 		_save_timer = 0.0
 		save_game()
 
-	# Gravity ALWAYS applies — even when dead. PX 2026-05-05 hardening:
-	# the old code returned early when is_dead, which meant zero gravity →
-	# user reported "I'm just floating here". Now you always fall to the ground.
-	if not is_on_floor():
-		velocity.y -= gravity * delta
-
-	# Stuck-recovery #3: if dead, auto-revive in 1.2s (was 5.0). Also: ANY
-	# movement input is a clear "I want to play" signal — clear is_dead now.
+	# Stuck-recovery #3: if dead but somehow still in physics for >5s, auto-revive.
 	if is_dead:
 		_dead_timer += delta
-		var _wants_to_play := Input.get_vector("move_left", "move_right", "move_forward", "move_back").length() > 0.1
-		if _wants_to_play or _dead_timer > 1.2:
+		if _dead_timer > 5.0:
 			is_dead = false
 			hp = max(1, hp)
 			_dead_timer = 0.0
-			print("[Player] auto-revive: cleared is_dead (input=%s, timer=%.2f)" % [str(_wants_to_play), _dead_timer])
-		else:
-			# Still dead this frame — apply move_and_slide so gravity actually
-			# moves the character down. Then bail before processing inputs.
-			move_and_slide()
-			return
+		return
 	else:
 		_dead_timer = 0.0
+
+	# Gravity
+	if not is_on_floor():
+		velocity.y -= gravity * delta
 
 	# Camera-relative input
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -282,7 +259,7 @@ func _panic_unstick(keycode: int) -> void:
 		mounted = false
 		mount_node = null
 		velocity = Vector3.ZERO
-		global_position = SAFE_SPAWN
+		global_position = Vector3(0, 3, 10)  # PX SAFE_SPAWN — clear of village
 		hp = max(1, hp)
 		_attack_timeout = 0.0
 		_dead_timer = 0.0
@@ -290,7 +267,7 @@ func _panic_unstick(keycode: int) -> void:
 	elif keycode == KEY_F1:
 		print("[Player] PANIC F1 — teleport to spawn")
 		velocity = Vector3.ZERO
-		global_position = SAFE_SPAWN
+		global_position = Vector3(0, 3, 10)  # PX SAFE_SPAWN — clear of village
 		is_attacking = false
 		is_dead = false
 		hp = max(1, hp)
@@ -371,18 +348,8 @@ func _roll_damage() -> Dictionary:
 
 func _spawn_crit_flash() -> void:
 	# A quick screen-edge flash via a Label3D popup at the player
-	var crit := Label3D.new()
-	crit.set_script(DAMAGE_NUMBER_SCRIPT)
-	crit.text = "CRIT!"
 	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.85,0.20) → (1.0,0.92,0.28) sits squarely in THEME §3 sunset-gold (#FFD86B family) instead of the slightly muddy mustard.
-	crit.font_size = 56
-	crit.outline_size = 8
-	crit.outline_modulate = Color(0, 0, 0)
-	crit.modulate = Color(1.0, 0.92, 0.28)
-	crit.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	crit.no_depth_test = true
-	crit.position = global_position + Vector3(0, 2.6, 0)
-	get_tree().current_scene.add_child(crit)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.0, 0.92, 0.28), 56, 8)
 
 func _play_anim(name: String) -> void:
 	if not animation_player:
@@ -417,17 +384,7 @@ func take_damage(amount: int) -> void:
 	stats_changed.emit()
 	get_tree().call_group("world", "play_sfx", "damage_taken")
 	# Damage number above player
-	var dn := Label3D.new()
-	dn.set_script(DAMAGE_NUMBER_SCRIPT)
-	dn.text = "-%d" % actual
-	dn.font_size = 32
-	dn.outline_size = 5
-	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.30, 0.30)
-	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	dn.no_depth_test = true
-	dn.position = global_position + Vector3(0, 2.4, 0)
-	get_tree().current_scene.add_child(dn)
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "-%d" % actual, Color(1.0, 0.30, 0.30), 32, 5)
 	if hp <= 0:
 		_die()
 
@@ -438,12 +395,12 @@ func _die() -> void:
 	get_tree().call_group("world", "play_sfx", "player_death")
 	# Death overlay
 	get_tree().call_group("world", "show_death_overlay")
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(2.5).timeout
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
 	# Well is at (0, 0, 6) per WorldBuilder
-	global_position = SAFE_SPAWN
+	global_position = Vector3(0, 3, 10)  # PX SAFE_SPAWN — was inside well
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
@@ -486,17 +443,7 @@ func gain_xp(amount: int) -> void:
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		# Level-up celebration popup
-		var pop := Label3D.new()
-		pop.set_script(DAMAGE_NUMBER_SCRIPT)
-		pop.text = "LEVEL UP!"
-		pop.font_size = 56
-		pop.outline_size = 7
-		pop.outline_modulate = Color(0, 0, 0)
-		pop.modulate = Color(1.0, 0.85, 0.30)
-		pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		pop.no_depth_test = true
-		pop.position = global_position + Vector3(0, 3.0, 0)
-		get_tree().current_scene.add_child(pop)
+		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.0, 0.85, 0.30), 56, 7)
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
@@ -726,17 +673,7 @@ func _quick_use_potion() -> void:
 		if slot.id.begins_with("hp_potion"):
 			inventory.use_item(i, self)
 			# Heal popup
-			var pop := Label3D.new()
-			pop.set_script(DAMAGE_NUMBER_SCRIPT)
-			pop.text = "+HEAL"
-			pop.font_size = 36
-			pop.outline_size = 5
-			pop.outline_modulate = Color(0, 0, 0)
-			pop.modulate = Color(0.30, 0.95, 0.45)
-			pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-			pop.no_depth_test = true
-			pop.position = global_position + Vector3(0, 2.6, 0)
-			get_tree().current_scene.add_child(pop)
+			UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "+HEAL", Color(0.30, 0.95, 0.45), 36, 5)
 			return
 
 
