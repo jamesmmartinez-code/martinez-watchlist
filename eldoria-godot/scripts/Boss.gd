@@ -90,8 +90,9 @@ func _ready() -> void:
 	var light := OmniLight3D.new()
 	light.name = "BossAura"
 	light.light_color = Color(1.0, 0.30, 0.10)
-	light.light_energy = 2.5
-	light.omni_range = 14.0
+	# REFINE: combat — boss feel: aura energy 2.5→2.9, range 14.0→15.5 for cinematic presence on first-encounter (helps Alden read the threat early; Owen still gets the same fight).
+	light.light_energy = 2.9
+	light.omni_range = 15.5
 	light.position.y = 1.8
 	light.shadow_enabled = false
 	add_child(light)
@@ -179,9 +180,9 @@ func _attack_melee() -> void:
 func _attack_slam() -> void:
 	_next_pattern_t = 3.5
 	_show_boss_msg("⚒ SLAM!")
-	# Telegraph: flash a red ring
-	_show_telegraph_ring(global_position, 5.0, 0.7)
-	await get_tree().create_timer(0.7).timeout
+	# REFINE: combat — boss feel: slam telegraph dur 0.7→0.9 + matching await; gives Alden ~0.2s more reaction time without softening damage.
+	_show_telegraph_ring(global_position, 5.0, 0.9)
+	await get_tree().create_timer(0.9).timeout
 	if _state == "dead": return
 	# Hit anyone within 5m
 	for p in get_tree().get_nodes_in_group("player"):
@@ -199,8 +200,9 @@ func _attack_charge() -> void:
 	var dir := (_player.global_position - global_position)
 	dir.y = 0
 	dir = dir.normalized()
-	_show_telegraph_line(start_pos, dir, charge_distance, 0.6)
-	await get_tree().create_timer(0.6).timeout
+	# REFINE: combat — boss feel: charge telegraph dur 0.6→0.78 + matching await; charge speed (18.0) preserved so Owen still feels the punch.
+	_show_telegraph_line(start_pos, dir, charge_distance, 0.78)
+	await get_tree().create_timer(0.78).timeout
 	if _state == "dead": return
 	# Charge — sprint forward, damaging anyone in path
 	var t := 0.0
@@ -239,16 +241,17 @@ func _summon_adds(count: int) -> void:
 
 # ── Visual telegraphs ──────────────────────────────────────────────────────
 func _show_telegraph_ring(center: Vector3, radius: float, dur: float) -> void:
+	# REFINE: combat — boss feel: ring alpha 0.55→0.72 and emission energy 1.6→2.6 so the danger zone reads instantly even in dappled forest light (helps Alden see and dodge).
 	var ring := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(radius * 2.0, radius * 2.0)
 	ring.mesh = pm
 	var rm := StandardMaterial3D.new()
-	rm.albedo_color = Color(1.0, 0.20, 0.10, 0.55)
+	rm.albedo_color = Color(1.0, 0.20, 0.10, 0.72)
 	rm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	rm.emission_enabled = true
 	rm.emission = Color(1.0, 0.30, 0.10)
-	rm.emission_energy_multiplier = 1.6
+	rm.emission_energy_multiplier = 2.6
 	rm.no_depth_test = false
 	rm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = rm
@@ -259,16 +262,17 @@ func _show_telegraph_ring(center: Vector3, radius: float, dur: float) -> void:
 	t.tween_callback(ring.queue_free)
 
 func _show_telegraph_line(start: Vector3, dir: Vector3, length: float, dur: float) -> void:
+	# REFINE: combat — boss feel: charge-line alpha 0.55→0.72, emission energy 1.6→2.6 so the lane to dodge out of is unmistakable (Alden) while Owen still has to actually move.
 	var line := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(2.0, length)
 	line.mesh = pm
 	var lm := StandardMaterial3D.new()
-	lm.albedo_color = Color(1.0, 0.20, 0.10, 0.55)
+	lm.albedo_color = Color(1.0, 0.20, 0.10, 0.72)
 	lm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	lm.emission_enabled = true
 	lm.emission = Color(1.0, 0.30, 0.10)
-	lm.emission_energy_multiplier = 1.6
+	lm.emission_energy_multiplier = 2.6
 	lm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	line.material_override = lm
 	line.position = start + dir * (length * 0.5) + Vector3(0, 0.05, 0)
@@ -308,10 +312,11 @@ func _spawn_damage_number(amount: int) -> void:
 	var dn := Label3D.new()
 	dn.set_script(DAMAGE_NUMBER_SCRIPT)
 	dn.text = str(amount)
-	dn.font_size = 44
-	dn.outline_size = 6
+	# REFINE: combat — boss feel: boss damage numbers font 44→50 + warmer/punchier modulate (1.0,0.65,0.30)→(1.0,0.74,0.32); reads as a meatier hit and gives Owen sharper mastery feedback.
+	dn.font_size = 50
+	dn.outline_size = 7
 	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.65, 0.30)
+	dn.modulate = Color(1.0, 0.74, 0.32)
 	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	dn.no_depth_test = true
 	dn.position = global_position + Vector3(randf_range(-0.3, 0.3), 2.6, randf_range(-0.3, 0.3))
