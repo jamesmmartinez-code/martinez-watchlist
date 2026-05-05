@@ -60,6 +60,21 @@ var factions: Dictionary = {
 	"whisperwood_goblins": {"disposition": "hostile", "pressure": 1.0},
 	"dire_wolves": {"disposition": "hostile", "pressure": 0.5},
 	"crystal_caves": {"disposition": "hostile", "pressure": 0.0},
+	# COMPOUND (run 21 — Builder): bandits faction. Inverse-driven: when
+	# the goblin/wolf threats subside, opportunistic bandits creep onto
+	# the road. `pressure` here measures BANDIT BOLDNESS (0.0 dormant →
+	# 1.0 brazen), not threat-to-be-cleared like the others. Starts at
+	# 0.0 because at fresh-save the woods are dangerous enough that the
+	# bandits stay hidden; `update_bandit_pressure()` derives the live
+	# value from goblin+wolf pressure and writes it back here. THREE
+	# existing consumers light up automatically the moment a bandit
+	# enemy spawns and KIND_TO_FACTION resolves "bandit" → "bandits":
+	# Enemy.gd cooldown band (run 7), Enemy.gd chase-speed band (run 8),
+	# WorldBuilder spawn density (run 5/6 patterns). The 4th consumer
+	# (NPC dialogue tier) is wired by Roan's new `warm_world_flag`:
+	# "bandits_emergent" lines in WorldBuilder.NPCS this run — Roan is
+	# the road-traveler, so he speaks the emergence first.
+	"bandits": {"disposition": "hostile", "pressure": 0.0},
 }
 var world_flags: Dictionary = {}      # flag_name -> Variant (usually bool/int)
 var npc_flags: Dictionary = {}        # npc_name -> Array[String]
@@ -454,11 +469,57 @@ func apply_consequence(consequence: Dictionary) -> void:
 	var toast: String = consequence.get("toast", "")
 	if toast != "":
 		_show_toast(toast)
-	# Step 5: re-evaluate achievements against the freshly-mutated state.
+	# Step 5a (run 21 — Builder): re-derive bandit boldness BEFORE
+	# achievements evaluate, so any "bandits emergent" achievement / world
+	# flag visible to _check_achievements is consistent with the just-
+	# committed faction state. Pure read of goblin+wolf pressure → write
+	# of bandits pressure + `bandits_emergent` world flag.
+	update_bandit_pressure()
+	# Step 5b: re-evaluate achievements against the freshly-mutated state.
 	# Pure read of factions/world_flags/npc_flags — no further mutation.
 	# Owen + Alden see toast on unlock, and the auto-equipper updates the
 	# title floating above the player's head.
 	_check_achievements()
+
+# COMPOUND (run 21 — Builder): bandit-boldness derivation. Inverse of the
+# road-threat scalars: when goblin AND wolf pressure are both LOW, the road
+# becomes a tempting target for opportunistic bandits. Formula picks the
+# average of the two road-threat factions and inverts with a 0.20 buffer
+# (so bandits don't emerge until BOTH factions are noticeably reduced —
+# avoids flicker on a single first-quest pressure drop). The 0.40 emergence
+# threshold sets `bandits_emergent` world flag for dialogue/quest tiers to
+# read; below that the flag clears. Idempotent and read-only against the
+# inputs — safe to call from apply_consequence after every faction write.
+# At fresh-save (goblin 1.0 + wolf 0.5, avg 0.75 → bandit 0.05) bandits stay
+# dormant. After Mara's bounty (goblin 0.85 + wolf 0.5, avg 0.675 → bandit
+# 0.125) still dormant. After Mara + Lyra + Roan + Hala + Bram (goblin 0.85,
+# wolf ~0.20, avg ~0.525 → bandit 0.275) still dormant. Player needs to
+# also dent goblins (whisperwood_cleansing -0.2 puts goblins at 0.65, avg
+# 0.425 → bandit 0.375 — close to the 0.4 threshold but not over). After
+# the cleansing AND a hypothetical second goblin reducer (-0.1 → 0.55, avg
+# 0.375 → bandit 0.425), bandits cross the threshold and become emergent.
+# That's exactly the fourth-quest moment the canon expects: the kids have
+# tamed the woods, the world responds with a NEW class of threat.
+func update_bandit_pressure() -> void:
+	if not factions.has("bandits"):
+		return
+	var goblin_p: float = faction_pressure("whisperwood_goblins")
+	var wolf_p: float = faction_pressure("dire_wolves")
+	var road_threat_avg: float = (goblin_p + wolf_p) * 0.5
+	var raw: float = 1.0 - road_threat_avg - 0.20
+	var bandit_p: float = clamp(raw, 0.0, 1.0)
+	var entry: Dictionary = factions["bandits"]
+	entry["pressure"] = bandit_p
+	factions["bandits"] = entry
+	# `bandits_emergent` is a single world flag — set it when the derived
+	# pressure crosses the 0.4 boldness threshold, clear it otherwise. NPCs
+	# (Roan first; future runs add Maeve/Mara) read this flag in their
+	# warm_world_flag tier. Goal: dialogue PRECEDES enemy spawn — players
+	# hear about the emerging threat before they see it on the road.
+	if bandit_p >= 0.40:
+		world_flags["bandits_emergent"] = true
+	elif world_flags.has("bandits_emergent"):
+		world_flags.erase("bandits_emergent")
 
 # Read accessors used by dialogue/spawning/difficulty (queryable schema)
 func faction_pressure(faction_id: String) -> float:

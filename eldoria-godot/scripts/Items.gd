@@ -271,6 +271,29 @@ const DROP_TABLE = {
 		{"id":"crit_amulet", "weight":7,  "qty":[1,1]},
 		{"id":"emberforge",  "weight":5,  "qty":[1,1]},
 	],
+	"bandit": [
+		# COMPOUND (run 21 — Builder): bandit drop table. Bandits are road-
+		# ambushers — they DON'T drop monster materials (no ears/pelts/fangs);
+		# they drop ill-gotten human goods. Tilt: gold-equivalents (small
+		# coin pouch via hp_potion_s clones not yet a thing — we re-use
+		# leather/cloth as the "looted from a traveler" material), cheap
+		# weapons, and the occasional cloak (steel_blade tier proxy).
+		# Total weight 100 to mirror wolf/goblin's ratio-based math; future
+		# runs adding `coin_pouch` or `lockpick` materials should pull from
+		# `cloth` (at 22) since that's the "junk-tier" floor most likely to
+		# tolerate weight rebalancing without breaking the existing entries.
+		# Drop table SHIPS BEFORE bandit enemies actually spawn (those come
+		# next Builder run with the warrior.glb wiring + road spawn pattern)
+		# — the same fail-soft contract Items.gd already uses for skeleton/
+		# crystal_elemental tables that pre-existed their spawn paths.
+		{"id":"hp_potion_s",  "weight":28, "qty":[1,2]},
+		{"id":"cloth",        "weight":22, "qty":[1,2]},
+		{"id":"leather",      "weight":18, "qty":[1,1]},
+		{"id":"rusty_sword",  "weight":12, "qty":[1,1]},
+		{"id":"iron_sword",   "weight":10, "qty":[1,1]},
+		{"id":"chainmail",    "weight":6,  "qty":[1,1]},
+		{"id":"steel_blade",  "weight":4,  "qty":[1,1]},
+	],
 }
 
 static func get_item(id: String) -> Dictionary:

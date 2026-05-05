@@ -81,6 +81,19 @@ const KIND_TO_FACTION := {
 	"skeleton": "crystal_caves",
 	"crystal_elemental": "crystal_caves",
 	"crystal_guardian": "crystal_caves",
+	# COMPOUND (run 21 — Builder): bandits faction wired. The instant a
+	# bandit-kind enemy spawns (next Builder run wires the road pattern +
+	# warrior.glb model), the FOUR existing readers of faction_pressure
+	# light up automatically: attack_cooldown band (lines 549-563),
+	# chase_speed band (run 8), spawn density helper pattern (runs 5/6),
+	# and the agitated ⚡ prefix at the AGITATED_COOLDOWN_THRESHOLD.
+	# Pressure semantics for "bandits" are INVERTED relative to the others
+	# (high = bandits bold, low = bandits hidden) per the World.gd
+	# `update_bandit_pressure()` derivation. The cooldown lerp still reads
+	# correctly: a bold bandit (pressure 0.8) gets the agitated faster-
+	# attack rung; a dormant bandit (pressure 0.0) keeps baseline. That's
+	# precisely the "they're feeling brave today" feedback we want.
+	"bandit": "bandits",
 }
 
 # Cooldown band: baseline = kid-friendly recovery valve (Alden's 9-yo timing

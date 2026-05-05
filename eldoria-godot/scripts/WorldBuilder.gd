@@ -372,10 +372,39 @@ const NPCS = [
 		"Pippin nuzzled me at sunset — first time since spring. Your work, friend.",
 		"The mares slept clean through the night. I owed you a tip; here's two.",
 	 ],
-	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Roan has
-	 # no `warm_flag` and no `warm_world_flag` — this run smoke-tests the
-	 # 4-tier dialogue stack on an NPC whose ONLY warming channel is the
-	 # faction scalar. Threshold 0.5 mirrors the run-6 wolf-spawn first
+	 # COMPOUND (run 21 — Builder): warm_world_flag tier (Tier 3 in NPC.gd's
+	 # dialogue stack, between Tier 2 warm_flag and Tier 4 warm_faction).
+	 # Reads `bandits_emergent` — the world flag set by World.update_bandit_
+	 # pressure() when the inverse-derived bandit boldness crosses 0.40.
+	 # Roan is the natural narrator for this tier: he's the road-traveler
+	 # who saddles the player every visit, and his existing Tier 4 already
+	 # speaks "fewer howls means fewer flinches on the road" — so when those
+	 # flinches drop AND opportunistic bandits creep in, Roan's voice is
+	 # what tells the player the road's NEW shape. Composes with the
+	 # existing 4-tier stack: warm_flag (first_bounty_done) wins on Roan's
+	 # first wolf bounty turn-in; warm_world_flag (bandits_emergent) wins
+	 # when the player has tamed enough of the woods that bandits surface;
+	 # warm_faction_id (dire_wolves < 0.5) wins as the wolves recede; legacy
+	 # `lines` time-of-day greetings run as default. Note these lines speak
+	 # to a threat that's EMERGING — they precede actual bandit enemies on
+	 # the map (the road-spawn pattern is the next Builder run's hook).
+	 # That ordering is intentional: dialogue plants the seed BEFORE the
+	 # first bandit ambush, so the player has narrative permission to
+	 # expect the encounter rather than being blindsided.
+	 "warm_world_flag":"bandits_emergent",
+	 "warm_world_lines":[
+		"Mares are calm — too calm. Heard a saddle-bell on the south road last night that wasn't ours.",
+		"Three travelers came in light. Said they paid a 'toll' to a hooded fellow at the crossroads. We don't keep tollkeepers here, friend.",
+		"Quiet woods bring quieter trouble. Keep one eye on the brush when you ride out at dusk.",
+		"Wolves used to chase off the wrong sort. Now? Watch the leather-cloaked ones. They smell coin where coin used to be safe.",
+	 ],
+	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Originally
+	 # this comment claimed Roan had "no warm_flag and no warm_world_flag"
+	 # — that was true through run 16. Run 17 added warm_flag, run 21 added
+	 # warm_world_flag. Roan is now a 4-TIER NPC (memory + warm_flag +
+	 # warm_world_flag + faction-pressure) — the densest dialogue stack in
+	 # the village. The faction-pressure tier still smoke-tests the
+	 # 4-tier dialogue stack as the LOWEST-priority warm channel. Threshold 0.5 mirrors the run-6 wolf-spawn first
 	 # cliff (`pelt_for_lyra` drops `dire_wolves` 0.5 → 0.4 on completion),
 	 # so Roan starts speaking the moment any wolf-reducing quest ships.
 	 # Pairs with run-6 spawn density and run-7 adaptive cooldown — the

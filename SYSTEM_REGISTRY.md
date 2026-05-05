@@ -1483,3 +1483,89 @@ The SECOND hello falls back into the normal predicate stack.
   NPCs say things like "you've been around three days now". The
   accessor signature stays stable because callers use
   `is_stranger(name)` rather than reading the dict directly.
+
+
+---
+
+## Bandits faction (run 21 — Builder)
+
+### Schema
+
+| Faction id | Disposition | Initial pressure | Semantics |
+|------------|-------------|------------------|-----------|
+| `bandits`  | `hostile`   | 0.0 (dormant)    | INVERTED — high = bandits bold, low = bandits hidden |
+
+`bandits` is the FIFTH faction in `World.factions`, sitting alongside
+`briarwood`, `whisperwood_goblins`, `dire_wolves`, `crystal_caves`. The
+inverted-pressure convention is documented inline; downstream readers
+(NPC dialogue tier 3, Enemy.gd cooldown band, Enemy.gd chase-speed band,
+WorldBuilder spawn density) operate on the raw 0.0–1.0 scalar without
+caring which direction "high" means — the lerp endpoints encode the
+intent at each call site.
+
+### Derivation
+
+`World.update_bandit_pressure()` is the SINGLE writer. It recomputes
+the bandit pressure as
+
+```
+bandit_pressure = clamp(1.0 - 0.5*(goblin_pressure + wolf_pressure) - 0.20, 0.0, 1.0)
+```
+
+and is called once per `apply_consequence` (Step 5a, before
+`_check_achievements`) so achievements see consistent state.
+
+The 0.20 buffer prevents flicker on a single first-quest pressure drop:
+at fresh-save (goblin 1.0, wolf 0.5, avg 0.75 → bandit 0.05) bandits
+stay dormant. Only after MULTIPLE quest reducers across both factions
+does the bandit scalar climb past the 0.40 emergence threshold.
+
+### `bandits_emergent` world flag
+
+Set in the same call when `bandit_pressure >= 0.40`, cleared otherwise.
+This is the FIRST world flag whose value is a DERIVED function of two
+faction scalars rather than a direct quest-consequence write. Every
+existing world flag (`mara_bounty_paid`, `lyra_potion_brew`, etc.) is
+written by `apply_consequence`'s Step 2 — `bandits_emergent` is written
+by Step 5a's derivation. Authoring contract: do NOT add this flag to a
+quest's `consequence.world_flag` field; it would be overwritten on the
+next pressure mutation. Downstream readers treat it as queryable
+post-condition, not authored fact.
+
+### Bandit drop table
+
+| id            | weight | qty   | notes                                            |
+|---------------|--------|-------|--------------------------------------------------|
+| `hp_potion_s` |   28   | 1-2   | floor — bandits carry travel pots                |
+| `cloth`       |   22   | 1-2   | "looted from a traveler" junk-tier               |
+| `leather`     |   18   | 1     | crafting material — bandit cloak/strap proxy     |
+| `rusty_sword` |   12   | 1     | cheap-weapon tier                                |
+| `iron_sword`  |   10   | 1     | mid-tier weapon                                  |
+| `chainmail`   |    6   | 1     | occasional armor upgrade                         |
+| `steel_blade` |    4   | 1     | rare reward — bandit boss-band fodder            |
+| **Total**     | **100**|       | matches wolf/goblin ratio-based math             |
+
+Drop table SHIPS BEFORE bandit enemies actually spawn — same fail-soft
+contract Items.gd already uses for `skeleton` / `crystal_elemental`
+tables that pre-existed their spawn paths. Future runs adding
+`coin_pouch` or `lockpick` materials should pull from `cloth` (22), the
+junk-tier floor most tolerant of weight rebalancing.
+
+### Lights up
+
+Five existing systems light up automatically the moment a bandit-kind
+enemy spawns and `Enemy.gd.KIND_TO_FACTION["bandit"] = "bandits"`
+resolves:
+
+1. **`Enemy.attack_cooldown`** (run 7) — pressure 0.8 → ~1.13s recovery
+   (agitated band); pressure 0.0 → 1.45s baseline. The agitated ⚡ prefix
+   on bandit name reads naturally as "they're feeling brave today."
+2. **`Enemy.chase_speed`** (run 8) — same scalar drives the speed band.
+3. **`WorldBuilder._build_enemies` density** (runs 5/6 pattern) — when
+   the road-spawn pattern lands, a `_bandit_camp_size(pressure)` helper
+   mirrors the existing goblin/wolf helpers.
+4. **NPC dialogue tier 3** (run 4) — Roan's `warm_world_flag` of
+   `bandits_emergent` is the FIRST consumer wired this run.
+5. **Achievements.gd predicate eval** — any future
+   `[["bandits_emergent", true]]` predicate composes with the existing
+   `all_world_flags` checker without code changes.
