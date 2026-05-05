@@ -331,3 +331,123 @@ Player progression keeps pace via gear (each realm has its own gear tier ~2× pr
 Adaptive difficulty per kid (PLAYER_MODEL.md):
 - Alden (girl, 9) leans toward longer telegraph windups + more healing potions in chests
 - Owen (boy, 11) leans toward tighter timing + tougher elite mobs
+
+## 14. Building a home — the Minecraft layer in depth
+
+This is the COZY core. When the kids don't want to fight, they live in Eldoria.
+
+### Personal plots
+On the south edge of Briarwood, each player gets a **personal plot**:
+- Starts as **8×8 tiles** (1m per tile = 8m × 8m), 8 tiles vertical
+- Expandable: **+1 tile/side per Pillar 3 level** (max 16×16 at level 8)
+- Visit each other's plots — Alden's frog-themed cottage and Owen's mount-stable + racetrack are both legit
+
+### How building works (Minecraft-derived)
+1. Open Build menu (B key) anywhere in your plot zone
+2. Camera switches to top-down isometric with translucent block cursor
+3. Block palette scrolls in side panel — only blocks UNLOCKED via region restoration are usable
+4. Click to place, right-click to remove
+5. Shift+drag for rectangle fill, Ctrl+click to copy, Alt+click for paint-bucket fill
+6. Tab cycles solid / furniture / decoration / lighting categories
+
+### Block categories
+- **Structure** — wood plank (oak/pine/dark/weathered), stone (cobble/smooth/bricked), thatch/shingle/slate roofs, glass (clear/stained/leaded)
+- **Furniture** — beds (single/double/four-poster/fey moss-bed), tables, chairs, bookshelves (display books/codex pages), storage chests (+12 inventory each), fireplaces (real flame + warmth aura), cookpots, ovens, brewing stations, workbenches, anvils, looms, alchemy tables, paintings
+- **Decoration** — banners (custom heraldry — Alden's frog crest, Owen's flame-wheel), lanterns, candles, plants (potted/hanging/climbing), rugs, tapestries, statues, pet beds, trophies (each boss kill drops a mountable trophy)
+- **Garden** — crops (carrots, wheat, herbs — harvest for cooking/alchemy), flowers (decorative + butterflies), trees (saplings grow over real days), fountains, ponds, fences, gates, animal pens (chicken coop, sheep paddock, bee hive)
+
+### Functional vs cosmetic
+~15 blocks are FUNCTIONAL (do something gameplay-relevant): bed (respawn), chest (storage), workbench (gear crafting), alchemy table (potions), cookpot (food), anvil (gear upgrade), loom (banner crafting), garden bed (real-time crops), bee hive (daily honey), compass podium (map view), trophy mount (display kills), codex shelf (reread lore), music stand (compose songs), picture easel (paint scenes), pet bed (pet sleeps + affinity gain).
+
+The other ~85 blocks per realm are pure decoration — for player creativity.
+
+### Plot connections
+Late-game (post-Realm 2) the kids can connect their plots into one estate. Friend NPCs can visit. Future feature: friends from outside the family can visit too via a guest invite.
+
+## 15. The 12 non-combat activities (when they don't want dungeons)
+
+This is the Sims side. 12 things to do that have NOTHING to do with combat. Each is a small loop integrated with Pillar 3 (city-building) and Pillar 5 (professions).
+
+1. **Decorate home** (Pillar 3) — see §14. Endless creative outlet.
+2. **Pet bonding** (Pillar 2) — feed, brush, walk, play, name, dress up, train tricks. 6 affinity stages per pet with unique unlocks (color shift, new tricks, evolution).
+3. **Fishing** (Pillar 5, post-Sunken-Harbor) — different fish at different times/locations. Rare catches mounted as trophies.
+4. **Cooking** (Pillar 5, Bram) — gather ingredients, recipes, host feasts that buff Briarwood for a day.
+5. **Gardening** (Pillar 5, NEW NPC post-Whisperwood) — plant seeds, water daily, harvest. Cross-breed flowers for unique colors. Rare seeds drop from far realms.
+6. **Cartography** (Pillar 5, Roan) — fill in map fog by exploring. Sell maps to Roan for gold + cosmetics.
+7. **Music & composing** (Pillar 5, NEW Bard NPC) — collect instruments. Compose songs. Perform at tavern for tips. Songs heard by NPCs raise affinity.
+8. **Pictography** (Pillar 5, NEW Painter NPC) — paint scenes from places you've been. Hang in home. Sell rare paintings.
+9. **Tailoring** (Pillar 5, NEW Tailor NPC) — design custom outfits. Cosmetic only. Multi-piece sets. Alden's playground.
+10. **Mounted racing** (Pillar 1+2 hybrid) — race against NPCs or sibling. Tracks per realm. Owen's playground.
+11. **Friendship arcs with NPCs** (Pillar 4) — daily chats raise friendship. 5 stages: stranger → acquaintance → friend → close friend → confidant. Each stage unlocks dialogue, gifts, side quests. Some have light child-appropriate romance options.
+12. **Festivals** (Pillar 7) — calendar dates trigger village events: Brigid's Feast (cooking comp), Sunderingday (memorial), Stag Hunt (no-combat parade), Crystal Night (firefly migration), Frostmask (costume contest using your tailored outfits).
+
+Optional extras: beekeeping, animal husbandry (chickens, sheep, cows — breed for traits), photography club (share paintings), ranger patrol, monthly pet shows.
+
+## 16. Creative tools (yes, they can create)
+
+**Yes, they can create.** Eldoria has multiple creative outlets where the kids' work persists in their world:
+
+### Painting (Pictography)
+- Stand at any Picture Easel (functional block)
+- 32×32 pixel grid + 16-color medieval palette
+- Save → frame → hang on any wall in home
+- Show in tavern's Painting Wall → NPCs comment
+- 64×64 advanced canvases unlock late-game
+
+### Composing (Music)
+- Stand at any Music Stand (functional block)
+- 8-note tracker (C-major-pentatonic at first, more scales unlock with Bard rep)
+- 4 instrument tracks (lute, flute, drum, harp)
+- Save → perform at tavern → NPCs react ("That was beautiful!")
+- Songs persist in world; named, attributed, replayable
+
+### Custom heraldry / banner design
+- Loom block opens banner editor
+- Choose shape, color, sigil (50+ unlocked over time — frog, race-wheel, sword, leaf, star)
+- Layer up to 3 sigils
+- Hang on flag pole at home or in Briarwood
+
+### Custom outfits
+- Tailor unlocks Outfit Designer
+- Mix shirt/pants/cloak/hat/boots/belt
+- Color-pick each piece
+- Save 12 outfits per character; switch via wardrobe block
+
+### Pet customization
+- Color-shift Ember + other pets via dye items (dungeon drops)
+- Name them anything
+- Train tricks (sit, roll, fetch, dance)
+- Tiny accessories (collars, hats, capes)
+
+### Player-authored journal
+- Each player has a personal journal block at home
+- Write entries about adventures
+- Drag-drop pictography paintings into entries
+- Late-game share with sibling — read each other's
+
+### Player-built dungeons (post-Realm 3)
+- Buy a Dungeon Plot from the Architect NPC
+- Place rooms, monster spawners, traps, treasure
+- Set difficulty + recommended level
+- Friends visit + run your dungeon
+- Earn Architect Points based on traffic + ratings
+
+### Storyboard (shared narrative play)
+- Brothers write a shared "campaign" — sequence of paintings + text + linked locations
+- Stored as a Story block at home
+- Read together → revisit world locations referenced
+
+## 17. The "soft path" through the game
+
+A player who NEVER touches a dungeon can still:
+- **Reach max level** via gardening + cooking + cartography + crafting (~80% of XP available outside combat)
+- **Build a 100-block manor** + garden + pet park
+- **Bond with all 7 starter NPCs** to confidant level
+- **Tame 6 pets** via patience-based wild bonding (no combat — leave food daily, pet approaches over weeks)
+- **Win 5+ festivals**
+- **Compose 20 songs and paint 50 pictures**
+- **Map 100% of Eldoria** via cartography
+
+The combat path is the SHORTEST way through the campaign. The soft path is the LONGEST and richest. **Both lead to the same endgame choice in §6** — your reputation across all 7 pillars is what's measured, not just kills.
+
+This is what no MMO does. It's also what Minecraft fans love about Minecraft. Eldoria does both.
