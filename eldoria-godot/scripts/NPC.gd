@@ -45,6 +45,37 @@ class_name NPC
 # untouched. WorldBuilder.gd opts NPCs in via `"use_json_dialogue": true`.
 @export var use_dialogue_json: bool = false
 
+# COMPOUND (run 11 — NPC SCHEDULES): each visible villager moves between
+# role-specific anchor positions throughout the day, keyed off
+# `World.time_of_day` (24-hour cycle, 6 real-minute period). Closes the
+# §12 MOTION & LIFE gap for static-foot NPCs and gives every existing
+# 4-bucket dialogue tier a matching 4-bucket *physical* tier.
+#
+# `schedule_anchors` — Array of up to 4 Vector3, indexed by ToD bucket:
+#     [0] morning  (5.0  ≤ tod < 11.0)
+#     [1] midday   (11.0 ≤ tod < 17.0)
+#     [2] evening  (17.0 ≤ tod < 21.0)
+#     [3] night    (tod < 5.0  OR  tod ≥ 21.0)
+# Empty array = legacy behavior (NPC stays at WorldBuilder spawn pos).
+# Shorter arrays clamp to last entry (so a 1-element array means "always
+# at this anchor" — useful for sleepers like Hala who move only slightly).
+#
+# `schedule_speed` — m/s walk speed when traversing between anchors.
+# `schedule_arrival_radius` — within this distance of target, snap & idle.
+# THEME §13 GROUND CONTACT: y is forced to `_spawn_y` (cached at _ready)
+# on every tick — even if an anchor is authored with a nonzero y, the
+# NPC's xz-walk preserves the spawn-time y.
+@export var schedule_anchors: Array = []
+@export var schedule_speed: float = 0.8
+@export var schedule_arrival_radius: float = 0.5
+
+# Cached state for the schedule walker. `_last_bucket` is reserved for
+# future bucket-change hooks (e.g. trigger a one-shot anim on transition);
+# the walker recomputes target each tick from live `time_of_day`, so a
+# one-frame mismatch on `_last_bucket` is harmless.
+var _last_bucket: int = -1
+var _spawn_y: float = 0.0
+
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
 @onready var anim: AnimationPlayer = get_node_or_null("AnimationPlayer")
@@ -65,11 +96,21 @@ func _ready() -> void:
 	# Idle anim if available
 	if anim and anim.has_animation("Idle"):
 		anim.play("Idle")
+	# COMPOUND (run 11): cache spawn-time y so schedule walker preserves it.
+	# WorldBuilder spawns NPCs at y=0 with the collision capsule's y-offset
+	# of 0.9 putting feet on ground — schedule must not re-base y or the
+	# NPC sinks/floats.
+	_spawn_y = global_position.y
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# Show name label only when player is in range
 	if label_3d:
 		label_3d.visible = player_in_range
+	# COMPOUND (run 11): walk the schedule. Halts during dialogue range so
+	# the player can actually catch them. Free op when schedule_anchors is
+	# empty (legacy NPCs).
+	if not schedule_anchors.is_empty() and not player_in_range:
+		_tick_schedule(delta)
 
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
@@ -177,3 +218,52 @@ func _find_first_anim_player(n: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
+# ────────────────────────────────────────────────────────────────────────
+# COMPOUND (run 11): schedule walker — moves NPC between time-of-day
+# anchors. See @export-block doc for shape & buckets.
+# ────────────────────────────────────────────────────────────────────────
+func _tick_schedule(delta: float) -> void:
+	var w: Node = get_tree().get_first_node_in_group("world")
+	var tod: float = 11.0
+	if w and ("time_of_day" in w):
+		tod = float(w.time_of_day)
+	var bucket: int = _bucket_for_tod(tod)
+	var n: int = schedule_anchors.size()
+	if n <= 0:
+		return
+	var idx: int = min(bucket, n - 1)
+	var anchor_var = schedule_anchors[idx]
+	if not (anchor_var is Vector3):
+		return
+	var target: Vector3 = anchor_var
+	target.y = _spawn_y  # THEME §13: never re-base ground contact
+
+	if bucket != _last_bucket:
+		_last_bucket = bucket  # reserved for future bucket-change hooks
+
+	var here: Vector3 = global_position
+	var to_target: Vector3 = Vector3(target.x - here.x, 0.0, target.z - here.z)
+	var dist: float = to_target.length()
+	if dist <= schedule_arrival_radius:
+		global_position = Vector3(target.x, _spawn_y, target.z)
+		return
+	var step: float = min(schedule_speed * delta, dist)
+	var dir: Vector3 = to_target / dist
+	var new_pos: Vector3 = here + dir * step
+	new_pos.y = _spawn_y
+	global_position = new_pos
+	# Face direction of motion (gentle yaw — NPCs are StaticBody3D so this
+	# is a free transform op). Avoid look_at when target is exactly aligned
+	# with up axis to dodge the up-vector singularity warning.
+	var face_at: Vector3 = global_position + Vector3(dir.x, 0.0, dir.z)
+	if (face_at - global_position).length() > 0.001:
+		look_at(face_at, Vector3.UP)
+
+func _bucket_for_tod(tod: float) -> int:
+	if tod >= 5.0 and tod < 11.0:
+		return 0   # morning
+	if tod >= 11.0 and tod < 17.0:
+		return 1   # midday
+	if tod >= 17.0 and tod < 21.0:
+		return 2   # evening
+	return 3       # night

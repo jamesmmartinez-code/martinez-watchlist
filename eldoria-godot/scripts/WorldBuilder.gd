@@ -166,6 +166,9 @@ const NPCS = [
 	 # plus seasonal hooks (`longnight_vigil`, `honeysong_eve`) the day a
 	 # festival/calendar system lands. Lines above are kept as fallback so
 	 # nothing regresses if the JSON ever fails to load.
+	 # COMPOUND (run 11 — schedule): morning at the well, midday at her hut,
+	 # evening at the hearth telling stories, night back at the hut door.
+	 "schedule":[Vector3( 0.6, 0,  5.0), Vector3( 6.0, 0,  3.0), Vector3( 0.8, 0, -1.6), Vector3( 6.0, 0,  3.0)],
 	 "use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -180,6 +183,9 @@ const NPCS = [
 	 # miss falls back to the four lines above. Lights up `low_health_player`,
 	 # `boss_alive`, `boss_slain`, `after_first_quest_complete`, plus seasonal
 	 # hooks (`longnight_vigil`, `spring_first_warm_day`).
+	 # COMPOUND (run 11 — schedule): tiny shifts around the forge — Edda is
+	 # the smithy and never strays far. Quenching trough at night.
+	 "schedule":[Vector3(-5.4, 0,  3.0), Vector3(-6.0, 0,  3.0), Vector3(-6.0, 0,  2.4), Vector3(-6.4, 0,  3.4)],
 	 "use_json_dialogue":true},
 	{"name":"Mara the Merchant", "role":"shop",    "pos":Vector3(  3,  0, -5), "tint":Color(0.7,0.5,0.25),
 	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
@@ -195,7 +201,10 @@ const NPCS = [
 		"Six ears as promised — coin's heavy in your pouch and in mine. Trade well.",
 		"I'd shutter for the day, but for you I'll uncross my arms a moment longer.",
 		"Late again, eh? For my favorite buyer, the till's not quite shut.",
-	 ]},
+	 ],
+	 # COMPOUND (run 11 — schedule): market stall during the day, drinks at
+	 # the inn at night. Closes the believable-merchant loop with Bram.
+	 "schedule":[Vector3( 2.5, 0,  0.0), Vector3( 2.5, 0,  0.0), Vector3( 3.0, 0, -5.0), Vector3( 8.6, 0, -2.0)]},
 	{"name":"Herbalist Lyra",    "role":"alchemy", "pos":Vector3( -3,  0, -5), "tint":Color(0.4,0.7,0.35),
 	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
 	 "lines":[
@@ -230,6 +239,10 @@ const NPCS = [
 	 # becomes the FIRST renown-gated line to actually fire in-game. The
 	 # legacy `lines` / `warm_lines` / `warm_world_lines` arrays above stay
 	 # as the no-tree fallback so absolutely nothing regresses.
+	 # COMPOUND (run 11 — schedule): forages at the treeline at dawn (the
+	 # marshmint she eulogizes in her morning line is at the forest edge),
+	 # then back to her hut for the rest of the day.
+	 "schedule":[Vector3(-7.5, 0, -7.5), Vector3(-3.0, 0, -5.0), Vector3(-3.0, 0, -4.4), Vector3(-3.0, 0, -5.0)],
 	 "use_json_dialogue":true},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
 	 "line":"Pull up a stool. Rest your bones.",
@@ -250,6 +263,9 @@ const NPCS = [
 	 # lines on the same world tick — Maeve grieves the Whisperwood, Edda
 	 # grieves the saber she forged, Bram pours without being asked. The
 	 # variants above stay as the legacy fallback so nothing regresses.
+	 # COMPOUND (run 11 — schedule): sweeps the doorstep at dawn, peak
+	 # service in the evening when Mara joins him for a drink.
+	 "schedule":[Vector3( 9.4, 0, -1.0), Vector3(10.0, 0, -2.0), Vector3( 9.0, 0, -2.0), Vector3(10.0, 0, -2.5)],
 	 "use_json_dialogue":true},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
 	 "line":"Faster mounts mean fewer ambushes. Pick your steed.",
@@ -277,7 +293,10 @@ const NPCS = [
 		"Look — Pippin's grazing past the fence again. He only does that when the woods are kind.",
 		"Saddle's lighter at dusk these days. Fewer howls means fewer flinches on the road.",
 		"Quiet enough to hear the owls now. The wolves used to drown them out. Ride safe.",
-	 ]},
+	 ],
+	 # COMPOUND (run 11 — schedule): brushes a horse outside the stable in
+	 # the morning, leads the team in for the evening.
+	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)]},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
 	 "line":"Each level, your spirit grows. Pour it into what you trust.",
 	 "lines":[
@@ -285,7 +304,10 @@ const NPCS = [
 		"Strength is loud. Mastery is quiet. Choose.",
 		"Tired? Train tired. The road won't ask if you slept.",
 		"Even shadow needs practice. Feet on the boards, breathe.",
-	 ]},
+	 ],
+	 # COMPOUND (run 11 — schedule): never leaves the training field. Slight
+	 # position shifts at evening (lantern-side practice) and night (watch).
+	 "schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)]},
 ]
 
 const BUILDINGS = [
@@ -1071,6 +1093,18 @@ func _make_npc(data: Dictionary) -> void:
 	# COMPOUND (run 9 — JSON dialogue tree): opt-in flag for JSON-tree
 	# resolution via DialogueDB. Defaults false so legacy NPCs are untouched.
 	npc.use_dialogue_json = bool(data.get("use_json_dialogue", false))
+	# COMPOUND (run 11 — NPC schedules): pass the per-NPC schedule anchor
+	# array straight through. Empty / absent = legacy stationary behavior.
+	# We copy into a typed Array so Godot's strict typed-export check is
+	# happy regardless of whether the literal in NPCS was inferred as
+	# Array[Vector3] or untyped Array.
+	var sched = data.get("schedule", null)
+	if sched is Array and (sched as Array).size() > 0:
+		var anchors: Array = []
+		for v in (sched as Array):
+			if v is Vector3:
+				anchors.append(v)
+		npc.schedule_anchors = anchors
 	add_child(npc)
 
 	var col := CollisionShape3D.new()
