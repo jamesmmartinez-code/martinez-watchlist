@@ -112,16 +112,21 @@ func _ready() -> void:
 	title_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	title_label.no_depth_test = true
 	title_label.fixed_size = false
-	title_label.pixel_size = 0.0035
-	title_label.modulate = Color(1.0, 0.85, 0.4)         # palette §3 burnt gold
+	# REFINE: visual — title_label pixel_size 0.0035 → 0.0040 lifts billboard size for at-distance readability at the camera-polish-run wider rest frame (default cam dist 8.0m). +14% billboard area helps Alden read his earned title from the back of the room without enlarging the underlying font (font_size lifts separately).
+	title_label.pixel_size = 0.0040
+	# REFINE: visual — modulate B channel 0.40 → 0.42 = exact §3 #FFD86B sunset-gold. Same drift the recent UITheme polish run fixed on its GOLD const, the WorldMap polish run fixed on COL_TITLE, and the Chest.gd polish run already had on glow_color. Title now reads in the same gold as every other §3 'this matters' beat in the project (NPC nameplates, achievement toasts, level-up popup).
+	title_label.modulate = Color(1.0, 0.85, 0.42)        # palette §3 sunset-gold (#FFD86B exact)
 	title_label.outline_modulate = Color(0, 0, 0, 1)
-	title_label.outline_size = 8
-	title_label.font_size = 28
+	# REFINE: visual — outline_size 8 → 7 matches the UITheme polish run's OL_TOAST 7 convention (the §3-bloom-era outline weight that title-tier text converged on). 8 was authored before the recent post-processing pass lifted background luminance; 7 reads cleaner on the new bright sky-band without losing legibility against grass.
+	title_label.outline_size = 7
+	# REFINE: visual — font_size 28 → 30 matches the boss Label3D font_size 30 — title and boss-tag now share the same painterly weight tier. +2pt makes the player's earned title readable from camera dist 8.0m (camera polish run authored). Owen's mastery-affinity title beat (Warden of Eldoria, Goblin-Bane) now reads at the same scale as the boss it was earned against.
+	title_label.font_size = 30
 	add_child(title_label)
-	# THEME §12: tiny Y-bob so the label breathes. Amplitude 0.04m, period 3s.
+	# THEME §12: tiny Y-bob so the label breathes. Amplitude 0.04m, period 2.5s.
+	# REFINE: visual — period 3.0s → 2.5s syncs the title bob with the THEME §12 canonical breathing cadence (the procedural-Y-bob spec) — matches the Minimap polish run's 2.5 rad/s player pulse, the WorldMap pulse rate slowdown to 2.6 rad/s, the camera follow smooth_lerp rhythm, and the body-bob period §12 calls for. Amplitude 0.06m (2.40↔2.46) → 0.04m (2.40↔2.44) brings the title closer to §12 spec amplitude (0.02m for body) while staying visible at billboard scale. Cross-system rhythm: five surfaces (player title, body bob, minimap, worldmap, camera) now beat on the same painterly heartbeat instead of four-against-one.
 	var bob: Tween = create_tween().set_loops()
-	bob.tween_property(title_label, "position:y", 2.46, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	bob.tween_property(title_label, "position:y", 2.4, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(title_label, "position:y", 2.44, 1.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(title_label, "position:y", 2.4, 1.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Inventory
 	inventory = Node.new()
 	inventory.set_script(INVENTORY_SCRIPT)
@@ -408,7 +413,8 @@ func take_damage(amount: int) -> void:
 	stats_changed.emit()
 	get_tree().call_group("world", "play_sfx", "damage_taken")
 	# Damage number above player
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "-%d" % actual, Color(1.0, 0.30, 0.30), 32, 5)
+	# REFINE: visual — take_damage popup pulled toward §3 stag-blood family. Color (1.0, 0.30, 0.30) was bright candy-red (~#FF4D4D, off-palette) → (1.00, 0.32, 0.20) painterly warm-red, closer to §3 stag-blood #A02020 while keeping high luminance for HURT legibility (Alden's low-to-medium combat tolerance — he needs to SEE the damage even when the screen is busy). font 32 → 36 chunkier hurt-readback, outline 5 → 6 matches the boss-damage outline 6 convention from the boss polish run — player-pain feedback now reads at the same painterly weight as the damage the player deals to bosses.
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "-%d" % actual, Color(1.00, 0.32, 0.20), 36, 6)
 	if hp <= 0:
 		_die()
 
@@ -467,7 +473,8 @@ func gain_xp(amount: int) -> void:
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		# Level-up celebration popup
-		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.0, 0.85, 0.30), 56, 7)
+		# REFINE: visual — LEVEL UP! popup gold pulled to exact §3 #FFD86B. Color (1.0, 0.85, 0.30) was off-palette mustard (B=0.30 ≈ #4D) → (1.00, 0.85, 0.42) (B=0.42 = #6B) now matches UITheme GOLD, title_label modulate, WorldMap COL_TITLE, Chest.gd glow_color, and the NPC nameplate modulate the recent polish runs converged on. Owen's mastery-affinity LEVEL UP! beat now reads in the same sunset-gold as every other §3 'this matters' surface — visual continuity across mastery rungs.
+		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.00, 0.85, 0.42), 56, 7)
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
