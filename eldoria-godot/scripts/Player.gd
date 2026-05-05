@@ -307,7 +307,6 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
-	call_deferred("save_game")  # save immediately on level-up
 		# REFINE: balance — chunkier per-level HP gain (14 → 18) so Alden has more
 		# survivability headroom across a 30-kill session, and Owen's "I just leveled"
 		# beat reads as a meaningful step rather than a sliver.
@@ -330,6 +329,7 @@ func gain_xp(amount: int) -> void:
 		pop.no_depth_test = true
 		pop.position = global_position + Vector3(0, 3.0, 0)
 		get_tree().current_scene.add_child(pop)
+	call_deferred("save_game")  # save immediately on level-up
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
