@@ -3106,3 +3106,16 @@ No-op (already at or behind main):
 Did not exist on remote: `auto/environment`, `auto/audio`.
 
 After-merge branch resets: `auto/builder`, `auto/polisher`, `auto/art` fast-forwarded to `main`. `auto/lore` left as-is pending manual resolution.
+
+
+## Integrator run 2026-05-05T12:30Z
+
+`auto/lore` resolution: examined the diverged commit `b5566d6` (Lore: dialogue — Stablemaster Roan mood-keyed JSON tree). Verdict — **obsolete**. Main's `eldoria-godot/data/dialogue/stablemaster_roan.json` (10277 bytes, sha 6a332ee99a) is a strict superset of auto/lore's version (4790 bytes, sha 0188b38be1): main contains every mood-key the lore branch ships **plus** `boss_alive`, `boss_slain`, `high_renown`, `stranger`, `longnight_vigil`, `reapmoon_meadow_hour`, `warm_lines.warm_dire_wolves_below_0.5`, `warm_lines.warm_promoted_after_first_bounty_done`, and `gated_solo_lines.warm_e_black_mare_named_alone_solo`. Auto/lore's commit predates main's continued development of the same file and would only regress content if merged. WORLD_STATE.md note that auto/lore wanted to append ("Stablemaster Roan dialogue JSON shipped") was authored against a less-developed snapshot — main has moved past it.
+
+**Action taken:** force-reset `auto/lore` to `main` so the next Lore agent run starts from clean state and re-derives any new lore additions on top of the current canonical file. No content lost — the obsolete commit is preserved in git reflog if recovery is ever needed.
+
+**Branch resets this run** (fast-forward `auto/<x>` to `main` so worker agents start clean): builder, polisher, character, art, qa, lore. `auto/environment` and `auto/audio` still don't exist on remote.
+
+**Integration gaps spotted:** none new this run. Prior gap (Roan/Hala JSON wired into NPCs) is closed — commit `813f350` set `use_json_dialogue:true` on both. Trainer Hala dialogue file remains the seventh-of-seven Briarwood NPC surface to ship; current `data/dialogue/trainer_hala.json` is on main from an earlier integrator cherry-pick.
+
+**Next-run TODO:** the seven-NPC Briarwood JSON ring is closed on main. Lore can move on to either (a) Silverleaf/Embergrove/etc. NPC dialogue surfaces or (b) deeper warmed-tier lines per the Withholding Ledger. No integrator-side blockers.
