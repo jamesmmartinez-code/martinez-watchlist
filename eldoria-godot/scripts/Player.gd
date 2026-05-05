@@ -86,6 +86,11 @@ func _ready() -> void:
 	call_deferred("load_game")
 
 func _physics_process(delta: float) -> void:
+	# Stuck-recovery: if we've fallen out of the world or punched through the
+	# top, snap back to a safe spawn so the kids never lose control.
+	if global_position.y < -50.0 or global_position.y > 500.0:
+		global_position = Vector3(0, 2, 0)
+		velocity = Vector3.ZERO
 	# Autosave every N seconds
 	_save_timer += delta
 	if _save_timer >= _save_interval:
@@ -307,6 +312,7 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
+	call_deferred("save_game")  # save immediately on level-up
 		# REFINE: balance — chunkier per-level HP gain (14 → 18) so Alden has more
 		# survivability headroom across a 30-kill session, and Owen's "I just leveled"
 		# beat reads as a meaningful step rather than a sliver.
@@ -329,7 +335,6 @@ func gain_xp(amount: int) -> void:
 		pop.no_depth_test = true
 		pop.position = global_position + Vector3(0, 3.0, 0)
 		get_tree().current_scene.add_child(pop)
-	call_deferred("save_game")  # save immediately on level-up
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
@@ -601,9 +606,9 @@ func _apply_save_data(data: Dictionary) -> void:
 	max_mp = data.get("max_mp", 30)
 	mp = clamp(data.get("mp", max_mp), 0, max_mp)
 	gold = data.get("gold", 50)
-	var pos = data.get("position", [0, 1, 0])
-	if pos is Array and pos.size() >= 3:
-		global_position = Vector3(pos[0], pos[1], pos[2])
+	# NOTE: deliberately do NOT restore position — saves can put the player
+	# inside terrain or a tree if the world layout changes. Always spawn at
+	# the scene's default spawn point.
 	kills_by_kind = data.get("kills_by_kind", {})
 	active_quest = data.get("active_quest", {})
 	# Inventory
@@ -617,6 +622,10 @@ func _apply_save_data(data: Dictionary) -> void:
 		inventory.inventory_changed.emit()
 		inventory.equipment_changed.emit()
 	is_dead = false  # never load dead — auto-revive on respawn
+	is_attacking = false
+	mounted = false
+	mount_node = null
+	velocity = Vector3.ZERO
 	stats_changed.emit()
 	_loaded_save = true
 
