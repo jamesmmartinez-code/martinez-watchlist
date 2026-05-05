@@ -11,9 +11,11 @@ class_name Enemy
 @export var damage: int = 6
 @export var move_speed: float = 2.6
 @export var chase_speed: float = 4.6
-@export var aggro_range: float = 9.0
+# REFINE: combat-feel — aggro pulled in from 9.0 → 8.0; kid-friendly for Alden, still tense in clusters.
+@export var aggro_range: float = 8.0
 @export var attack_range: float = 1.6
-@export var attack_cooldown: float = 1.2
+# REFINE: combat-feel — longer recovery (1.2 → 1.45) so kids have a clean window to reposition between hits.
+@export var attack_cooldown: float = 1.45
 @export var xp_reward: int = 18
 @export var gold_reward: int = 4
 @export var respawn_delay: float = 35.0
@@ -225,9 +227,9 @@ func _do_attack() -> void:
 	_attack_timer = attack_cooldown
 	if _player and _player.has_method("take_damage"):
 		_player.take_damage(damage)
-		# Knockback
+		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
 		var dir := (_player.global_position - global_position).normalized()
-		_player.velocity += dir * 3.0
+		_player.velocity += dir * 4.5
 
 # ──────────────────────────────────────────────────────────────────────────
 # Take damage from player
@@ -248,10 +250,11 @@ func _spawn_damage_number(amount: int, is_crit: bool) -> void:
 	var dn := Label3D.new()
 	dn.set_script(DAMAGE_NUMBER_SCRIPT)
 	dn.text = ("%d!" % amount) if is_crit else str(amount)
-	dn.font_size = 56 if is_crit else 38
-	dn.outline_size = 6
+	# REFINE: combat-feel — chunkier font + warmer crit gold + brighter normal hit so damage reads at a glance.
+	dn.font_size = 62 if is_crit else 44
+	dn.outline_size = 7
 	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.85, 0.30) if is_crit else Color(1.0, 0.65, 0.30)
+	dn.modulate = Color(1.0, 0.88, 0.22) if is_crit else Color(1.0, 0.72, 0.32)
 	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	dn.no_depth_test = true
 	dn.position = global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3))
