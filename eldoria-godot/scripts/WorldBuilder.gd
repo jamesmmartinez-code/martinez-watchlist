@@ -1059,6 +1059,23 @@ const CHEST_SCRIPT = preload("res://scripts/Chest.gd")
 
 func _build_enemies() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
+
+	# REFINE: world-engine — goblin spawn density reads faction pressure.
+	# Closes the consequence-resolver loop: dialogue tier 3 (run 4) SPEAKS
+	# the faction state; spawning now ENACTS it. Single read of
+	# World.faction_pressure("whisperwood_goblins"); see SYSTEM_REGISTRY.md
+	# "Faction Schema" + "Goblin Spawn Schema". Fail-soft: missing/older
+	# World autoload → baseline (4 scouts + 1 brute, pre-run-5 behavior).
+	var goblin_pressure: float = 1.0
+	var world_node: Node = get_parent()
+	if world_node and world_node.has_method("faction_pressure"):
+		goblin_pressure = float(world_node.faction_pressure("whisperwood_goblins"))
+	var camp_size: Dictionary = _goblin_camp_size(goblin_pressure)
+	var scout_count: int = int(camp_size.get("scouts", 4))
+	var brute_count: int = int(camp_size.get("brutes", 1))
+	assert(scout_count >= 0 and scout_count <= 4, "scout_count out of contract")
+	assert(brute_count >= 0 and brute_count <= 1, "brute_count out of contract")
+
 	# Three goblin camps in the Whisperwood (outside the village)
 	var camp_centers = [
 		Vector3(35, 0, 35),
@@ -1066,18 +1083,27 @@ func _build_enemies() -> void:
 		Vector3(20, 0, -45),
 	]
 	for camp in camp_centers:
-		# 4 goblins per camp, scattered around a campfire prop
+		# Per-camp scout count is faction-pressure-driven (was hard-coded 4)
 		_make_goblin_camp(camp)
-		for i in 4:
+		for i in scout_count:
 			var ang: float = rng.randf() * TAU
 			var r: float = rng.randf_range(2.5, 6.0)
 			var pos: Vector3 = camp + Vector3(cos(ang) * r, 0, sin(ang) * r)
 			_spawn_enemy("goblin", pos, "Goblin Scout", 28, 6, 18, 4)
 
-	# A pair of stronger goblins (Brutes) per camp
+	# A Goblin Brute per camp, suppressed entirely once pressure drops below 0.4
 	for camp in camp_centers:
-		_spawn_enemy("goblin", camp + Vector3(2, 0, 0), "Goblin Brute", 56, 11, 36, 9,
-			Color(0.30, 0.55, 0.20), 0.95, 1.0)
+		for j in brute_count:
+			_spawn_enemy("goblin", camp + Vector3(2, 0, 0), "Goblin Brute", 56, 11, 36, 9,
+				Color(0.30, 0.55, 0.20), 0.95, 1.0)
+
+	# Player-facing feedback (Rule 2 iii): one-shot ambient toast at world
+	# build if the wood is *visibly* calmer than baseline. Pairs with the
+	# quest-completion toasts already in apply_consequence() — those announce
+	# the change at the moment of action; this one announces the persistent
+	# state on every load thereafter. Deferred to next tick so the HUD exists.
+	if (scout_count < 4 or brute_count < 1) and world_node and world_node.has_method("_show_toast"):
+		world_node.call_deferred("_show_toast", "🌿 You sense fewer goblins in the wood.")
 
 	# A few wolves wandering between camps
 	var wolf_spots = [
@@ -1089,6 +1115,30 @@ func _build_enemies() -> void:
 
 	# Goblin Warlord — boss in the deepest part of the Whisperwood
 	_build_boss_arena(Vector3(60, 0, 60))
+
+# Goblin Spawn Schema (run 5) — derive per-camp population from faction
+# pressure. Read accessor: World.faction_pressure("whisperwood_goblins")
+# in [0.0, 1.0]. Thresholds co-fire with NPC.gd's tier-3 dialogue:
+#   - <0.9 (after one reducer quest)  → 3 scouts + 1 brute  (Maeve speaks)
+#   - <0.7 (noticeably safer)         → 2 scouts + 1 brute
+#   - <0.4 (halfway tamed)            → 2 scouts + 0 brute
+#   - <0.15 (definitively tamed)      → 1 scout  + 0 brute
+# At pressure 1.0 (fresh save): baseline 4 scouts + 1 brute — identical to
+# pre-run-5 behavior. Empty camp prop (campfire / huts) persists below
+# threshold as a "they used to be here" memorial.
+func _goblin_camp_size(pressure: float) -> Dictionary:
+	var p: float = clamp(pressure, 0.0, 1.0)
+	var scouts: int = 4
+	var brutes: int = 1
+	if p < 0.9:
+		scouts = 3
+	if p < 0.7:
+		scouts = 2
+	if p < 0.4:
+		brutes = 0
+	if p < 0.15:
+		scouts = 1
+	return {"scouts": scouts, "brutes": brutes}
 
 func _spawn_enemy(kind: String, pos: Vector3, ename: String, hp: int, dmg: int,
 		xp: int, gold: int, tint: Color = Color(0.45, 0.85, 0.30),

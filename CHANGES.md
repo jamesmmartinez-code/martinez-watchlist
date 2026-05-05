@@ -668,3 +668,115 @@ Adjacent option: Roan + dire_wolves dialogue (smallest-possible follow-up,
 zero new code paths, only WorldBuilder edits). Lower payoff (one NPC, one
 faction) but useful as a smoke-test that the 4-tier system handles the
 "NPC with no warm_flag at all" path cleanly.
+
+## 2026-05-04 (run 5) — Goblin spawn density driven by faction pressure
+
+Closes the consequence-resolver loop on the spawning side. Run 4 made the
+NPC dialogue tier 3 SPEAK the faction state ("Maeve narrates a calmer wood
+when `whisperwood_goblins` pressure drops below 0.9"). Run 5 makes the
+spawn system ENACT it: per-camp goblin population now derives from
+`World.faction_pressure("whisperwood_goblins")` via a new helper
+`_goblin_camp_size(pressure: float) -> Dictionary` in `WorldBuilder.gd`,
+returning `{"scouts": int, "brutes": int}`.
+
+At fresh-save pressure 1.0 the population is identical to pre-run-5 (4
+scouts + 1 brute per camp, 3 camps = 15 goblins total). At pressure 0.85
+(the value `ears_for_mara` alone produces) each camp drops to 3 + 1.
+At 0.65 (Mara + Maeve cleansing) each camp drops to 2 + 1. Brute is
+suppressed below 0.4. Sole scout below 0.15. The empty camp prop
+(campfire + huts) persists at all levels, so a calmed wood reads as
+"they used to be here" — a memorial, not a forgotten zone.
+
+`World.faction_pressure()` now has TWO consumers (NPC.gd dialogue tier 3,
+WorldBuilder spawn density). The same scalar drives both narrative and
+pacing — exactly the compound mandate from Rule 1.
+
+### Files changed
+- `eldoria-godot/scripts/WorldBuilder.gd` — `_build_enemies()` reads
+  `goblin_pressure` from `get_parent()` (the World node, fail-soft on
+  `has_method("faction_pressure")`), derives `scout_count` / `brute_count`
+  via `_goblin_camp_size()`, and uses those to drive both the per-camp
+  scout loop and the per-camp brute spawn. Adds asserts on the
+  count contracts (`[0,4]`, `[0,1]`). Adds a deferred world-build toast
+  ("🌿 You sense fewer goblins in the wood.") that fires only when
+  `scout_count<4` OR `brute_count<1` — i.e. the wood IS visibly calmer.
+  New helper `_goblin_camp_size(pressure: float) -> Dictionary` lives
+  directly above `_spawn_enemy()` with documented threshold table.
+  Total diff: +55 / -5 lines.
+- `WORLD_STATE.md` — top hook (goblin spawn density) marked Resolved;
+  promoted wolf spawn density as new top-priority next; faction-state
+  table row for Whisperwood Goblins now lists BOTH consumers; player
+  impact ledger gains a "goblins spawned per world load" entry.
+- `SYSTEM_REGISTRY.md` — new "Goblin Spawn Schema" section between
+  Consequence Schema and World Flag Conventions, with threshold table,
+  authoring rules, and the runtime-guard pattern. Faction-pressure
+  accessor now documented as having TWO consumers.
+- `PLAYER_MODEL.md` — polish note: run 5 serves Alden by visually
+  quieting the wood as he progresses, and serves Owen by giving him
+  a second mastery-rung on the same scalar he climbs through dialogue.
+  Adaptive proposal for run 6: same scalar drives Enemy.gd
+  attack_cooldown for the THIRD output coupling.
+- `CHANGES.md` — this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `factions[id].pressure`
+        adds spawn density as the SECOND consumer of the scalar (run 4
+        added dialogue as the first). WORLD_STATE.md updated to surface
+        the new consumer in the faction-state table and player-impact
+        ledger.
+- (ii)  Queryable schema: `_goblin_camp_size(pressure: float) -> Dictionary`
+        with `{"scouts": int, "brutes": int}` shape; thresholds
+        9 / 7 / 4 / 15 (×0.1) documented in SYSTEM_REGISTRY.md
+        "Goblin Spawn Schema" with full table and authoring rules.
+- (iii) Player-facing feedback: visible spawn-count delta on every world
+        load after a goblin-reducing quest (3 camps × scout drop +
+        possibly the brute), PLUS a deferred one-shot toast
+        "🌿 You sense fewer goblins in the wood." that fires only when
+        the wood actually IS calmer than baseline. Pairs with the
+        per-quest `apply_consequence` toasts so the player gets BOTH
+        the change-moment announcement AND the persistent-state
+        announcement on subsequent loads.
+- (iv)  Evaluation: parens/brackets/braces balance check passes
+        (991/991, 53/53, 33/33). All 8 new `var` declarations carry
+        explicit type annotations (`var goblin_pressure: float`,
+        `var world_node: Node`, `var camp_size: Dictionary`, etc.) —
+        no walrus on Variant. Two runtime asserts enforce the
+        scout_count ∈ [0,4] and brute_count ∈ [0,1] contracts.
+        Runtime guard on `has_method("faction_pressure")` keeps an
+        older World autoload fail-soft to baseline behavior.
+- (v)   Future hooks (≥ 2):
+        1. **Wolf spawn density** — identical pattern. Read
+           `World.faction_pressure("dire_wolves")`, mirror helper
+           `_wolf_pack_size(pressure)`. `pelt_for_lyra` already
+           reduces by 0.1 from baseline 0.5, so a single completion
+           takes the wood from 4 wolves to 3, and a second from 3 to 2.
+           Same compound shape: dialogue tier 3 (Roan, when wired) +
+           density. Now top-priority hook in WORLD_STATE.md.
+        2. **Adaptive Enemy.gd attack_cooldown** — same goblin
+           pressure scalar, THIRD output. `lerp(1.45, 1.05, 1.0 -
+           pressure)` so a calmed-wood goblin hits faster (Owen's
+           harder fight) while a fresh-save goblin hits slower (Alden's
+           recovery valve). Single line edit on `_physics_process` or
+           in spawn config; uses a scalar already on World.
+        3. **Per-frame faction decay from kills_by_kind** — bypasses
+           quest gating so per-kill impact routes back through the
+           same channel. Long-term hook: keeps the loop closed even
+           when the player is just hunting, not questing.
+        4. **Skeleton / bandit enemy kinds (backlog #6)** — once those
+           ship, Crystal Caves and a future bandit camp can each
+           reuse `_<kind>_pack_size(pressure)`. Schema is documented
+           as authoring rule under "Goblin Spawn Schema."
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Wolf spawn density driven by `faction_pressure("dire_wolves")`.** Identical
+shape to run 5 — single helper `_wolf_pack_size(pressure)` with thresholds
+co-firing with a future Roan dialogue tier 3. Lower payoff per-population
+than goblins (4 wolves vs 15 goblins) but higher *systems* payoff: it
+proves the run-5 pattern generalizes and unblocks the same compound for
+every other faction. After wolves, the next compound is the THIRD output
+on the same scalar — Enemy.gd `attack_cooldown` lerped on faction pressure,
+making one number drive narrative + density + pacing.
+

@@ -156,3 +156,24 @@ loops feel like the world relents — both child-friendly outcomes per Rule 6.
   - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, the chamber ambient (`amb.light_energy`) is the right knob to *temporarily* lift on respawn-after-death (lerp 0.62 → 0.85 over ~6s) — gives a stressed player one round of clearer footing without changing the cave's resting mood. Pure number knob, fits the existing rule of thumb.
 
   Why this serves both kids: the darker, crystal-driven look gives **Alden** (frog kid, exploration affinity) a richer "wow, look at this place" beat without raising any combat difficulty. The brighter beacon and violet boss pool give **Owen** (racer / mastery affinity) a more cinematic boss-room reveal — boss arenas should feel like arenas. None of the cave's gameplay numbers (HP, dmg, XP, gold, aggro, telegraph) changed; this is pure mood polish.
+
+- **2026-05-04 (run 5)** — Goblin spawn density now reads
+  `World.faction_pressure("whisperwood_goblins")`. The wood becomes
+  visually quieter as the player completes goblin-reducing quests.
+  Serves **Alden** (frog kid, low-medium combat tolerance, exploration
+  affinity) directly: a calmed Whisperwood is *less to fight, more to
+  look at* — fewer goblin lanterns, more tree silhouettes through the
+  gaps where camps used to be busy. Serves **Owen** (race kid, mastery
+  affinity) by giving him a SECOND visible mastery-rung on the same
+  scalar he's already climbing through dialogue: "I did the bounty →
+  the elder narrates it → the wood actually has fewer goblins to ride
+  past." Two outputs from one read; that's the compound mandate from
+  Rule 1. **Adaptive proposal for the next run:** a *third* output on
+  the same scalar — `Enemy.gd attack_cooldown` could
+  `lerp(1.45, 1.05, 1.0 - faction_pressure)` so the few goblins LEFT
+  in a calmed wood hit harder/faster (Owen's "harder fight" affinity)
+  while a fresh-save full-pressure wood gives Alden the slower telegraph
+  he needs. Same scalar, three coordinated outputs: dialogue, density,
+  pacing. After that lands, the *fourth* coupling is per-frame pressure
+  decay (kills_by_kind → faction reduction) so per-kill impact routes
+  back through the same channel without quest gating.

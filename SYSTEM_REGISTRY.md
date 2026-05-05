@@ -196,6 +196,44 @@ Read accessors:
 Authoring rule: dialogue + AI READ flags; only `apply_consequence` WRITES.
 This guarantees one place to audit world-state churn.
 
+## Goblin Spawn Schema
+
+✅ **Shipped 2026-05-04 (run 5).** Per-camp goblin population derives from
+`World.faction_pressure("whisperwood_goblins")`. Lives in
+`WorldBuilder.gd → _goblin_camp_size(pressure: float) -> Dictionary`.
+Returns `{"scouts": int, "brutes": int}` with thresholds:
+
+| Pressure | Scouts/camp | Brutes/camp | Co-fires with                        |
+|----------|-------------|-------------|--------------------------------------|
+| ≥ 0.9    | 4           | 1           | (baseline; fresh-save default)       |
+| < 0.9    | 3           | 1           | NPC.gd tier-3 dialogue (Maeve "ears-before-cleansing" path) |
+| < 0.7    | 2           | 1           | (noticeably safer band)              |
+| < 0.4    | 2           | 0           | (halfway tamed; brute suppressed)    |
+| < 0.15   | 1           | 0           | (definitively tamed; near-empty wood)|
+
+`_build_enemies()` reads pressure once at world build, derives camp size, and
+applies the SAME camp size to all 3 camps (35,0,35), (-40,0,30), (20,0,-45).
+Empty camp prop (`_make_goblin_camp(center)`: campfire, log seats) is built
+*regardless* of population so a calmed wood reads as "they used to be here"
+not "the world forgot this place."
+
+Player-facing feedback: deferred call to `World._show_toast(
+"🌿 You sense fewer goblins in the wood.")` at world build if scouts<4 OR
+brutes<1. Pairs with apply_consequence's per-quest toasts — quest-completion
+announces the *change*, world-build announces the *persistent state*.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure("whisperwood_goblins")`. Never
+  read `World.factions["whisperwood_goblins"]["pressure"]` directly — go
+  through the accessor so the [0.0, 1.0] clamp is enforced.
+- The runtime guard `world_node.has_method("faction_pressure")` keeps the
+  spawn path fail-soft if an older `World.gd` lacks the accessor; behavior
+  falls through to baseline (4 scouts + 1 brute), never crashes.
+- Asserts at the top of `_build_enemies()` enforce `scout_count ∈ [0,4]`
+  and `brute_count ∈ [0,1]`. Any new threshold edit MUST keep the contract.
+- Future enemy kinds (skeleton, bandit, wolf) SHOULD mirror this helper
+  pattern: `_<kind>_pack_size(pressure)` with its own faction id.
+
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a

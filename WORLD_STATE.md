@@ -49,10 +49,24 @@ run easier — what's the *next* thing that compounds?)
   `World.faction_pressure(id)` now has its first reader after 2 runs of being
   written-only. Authoring trap captured in SYSTEM_REGISTRY.md: never pair a
   faction reducer with the same quest that issues the NPC's warm_flag.
-- 🔥 **Top-priority next:** Goblin spawn density reads
-  `World.faction_pressure("whisperwood_goblins")`. Scale count / respawn
-  time inversely with pressure. Pairs with run-4: dialogue *speaks* the
-  faction state, spawning *enacts* it. Single read, big behavior delta.
+- ✅ **Resolved 2026-05-04 (run 5):** Goblin spawn density reads
+  `World.faction_pressure("whisperwood_goblins")` in `WorldBuilder._build_enemies()`.
+  Per-camp population now derives from a `_goblin_camp_size(pressure)` helper
+  with thresholds at 0.9 / 0.7 / 0.4 / 0.15 — co-fired with NPC.gd's tier-3
+  dialogue so dialogue *speaks* the faction state and spawning *enacts* it.
+  At fresh-save pressure 1.0 the camp population is identical to pre-run-5
+  (4 scouts + 1 brute per camp); at 0.85 (Mara's bounty alone) goblins drop
+  by 1 per camp; at 0.65 (Mara + Maeve) by 2 per camp; brute disappears
+  below 0.4. The empty camp prop (campfire, huts) persists as a memorial.
+  `World.faction_pressure()` now has TWO consumers (NPC.gd dialogue tier 3,
+  WorldBuilder spawn density) — the consequence-resolver loop is closed on
+  both narrative and pacing axes.
+- 🔥 **Top-priority next:** Wolf spawn density. Identical pattern: read
+  `World.faction_pressure("dire_wolves")` in `_build_enemies()` after the
+  goblin block, replace the hard-coded 4-element `wolf_spots` with a
+  pressure-driven count via a `_wolf_pack_size(pressure)` mirror helper.
+  `pelt_for_lyra` (-0.1) is the existing reducer, so the path 0.5 → 0.4 → 0.3
+  is reachable in two completions. Single read, single helper, big payoff.
 - 🔥 **Adjacent next:** Roan (Stablemaster) → `dire_wolves` faction tier.
   Smoke-tests the 4-tier system on an NPC with no warm_flag at all.
   Schema is in place, only WorldBuilder edits required.
@@ -88,7 +102,7 @@ by direct dialogue branches (those READ flags, they don't WRITE them).
 | Faction          | Disposition | Pressure | Notes                          |
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
-| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3)** |
+| Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density)** |
 | Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1 |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed |
 
@@ -116,6 +130,9 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 - Goblins killed (lifetime): tracked per-save in Player.kills_by_kind, not yet
   surfaced to NPCs. (Adjacent compound: a kills-derived faction-pressure decay
   could route per-kill impact into the dialogue tier 3 channel.)
+- Goblins spawned (per world load): now scales from baseline 15 (3 camps × 5)
+  down to 3 (3 × 1) as `whisperwood_goblins` pressure drops. Ledger of *what
+  the world LOOKS like to the player on save reload* now reflects their work.
 - Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
   that NPCs now narrate. `apply_consequence()` is no longer write-only on the
   faction key.
