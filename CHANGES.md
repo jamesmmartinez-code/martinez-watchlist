@@ -1670,3 +1670,43 @@ All 6 existing worker branches (`builder`, `polisher`, `character`, `art`, `lore
 3. **Builder (per WORLD_STATE top-priority):** Roan-issued wolf-bounty quest (-0.1 dire_wolves reducer). Compounds with run-8 Roan dialogue, run-6 spawn density, run-7+8 adaptive cooldown — one quest, four readable world changes.
 4. **Builder (MED):** Surface `icon_path` in inventory UI. Three integrator runs have flagged this. Single line once inventory texture rendering exists.
 5. **Lore (MED):** Author Bram's faction-tier dialogue (`whisperwood_goblins < 0.4`) so his backstory and JSON tree start reaching game lines via WorldBuilder NPCS — second proof of the no-`warm_flag` pattern Roan established in run 8.
+
+
+---
+
+## 2026-05-05 — INTEGRATOR run (later same day)
+
+### Branches merged (in stable order)
+- `auto/polisher` (1 commit) — Main.tscn post-processing pass: glow + SSAO + tonemap white + adjustments + sun godrays; 11 env knobs retuned, no new nodes/resources/scripts.
+- `auto/art` (1 commit) — 8 procedural parchment/wood UI panels (`assets/ui/*.png`) + generator script `scripts/art/make_ui_frames.py`.
+- `auto/lore` (1 commit) — Herbalist Lyra full backstory (`lore/npcs/herbalist_lyra.md`), mood-keyed dialogue tree (`data/dialogue/herbalist_lyra.json`), and WORLD_STATE.md update.
+
+`auto/builder`, `auto/character`, `auto/qa` were 0 ahead — nothing to merge. `auto/environment` and `auto/audio` branches still don't exist.
+
+### Conflicts resolved
+None this run — all three merges were clean fast-forward-style merges (--no-ff).
+
+### Integration gaps spotted
+
+[INTEGRATOR-GAP] **Herbalist Lyra dialogue JSON is shipped but Lyra is NOT opted into the loader.** Same pattern as Bram in the previous run. WorldBuilder NPCS entry for Lyra lacks `"use_json_dialogue": true`, so her rich mood-keyed JSON tree (`data/dialogue/herbalist_lyra.json`) sits dormant despite her being spawned and modeled. **Single-line fix**: add `"use_json_dialogue":true` to her NPCS entry. Counter is now `grep -c "use_json_dialogue.*true" WorldBuilder.gd` = 2 (Maeve, Edda) but THREE JSONs ship (Maeve, Edda, Bram, Lyra → 4 actually). Lore is outpacing builder integration. **Recommended for next builder run** (combine with Bram's flip — two-line fix).
+
+[INTEGRATOR-GAP] **8 new UI panels are unreferenced.** Art shipped `parchment_panel.png`, `parchment_panel_small.png`, `wood_panel.png`, `scroll_banner.png`, `divider_ornate.png`, and `button_{normal,hover,pressed}.png` to `assets/ui/`, but `grep -r --include='*.gd' --include='*.tscn' --include='*.tres' "<panel_name>"` returns 0 references for every single one. None are wired into a Theme resource, StyleBoxTexture, or Control node. The Generator script and PNGs exist; the Theme/StyleBox plumbing does not. **Recommended for next builder/UI run:** create `assets/ui/eldoria_theme.tres` with StyleBoxTexture-backed panels referencing these PNGs, then assign as the project default theme in `project.godot` or apply to existing CanvasLayer/Control roots.
+
+[INTEGRATOR-NOTE] **Lore→model→spawn chain for Lyra is otherwise intact.** WorldBuilder.gd preloads `herbalist_lyra.glb`, scales her at 1.30, spawns her in NPCS at (-3, 0, -5) with role "alchemy" and a wolf-pelt-for-salve quest hook. Only the JSON-loader opt-in is missing. Two changes away from full integration of this run's lore work.
+
+[INTEGRATOR-GAP] **Polisher's Main.tscn post-processing applies to the original scene.** No gap per se — Main.tscn is the loaded scene — but worth noting that any future agents adding scenes (BriarwoodScene, dungeons) will not inherit these env settings unless they instance/reference Main.tscn's WorldEnvironment node or the env values are extracted into a shared `world_environment.tres`. **Watch item, not blocker.**
+
+### Carried-over gaps from previous integrator runs (unchanged)
+- **Bram JSON unconsumed** (`use_json_dialogue` flag missing in WorldBuilder NPCS).
+- **5 PBR roughness textures unconsumed** (`bark/rock/snow/roof/shingle_rough` — no material references).
+- **`icon_path` on Items.gd entries unconsumed** by inventory UI.
+
+### Branch reset
+All 6 existing worker branches (`auto/builder`, `auto/polisher`, `auto/character`, `auto/art`, `auto/lore`, `auto/qa`) fast-forwarded to the new `main` head. Next agent runs start clean.
+
+### Next run TODO
+1. **Builder (LOW, two-line):** Flip `"use_json_dialogue":true` on **both** Bram and Lyra in WorldBuilder NPCS. Closes two gaps in one keystroke. Quadruples the player-reachable JSON dialogue corpus (2→4).
+2. **Builder/UI (MED):** Build `assets/ui/eldoria_theme.tres` from the 8 new parchment/wood panels and assign it as the project default theme. Connects this run's Art work.
+3. **Builder/Art (MED, carried):** Wire the 5 PBR roughness maps into surface materials in WorldBuilder so the textures Art shipped two runs ago become visible.
+4. **Builder (per WORLD_STATE top-priority, carried):** Roan-issued wolf-bounty quest as the first `-0.1` dire_wolves reducer. Lyra's pelt quest is *also* a `-0.1` reducer (already wired) — Roan would compound it.
+5. **Lore (MED, carried):** Bram faction-tier dialogue (`whisperwood_goblins < 0.4`) — second proof of the no-warm-flag predicate pattern.
