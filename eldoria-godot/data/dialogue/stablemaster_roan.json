@@ -1,0 +1,68 @@
+{
+  "npc_name": "Stablemaster Roan",
+  "role": "stable",
+  "default": "Aye. Stable's open. Mind the bay — she nips at strangers' cuffs. *(adjusts a strap.)* Told you.",
+  "morning": "*(curry-comb pass.)* — Bay's restless before the sun. Wind off the mountains. What do you need, traveler?",
+  "midday": "Aye. Smoke's saddled if you're going south. Long way back if the wolves catch your gait. *(adjusts a girth.)*",
+  "evening": "*(lifts a saddle onto its rack.)* — Gate-lantern's lit. Take what you need. I'll be here past dusk.",
+  "night": "Stable sleeps when the horses do. Come back at first light. *(huh)* — Or sleep in the long room. Bram'll feed you.",
+  "after_first_quest_complete": "*(curry-comb pass.)* — Word came up the south road. Quieter tonight. — Here. *(slides a halter across the rail.)* Steppe-pattern. My own work. Ride well.",
+  "low_health_player": "*(sets the strap down.)* — You're stove-in, traveler. Sit. Bay'll watch the gate. The road keeps. It always does.",
+  "boss_alive": "Warlord rides where my horses won't. South paths got narrow this Reapmoon. *(adjusts a buckle.)* — When you go for him, take Smoke. He knows the cut.",
+  "boss_slain": "*(long pause. lifts the saddle. sets it down.)* — Aye. South paths are wide again. Bay walked the cobble this morning without her ears flat. — *Ai-velin*, traveler.",
+  "high_renown": "Heard your name off a courier passing the upper road. *(huh)* — He didn't tip his head when he said it. He should have. *(adjusts a strap.)* — Steppe sees you. Ride steady.",
+  "stranger": "Aye. Stable's open. Mind the bay. Don't touch the lintel. *(adjusts a strap.)*",
+  "longnight_vigil": "*(does not look up from the gate-lantern.)* — Lantern's high tonight, traveler. Bram's in the long room — go. I'll keep the gate.",
+  "reapmoon_meadow_hour": "Going up to the meadow, traveler. Hour. Stable's open — ask the bay.",
+  "warm_lines": {
+    "_comment": "Two-tier warming per WORLD_STATE.md run 8 and the author-note in lore/npcs/stablemaster_roan.md. Until the queued wolf-bounty quest ships and sets first_bounty_done, ONLY warm_dire_wolves_below_0.5 is Roan's warming surface — the faction-tier that the run-8 promotion key targets. Once first_bounty_done fires, warm_promoted_after_first_bounty_done unlocks and Roan reads as a fully 4-tier NPC. The faction-tier lines stay live; the promoted lines layer on top. Builder MUST NOT collapse these two tiers without re-reading the author note.",
+    "warm_dire_wolves_below_0.5": [
+      "South paths walked easier this morning. *(curry-comb pass.)* — Bay went down the cobble without flattening her ears. First time this Reapmoon.",
+      "Aye. Smoke's been south twice this week and come back without a strap loose. *(adjusts a buckle.)* — Means the woods are remembering themselves.",
+      "*(huh)* — Heard the wolves moved off the lower fold. Heard from a leaf, not a man. Ride the leaves, traveler.",
+      "Hands are easier this Reapmoon. Don't ask me why."
+    ],
+    "warm_promoted_after_first_bounty_done": {
+      "_comment": "The fully-warmed Roan tier — four lines, per the author-note in lore/npcs/stablemaster_roan.md → Hooks queued for future runs. Constraints: (a) drops the *(adjusts a strap.)* parenthetical because it is the warmest of the four — the closeness has earned the quieter bodily presence. (b) MUST gate on bram_present == false; the road-name 'Bron' is for the player's ear only. (c) is the white-aspen weather-read; the line uses the Steppe idiom verbatim. (d) MUST NOT name Lyra and MUST NOT name the salve — the unnen breaks if either surfaces.",
+      "warm_a_bay_named_aloud": "Aye. Bay's settled when you walk in now. — She doesn't usually.",
+      "warm_b_bron_only_if_no_bram_present": "Aye, Bron knows the cut. Ask him.",
+      "warm_c_white_aspen_weather_read": "Ride the leaves, traveler. Three days.",
+      "warm_d_salve_unnamed": "Hands are easier this Reapmoon. Don't ask me why."
+    },
+    "gated_solo_lines": {
+      "_comment": "The black mare's name surfacing — gated separately from the 4-line warm_promoted block because it requires its own scene conditions per the Withholding Ledger. ALL of these gates MUST be true at the same dialogue tick: dire_wolves_pressure < 0.5 (faction warming live), first_bounty_done == true (Roan promoted), scene_solo_with_player == true, maeve_present == false. The line surfaces ONCE; subsequent ticks revert to the warm_promoted shapes. Future Builder may flag mare_name_revealed after the first surfacing.",
+      "warm_e_black_mare_named_alone_solo": "Black mare in the lower paddock, traveler. Eleven years. — Her name's Maeve. I've never told the woman. Don't tell her either."
+    }
+  },
+  "lore_notes": {
+    "_comment": "Mood-keyed dialogue surface for Stablemaster Roan, mirroring the shape of smith_edda.json, innkeeper_bram.json, herbalist_lyra.json, mara_merchant.json, and elder_maeve.json. Anchored to lore/npcs/stablemaster_roan.md and lore/world.md. The *(adjusts a strap.)* / *(curry-comb pass.)* / *(lifts a saddle.)* parentheticals are verbal cues for the Polisher agent to wire one of Roan's per-role idle animations (THEME §12) on the same dialogue tick — buckle, curry-comb, or saddle-lift. The seasonal slot is reapmoon_meadow_hour, replacing Edda's spring_first_warm_day / Bram's honeysong_eve / Mara's sunpetal_first_morning. The line is intentionally the quietest in Roan's tree.",
+    "voice_rules": [
+      "Steppe-flat vowels. Brevity is the character — never lengthen Roan's sentences. If a future writer is tempted to give Roan a long monologue, please do not.",
+      "Says 'aye' where Bram says 'yes'. Says 'come away' where Maeve says 'come along'.",
+      "*(huh)* through the nose, once, when amused. Never as a sentence end. Never twice in one line.",
+      "Hands are always busy: strap, buckle, curry-comb, saddle-lift. The work is his speech.",
+      "Old Faerie words used SPARINGLY: ai-velin (the long path / a complete life) only at parting in the boss_slain beat; ride the leaves (Steppe idiom) only in the white-aspen warm tier; between two stones (a refusal to answer) is held in reserve and not yet surfaced — the spec calls for it ~3x a year, not once per dialogue tick.",
+      "Invokes no god aloud. The copper-coin gate-lantern is his prayer; the wick is renewed at every Sunpetal turn. The Vellum nod at the Reapmoon thirre is bodily, never verbal."
+    ],
+    "withholdings": [
+      "Cailen's name is NEVER spoken by Roan. Not in any line, not in any tier, not in any quest text. The whetstone in Roan's left coat pocket is the canonical absence; do not surface it as dialogue, item, or codex.",
+      "The Stag-Court is NEVER named by Roan. He does not hear them and does not know he does not hear them. The oilskin curtain over the loft window is environmental, not dialogue.",
+      "The Steppe-iron nail above the stable lintel is NEVER referenced in dialogue. It stays over Roan's head every time he walks in — that is its entire role.",
+      "Lyra is NEVER named in the salve-acknowledgement line (warm_d). The salve is NEVER named. The whole arc is unnen and breaks if any of the three withholdings is lifted.",
+      "The black mare 'Maeve' name surfaces ONLY in gated_solo_lines.warm_e_black_mare_named_alone_solo, ONLY when ALL gates are true. Roan MUST NOT answer the question 'what is the black mare's name' truthfully in front of the human Maeve, ever.",
+      "Nessa is NEVER named by Roan. He does not know about her. The Cailen-shaped lost-Steppe-rider triangle (Cailen / Nessa / the rider Mara watches the south road for) is a load-bearing silence; do not lift it.",
+      "Roan's third maelorn is off-page. He does not announce it. If a late-game Maeve-approves-the-player-to-ride beat surfaces, Roan still does not name his own ride. *The withholding is the dignity.*"
+    ],
+    "consequence_hooks": [
+      "after_first_quest_complete is intentionally agnostic across which first quest the player finished — it scans as a stableman's notice of any change in the Whisperwood. Safe to fire on whisperwood_cleansing OR ears_for_mara turn-ins. The Steppe-Patterned Halter handoff is the canonical reward shape per the author note; flag the gift on roan_halter_gifted.",
+      "boss_slain assumes the Goblin Warlord is down. Roan's relief reads to the south paths and to Bay, not to the village square — keep the camera at the stable for this beat.",
+      "longnight_vigil is keyed to the Longnight Vigil festival (lore/world.md → Calendar). Sextet co-fire on the same Longnight tick: Edda doesn't look up, Bram brings the stew at the third hour, Maeve sets the bowl out for the Hollow King, Lyra carries dreamleaf to the well, Mara holds the candle from the stall, Roan walks the perimeter from the gate-lantern. Roan's line MUST NOT name Cailen, the cradle, or the whetstone.",
+      "reapmoon_meadow_hour fires once per in-game year on the Reapmoon tick at the meadow-hour. The 'ask the bay' is the cue that the player is being trusted with the stable, which is, for Roan, the largest welcome he gives. The line MUST NOT name Maeve and must not name Cailen.",
+      "warm_dire_wolves_below_0.5 is the faction-tier warming queued in WORLD_STATE.md run 8. Until the wolf-bounty quest ships, this is Roan's ONLY warming surface. Builder may rotate the four lines round-robin or weight them against time-of-day.",
+      "warm_promoted_after_first_bounty_done unlocks when the first_bounty_done flag is set (after Roan's queued wolf-bounty turn-in). Per the author note, this promotes Roan from faction-tier-only to fully 4-tier. Faction-tier lines remain live — the promoted lines layer on top.",
+      "gated_solo_lines.warm_e_black_mare_named_alone_solo is the deepest reveal in Roan's tree. ALL gates required: dire_wolves_pressure < 0.5, first_bounty_done == true, scene_solo_with_player == true, maeve_present == false. Surfaces ONCE; flag mare_name_revealed after the first delivery and revert to warm_promoted shapes thereafter."
+    ],
+    "lexicon_used": ["aye", "huh", "ride the leaves", "ai-velin"],
+    "lexicon_held_in_reserve": ["between two stones", "maelorn", "ostren", "kerrithen", "thirre", "unnen", "haethe"]
+  }
+}
