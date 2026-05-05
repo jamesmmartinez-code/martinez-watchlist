@@ -1238,6 +1238,7 @@ UITheme.style_lock_label(lbl)                # 36pt dim w/ cream outline
 UITheme.style_tooltip_label(lbl)             # 13pt white + outline
 UITheme.style_richtext(rt)                   # RichTextLabel cream defaults
 UITheme.make_toast_label(text) -> Label      # 28pt gold + outline
+UITheme.spawn_damage_popup(parent, world_pos, text, color, font_size, outline_size) -> Label3D  # 12-site DRY helper
 UITheme.self_test() -> [bool, String]        # asset reachability
 ```
 
