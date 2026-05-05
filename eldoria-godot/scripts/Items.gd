@@ -242,13 +242,13 @@ static func roll_loot(kind: String, rng: RandomNumberGenerator) -> Array:
 # IDs like "@steel_blade#frost_42" so they can be saved in the bag and looked
 # up later via Items.get_item().
 const AFFIX_PREFIXES = {
-	"Gleaming":  {"weight":12, "rarity":"uncommon", "damage_pct":0.20, "armor_pct":0.20},
-	"Sharpened": {"weight":10, "rarity":"uncommon", "damage_pct":0.30},
-	"Sturdy":    {"weight":10, "rarity":"uncommon", "armor_pct":0.30, "hp_bonus":15},
-	"Fierce":    {"weight":8,  "rarity":"rare",     "damage_pct":0.45, "crit_bonus":0.05},
-	"Heroic":    {"weight":6,  "rarity":"rare",     "damage_pct":0.25, "armor_pct":0.25, "hp_bonus":25},
-	"Mythic":    {"weight":3,  "rarity":"epic",     "damage_pct":0.60, "crit_bonus":0.08, "hp_bonus":40},
-	"Ancient":   {"weight":2,  "rarity":"legendary","damage_pct":0.80, "armor_pct":0.40, "hp_bonus":60, "crit_bonus":0.10},
+	"Gleaming":  {"weight":12, "rarity":"uncommon", "affix_icon_path":"res://assets/icons/affix/prefix/gleaming.png", "tint":Color(0.65,0.85,0.55), "damage_pct":0.20, "armor_pct":0.20},
+	"Sharpened": {"weight":10, "rarity":"uncommon", "affix_icon_path":"res://assets/icons/affix/prefix/sharpened.png", "tint":Color(0.78,0.85,0.55), "damage_pct":0.30},
+	"Sturdy":    {"weight":10, "rarity":"uncommon", "affix_icon_path":"res://assets/icons/affix/prefix/sturdy.png", "tint":Color(0.55,0.75,0.45), "armor_pct":0.30, "hp_bonus":15},
+	"Fierce":    {"weight":8,  "rarity":"rare", "affix_icon_path":"res://assets/icons/affix/prefix/fierce.png", "tint":Color(0.78,0.82,0.92),     "damage_pct":0.45, "crit_bonus":0.05},
+	"Heroic":    {"weight":6,  "rarity":"rare", "affix_icon_path":"res://assets/icons/affix/prefix/heroic.png", "tint":Color(0.85,0.72,0.45),     "damage_pct":0.25, "armor_pct":0.25, "hp_bonus":25},
+	"Mythic":    {"weight":3,  "rarity":"epic", "affix_icon_path":"res://assets/icons/affix/prefix/mythic.png", "tint":Color(0.78,0.55,0.95),     "damage_pct":0.60, "crit_bonus":0.08, "hp_bonus":40},
+	"Ancient":   {"weight":2,  "rarity":"legendary", "affix_icon_path":"res://assets/icons/affix/prefix/ancient.png", "tint":Color(1.00,0.85,0.35),"damage_pct":0.80, "armor_pct":0.40, "hp_bonus":60, "crit_bonus":0.10},
 }
 const AFFIX_SUFFIXES = {
 	"of Frost":       {"weight":10, "icon_overlay":"❄", "affix_icon_path":"res://assets/icons/affix/frost.png",     "tint":Color(0.55,0.85,1.00),"crit_bonus":0.05},
