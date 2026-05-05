@@ -361,3 +361,122 @@ codex entries, third-party narration, or other NPCs' lines.
   his quiet knowing about both Edda's saber and Maeve's letter make him
   the village's *quiet keeper*. Priority candidate for the next NPC
   backstory.
+
+---
+
+## Lore Run — 2026-05-04 (Innkeeper Bram)
+
+### NPC backstories (`lore/npcs/`) — added this run
+
+| NPC            | File                              | Dialogue tree                                  | Status |
+|----------------|-----------------------------------|------------------------------------------------|--------|
+| Innkeeper Bram | `lore/npcs/innkeeper_bram.md`     | `data/dialogue/innkeeper_bram.json` (16 keys)  | drafted; awaiting Builder wiring |
+
+### Old Faerie glossary — additions
+
+Three new canonical words enter the language. They sit alongside *thirre*,
+*ai-velin*, *kerrithen* (`world.md`); *haethe*, *unnen* (`smith_edda.md`);
+and *vael-tor*, *thressa-mai* (`elder_maeve.md`). Future writers should
+reuse these before inventing new ones.
+
+- **`vethar`** *(innkeeper_bram.md)* — the candle in the window; a small
+  light kept burning for someone whose road has not ended. Erris-keyed.
+  Bram has lit one in the front window of the Long Lantern every night
+  for nine years.
+- **`haisten`** *(innkeeper_bram.md)* — the song with no last verse; a
+  story whose teller stopped before the end — by death, by distance, by
+  grief, or by *kerrithen*. Bards know the word. Innkeepers learn it.
+- **`breos`** *(innkeeper_bram.md)* — what the bowl remembers; a place
+  many lives have passed through and been fed. The Long Lantern is
+  *breos*. So is the road.
+
+### Cross-references seeded this run
+
+- **The Long Lantern** is now the canonical name of Briarwood's inn.
+  Environment may carve a hand-painted wood-and-iron sign with a small
+  lantern motif over the front door. The lit candle in the front window
+  is a per-night flicker prop (Motion §12 — never static).
+- **Caedr**, Bram's missing road-singer husband, is now seedable as a
+  bardic codex narrator (same convention as Halsa-as-narrator in
+  `smith_edda.md` hooks): present-tense voice, no body, no death
+  confirmed. Walked into the Whisperwood on a Honeysong Eve eight in-
+  world years ago following a song-debt to the Antler Crown — present-
+  tense per herbalist canon ("not, the herbalists insist, *gone*").
+  Lyra is the herbalist who tells Bram this in those exact words. Both
+  of them are lying to each other. Both of them are right.
+- **Bram's Vigil-stew round Edda → Maeve.** The Maeve canon's stew-drop
+  detail is now bilateral: Maeve sets the bowl out for the Hollow King
+  and the cat eats it; Bram knows; he brings it anyway. The round is a
+  *village ritual,* not a one-NPC kindness. (Bram ↔ {Edda, Maeve} bridge
+  closed.)
+- **Bram is the second in-village witness to Mara's water-stained
+  returned letter** (`elder_maeve.md`, Withholding Ledger). He saw it
+  fall from Mara's coat pocket two springs ago, saw the unbroken seal,
+  saw her face, and refilled her cup without comment. He has not spoken
+  of it and will not. Future writers MUST NOT have Bram surface this in
+  dialogue — he is its keeper, not its caller. (Bram ↔ Mara bridge —
+  *kerrithen*-typed, same shape as Bram ↔ Edda's saber.)
+- **Bram knows about Smith Edda's saber.** His `boss_slain` line is
+  pre-tuned to *non-confirm* on the same in-game day Edda's fires. The
+  most he will ever say is *"Some debts get paid in iron, friend."*
+  Builder may co-fire both for the village's quietest two-person scene.
+- **Roan's road-name for Bram is "Bron."** Roan was Bram's horse-boy on
+  a single shared route nine years ago, before either came to this
+  valley. Reserved for Roan's future warmed dialogue variants — no
+  other NPC may use the name. (Bram ↔ Roan bridge.)
+- **Lyra leaves dreamleaf at Bram's back door every Longnight Vigil.**
+  Bram does not sleep on Longnight; he gives the dreamleaf to the
+  eldest traveler in the common room. Both know. Neither says.
+  Reserved as a candidate consequence for a future Lyra-Bram quest with
+  a `bram_holds_vigil` flag. (Bram ↔ Lyra bridge.)
+- **Hala and Bram argue, gently, about whether a blade is a tool or an
+  oath.** They have argued the same argument for nine years and neither
+  has moved an inch. Reserved as a future warmed-dialogue hook on Hala's
+  side; Bram's side is in the `lore_notes` of his dialogue file.
+  (Bram ↔ Hala bridge.)
+- **Triptych staging on Longnight Vigil.** Edda, Maeve, and Bram now all
+  ship a `longnight_vigil` mood-key. Bram's line opens with *"Edda's
+  forge first. Always Edda's forge first."* — the *first* is the
+  textual cue that the round continues to Maeve. If Builder ever
+  co-fires all three lines on the same Longnight tick, the village's
+  quietest scene plays itself across three thresholds with no
+  scripting beyond mood-key resolution.
+
+### Withholding ledger (do-not-surface canon)
+
+- **Caedr's name in Bram's mouth, unprompted.** Bram never names Caedr
+  aloud unless the player has reached a sufficiently warm relationship
+  *and* asks specifically. He will say *vethar*; he will not say
+  *Caedr*. Codex-only beyond that gate.
+- **The contents of Mara's letter.** Bram saw it. He did not read it.
+  Even if he had, he would not say. Future writers must respect the
+  withholding — same shape as Maeve's Stag-Court offer. The letter is
+  Mara's to give, not Bram's to surface.
+- **The last verse of Caedr's song.** `bram_last_verse_offered` is
+  reserved as *intentionally unresolvable.* Closing it would violate
+  THEME.md §7. Future writers MUST consult §7 before touching this loop.
+
+### Hooks queued for future runs
+
+- **Honeysong Eve quest** (Bram → fetch one `paper_lantern` for "someone
+  whose road has not ended"). Reward: `bram_road_knife` (sentimental
+  flavor item — the only blade Bram still owns from his bard days,
+  dulled, +1 luck flavor not stat). Quest text never names Caedr.
+- **The Last Verse side-quest.** A traveling NPC sings a tune the
+  player can carry to Bram. Bram refuses to use it. Quest *completes*
+  but Bram never confirms. World flag `bram_last_verse_offered` records
+  the offer; nothing reads from it. (Intentional.)
+- **Caedr as bardic codex narrator** for codex pages on Erris, the
+  road, the Antler Court, and the shape of an unfinished tune. Use
+  same convention as Halsa-as-narrator: present-tense, no body.
+- **`bram_holds_vigil`** as a Lyra-readable Bram flag, set by a future
+  Lyra-Bram Longnight-eve quest exchanging the dreamleaf bundle.
+- **`bram_letter_acknowledged`** as a one-line Bram reactive on the day
+  Mara finally turns her letter in (canonically expected: to Edda for
+  keeping). Short, dry, no Aelis name.
+- **The Long Lantern interior** as an Environment build target — common
+  room with hearth, copper coin balanced on the lintel above the front
+  door (Erris offering, swept and replaced), front-window candle
+  flickering nightly, three small leather notebooks on a back shelf
+  (Bram's verse-attempts — Environment may model them as world-readable
+  examinables tied to a future codex page).
