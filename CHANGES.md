@@ -2292,3 +2292,27 @@ N/A — text-only UI compound; no new visual asset required.
    GLB. Sourcing a CC0/CC-BY skeleton is the wire-up.
 
 ### Branch pushed: `auto/builder`
+
+---
+
+## 2026-05-05 — Integrator run (run 5)
+
+**Merged into main this run:** auto/builder (1 commit — Smith Edda forge / reforge tier ladder), auto/polisher (1 commit — third-person camera retune), auto/art (1 commit — 8 enemy bestiary portraits), auto/lore (1 commit — Trainer Hala backstory). Skipped: none. Branches with nothing ahead: auto/character, auto/qa. Branches that don't exist yet: auto/environment, auto/audio.
+
+**Three additive markdown conflicts, manually resolved:**
+- `CHANGES.md` — auto/builder appended a "BUILDER run 12 (Smith Edda forge)" section while HEAD held the prior integrator run-4 notes. Both kept in chronological order; no content discarded.
+- `SYSTEM_REGISTRY.md` — auto/builder added a "Forge Schema" section while HEAD held the run-4 schedule-walker registry entries. Both kept; the registry now documents both NPC schedules and per-weapon forge tiers.
+- `WORLD_STATE.md` — auto/builder added "Forge state" subsection AND auto/lore added "Trainer Hala backstory" subsection at the same trailing anchor. All three (HEAD, builder, lore) kept in append order. No content discarded.
+
+[INTEGRATOR-GAP] **Enemy bestiary portraits ship as orphaned assets.** Art shipped 8 painterly 128×128 enemy portraits (`assets/portraits/{goblin_grunt,goblin_brute,goblin_warlord,dire_wolf,skeleton_warrior,crystal_elemental,crystal_guardian,bandit_hooded}.png`) plus an ENEMIES_ATTRIBUTION.md. But `grep -rn portraits/ eldoria-godot/scripts/` returns ZERO matches — no Enemy.gd field, no DialoguePanel slot, no bestiary-UI scene loads any of them. The same gap exists for the 13 NPC portraits (mara, roan, hala, smith_edda, etc.) — they've sat unconsumed since Art's earlier town-manifest run. Single-line forward-fix when a UI lands: add a `var portrait_path: String` export to Enemy.gd / NPC.gd, populate from each entry, and `load(portrait_path)` into a TextureRect on damage-flash/dialogue-open. **Recommended for next builder/UI run** — this is the same integration debt as the achievement-icon and item-icon gaps. One unified "icon_path → TextureRect" pattern would close all three gaps in one builder pass.
+
+[INTEGRATOR-GAP] **Trainer Hala dialogue JSON is NOT shipped — same shape as last run's Roan gap.** Lore canonized Hala's backstory (506-line markdown at `lore/npcs/trainer_hala.md`) and Builder's run-11 already added Hala to the schedule walker (field watch / training-yard / patrol). But `data/dialogue/trainer_hala.json` does not exist — the four JSON-opted NPCs are still Maeve / Edda / Bram / Lyra. Hala's spoken lines remain inline static strings in WorldBuilder. Two NPCs now have full backstories and zero JSON dialogue surface (Roan from run-4, Hala this run). **Recommended:** lore drafts `trainer_hala.json` next run with the mood-keyed tree (default/morning/midday/evening/night plus low_health, boss_alive, boss_slain, high_renown, plus a Hala-distinctive `recent_kill` / `wolf_count` hook since she's the trainer who watches the player's combat record), then builder flips `"use_json_dialogue":true` on her NPCS entry. Same forward-fix shape as the Roan recommendation from run-4.
+
+[INTEGRATOR-GAP] **Skeleton and bandit portraits anticipate enemy kinds that have no dedicated GLB.** Art shipped `skeleton_warrior.png` and `bandit_hooded.png`. The skeleton kind exists in `Items.gd:DROP_TABLES` and `Enemy.gd:KIND_TO_FACTION`, but `Enemy.gd:KIND_TO_GLB` maps both `crystal_elemental` and `crystal_guardian` (and presumably skeleton/bandit if added) to `warrior.glb` — the generic stub. The portraits are *forward-staged* art that will pay off only once Builder/Asset shipping lands a real skeleton GLB (already on the backlog as item #4 from run-12). Not a regression — flagging because this is the cleanest example of art arriving ahead of the model pipeline. **Recommended:** Builder/Asset agent picks up CC0 skeleton + bandit GLBs as the next enemy-variety pass.
+
+[INTEGRATOR-GAP] **Smith Edda forge button has no Inventory paperdoll surface.** Builder's run-12 reforge ladder writes `Inventory.forge_tiers[weapon_id]` and `Items.forged_name()` returns the "+N" suffixed display name. The dialogue toast on reforge AND the HUD damage readout both reflect the upgrade. But the Inventory paperdoll / bag tooltip path was not updated — bag still shows the base weapon name. Builder flagged this in their own "what next run picks up" so this is a known carry, not a discovered gap. Mentioned here for the ledger.
+
+**Polisher's camera retune is self-contained.** auto/polisher only touched `CameraController.gd` and `PLAYER_MODEL.md` — no Player.gd changes this run, so the retune drops in cleanly without compounding with Character agent's prior bone-attach / weapon-visual work.
+
+**Branch reset:** all worker `auto/*` branches will be fast-forwarded to main after push so next agent runs start from a clean tip.
+
