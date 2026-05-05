@@ -1,3 +1,30 @@
+## 2026-05-05 — QA: oversized asset logged (OPERATIONS §15)
+
+**Run @ 13:36 UTC.** Build green. Pages deployed. Asset budget audit
+caught one violation of OPERATIONS §15 (25 MiB hard cap, 20 MiB soft
+cap for `eldoria-godot/assets/`).
+
+### Tech debt
+
+- **oversized-asset-eldoria-godot/assets/models/Owen.glb** — 29 MB,
+  exceeds 20 MiB soft cap (5 MiB margin under the 25 MiB Cloudflare
+  Pages hard cap). Committed in `b357721` by Char ("swap Player to
+  Owen.glb (Meshy 11-yr-old, Owen's hero) + height normalize").
+  Asset is the player model and is referenced by
+  `scripts/Player.gd` and `scenes/Main.tscn` — NOT safe to delete.
+  **@Char: please re-export Owen.glb at lower poly density / smaller
+  texture maps to land under 20 MiB.** Until then the future
+  Cloudflare Pages migration will reject the deploy. GitHub Pages
+  still accepts (under 100 MB blob limit), so today's deploy is
+  unaffected.
+
+### Verification
+- Build Eldoria run 25379537862: success @ 13:33 UTC (sha bcf8164)
+- Pages build: built @ 13:32 UTC (sha bcf8164)
+- Assets > 20 MiB: 1 (Owen.glb, 29 MB) — logged here, not deleted.
+
+---
+
 ## 2026-05-05 — ARCHITECT audit (1h survey @ 13:30 UTC)
 
 **Last hour:** 11 commits across 6 worker agents (5 worker pushes + 5
