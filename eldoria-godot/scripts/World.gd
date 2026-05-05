@@ -404,6 +404,10 @@ func _recompute_renown_from_achievements() -> void:
 func _ready() -> void:
 	add_to_group("world")
 	add_to_group("audio_listeners")
+	# UITheme self-test — logs whether the parchment/iron/wood frames are
+	# importable. Doesn't throw on miss; UITheme falls back to bare panels.
+	var _ut: Array = UITheme.self_test()
+	print("[UITheme] ", _ut[1])
 	if dialogue_panel: dialogue_panel.visible = false
 	if death_overlay: death_overlay.visible = false
 	if quest_panel: quest_panel.visible = false
@@ -424,6 +428,51 @@ func _ready() -> void:
 	# special-case load path. Also pushes any pre-loaded title onto the
 	# player nameplate after a single frame, once Player._ready ran.
 	call_deferred("_check_achievements")
+	# Builder run 14 — Minimap + WorldMap. Created here (not in Main.tscn)
+	# so the system is purely script-spawned — designers can wipe the scene
+	# and the HUD comes back. Both nodes are added to UI/HUD so they layer
+	# above the gameplay 3D viewport but BELOW the dialogue/inventory panels.
+	call_deferred("_build_map_system")
+
+func _build_map_system() -> void:
+	# Idempotent — safe if Main.tscn ever gets a hand-placed Minimap node.
+	if minimap == null:
+		minimap = Minimap.new()
+		minimap.name = "Minimap"
+		if hud != null:
+			hud.add_child(minimap)
+		else:
+			# Fallback: attach to the UI CanvasLayer if HUD is missing
+			var ui_layer: Node = get_node_or_null("UI")
+			if ui_layer != null:
+				ui_layer.add_child(minimap)
+	if world_map == null:
+		world_map = WorldMap.new()
+		world_map.name = "WorldMap"
+		var ui_layer2: Node = get_node_or_null("UI")
+		if ui_layer2 != null:
+			ui_layer2.add_child(world_map)
+		world_map.bind_minimap(minimap)
+
+func toggle_world_map() -> void:
+	# Player.gd KEY_N → call_group("world", "toggle_world_map").
+	# Idempotent (open → close → open). Mutually exclusive with the
+	# inventory + achievements panels — opening the map closes them.
+	if world_map == null:
+		_build_map_system()
+	if world_map == null:
+		return
+	if inventory_panel != null and inventory_panel.visible:
+		inventory_panel.visible = false
+	if achievements_panel != null and achievements_panel.visible:
+		achievements_panel.visible = false
+	world_map.toggle()
+
+func ping_minimap(world_pos: Vector3, color: Color = Color(0.396, 0.875, 0.898)) -> void:
+	# Public hook so quest scripts can drop a hint ring on the minimap.
+	if minimap == null:
+		return
+	minimap.ping(world_pos, color)
 
 func _setup_dialogue_actions() -> void:
 	if not dialogue_panel: return
@@ -770,21 +819,13 @@ func _check_zone_music() -> void:
 # ════════════════════════════════════════════════════════════════════════
 var _toast: Label = null
 func _show_toast(text: String) -> void:
+	# Theme via UITheme.make_toast_label (palette §3 gold, ink-outline,
+	# OL_TOAST=6). Behavior unchanged: 2.0s hold, 1.0s fade, queue_free.
 	if _toast and is_instance_valid(_toast):
 		_toast.queue_free()
-	_toast = Label.new()
-	_toast.text = text
-	_toast.add_theme_font_size_override("font_size", 28)
-	_toast.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
-	_toast.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	_toast.add_theme_constant_override("outline_size", 6)
-	_toast.anchor_left = 0.5; _toast.anchor_right = 0.5
-	_toast.anchor_top = 0.3
-	_toast.offset_left = -360; _toast.offset_right = 360
-	_toast.offset_top = 0; _toast.offset_bottom = 60
-	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast = UITheme.make_toast_label(text)
 	$UI.add_child(_toast)
-	var t = create_tween()
+	var t: Tween = create_tween()
 	t.tween_interval(2.0)
 	t.tween_property(_toast, "modulate:a", 0.0, 1.0)
 	t.tween_callback(_toast.queue_free)
@@ -825,14 +866,13 @@ func _build_inventory_ui() -> void:
 	inventory_panel.offset_bottom = 240
 	inventory_panel.visible = false
 	$UI.add_child(inventory_panel)
+	# THEME §3 parchment 9-slice background — replaces default Godot grey
+	UITheme.style_panel_parchment(inventory_panel)
 
 	# Title bar
 	var title := Label.new()
 	title.text = "🎒  Inventory & Equipment"
-	title.add_theme_font_size_override("font_size", 24)
-	title.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
-	title.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	title.add_theme_constant_override("outline_size", 4)
+	UITheme.style_title_label(title)
 	title.position = Vector2(20, 8)
 	title.size = Vector2(700, 32)
 	inventory_panel.add_child(title)
@@ -842,6 +882,7 @@ func _build_inventory_ui() -> void:
 	close.text = "✕"
 	close.position = Vector2(680, 8)
 	close.size = Vector2(36, 30)
+	UITheme.style_iron_button(close)
 	close.pressed.connect(toggle_inventory)
 	inventory_panel.add_child(close)
 
@@ -850,8 +891,7 @@ func _build_inventory_ui() -> void:
 	pd_title.text = "— Equipped —"
 	pd_title.position = Vector2(20, 50)
 	pd_title.size = Vector2(220, 24)
-	pd_title.add_theme_font_size_override("font_size", 16)
-	pd_title.add_theme_color_override("font_color", Color(0.95, 0.85, 0.45))
+	UITheme.style_subtitle_label(pd_title)
 	inventory_panel.add_child(pd_title)
 
 	for entry in SLOT_LAYOUT:
@@ -874,7 +914,7 @@ func _build_inventory_ui() -> void:
 	stats_label.size = Vector2(220, 100)
 	stats_label.bbcode_enabled = true
 	stats_label.fit_content = true
-	stats_label.add_theme_font_size_override("normal_font_size", 13)
+	UITheme.style_richtext(stats_label)
 	inventory_panel.add_child(stats_label)
 
 
@@ -883,8 +923,7 @@ func _build_inventory_ui() -> void:
 	bag_title.text = "— Bag (24 slots) —"
 	bag_title.position = Vector2(260, 50)
 	bag_title.size = Vector2(440, 24)
-	bag_title.add_theme_font_size_override("font_size", 16)
-	bag_title.add_theme_color_override("font_color", Color(0.95, 0.85, 0.45))
+	UITheme.style_subtitle_label(bag_title)
 	inventory_panel.add_child(bag_title)
 
 	bag_buttons.clear()
@@ -910,17 +949,14 @@ func _build_inventory_ui() -> void:
 	hint.text = "Click bag item to use/equip  •  Click equipped slot to unequip  •  I to close  •  Q to drink potion"
 	hint.position = Vector2(20, 432)
 	hint.size = Vector2(700, 24)
-	hint.add_theme_font_size_override("font_size", 12)
-	hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.65))
+	UITheme.style_hint_label(hint)
 	inventory_panel.add_child(hint)
 
 	# Tooltip (single shared label, follows mouse)
 	inv_tooltip = Label.new()
 	inv_tooltip.name = "InvTooltip"
 	inv_tooltip.visible = false
-	inv_tooltip.add_theme_font_size_override("font_size", 13)
-	inv_tooltip.add_theme_color_override("font_color", Color(1, 1, 1))
-	inv_tooltip.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	UITheme.style_tooltip_label(inv_tooltip)
 	inv_tooltip.add_theme_constant_override("outline_size", 4)
 	inv_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	inv_tooltip.size = Vector2(320, 100)
@@ -1149,6 +1185,12 @@ const ACH_DIM_GREY: Color = Color(0.65, 0.6, 0.55)
 const ACH_LOCK_MOD: Color = Color(0.45, 0.45, 0.45, 0.85)
 
 var achievements_panel: Panel = null
+
+# Mini-map + World-Map (Builder run 14). Lazily built in _ready(); the
+# Minimap is always visible HUD and the WorldMap toggles via N (handled
+# in Player.gd → call_group("world", "toggle_world_map")).
+var minimap: Minimap = null
+var world_map: WorldMap = null
 var ach_grid_container: GridContainer = null
 var ach_title_label: Label = null
 var ach_count_label: Label = null
@@ -1196,14 +1238,13 @@ func _build_achievements_ui() -> void:
 	achievements_panel.offset_bottom = 290
 	achievements_panel.visible = false
 	$UI.add_child(achievements_panel)
+	# THEME §3 parchment background — replaces default Godot grey
+	UITheme.style_panel_parchment(achievements_panel)
 
 	# Header — "Achievements & Titles" in palette §3 burnt gold
 	var header := Label.new()
 	header.text = "📜  Achievements & Titles"
-	header.add_theme_font_size_override("font_size", 24)
-	header.add_theme_color_override("font_color", ACH_GOLD)
-	header.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	header.add_theme_constant_override("outline_size", 4)
+	UITheme.style_title_label(header)
 	header.position = Vector2(20, 10)
 	header.size = Vector2(640, 32)
 	achievements_panel.add_child(header)
@@ -1213,6 +1254,7 @@ func _build_achievements_ui() -> void:
 	close.text = "✕"
 	close.position = Vector2(700, 10)
 	close.size = Vector2(36, 30)
+	UITheme.style_iron_button(close)
 	close.pressed.connect(toggle_achievements)
 	achievements_panel.add_child(close)
 
@@ -1220,16 +1262,14 @@ func _build_achievements_ui() -> void:
 	ach_title_label = Label.new()
 	ach_title_label.position = Vector2(20, 50)
 	ach_title_label.size = Vector2(700, 26)
-	ach_title_label.add_theme_font_size_override("font_size", 16)
-	ach_title_label.add_theme_color_override("font_color", ACH_GOLD)
+	UITheme.style_subtitle_label(ach_title_label)
 	achievements_panel.add_child(ach_title_label)
 
 	# Earned X of N
 	ach_count_label = Label.new()
 	ach_count_label.position = Vector2(20, 78)
 	ach_count_label.size = Vector2(700, 22)
-	ach_count_label.add_theme_font_size_override("font_size", 14)
-	ach_count_label.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	UITheme.style_count_label(ach_count_label)
 	achievements_panel.add_child(ach_count_label)
 
 	# Grid — 2 cols × 3 rows for the current 6 achievements; GridContainer
@@ -1251,8 +1291,7 @@ func _build_achievements_ui() -> void:
 	hint.text = "J to close  •  Earn titles by exploring the realm  •  Highest priority equips automatically"
 	hint.position = Vector2(20, 558)
 	hint.size = Vector2(700, 22)
-	hint.add_theme_font_size_override("font_size", 12)
-	hint.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	UITheme.style_desc_label(hint)
 	achievements_panel.add_child(hint)
 
 func _build_one_achievement_card(id: String) -> void:
@@ -1291,12 +1330,9 @@ func _build_one_achievement_card(id: String) -> void:
 	var lock_lbl := Label.new()
 	lock_lbl.name = "Lock"
 	lock_lbl.text = "🔒"
-	lock_lbl.add_theme_font_size_override("font_size", 36)
+	UITheme.style_lock_label(lock_lbl)
 	lock_lbl.position = Vector2(30, 30)
 	lock_lbl.size = Vector2(40, 40)
-	lock_lbl.add_theme_color_override("font_color", Color(0.15, 0.15, 0.15, 0.95))
-	lock_lbl.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.6, 0.8))
-	lock_lbl.add_theme_constant_override("outline_size", 4)
 	crest_wrap.add_child(lock_lbl)
 
 	# Right column — name, desc, awarded-title hint
@@ -1307,10 +1343,7 @@ func _build_one_achievement_card(id: String) -> void:
 	var name_lbl := Label.new()
 	name_lbl.name = "AName"
 	name_lbl.text = "%s %s" % [String(entry.get("icon", "🏆")), String(entry.get("name", id))]
-	name_lbl.add_theme_font_size_override("font_size", 16)
-	name_lbl.add_theme_color_override("font_color", ACH_GOLD)
-	name_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	name_lbl.add_theme_constant_override("outline_size", 3)
+	UITheme.style_name_label(name_lbl)
 	right.add_child(name_lbl)
 
 	var desc_lbl := Label.new()
@@ -1318,8 +1351,7 @@ func _build_one_achievement_card(id: String) -> void:
 	desc_lbl.text = String(entry.get("desc", ""))
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_lbl.custom_minimum_size = Vector2(200, 56)
-	desc_lbl.add_theme_font_size_override("font_size", 12)
-	desc_lbl.add_theme_color_override("font_color", ACH_PARCHMENT_CREAM)
+	UITheme.style_desc_label(desc_lbl)
 	right.add_child(desc_lbl)
 
 	# Title hint line — "Grants: ✨ the Apprentice" so the player can see
@@ -1331,8 +1363,7 @@ func _build_one_achievement_card(id: String) -> void:
 		title_hint.text = "✨ Grants: \"%s\"" % t_text
 	else:
 		title_hint.text = ""
-	title_hint.add_theme_font_size_override("font_size", 11)
-	title_hint.add_theme_color_override("font_color", Color(0.85, 0.65, 0.3))
+	UITheme.style_micro_hint_label(title_hint)
 	right.add_child(title_hint)
 
 	ach_card_widgets[id] = {

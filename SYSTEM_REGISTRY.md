@@ -563,146 +563,6 @@ Authoring rules:
   must remain in sync on the `KIND_TO_FACTION` / faction-id keys. Any
   rename of a faction id is a cross-cutting refactor, not a local edit.
 
-## Enemy Damage Schema
-
-✅ **Shipped 2026-05-05 (run 9).** Per-enemy `damage` derives from
-`World.faction_pressure(faction_id)` at spawn. Lives in
-`Enemy.gd → _resolve_adaptive_damage()`. Reuses the `KIND_TO_FACTION`
-map that the cooldown + chase schemas already declared — single source
-of truth for kind → faction routing.
-
-Like the chase schema, damage is **multiplicative**: each kind's
-WorldBuilder-assigned baseline is preserved at fresh save and lifted by up
-to `+DAMAGE_AGITATION_GAIN` (=`0.12`, +12%) at pressure 0.0. The band is
-TIGHTER than chase_speed's +17% because damage compounds *with* the other
-two enemy outputs on the same pressure scalar (faster chase + faster swing
-+ harder hit = three vectors of pressure on Alden's 9-yo combat tolerance,
-not one). Damage is the subordinate knob.
-
-| Enemy kind          | Faction id              | Baseline → Ceiling (pressure 1.0 → 0.0) |
-|---------------------|-------------------------|------------------------------------------|
-| `goblin` (Scout)    | `whisperwood_goblins`   | `6 → 7` (+17% rounded — small-baseline floor) |
-| `goblin` (Brute)    | `whisperwood_goblins`   | `11 → 13` (round(12.32) → ceil 13)       |
-| `wolf`              | `dire_wolves`           | `9 → 11` (round(10.08) → ceil 11)        |
-| `skeleton`          | `crystal_caves`         | `8 → 10` (round(8.96) → ceil 10)         |
-| `crystal_elemental` | `crystal_caves`         | `14 → 16` (round(15.68) → ceil 16)       |
-| `crystal_guardian`  | `crystal_caves`         | `26 → 30` (round(29.12) → ceil 30)       |
-| `bandit`            | (unmapped)              | baseline only (no faction yet)           |
-
-Resolved value = `clamp(round(lerp(baseline, baseline*(1+GAIN), 1-pressure)), baseline, ceil(baseline*(1+GAIN)))`
-where `baseline` is the int damage assigned by `WorldBuilder._spawn_enemy`
-(or the `@export` default if WorldBuilder didn't override). The `ceil()` on
-the upper bound is load-bearing for small baselines: a 6-damage scout's
-+12% lifts to 6.72 which would round-to-baseline without the ceiling lift.
-
-Player-facing feedback: **no new visual cue** — the cooldown schema's
-`⚡` prefix already fires below pressure ~0.625 and now subsumes ALL THREE
-adaptive enemy outputs (cooldown + chase + damage). One marker, three
-coupled effects: kids see one symbol and learn it means "this one's faster,
-chases harder, *and* hits harder." Adding a third marker for damage would
-clutter the floating-name HUD without adding information.
-
-Authoring rules:
-- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
-  guards as the cooldown + chase schemas: missing world group, missing
-  accessor, OR unmapped `enemy_kind` ALL fall through to the
-  WorldBuilder-assigned baseline (no crash, no hidden behavior change).
-- Resolved value is **clamped** to `[baseline, ceil(baseline*(1+GAIN))]`
-  and asserted against the same band. Widening `DAMAGE_AGITATION_GAIN`
-  past 0.12 requires a fresh PLAYER_MODEL.md tuning pass — it is the
-  most tolerance-sensitive of the three coupled outputs.
-- damage is resolved ONCE at first `_ready()` AFTER WorldBuilder has
-  assigned the per-kind baseline. `_respawn()` does NOT re-sample —
-  matches the cooldown + chase schemas: world reactivity is *save-reload*
-  granular, not real-time.
-- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd` — the SAME
-  map cooldown, chase, and damage all consult.
-
-
-## Enemy XP Reward Schema
-
-✅ **Shipped 2026-05-05 (run 10).** Per-enemy `xp_reward` derives from
-`World.faction_pressure(faction_id)` at spawn. Lives in
-`Enemy.gd → _resolve_adaptive_xp_reward()`. Reuses the `KIND_TO_FACTION`
-map that the cooldown + chase + damage schemas already declared — single
-source of truth for kind → faction routing.
-
-The xp schema is **multiplicative AND inverse-direction-symmetric** with the
-three punisher schemas: at the SAME pressure, a `⚡` agitated enemy hits
-faster, chases faster, hits harder, AND grants more xp per kill. The
-inversion isn't a separate scalar — it's the same `lerp(baseline, ceiling,
-1.0 - pressure)` shape every other resolver uses; "harder fight pays more"
-is naturally encoded because `xp_reward`'s *baseline* is the LOW end and
-the *ceiling* is the HIGH end (vs. cooldown's baseline-high / min-low).
-
-Wider band (+20%) than damage (+12%) and chase_speed (+17%) because
-xp_reward is a **pure-positive knob** — there's no Alden-combat-tolerance
-pressure to balance against on the reward side, AND the size of the ⚡
-reward should *feel* commensurate with the three coupled punisher-buffs
-the prefix already promises. Asymmetric on purpose: the punishment side
-stays tight, the reward side opens up.
-
-| Enemy kind          | Faction id              | Baseline → Ceiling (pressure 1.0 → 0.0) |
-|---------------------|-------------------------|------------------------------------------|
-| `goblin` (Scout)    | `whisperwood_goblins`   | `18 → 22` (round(21.6) → ceil 22)        |
-| `goblin` (Brute)    | `whisperwood_goblins`   | `36 → 44` (round(43.2) → ceil 44)        |
-| `wolf`              | `dire_wolves`           | `28 → 34` (round(33.6) → ceil 34)        |
-| `skeleton`          | `crystal_caves`         | `24 → 29` (round(28.8) → ceil 29)        |
-| `crystal_elemental` | `crystal_caves`         | `55 → 66` (round(66.0) → ceil 66)        |
-| `crystal_guardian`  | `crystal_caves`         | `480 → 576` (round(576.0) → ceil 576)    |
-| `bandit`            | (unmapped)              | baseline only (no faction yet)           |
-
-Resolved value = `clamp(round(lerp(baseline, baseline*(1+GAIN), 1-pressure)), baseline, ceil(baseline*(1+GAIN)))`
-where `baseline` is the int xp_reward assigned by `WorldBuilder._spawn_enemy`
-(or the `@export` default if WorldBuilder didn't override). The `ceil()` on
-the upper bound is load-bearing for small baselines: an 18-xp scout's
-+20% lifts to 21.6 which rounds cleanly, but kinds with mid-range
-baselines (e.g. a hypothetical 5-xp variant → 6.0) need the ceiling-lift
-to make the +20% bump actually land.
-
-Player-facing feedback: **no new visual cue** — the cooldown schema's
-`⚡` prefix already fires below pressure ~0.625 and now subsumes ALL FOUR
-adaptive enemy outputs (cooldown + chase + damage + xp_reward). One
-marker, four coupled effects: kids see one symbol and learn it means
-"this one's faster, chases harder, hits harder, *and* pays more." Adding
-a separate xp marker would clutter the floating-name HUD without adding
-information (the four outputs lerp on the same scalar — they trip
-together).
-
-Mastery-loop closure: a ⚡ kill is now a +20% XP windfall on top of the
-+12%-damage punishing fight Owen worked through. The harder fight is the
-bigger reward — exactly the Mastery-affinity rung PLAYER_MODEL.md calls
-for in run-9's xp follow-up. Alden's first hour stays at baseline because
-pressure 1.0 keeps the lerp at the floor.
-
-Authoring rules:
-- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
-  guards as the cooldown + chase + damage schemas: missing world group,
-  missing accessor, OR unmapped `enemy_kind` ALL fall through to the
-  WorldBuilder-assigned baseline (no crash, no hidden behavior change).
-- Resolved value is **clamped** to `[baseline, ceil(baseline*(1+GAIN))]`
-  and asserted against the same band. Widening `XP_REWARD_AGITATION_GAIN`
-  past 0.20 risks making ⚡ farming the *only* viable XP path —
-  PLAYER_MODEL.md's "no FOMO / no pressure" hard constraint requires that
-  baseline kills remain a satisfying progression on their own.
-- xp_reward is resolved ONCE at first `_ready()` AFTER WorldBuilder has
-  assigned the per-kind baseline. `_respawn()` does NOT re-sample —
-  matches all three prior enemy schemas: world reactivity is *save-reload*
-  granular, not real-time.
-- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd` — the SAME
-  map cooldown, chase, damage, AND xp_reward all consult.
-
-**The enemy axis of `faction_pressure` is fully wired after run 10.**
-Six outputs lerp on a single scalar: NPC dialogue tier 3 (run 4), goblin
-spawn density (run 5), wolf spawn density (run 6), attack cooldown (run
-7), chase speed (run 8), damage (run 9), xp_reward (run 10). The next
-true frontier is the day `World.player_pressure_signal()` ships — at
-which point the queued knobs (`Player.gd.crit_chance`, `Items.gd` affix
-odds, `CameraController.gd.smooth_lerp`, `Chest.gd` resting-glow,
-`NPC.gd.schedule_speed`, `xp_for_next_level()` re-lerp, and post-process
-glow_intensity) all become candidate Output #1's on the new axis.
-
-
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a
@@ -1210,59 +1070,157 @@ PRODUCES:
   toggle. Future panels (M for map, K for skill tree, etc.) follow the
   same `get_tree().call_group("world", ...)` shape.
 
+## Mini-Map & World-Map (Builder run 14)
 
-## Prop GLB Schema — run 14 (2026-05-05)
+A two-tier map system. Both views render from the SAME data, so a new
+landmark or zone shows in both simultaneously.
 
-### Constants (top of `WorldBuilder.gd`)
-- `PROP_GLB_PATHS: Dictionary` — keyed by stable string ID, value is
-  `res://...glb` path. 7 entries: `windmill`, `stone_well`, `campfire`,
-  `lantern`, `wooden_barrel`, `fern`, `mushroom_red`. Adding a new prop is a
-  one-row append.
-- `PROP_GLB_SCALES: Dictionary` — same keys, value is `Vector3` canonical
-  scale. Caller-applied scale jitter (typically `±15%`) layers on top.
+### Schema — `Minimap.LANDMARKS`
 
-### Integration seam
+| Field   | Type     | Notes                                             |
+|---------|----------|---------------------------------------------------|
+| `pos`   | Vector3  | World position                                    |
+| `name`  | String   | Label shown by the full WorldMap                  |
+| `kind`  | String   | Dispatch tag (see kinds below)                    |
+| `color` | Color    | Pin color (THEME §3 palette)                      |
+| `icon`  | String   | Single-glyph emoji (used by full WorldMap)        |
+
+**Kinds:** `village | well | campfire | cave | camp | boss | shrine`.
+A new kind = one new branch in `_draw_landmark_glyph` (Minimap.gd) and
+`_draw_lm_glyph` (WorldMap.gd).
+
+### Schema — `WorldMap.REGIONS`
+
+| Field   | Type             | Notes                                |
+|---------|------------------|--------------------------------------|
+| `name`  | String           | Region label                         |
+| `color` | Color (with α)   | Watercolor-wash tint                 |
+| `poly`  | Array[Vector2]   | World XZ polygon outline             |
+
+### Group hooks (no new state — read existing groups)
+
+| Group           | Drawn as              | Source                       |
+|-----------------|----------------------|-------------------------------|
+| `player`        | Centered pulsing dot | Player.gd `_ready` (existing) |
+| `npcs`          | Gold pin             | WorldBuilder._make_npc (NEW)  |
+| `enemies`       | Crimson pin (flashing in aggro) | Enemy.gd `_ready` |
+| `bosses`        | Warlock-purple skull | Boss.gd `_ready`              |
+| `chests`        | Bronze ring          | Chest.gd `_ready`             |
+| `goblin_fires`  | Ember dot            | WorldBuilder._make_goblin_camp|
+
+### Public API
+
+| Method on World                                  | Effect                              |
+|--------------------------------------------------|-------------------------------------|
+| `toggle_world_map()`                             | Open/close fullscreen map (KEY_N)   |
+| `ping_minimap(world_pos, color)`                 | Flash an expanding ring (1.4s)      |
+| `Minimap.set_visible_radius(meters)`             | Zoom (8m..200m, default 30m)        |
+| `Minimap.landmark_at(name) -> Vector3`           | Schema lookup                       |
+
+### Inputs
+
+| Key  | Action               | Owner          |
+|------|----------------------|----------------|
+| N    | Toggle World Map     | Player.gd      |
+| —    | Mini-map always-on   | Minimap.gd     |
+
+---
+
+## UITheme module (run-15 ship)
+
+Single-source-of-truth UI styling helper, registered via
+`class_name UITheme` (no autoload required — call statically). Replaces the
+five-run-flagged duplicate `add_theme_color_override` boilerplate scattered
+across panel builders in `World.gd`.
+
+### File
+`eldoria-godot/scripts/UITheme.gd` (322 lines, 14 helpers + self-test).
+
+### Palette constants
+| Const | Value | THEME §3 source |
+|-------|-------|-----------------|
+| `UITheme.GOLD` | `Color(1.00, 0.85, 0.40)` | burnt gold (primary) |
+| `UITheme.SUNSET_ORANGE` | `Color(1.00, 0.50, 0.00)` | `#FF8000` |
+| `UITheme.CRIMSON` | `Color(0.55, 0.13, 0.13)` | `#8C2020` wine |
+| `UITheme.MOSS_GREEN` | `Color(0.29, 0.44, 0.22)` | forest moss |
+| `UITheme.PARCHMENT` | `Color(0.85, 0.79, 0.61)` | `#D9C99B` |
+| `UITheme.PARCHMENT_CREAM` | `Color(0.92, 0.85, 0.65)` | warmer cream tier |
+| `UITheme.INK_BLACK` | `Color(0.05, 0.04, 0.05)` | `#0E0A0E` |
+| `UITheme.BRASS` | `Color(0.69, 0.46, 0.16)` | `#B0742A` |
+| `UITheme.STAG_BLOOD` | `Color(0.63, 0.13, 0.13)` | `#A02020` |
+| `UITheme.STONE_BLUE` | `Color(0.48, 0.53, 0.58)` | `#7B8693` |
+| `UITheme.FEY_CYAN` | `Color(0.40, 0.87, 0.90)` | magic accent |
+| `UITheme.ARCANE_PURPLE` | `Color(0.49, 0.25, 0.69)` | warlock |
+| `UITheme.FROST_SILVER` | `Color(0.78, 0.88, 0.90)` | frost |
+
+### Font-size constants (THEME §5 hierarchy)
+| Const | Px | Use |
+|-------|----|-----|
+| `FS_TOAST` | 28 | screen-center transient |
+| `FS_TITLE` | 24 | panel header |
+| `FS_HEADER` | 22 | secondary header |
+| `FS_SUBTITLE` | 16 | column header |
+| `FS_BODY_LG` | 14 | button face / counter |
+| `FS_BODY` | 13 | RichTextLabel default |
+| `FS_BODY_SM` | 12 | hint, footer, desc |
+| `FS_TINY` | 11 | title-hint micro |
+| `FS_LOCK` | 36 | 🔒 overlay glyph |
+| `FS_BAG_GLYPH` | 22 | bag-slot item glyph |
+
+### Asset-path constants (CC0, scripts/art/make_ui_frames.py seed 8131)
+- `ASSET_PARCHMENT_LARGE` → `res://assets/ui/parchment_panel.png` (512×512)
+- `ASSET_PARCHMENT_SMALL` → `res://assets/ui/parchment_panel_small.png` (256×256)
+- `ASSET_WOOD_PANEL` → `res://assets/ui/wood_panel.png` (512×384)
+- `ASSET_BTN_NORMAL`/`HOVER`/`PRESSED` → `res://assets/ui/button_*.png` (192×64)
+- `ASSET_DIVIDER_ORNATE` → `res://assets/ui/divider_ornate.png` (384×24)
+- `ASSET_SCROLL_BANNER` → `res://assets/ui/scroll_banner.png` (512×128)
+- 9-slice patches: `PATCH_BIG=64`, `PATCH_SMALL=32`, `PATCH_BTN=16`
+
+### Helper API
 ```
-func _try_attach_prop_glb(parent: Node3D, key: String) -> bool
-```
-Returns `true` if the GLB at `PROP_GLB_PATHS[key]` loaded, instantiated, and
-was added as a child of `parent` with the canonical scale. On `true`,
-the holder is tagged via `parent.set_meta("prop_glb_key", key)` and a
-deferred `_settle_to_ground(parent)` is queued (THEME §13). On `false`,
-nothing is mutated and the caller falls back to its procedural primitive
-build path. Every prop callsite in run 14 (`_build_windmill`, `_make_lantern`,
-`_build_well`, `_build_campfire`, `_scatter_ferns`,
-`_scatter_mushroom_clusters`, `_scatter_barrels`) goes through this seam.
-
-### New groups (typed scene hooks for future passes)
-| Group | Members | Future-run hooks |
-|-------|---------|------------------|
-| `wells` | Stone well at (0, 0, 6) | Audio rope-creak SFX, splash particles |
-| `fern_scatter` | 70 fern.glb instances under Whisperwood canopy | Audio rustle-on-pass, foragable herb |
-| `mushroom_clusters` | ~14 fairy rings of 3-6 mushroom_red.glb instances | Lore harvestable, §12 cap-bob anim |
-| `barrel_scatter` | 7 fixed wooden_barrel.glb instances (inn/smith/stable/well) | Breakable-barrel loot, crack SFX |
-
-### Meta-tag schema
-Every holder spawned via `_try_attach_prop_glb` carries
-`get_meta("prop_glb_key")` returning its `PROP_GLB_PATHS` key. Future passes
-can address specific prop kinds without parsing scene paths:
-
-```
-for h in get_tree().get_nodes_in_group("barrel_scatter"):
-    if h.get_meta("prop_glb_key", "") == "wooden_barrel":
-        # attach breakable hit-box, etc.
+UITheme.style_panel_parchment(panel)         # NinePatchRect bg, idempotent
+UITheme.style_panel_wood(panel)              # wood_panel.png variant
+UITheme.style_iron_button(btn)               # 3-state texture stylebox
+UITheme.style_title_label(lbl)               # 24pt gold + outline
+UITheme.style_subtitle_label(lbl)            # 16pt gold
+UITheme.style_name_label(lbl)                # 16pt gold + outline (cards)
+UITheme.style_count_label(lbl)               # 14pt cream
+UITheme.style_body_label(lbl)                # 13pt cream
+UITheme.style_desc_label(lbl)                # 12pt cream
+UITheme.style_hint_label(lbl)                # 12pt dim white
+UITheme.style_micro_hint_label(lbl)          # 11pt brass
+UITheme.style_lock_label(lbl)                # 36pt dim w/ cream outline
+UITheme.style_tooltip_label(lbl)             # 13pt white + outline
+UITheme.style_richtext(rt)                   # RichTextLabel cream defaults
+UITheme.make_toast_label(text) -> Label      # 28pt gold + outline
+UITheme.self_test() -> [bool, String]        # asset reachability
 ```
 
-### Fallback contract
-- GLB missing on disk → `ResourceLoader.exists()` returns false →
-  `_load_glb_safe` returns null → `_try_attach_prop_glb` returns false →
-  caller's `if not glb_attached:` branch builds the procedural primitive.
-- World is NEVER left with an empty prop slot for the four pre-existing
-  builders (windmill, well, lantern, campfire). The three new scatters
-  (ferns, mushrooms, barrels) bail-without-spawning if their GLB is
-  missing — these are additive content, not core village geometry.
+### Idempotency contract
+`style_panel_parchment` and `style_panel_wood` set
+`panel.set_meta("_eldoria_themed", true)`. Re-calling on the same panel
+is a no-op. Marker child `EldoriaParchmentBG` added at index 0 so all
+existing children draw on top.
 
-### Compounds with run 13 (Whisperwood Asset Wire-Up)
-- Reuses `_load_glb_safe`, `_settle_to_ground`, `_measure_aabb` (run-13 helpers).
-- Same idempotency / null-safety contract.
-- Same THEME §13 ground-settle deferred call pattern.
+### Run-15 callsites (initial migration)
+- `World.gd::_show_toast` — uses `make_toast_label`
+- `World.gd::_build_inventory_ui` — `style_panel_parchment`,
+  `style_title_label`, `style_iron_button` (close ✕),
+  `style_subtitle_label` (×2), `style_richtext`, `style_hint_label`,
+  `style_tooltip_label`
+- `World.gd::_build_achievements_ui` — `style_panel_parchment`,
+  `style_title_label`, `style_iron_button` (close ✕),
+  `style_subtitle_label`, `style_count_label`, `style_desc_label`
+- `World.gd::_build_one_achievement_card` — `style_lock_label`,
+  `style_name_label`, `style_desc_label`, `style_micro_hint_label`
+
+### Future seams (next-run hooks)
+- DialoguePanel (Main.tscn) — replace `theme_override_*` directly in
+  the .tscn with `UITheme.style_panel_parchment` + label helpers in
+  `_setup_dialogue_actions`
+- Future bestiary panel — should call `style_panel_parchment` + grid
+  pattern from `_build_achievements_ui`
+- HUD bars (HPBar/MPBar/XPBar) — could move to UITheme.style_progressbar
+  in a follow-up, currently still tscn-defined
+- Smith Edda forge UI (backlog #2) — start with `style_panel_parchment`,
+  three-tab layout reusing the bag-grid pattern

@@ -1613,21 +1613,36 @@ copies it verbatim.
   persist across save/load. The pulse is a "this just happened, look at
   it" affordance, not a "this is special forever" affordance.
 
+## Mini-Map & World-Map (Builder run 14)
 
-## Briarwood Prop Wire-Up — run 14 (2026-05-05)
+The realm now has a permanent compass on the player's HUD and a full
+parchment scroll one keypress away.
 
-Briarwood Village now reads as inhabited at every scale. The four landmark
-props that previously rendered as procedural primitive stacks (windmill,
-well, lantern, campfire) instance hand-painted Sketchfab CC-BY GLBs from
-`assets/models/props/` when those load successfully — falling back cleanly
-to the legacy procedural build when not. Three new scatter passes add
-visual layers the world didn't have at all: **70 ferns** under the
-Whisperwood canopy (group `fern_scatter`), **~14 toadstool fairy rings** of
-3-6 mushrooms each (group `mushroom_clusters`), and **7 fixed wooden barrels**
-propped against existing inn / smith / stable / well walls (group
-`barrel_scatter`). Every prop attach goes through a single integration seam
-(`_try_attach_prop_glb`) that tags the holder with `prop_glb_key` meta and
-queues a deferred AABB-based ground settle (THEME §13 contract from run 13).
-The §12 motion contracts (lantern flicker, blade rotation, campfire flicker)
-are attached unconditionally regardless of which body rendered. Visible
-canon: **Briarwood is now propped**, not just blocked-out.
+**Always-on mini-map** — A 178×178 painterly compass-disc anchored top-
+right. Player at center as a pulsing gold dot with heading triangle;
+the disc rotates each frame so player-forward stays up. NPCs as gold
+pins, enemies as crimson pins (flashing if within 8m aggro), boss as
+warlock skull, chests as bronze rings, goblin fires as embers, the
+fixed landmarks (Briarwood Square, Stone Well, Village Campfire,
+Crystal Caves, two goblin camps, Mountain Pass boss) as kind-glyphs.
+Anything beyond the 30m view radius is clamped to the rim with an
+outward tick — the player always sees "the cave is over there" even
+when it's far off-screen.
+
+**World map (N)** — A 760×540 parchment scroll showing the entire
+±80m realm. Region watercolor washes mark Briarwood, Whisperwood
+(west + east), Crystal Caves, and Mountain Pass. All landmarks named.
+A 5-point gold "you-are-here" star pulses with a heading wedge.
+Distance-to-Briarwood and distance-to-Crystal-Caves shown top-right.
+Compass rose lower-right.
+
+The two views share `Minimap.LANDMARKS` as their single source of
+truth: appending one row teaches both views about a new place. Same
+goes for the live group plotting — any node added to `npcs`,
+`enemies`, `bosses`, `chests`, or `goblin_fires` shows up on both
+views the next frame, no extra wiring.
+
+This is also the first run where NPCs join the `npcs` group; future
+schedule, memory, and faction-aware readers can iterate that group
+to "see everyone in Briarwood right now" in O(n) without reaching
+into WorldBuilder's NPCS const.

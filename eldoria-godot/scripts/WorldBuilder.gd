@@ -53,38 +53,6 @@ const TREE_VARIANTS: Array = [
 # sphere primitives. Same fallback contract as TREE_VARIANTS above.
 const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
 
-# ─── THEME §1, §11, §12 — Briarwood Prop GLB Wire-Up (run 14) ────────────────
-# Sketchfab CC-BY prop GLBs that were sitting unused under assets/models/props/.
-# Same null-safe contract as TREE_VARIANTS / BOULDER_GLB_PATH above:
-#   _try_attach_glb_prop() returns false if the GLB can't load, and the caller
-#   falls back to the existing procedural primitive build. The world is NEVER
-#   left with an empty slot — every prop slot has a guaranteed visual.
-# Compounds on run 13 (trees + boulder). After this run only treasure_chest.glb
-# remains unwired (deferred — Chest.gd's lid-tween + collision contract is too
-# coupled to the procedural box-build to swap blindly; future Polisher run can
-# re-rig the chest scene to drive an animated GLB lid).
-const PROP_GLB_PATHS: Dictionary = {
-	"windmill":      "res://assets/models/props/windmill.glb",
-	"stone_well":    "res://assets/models/props/stone_well.glb",
-	"campfire":      "res://assets/models/props/campfire.glb",
-	"lantern":       "res://assets/models/props/lantern.glb",
-	"wooden_barrel": "res://assets/models/props/wooden_barrel.glb",
-	"fern":          "res://assets/models/props/fern.glb",
-	"mushroom_red":  "res://assets/models/props/mushroom_red.glb",
-}
-# Per-prop default scale (tuned so each GLB's native height / width sits at
-# a plausible Briarwood scale next to a 1.8m player). Used by callers that
-# want the canonical scale; scatters apply randomization on top.
-const PROP_GLB_SCALES: Dictionary = {
-	"windmill":      Vector3(1.10, 1.10, 1.10),
-	"stone_well":    Vector3(1.00, 1.00, 1.00),
-	"campfire":      Vector3(0.95, 0.95, 0.95),
-	"lantern":       Vector3(0.85, 0.85, 0.85),
-	"wooden_barrel": Vector3(0.90, 0.90, 0.90),
-	"fern":          Vector3(1.10, 1.10, 1.10),
-	"mushroom_red":  Vector3(0.85, 0.85, 0.85),
-}
-
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
 
@@ -389,13 +357,6 @@ func _ready() -> void:
 	_build_firefly_particles()
 	_build_smoke_chimneys()
 	_build_campfire()
-	# RUN 14 — Briarwood Prop GLB Wire-Up — three new scatters using
-	# previously-unused Sketchfab CC-BY GLBs (fern, mushroom_red, wooden_barrel).
-	# Ordered AFTER the village builders (so barrels can sit against existing
-	# building walls) and trees (so ferns + mushrooms sit under the canopy).
-	_scatter_ferns(70)
-	_scatter_mushroom_clusters(14)
-	_scatter_barrels()
 	_build_enemies()
 	_build_pet()
 	_build_loot_chests()
@@ -836,45 +797,34 @@ func _build_windmill() -> void:
 	var mill := Node3D.new()
 	mill.position = pos
 	add_child(mill)
-	# RUN 14 — try the windmill.glb (Sketchfab CC-BY) first. If it loads,
-	# the hand-painted timber-and-stone tower replaces the three procedural
-	# primitives below. The Blades node is built either way — the GLB ships
-	# as a single mesh with no separately-rigged blades, and §12 MOTION
-	# requires the visible blades to spin (the existing _process loop
-	# rotates anything in group "windmill_blades"). Falls back cleanly to
-	# the procedural base+tower+roof if the GLB is missing or invalid.
-	var glb_attached: bool = _try_attach_prop_glb(mill, "windmill")
-	if not glb_attached:
-		# Stone tower base
-		var base := MeshInstance3D.new()
-		var bcm := CylinderMesh.new()
-		bcm.top_radius = 0.85; bcm.bottom_radius = 1.1
-		bcm.height = 2.0
-		base.mesh = bcm
-		base.material_override = MAT_STONE(1.5)
-		base.position.y = 1.0
-		mill.add_child(base)
-		# Wood upper tower
-		var tower := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.7; cm.bottom_radius = 0.85
-		cm.height = 2.5
-		tower.mesh = cm
-		tower.material_override = MAT_WOOD(2)
-		tower.position.y = 3.25
-		mill.add_child(tower)
-		# Roof
-		var roof := MeshInstance3D.new()
-		var cone := CylinderMesh.new()
-		cone.top_radius = 0.0; cone.bottom_radius = 0.85
-		cone.height = 1.2
-		roof.mesh = cone
-		roof.material_override = MAT_ROOF(1.5)
-		roof.position.y = 5.1
-		mill.add_child(roof)
-	# Blade hub — built unconditionally. GLB-or-procedural tower, the §12
-	# motion contract is the spinning blades, and the existing _process loop
-	# (group "windmill_blades") drives the rotation.
+	# Stone tower base
+	var base := MeshInstance3D.new()
+	var bcm := CylinderMesh.new()
+	bcm.top_radius = 0.85; bcm.bottom_radius = 1.1
+	bcm.height = 2.0
+	base.mesh = bcm
+	base.material_override = MAT_STONE(1.5)
+	base.position.y = 1.0
+	mill.add_child(base)
+	# Wood upper tower
+	var tower := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.7; cm.bottom_radius = 0.85
+	cm.height = 2.5
+	tower.mesh = cm
+	tower.material_override = MAT_WOOD(2)
+	tower.position.y = 3.25
+	mill.add_child(tower)
+	# Roof
+	var roof := MeshInstance3D.new()
+	var cone := CylinderMesh.new()
+	cone.top_radius = 0.0; cone.bottom_radius = 0.85
+	cone.height = 1.2
+	roof.mesh = cone
+	roof.material_override = MAT_ROOF(1.5)
+	roof.position.y = 5.1
+	mill.add_child(roof)
+	# Blade hub
 	var blades := Node3D.new()
 	blades.name = "Blades"
 	blades.position = Vector3(0, 4.0, 1.0)
@@ -918,49 +868,37 @@ func _make_lantern(pos: Vector3) -> void:
 	lan.position = pos
 	lan.add_to_group("lanterns")
 	add_child(lan)
-	# RUN 14 — try lantern.glb (Sketchfab CC-BY) first; if it loads, the
-	# hand-painted iron-and-glass lantern replaces the procedural post +
-	# box + emissive glass below. The OmniLight (+ flicker driven by the
-	# _process loop on group "lanterns") is attached UNCONDITIONALLY so the
-	# lit-window-at-dusk §8 architecture beat works either way.
-	# The glow box's name is preserved as "Glow" so any future shader code
-	# pointing at it (`lan.get_node("Glow")`) keeps resolving — when the
-	# GLB path runs, no "Glow" node exists, so callers must use
-	# get_node_or_null and tolerate null. The current _process loop only
-	# touches the OmniLight, so this is fine.
-	var glb_attached: bool = _try_attach_prop_glb(lan, "lantern")
-	if not glb_attached:
-		var post := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.4
-		post.mesh = cm
-		post.material_override = MAT_DARK_WOOD(0.4)
-		post.position.y = 1.2
-		lan.add_child(post)
-		var box := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(0.32, 0.42, 0.32)
-		box.mesh = bm
-		box.material_override = MAT_DARK_WOOD(0.3)
-		box.position.y = 2.5
-		lan.add_child(box)
-		# Glowing glass
-		var glass_mat := StandardMaterial3D.new()
-		glass_mat.albedo_color = Color(1.0, 0.65, 0.20)
-		glass_mat.emission_enabled = true
-		glass_mat.emission = Color(1.0, 0.55, 0.18)
-		glass_mat.emission_energy_multiplier = 1.8
-		glass_mat.metallic = 0.0
-		glass_mat.roughness = 0.2
-		var glass := MeshInstance3D.new()
-		var gm := BoxMesh.new()
-		gm.size = Vector3(0.22, 0.30, 0.22)
-		glass.mesh = gm
-		glass.material_override = glass_mat
-		glass.position.y = 2.5
-		glass.name = "Glow"
-		lan.add_child(glass)
-	# Light — always attached, regardless of which body was built.
+	var post := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.4
+	post.mesh = cm
+	post.material_override = MAT_DARK_WOOD(0.4)
+	post.position.y = 1.2
+	lan.add_child(post)
+	var box := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.32, 0.42, 0.32)
+	box.mesh = bm
+	box.material_override = MAT_DARK_WOOD(0.3)
+	box.position.y = 2.5
+	lan.add_child(box)
+	# Glowing glass
+	var glass_mat := StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(1.0, 0.55, 0.18)
+	glass_mat.emission_energy_multiplier = 1.8
+	glass_mat.metallic = 0.0
+	glass_mat.roughness = 0.2
+	var glass := MeshInstance3D.new()
+	var gm := BoxMesh.new()
+	gm.size = Vector3(0.22, 0.30, 0.22)
+	glass.mesh = gm
+	glass.material_override = glass_mat
+	glass.position.y = 2.5
+	glass.name = "Glow"
+	lan.add_child(glass)
+	# Light
 	var light := OmniLight3D.new()
 	light.light_color = Color(1.0, 0.62, 0.28)
 	light.light_energy = 1.6
@@ -1003,44 +941,17 @@ func _build_banners() -> void:
 func _build_well() -> void:
 	var well := Node3D.new()
 	well.position = Vector3(0, 0, 6)
-	well.add_to_group("wells")
 	add_child(well)
-	# RUN 14 — try stone_well.glb (Sketchfab CC-BY) first; if it loads, the
-	# hand-painted stone-and-timber well replaces the procedural ring +
-	# posts + crossbeam below. The water plane is attached UNCONDITIONALLY
-	# at the canonical y=0.85 — both the GLB and the procedural body share
-	# the same well-mouth height, so the emissive water surface still reads
-	# as "there's water in there" at distance regardless of which body
-	# rendered. Group "wells" added so a future Polisher run can wire
-	# splash particles or rope-creak SFX to all wells uniformly.
-	var glb_attached: bool = _try_attach_prop_glb(well, "stone_well")
-	if not glb_attached:
-		# Base ring
-		var ring := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 1.1; cm.bottom_radius = 1.2
-		cm.height = 1.0
-		ring.mesh = cm
-		ring.material_override = MAT_STONE(1.5)
-		ring.position.y = 0.5
-		well.add_child(ring)
-		# Posts + crossbeam (the rope and bucket frame)
-		for dx in [-1.0, 1.0]:
-			var p := MeshInstance3D.new()
-			var pcm := CylinderMesh.new()
-			pcm.top_radius = 0.08; pcm.bottom_radius = 0.08; pcm.height = 1.8
-			p.mesh = pcm
-			p.material_override = MAT_DARK_WOOD(0.4)
-			p.position = Vector3(dx, 1.9, 0)
-			well.add_child(p)
-		var beam := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(2.4, 0.16, 0.16)
-		beam.mesh = bm
-		beam.material_override = MAT_DARK_WOOD(0.5)
-		beam.position.y = 2.85
-		well.add_child(beam)
-	# Water surface — always attached, regardless of body.
+	# Base ring
+	var ring := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 1.1; cm.bottom_radius = 1.2
+	cm.height = 1.0
+	ring.mesh = cm
+	ring.material_override = MAT_STONE(1.5)
+	ring.position.y = 0.5
+	well.add_child(ring)
+	# Water
 	var water_mat := StandardMaterial3D.new()
 	water_mat.albedo_color = Color(0.05, 0.18, 0.28)
 	water_mat.metallic = 0.3
@@ -1055,6 +966,22 @@ func _build_well() -> void:
 	water.material_override = water_mat
 	water.position.y = 0.85
 	well.add_child(water)
+	# Posts + crossbeam (the rope and bucket frame)
+	for dx in [-1.0, 1.0]:
+		var p := MeshInstance3D.new()
+		var pcm := CylinderMesh.new()
+		pcm.top_radius = 0.08; pcm.bottom_radius = 0.08; pcm.height = 1.8
+		p.mesh = pcm
+		p.material_override = MAT_DARK_WOOD(0.4)
+		p.position = Vector3(dx, 1.9, 0)
+		well.add_child(p)
+	var beam := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(2.4, 0.16, 0.16)
+	beam.mesh = bm
+	beam.material_override = MAT_DARK_WOOD(0.5)
+	beam.position.y = 2.85
+	well.add_child(beam)
 
 # ============================================================================
 # Pond — small reflective water plane
@@ -1174,6 +1101,12 @@ func _make_npc(data: Dictionary) -> void:
 	var npc := StaticBody3D.new()
 	npc.position = data.pos + Vector3(0, 0.0, 0)  # sit on ground; model handles its own pivot
 	npc.set_script(npc_script)
+	# Builder run 14 (mini-map) — NPCs join the "npcs" group so the
+	# new Minimap.gd / WorldMap.gd can plot gold dots without needing
+	# any direct references. Pure additive: nothing else queries this
+	# group yet, but it is the first cross-cutting NPC index in the
+	# repo and a natural hook for future schedule/memory readers.
+	npc.add_to_group("npcs")
 	npc.npc_name = data.name
 	npc.npc_role = data.role
 	npc.dialogue = data.line
@@ -1575,41 +1508,33 @@ func _build_campfire() -> void:
 	fire.add_to_group("campfires")
 	add_child(fire)
 
-	# RUN 14 — try campfire.glb (Sketchfab CC-BY) first; the GLB ships as
-	# the stone ring + charred log pile, so it replaces the two procedural
-	# loops below when present. Fire + smoke particles and FireLight stay
-	# attached UNCONDITIONALLY — the §12 motion-and-life contract for the
-	# campfire is the flicker, not the wood, and the existing _process loop
-	# (group "campfires") drives the FireLight flicker.
-	var glb_attached: bool = _try_attach_prop_glb(fire, "campfire")
-	if not glb_attached:
-		# Stone ring (8 small rocks in a circle)
-		for i in 8:
-			var ang := (float(i) / 8.0) * TAU
-			var r := 0.9
-			var stone := MeshInstance3D.new()
-			var sm := SphereMesh.new()
-			sm.radius = 0.18; sm.height = 0.28
-			stone.mesh = sm
-			stone.material_override = MAT_STONE(0.5)
-			stone.position = Vector3(cos(ang) * r, 0.12, sin(ang) * r)
-			stone.scale = Vector3(1.0, 0.7, 1.0)
-			fire.add_child(stone)
+	# Stone ring (8 small rocks in a circle)
+	for i in 8:
+		var ang := (float(i) / 8.0) * TAU
+		var r := 0.9
+		var stone := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.18; sm.height = 0.28
+		stone.mesh = sm
+		stone.material_override = MAT_STONE(0.5)
+		stone.position = Vector3(cos(ang) * r, 0.12, sin(ang) * r)
+		stone.scale = Vector3(1.0, 0.7, 1.0)
+		fire.add_child(stone)
 
-		# Charred logs (3 crossing each other)
-		for i in 3:
-			var log := MeshInstance3D.new()
-			var lcm := CylinderMesh.new()
-			lcm.top_radius = 0.10; lcm.bottom_radius = 0.10
-			lcm.height = 1.4
-			log.mesh = lcm
-			var lm := StandardMaterial3D.new()
-			lm.albedo_color = Color(0.10, 0.06, 0.04)
-			lm.roughness = 0.95
-			log.material_override = lm
-			log.rotation = Vector3(0, (float(i) / 3.0) * TAU, PI / 2)
-			log.position.y = 0.25
-			fire.add_child(log)
+	# Charred logs (3 crossing each other)
+	for i in 3:
+		var log := MeshInstance3D.new()
+		var lcm := CylinderMesh.new()
+		lcm.top_radius = 0.10; lcm.bottom_radius = 0.10
+		lcm.height = 1.4
+		log.mesh = lcm
+		var lm := StandardMaterial3D.new()
+		lm.albedo_color = Color(0.10, 0.06, 0.04)
+		lm.roughness = 0.95
+		log.material_override = lm
+		log.rotation = Vector3(0, (float(i) / 3.0) * TAU, PI / 2)
+		log.position.y = 0.25
+		fire.add_child(log)
 
 	# Fire particles
 	var p := GPUParticles3D.new()
@@ -2178,163 +2103,6 @@ func _make_glb_boulder(pos: Vector3, rng: RandomNumberGenerator) -> bool:
 	holder.add_child(body)
 	call_deferred("_settle_to_ground", holder)
 	return true
-
-# RUN 14 — Briarwood Prop GLB Wire-Up — generic prop attach + new scatters
-# ─────────────────────────────────────────────────────────────────────────────
-# `_try_attach_prop_glb(parent, key)` is the single integration seam used by
-# `_build_windmill`, `_make_lantern`, `_build_well`, `_build_campfire`, and
-# the new scatters below. It looks up `key` in `PROP_GLB_PATHS`, loads via
-# `_load_glb_safe` (returns null on missing-on-disk), instantiates, applies
-# the canonical scale from `PROP_GLB_SCALES`, and queues a deferred
-# `_settle_to_ground` so the visible base sits at y=0 (THEME §13).
-# Returns true on success — caller falls back to its procedural primitive
-# build on false. Pure additive: no mutation of state outside `parent`.
-func _try_attach_prop_glb(parent: Node3D, key: String) -> bool:
-	if parent == null:
-		return false
-	if not PROP_GLB_PATHS.has(key):
-		return false
-	var glb_path: String = String(PROP_GLB_PATHS[key])
-	var packed: PackedScene = _load_glb_safe(glb_path)
-	if packed == null:
-		return false
-	var inst: Node = packed.instantiate()
-	if inst == null:
-		return false
-	parent.add_child(inst)
-	if inst is Node3D:
-		var s: Vector3 = PROP_GLB_SCALES.get(key, Vector3(1.0, 1.0, 1.0))
-		(inst as Node3D).scale = s
-	# Tag the prop with its key so future Polisher / QA passes can identify
-	# which wrappers are GLB-backed vs procedural-fallback at runtime.
-	parent.set_meta("prop_glb_key", key)
-	# Deferred ground-settle (THEME §13) — same pattern as run-13 trees /
-	# boulders. Idempotent; safe even if the model is already grounded.
-	call_deferred("_settle_to_ground", parent)
-	return true
-
-# RUN 14 — Whisperwood understory: scatter ferns under the existing tree
-# canopy. Reads the existing TREE_VARIANTS scatter range (-50..50, north of
-# the village) and drops `count` fern.glb instances at randomized scale +
-# rotation. Fern is a forest-floor plant so collision is intentionally
-# omitted (player walks through). Group "fern_scatter" lets a future
-# Audio run wire a "rustle when player passes" SFX hook.
-func _scatter_ferns(count: int) -> void:
-	if count <= 0:
-		return
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	var spawned: int = 0
-	var attempts: int = 0
-	# Cap attempts to avoid an infinite loop if the GLB never loads.
-	while spawned < count and attempts < count * 4:
-		attempts += 1
-		var x: float = rng.randf_range(-48.0, 48.0)
-		var z: float = rng.randf_range(-48.0, -8.0)   # north half = forest
-		var holder: Node3D = Node3D.new()
-		holder.position = Vector3(x, 0, z)
-		holder.rotation.y = rng.randf() * TAU
-		holder.add_to_group("fern_scatter")
-		add_child(holder)
-		var ok: bool = _try_attach_prop_glb(holder, "fern")
-		if not ok:
-			holder.queue_free()
-			# If even one load fails, the GLB is missing — bail rather than
-			# spinning the loop. (Same defensive posture as run-13 trees.)
-			return
-		# Per-spawn scale jitter on top of the canonical PROP_GLB_SCALES base.
-		var jitter: float = rng.randf_range(0.75, 1.30)
-		for child in holder.get_children():
-			if child is Node3D:
-				(child as Node3D).scale *= jitter
-		spawned += 1
-
-# RUN 14 — Whisperwood toadstool clusters. mushroom_red.glb is a single
-# capped mushroom; we spawn N clusters of 3-6 mushrooms each in a tight
-# 1.2m radius for "fairy ring" silhouette. THEME §11 BotW painterly
-# undergrowth + §12 motion (caps optionally bob in a future Polisher pass).
-# Group "mushroom_clusters" lets future Lore runs wire harvestable nodes.
-func _scatter_mushroom_clusters(cluster_count: int) -> void:
-	if cluster_count <= 0:
-		return
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	for i in cluster_count:
-		var cx: float = rng.randf_range(-45.0, 45.0)
-		var cz: float = rng.randf_range(-45.0, -10.0)
-		var cluster_size: int = rng.randi_range(3, 6)
-		var first_failed: bool = false
-		for j in cluster_size:
-			var off_x: float = rng.randf_range(-1.2, 1.2)
-			var off_z: float = rng.randf_range(-1.2, 1.2)
-			var holder: Node3D = Node3D.new()
-			holder.position = Vector3(cx + off_x, 0, cz + off_z)
-			holder.rotation.y = rng.randf() * TAU
-			holder.add_to_group("mushroom_clusters")
-			holder.set_meta("cluster_id", i)
-			add_child(holder)
-			var ok: bool = _try_attach_prop_glb(holder, "mushroom_red")
-			if not ok:
-				holder.queue_free()
-				first_failed = true
-				break
-			var jitter: float = rng.randf_range(0.70, 1.25)
-			for child in holder.get_children():
-				if child is Node3D:
-					(child as Node3D).scale *= jitter
-		if first_failed:
-			# GLB unavailable — abandon remaining clusters.
-			return
-
-# RUN 14 — barrel set-dressing around the inn (Bram, building at +6, 0, +6),
-# market stalls, and the village square. Fixed positions (not random
-# scatter) so the village layout reads as INTENTIONAL — barrels in alleys
-# beside doors, not strewn across the road. Group "barrel_scatter" so a
-# future Builder run can wire breakable-barrel loot.
-func _scatter_barrels() -> void:
-	var positions: Array = [
-		# Inn corner (Bram building at ~+6, +6) — two barrels stacked
-		# against the east wall.
-		Vector3( 7.6, 0,  6.4),
-		Vector3( 7.6, 0,  5.5),
-		# Behind market stalls (north-east corner) — supplies depot.
-		Vector3(11.2, 0, -3.8),
-		Vector3(11.6, 0, -3.0),
-		# Smith forge alley (Smith Edda area, west side)
-		Vector3(-7.2, 0,  5.0),
-		# Stable outbuilding (Roan's area)
-		Vector3(-11.5, 0, -1.8),
-		# Well-side bucket pair
-		Vector3( 1.8, 0,  6.4),
-	]
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	for p in positions:
-		var holder: Node3D = Node3D.new()
-		holder.position = p
-		holder.rotation.y = rng.randf() * TAU
-		holder.add_to_group("barrel_scatter")
-		add_child(holder)
-		var ok: bool = _try_attach_prop_glb(holder, "wooden_barrel")
-		if not ok:
-			holder.queue_free()
-			# GLB missing — bail rather than place a primitive (a single
-			# floating cylinder reads worse than no barrel here).
-			return
-		# Tiny per-instance scale jitter so barrels don't look identical.
-		var jitter: float = rng.randf_range(0.92, 1.08)
-		for child in holder.get_children():
-			if child is Node3D:
-				(child as Node3D).scale *= jitter
-		# Light box collider so player physically registers the barrel.
-		var body: StaticBody3D = StaticBody3D.new()
-		var col: CollisionShape3D = CollisionShape3D.new()
-		var box: BoxShape3D = BoxShape3D.new()
-		box.size = Vector3(0.55, 0.85, 0.55)
-		col.shape = box
-		col.position.y = 0.45
-		body.add_child(col)
-		holder.add_child(body)
 
 func _measure_aabb(node: Node) -> AABB:
 	var aabb := AABB()
