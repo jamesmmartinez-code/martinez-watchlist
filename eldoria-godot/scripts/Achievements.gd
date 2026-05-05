@@ -85,6 +85,33 @@ const ACHIEVEMENTS: Dictionary = {
 		"title_priority": 30,
 		"predicate": {"kind": "faction_below", "faction": "dire_wolves", "value": 0.5},
 	},
+	# Tier 2.5 — Run 18: FIRST consumer of three quest-completion npc_flags
+	# under the `dire_wolves` faction. Lyra (alchemy fetch), Roan (stable
+	# fetch), and Hala (trainer kill) — each NPC's role is unique, so this
+	# is the first achievement keyed on roles 1+2+4 rather than just NPC
+	# names. Title slots between Wolf-Friend (30, faction-only) and Goblin-
+	# Bane (40, big-pressure-cliff) so the auto-equipper picks it AFTER
+	# the player feels the wolf threat thinning AND has actually trained
+	# alongside three different villagers — a deeper claim than just
+	# pressure dropping. Predicate uses the existing `all_npc_flags`
+	# evaluator — zero new schema. Same icon-path fail-soft as the others
+	# (artist agent ships the painterly crest later).
+	"wolf_tamer": {
+		"name": "Tamer of the Wolfwoods",
+		"desc": "Lyra, Roan, and Hala — three trades, one wolf-quiet road.",
+		"icon": "🐺",
+		"icon_path": "res://assets/icons/achievements/wolf_tamer.png",
+		"title_text": "the Wolf-Tamer",
+		"title_priority": 35,
+		"predicate": {
+			"kind": "all_npc_flags",
+			"flags": [
+				["Herbalist Lyra", "trusts_player"],
+				["Stablemaster Roan", "first_bounty_done"],
+				["Trainer Hala", "wolf_form_taught"],
+			],
+		},
+	},
 	# Tier 2 — goblins driven below the run-5 second cliff (cleansing landed).
 	"goblin_bane": {
 		"name": "Bane of the Whisperwood",

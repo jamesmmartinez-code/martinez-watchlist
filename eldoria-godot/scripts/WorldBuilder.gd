@@ -366,12 +366,31 @@ const NPCS = [
 	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)],
 	 "use_json_dialogue":true},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
-	 "line":"Each level, your spirit grows. Pour it into what you trust.",
+	 # COMPOUND (run 18 — Builder): swap the legacy "spirit" koan for the
+	 # Hala-issued bounty pitch. Same role used to query World.QUEST_CATALOG
+	 # via `_quest_for_role("trainer")` → `wolf_form_with_hala`, so the
+	 # bounty drops onto the talk-line the moment the player opens dialogue.
+	 # Old spirit line preserved as `lines[0]` so it still cycles in the
+	 # generic-talk pool.
+	 "line":"Wolves still circle the road. Take down 4 — you'll learn the form by doing.",
 	 "lines":[
 		"Each level, your spirit grows. Pour it into what you trust.",
 		"Strength is loud. Mastery is quiet. Choose.",
 		"Tired? Train tired. The road won't ask if you slept.",
 		"Even shadow needs practice. Feet on the boards, breathe.",
+	 ],
+	 # COMPOUND (run 18 — Builder): warm_flag tier. After 4 wolves fall and
+	 # `wolf_form_taught` is set, Hala's tone shifts from "prove yourself"
+	 # to "I saw it in you" — the rarest flavor for a teacher who never
+	 # gushes. Tier 2 (warm_flag) ranks above tier 5 (memory) so once the
+	 # quest is in, returning trains read the warm lines first; on warm_flag
+	 # miss the memory tier still fires for the cold-rep loop.
+	 "warm_flag":"wolf_form_taught",
+	 "warm_lines":[
+		"Form held. Few I've taught hold it under teeth. Few.",
+		"You moved like the trees today. Wolves can't read trees. Good.",
+		"Old Hala saw a hero today. Don't make me write it down.",
+		"Walk lighter, you. The forest hears it. Ride safe.",
 	 ],
 	 # COMPOUND (run 11 — schedule): never leaves the training field. Slight
 	 # position shifts at evening (lantern-side practice) and night (watch).

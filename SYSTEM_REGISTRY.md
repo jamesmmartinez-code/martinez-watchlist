@@ -111,9 +111,18 @@ role currently has at most one quest. Schema fields: `giver`, `actor`,
 | `whisperwood_cleansing`| Elder Maeve         | quest    | kill  | 5 goblin | 80 xp / 60 g  | `whisperwood_goblins` -0.2 | `first_quest_done`       | `whisperwood_safer`     |
 | `pelt_for_lyra`        | Herbalist Lyra      | alchemy  | fetch | 4 wolf_pelt | 70 xp / 45 g + 2× hp_potion_l | `dire_wolves` -0.1 | `trusts_player`          | `lyra_potion_brew`      |
 | `ears_for_mara`        | Mara the Merchant   | shop     | fetch | 6 goblin_ear | 60 xp / 90 g | `whisperwood_goblins` -0.15 | `good_customer`         | `mara_bounty_paid`      |
-| `wolf_fang_for_roan` ⭐ | Stablemaster Roan   | stable   | fetch | 5 wolf_fang | 65 xp / 50 g | `dire_wolves` -0.1         | `first_bounty_done`      | `roan_bounty_paid`      |
+| `wolf_fang_for_roan`   | Stablemaster Roan   | stable   | fetch | 5 wolf_fang | 65 xp / 50 g | `dire_wolves` -0.1         | `first_bounty_done`      | `roan_bounty_paid`      |
+| `wolf_form_with_hala` ⭐| Trainer Hala        | trainer  | kill  | 4 wolf      | 90 xp / 35 g | `dire_wolves` -0.1         | `wolf_form_taught`       | `hala_wolf_form_done`   |
 
-⭐ = NEW in run 17 — second `dire_wolves` reducer, mirrors `ears_for_mara`
+⭐ = NEW in run 18 — THIRD `dire_wolves` reducer (closes the curve to the
+run-6 third cliff: pressure 0.2, packs of 1). Hala's role `trainer` was
+quest-blank before; now matches Roan/Mara/Lyra in dialogue depth (line
+pitch + warm_flag tier). FIRST kill-quest after `whisperwood_cleansing`.
+Reward economy is XP-heavy (90 xp) / coin-light (35 g) — befits a teacher
+who trades knowledge, not gold.
+
+(Original run-17 note retained:) The previous ⭐ — `wolf_fang_for_roan` is
+run 17 — second `dire_wolves` reducer, mirrors `ears_for_mara`
 as the second goblin reducer. Composes with run 6 (spawn density), run 7
 (adaptive cooldown), run 8 (adaptive chase + Roan faction tier), and the
 new run-17 Roan `warm_flag` tier.
