@@ -966,7 +966,7 @@ func _build_npcs() -> void:
 
 func _make_npc(data: Dictionary) -> void:
 	var npc := StaticBody3D.new()
-	npc.position = data.pos
+	npc.position = data.pos + Vector3(0, 0.0, 0)  # sit on ground; model handles its own pivot
 	npc.set_script(npc_script)
 	npc.npc_name = data.name
 	npc.npc_role = data.role
