@@ -262,6 +262,7 @@ func _ready() -> void:
 	_build_enemies()
 	_build_pet()
 	_build_loot_chests()
+	call_deferred("_global_scale_sweep")
 	_build_crystal_caves(Vector3(-50, 0, -40))
 
 # ============================================================================
@@ -1783,3 +1784,56 @@ func _normalize_npc_scale(model: Node) -> void:
 	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
 	s = clamp(s, 0.1, 3.0)
 	model.scale = Vector3(s, s, s)
+
+
+# ════════════════════════════════════════════════════════════════════════
+# GLOBAL SCALE SWEEP — runs once 0.5s after _ready completes. Walks the
+# entire scene tree, finds any character GLB instance whose visible AABB
+# is unreasonably tall (>5m), and rescales it. Catches characters that
+# any other script spawned bypassing per-script normalization.
+# ════════════════════════════════════════════════════════════════════════
+
+func _global_scale_sweep() -> void:
+	await get_tree().create_timer(0.5).timeout
+	var root := get_tree().current_scene
+	if not root:
+		return
+	# Walk all CharacterBody3D + StaticBody3D + their child Node3Ds
+	for body in root.find_children("*", "CharacterBody3D", true):
+		_check_and_normalize(body, _expected_height_for(body))
+	for body in root.find_children("*", "StaticBody3D", true):
+		_check_and_normalize(body, _expected_height_for(body))
+
+func _expected_height_for(body: Node) -> float:
+	# Heuristic: pick a target height by node name / group membership
+	if body.is_in_group("bosses"): return 3.0
+	if body.is_in_group("pets"): return 0.7
+	if body.is_in_group("enemies"): return 1.5
+	if body.is_in_group("player"): return 1.8
+	if body.is_in_group("npcs"): return 1.8
+	# Default
+	return 1.8
+
+func _check_and_normalize(body: Node, target_height: float) -> void:
+	var aabb := AABB()
+	var has := false
+	for v in body.find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if not vi: continue
+		var a := vi.get_aabb()
+		a = vi.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	# If the body's visible mesh is reasonable, leave it
+	if aabb.size.y >= target_height * 0.5 and aabb.size.y <= target_height * 1.5:
+		return
+	# Otherwise rescale via the FIRST direct Node3D child (the model wrapper)
+	for child in body.get_children():
+		if child is Node3D and child.has_method("get_children"):
+			var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
+			(child as Node3D).scale = (child as Node3D).scale * s
+			break
