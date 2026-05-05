@@ -62,6 +62,18 @@ const ACHIEVEMENTS: Dictionary = {
 			],
 		},
 	},
+	# Tier 1.5 — first reforge. Run 12: Smith Edda's Crystal-Cave-shard sink
+	# closes the cave→village gameplay loop. Title slots between Apprentice
+	# (10) and Wolf-Friend (30) so the auto-equipper picks it up early but
+	# yields cleanly when the player earns a faction-driven title.
+	"first_forge": {
+		"name": "First Forge",
+		"desc": "Bring Edda to the anvil — feel her hammer.",
+		"icon": "🔨",
+		"title_text": "the Forged",
+		"title_priority": 25,
+		"predicate": {"kind": "world_flag", "flag": "first_reforge_done"},
+	},
 	# Tier 2 — wolves driven below the run-6 first cliff (4 -> 3 wolves).
 	"pack_thinner": {
 		"name": "Pack Thinner",

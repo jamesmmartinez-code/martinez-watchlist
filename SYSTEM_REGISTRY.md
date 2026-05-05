@@ -780,3 +780,111 @@ WorldBuilder.NPCS[].schedule ──→ NPC.schedule_anchors (per-NPC author)
   Edda at quenching trough, Roan at stable, Hala at field watch.
 - Approach an NPC — they halt motion within 1 frame of `player_in_range`.
 - Walk away — they resume walking on next `_process` tick.
+## Forge Schema (run 12 — Builder)
+
+`Smith Edda's anvil` is the Crystal-Cave-shard sink — the loop closure
+that's been missing since the cave shipped. Crystal Caves drop crystal_shards
+(via skeleton / crystal_elemental / crystal_guardian drop tables tuned in
+runs 5–11); the player brings them to Smith Edda; the dialogue panel shows
+a 🔨 Reforge button that consumes shards and stamps a "+N" suffix on the
+currently-equipped weapon.
+
+### Public API
+
+`Items.gd` constants (read-only catalog):
+
+| Constant                  | Value             | Notes                                             |
+|---------------------------|-------------------|---------------------------------------------------|
+| `REFORGE_MAX_TIER`        | `3`               | Max upgrade tier (visible suffixes "+1"/"+2"/"+3")|
+| `REFORGE_COSTS`           | `[5, 10, 18]`     | Per-step crystal_shard cost (T0→T1, T1→T2, T2→T3) |
+| `REFORGE_DAMAGE_BONUS`    | `[2, 4, 6]`       | Cumulative flat bonus added by `bonus_damage()`   |
+| `REFORGE_SUFFIXES`        | `["+1","+2","+3"]`| Display suffix per tier                           |
+| `REFORGE_TIER_COLORS`     | bronze/brass/cyan | THEME §3 palette band (paperdoll polish hook)     |
+
+`Items.gd` static helpers (pure):
+
+| Method                                   | Notes                                           |
+|------------------------------------------|-------------------------------------------------|
+| `forged_name(base_id, tier) -> String`   | "Iron Sword +2"; tier 0 returns base name       |
+| `forge_damage_bonus(tier) -> int`        | Flat additive bonus; tier 0 returns 0           |
+| `forge_next_tier_cost(tier) -> int`      | Cost to step up; max tier returns 0             |
+
+`Inventory.gd` (state + mutator):
+
+| Member                                     | Notes                                                     |
+|--------------------------------------------|-----------------------------------------------------------|
+| `forge_tiers: Dictionary`                  | weapon_id → int. Empty = none. Persists across equip swaps|
+| `weapon_forge_tier(weapon_id="") -> int`   | Defaults to currently-equipped weapon                     |
+| `weapon_display_name(weapon_id="") -> String` | "Iron Sword +N" via `Items.forged_name`                |
+| `bonus_damage() -> int`                    | Now adds tier bonus (compound on top of base)             |
+| `attempt_reforge(world: Object) -> Dictionary` | Validates cost/cap, mutates state, returns {ok, ...} |
+
+`World.gd` (UI wiring):
+
+| Method                                            | Notes                                                |
+|---------------------------------------------------|------------------------------------------------------|
+| `_refresh_reforge_button(btn, role, player)`      | Pure read of inv state; sets label + disabled flag   |
+| `_on_reforge_pressed()`                           | Calls `Inventory.attempt_reforge`; toasts result     |
+
+### Cost / damage ladder (today)
+
+| Step       | Crystal Shards | New display name | Damage delta |
+|------------|---------------:|------------------|-------------:|
+| T0 → T1    |              5 | <weapon> +1      |           +2 |
+| T1 → T2    |             10 | <weapon> +2      |           +4 |
+| T2 → T3    |             18 | <weapon> +3      |           +6 |
+| **Total**  |         **33** |                  |       **+6** |
+
+Tuned so:
+- First +1 reachable in ~1 elemental kill (1-2 shards) plus 2-3 skeleton
+  drops — Alden's first cave run yields the first reforge naturally.
+- Max +3 takes ~3 cave runs at typical drop rates — Owen's Mastery loop
+  has a clear, finite goal that doesn't overwhelm the loot pyramid.
+- 60% damage uplift on iron_sword (6 → 12), ~14% on dragonfang (42 → 48):
+  flat-bonus curve favors low-tier weapons (kid-friendly catch-up) without
+  trivializing top-tier loot. A forged iron_sword sits in steel_blade's
+  damage band — NOT in frost_saber's — so the affix system (run 5+) and
+  the rare-chest loop (Items.gd `chest_rare`) still feel meaningful.
+
+### Authoring rules
+
+1. **Tier is per-weapon-id, not per-equipped-slot.** Swapping weapons does
+   NOT clear the tier of the previous weapon. This means the player can
+   keep multiple forged weapons in their bag and swap between them as the
+   situation calls — a pure win that costs nothing in save complexity.
+2. **`first_reforge_done` world flag is the achievement hook.** Set on the
+   first successful `attempt_reforge`. The "first_forge" achievement
+   (priority 25, title "the Forged") in Achievements.gd reads it via the
+   existing `world_flag` predicate kind. Renown ladder award: 25 (between
+   Apprentice 10 and Wolf-Friend 30).
+3. **Reforge does not write a runtime registry entry.** Unlike the run-5
+   affix system (`Items.generate_affix_item` → `World.register_runtime_item`),
+   forge tiers are a sparse Dict keyed on the BASE id. Save-load is a
+   trivial Dict serialize; the runtime registry stays focused on
+   chest-rolled affix variants.
+4. **The button itself teaches the system.** When the player has no shards,
+   the button reads "Reforge Iron Sword → +1  (need 5 💎, have 2)" so the
+   gap is visible. When at max, "Iron Sword +3 already — peerless work".
+   No separate forge UI panel is needed today; future Builder work can
+   open a dedicated panel if multi-weapon reforge becomes desirable.
+
+### Hooks consumed / produced this run
+
+CONSUMES (existing readers / data):
+- `Items.ITEMS["crystal_shard"]` (run 5) — the resource sink
+- `World.set_world_flag` (run 11) — the achievement-trigger contract
+- `Achievements.evaluate` (run 11) — fires "first_forge" on the same tick
+  the flag is set
+- `World.gain_renown` (run 11) — receives the +25 renown grant via the
+  existing `_check_achievements()` chain
+- `Inventory.equipped_weapon_id` (existing) — the dialogue button reads it
+
+PRODUCES (new readers can write against):
+- `Inventory.weapon_forge_tier(weapon_id)` — DialogueDB predicate idea
+  (`forge_tier_at_least`) for future Edda lines that warm with player's
+  forged weapon, or QUEST_GRAMMAR triggers gating on forge progress
+- `world_flags["first_reforge_done"]` — quest hooks (e.g. Edda's deeper
+  questline could world_trigger on this flag)
+- `Inventory.weapon_display_name()` — HUD readout (Player paperdoll text
+  could substitute the forged display name in future polish)
+- `Inventory.forge_tiers` Dict — save/load surface (future persistence)
