@@ -1,0 +1,85 @@
+name: Integrator (merge auto/* branches into main)
+
+# Runs every 2 minutes (or on demand). Fast-forward-merges any auto/<agent>
+# branch that's clean and ahead of main, in a single commit. This collapses
+# N agent pushes into 1 build and eliminates the race that was breaking deploys.
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'   # every 2 minutes
+  workflow_dispatch:
+
+# Only ONE integrator runs at a time; if a new tick fires before the last finishes, queue it.
+concurrency:
+  group: integrator
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Configure git
+        run: |
+          git config user.name "eldoria-integrator[bot]"
+          git config user.email "integrator@eldoria.local"
+
+      - name: Fetch all auto/* branches
+        run: |
+          git fetch --all --prune
+          echo "=== auto/* branches ==="
+          git branch -r | grep -E 'origin/auto/' || echo "(none)"
+
+      - name: Merge each auto/* branch into main
+        run: |
+          MERGED_COUNT=0
+          SKIPPED_COUNT=0
+          for BR in $(git branch -r | grep -E 'origin/auto/' | sed 's|origin/||' | tr -d ' '); do
+            echo ""
+            echo "── trying to merge $BR"
+            git fetch origin "$BR"
+            # Skip if already up to date
+            if git merge-base --is-ancestor "origin/$BR" main 2>/dev/null; then
+              echo "  ↳ already merged, skipping"
+              SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+              continue
+            fi
+            # Try a no-conflict merge with branch's commits squashed into one
+            if git merge --no-ff --no-edit -m "Integrate $BR" "origin/$BR" 2>&1; then
+              echo "  ✅ merged $BR"
+              MERGED_COUNT=$((MERGED_COUNT + 1))
+              # Delete the auto/* branch after successful merge so it doesn't pile up
+              git push origin --delete "$BR" || true
+            else
+              echo "  ⚠️  merge conflict on $BR — abandoning, agent must rebase"
+              git merge --abort || true
+              SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+            fi
+          done
+          echo ""
+          echo "=== Integrator summary ==="
+          echo "  merged: $MERGED_COUNT"
+          echo "  skipped: $SKIPPED_COUNT"
+          if [ "$MERGED_COUNT" -gt 0 ]; then
+            echo "Pushing main..."
+            for i in 1 2 3 4 5; do
+              if git push origin main; then
+                echo "✅ pushed on attempt $i"
+                exit 0
+              fi
+              echo "⚠️  push race — pulling with rebase"
+              git pull --rebase --autostash origin main || true
+              sleep $((i * 2))
+            done
+            echo "❌ push failed after 5 retries"
+            exit 1
+          else
+            echo "Nothing to integrate this cycle."
+          fi
