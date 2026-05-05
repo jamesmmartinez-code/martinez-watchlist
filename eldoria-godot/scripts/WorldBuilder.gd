@@ -98,21 +98,70 @@ func MAT_LEAF(tint: Color) -> StandardMaterial3D:
 	return m
 
 # ─── Village NPCs ────────────────────────────────────────────────────────────
+# REFINE: each NPC now carries 4 mood-dependent dialogue variants
+# (morning / midday / evening / night). The single `line` is kept as a
+# fallback for systems that haven't been taught the variant lookup yet.
+# Personality details: Maeve fears the wolves, Edda wishes the dew lasted,
+# Mara grudges miscounters, Lyra remembers her mother's garden, Bram has a
+# catchphrase about three valleys, Roan trusts horses over men, Hala says
+# strength is loud and mastery is quiet.
 const NPCS = [
 	{"name":"Elder Maeve",       "role":"quest",   "pos":Vector3(  6,  0,  3), "tint":Color(0.6,0.4,0.85),
-	 "line":"Trouble brews in the Whisperwood. Seek out the Goblin Warlord."},
+	 "line":"Trouble brews in the Whisperwood. Seek out the Goblin Warlord.",
+	 "lines":[
+		"Ah, traveler. Trouble brews in the Whisperwood — seek out the Goblin Warlord.",
+		"You smell of pine. Good. Goblins do not. Mind the Warlord.",
+		"I sleep poorly when wolves howl. I hope your blade keeps mine quiet.",
+		"You should be inside. Even my whispers travel further after dark.",
+	 ]},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
-	 "line":"Bring me ore and I'll forge you a blade."},
+	 "line":"Bring me ore and I'll forge you a blade.",
+	 "lines":[
+		"Bring me ore. I forge best when the dew's still on the iron.",
+		"*hammer-clang* — Steel won't shape itself. Got ore, or just standing there?",
+		"Forge cools by sundown. Last orders, friend.",
+		"Coals are banked. Come back when you've slept.",
+	 ]},
 	{"name":"Mara the Merchant", "role":"shop",    "pos":Vector3(  3,  0, -5), "tint":Color(0.7,0.5,0.25),
-	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome."},
+	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
+	 "lines":[
+		"Six goblin ears, that's the bounty. I keep tally; I never miscount. Never.",
+		"Trade me proof of six raiders and you'll walk out richer than you walked in.",
+		"Hurry — I count my coin twice before bed and I dislike being interrupted.",
+		"Shop's shut. Knock again at sunrise unless your purse has wings.",
+	 ]},
 	{"name":"Herbalist Lyra",    "role":"alchemy", "pos":Vector3( -3,  0, -5), "tint":Color(0.4,0.7,0.35),
-	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours."},
+	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
+	 "lines":[
+		"Four wolf pelts for a healing salve — wolves are bolder at dawn, mind.",
+		"Smell that? Marshmint. Brings me back to my mother's garden — long lost now.",
+		"Bring me pelts before the moss closes. It only opens by daylight.",
+		"Owls are louder than wolves tonight. Bad sign. Travel close to lanterns.",
+	 ]},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
-	 "line":"Pull up a stool. Rest your bones."},
+	 "line":"Pull up a stool. Rest your bones.",
+	 "lines":[
+		"*polishes a mug* — Stew's on. Pull up a stool, rest your bones.",
+		"Bards lie about half their songs. The other half are mine.",
+		"Best ale in three valleys. The other two valleys have no ale, mind.",
+		"Bed's warm. Fire's banked. Stay if you've nowhere safer.",
+	 ]},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
-	 "line":"Faster mounts mean fewer ambushes. Pick your steed."},
+	 "line":"Faster mounts mean fewer ambushes. Pick your steed.",
+	 "lines":[
+		"Faster mounts, fewer ambushes. Pick your steed before sun's up.",
+		"I trust my horses more than most men. They've never lied to me.",
+		"Sun's down — saddle up only if your errand can't wait.",
+		"Riding by moonlight? Bold. Or fool. Or both. Take the gray mare.",
+	 ]},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
-	 "line":"Each level, your spirit grows. Pour it into what you trust."},
+	 "line":"Each level, your spirit grows. Pour it into what you trust.",
+	 "lines":[
+		"Each level, your spirit grows. Pour it into what you trust.",
+		"Strength is loud. Mastery is quiet. Choose.",
+		"Tired? Train tired. The road won't ask if you slept.",
+		"Even shadow needs practice. Feet on the boards, breathe.",
+	 ]},
 ]
 
 const BUILDINGS = [
@@ -876,6 +925,8 @@ func _make_npc(data: Dictionary) -> void:
 	npc.npc_name = data.name
 	npc.npc_role = data.role
 	npc.dialogue = data.line
+	# REFINE: feed mood-dependent variants if this NPC has them defined.
+	npc.dialogue_variants = PackedStringArray(data.get("lines", []))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()
