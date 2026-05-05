@@ -1123,3 +1123,104 @@ A new kind = one new branch in `_draw_landmark_glyph` (Minimap.gd) and
 |------|----------------------|----------------|
 | N    | Toggle World Map     | Player.gd      |
 | —    | Mini-map always-on   | Minimap.gd     |
+
+---
+
+## UITheme module (run-15 ship)
+
+Single-source-of-truth UI styling helper, registered via
+`class_name UITheme` (no autoload required — call statically). Replaces the
+five-run-flagged duplicate `add_theme_color_override` boilerplate scattered
+across panel builders in `World.gd`.
+
+### File
+`eldoria-godot/scripts/UITheme.gd` (322 lines, 14 helpers + self-test).
+
+### Palette constants
+| Const | Value | THEME §3 source |
+|-------|-------|-----------------|
+| `UITheme.GOLD` | `Color(1.00, 0.85, 0.40)` | burnt gold (primary) |
+| `UITheme.SUNSET_ORANGE` | `Color(1.00, 0.50, 0.00)` | `#FF8000` |
+| `UITheme.CRIMSON` | `Color(0.55, 0.13, 0.13)` | `#8C2020` wine |
+| `UITheme.MOSS_GREEN` | `Color(0.29, 0.44, 0.22)` | forest moss |
+| `UITheme.PARCHMENT` | `Color(0.85, 0.79, 0.61)` | `#D9C99B` |
+| `UITheme.PARCHMENT_CREAM` | `Color(0.92, 0.85, 0.65)` | warmer cream tier |
+| `UITheme.INK_BLACK` | `Color(0.05, 0.04, 0.05)` | `#0E0A0E` |
+| `UITheme.BRASS` | `Color(0.69, 0.46, 0.16)` | `#B0742A` |
+| `UITheme.STAG_BLOOD` | `Color(0.63, 0.13, 0.13)` | `#A02020` |
+| `UITheme.STONE_BLUE` | `Color(0.48, 0.53, 0.58)` | `#7B8693` |
+| `UITheme.FEY_CYAN` | `Color(0.40, 0.87, 0.90)` | magic accent |
+| `UITheme.ARCANE_PURPLE` | `Color(0.49, 0.25, 0.69)` | warlock |
+| `UITheme.FROST_SILVER` | `Color(0.78, 0.88, 0.90)` | frost |
+
+### Font-size constants (THEME §5 hierarchy)
+| Const | Px | Use |
+|-------|----|-----|
+| `FS_TOAST` | 28 | screen-center transient |
+| `FS_TITLE` | 24 | panel header |
+| `FS_HEADER` | 22 | secondary header |
+| `FS_SUBTITLE` | 16 | column header |
+| `FS_BODY_LG` | 14 | button face / counter |
+| `FS_BODY` | 13 | RichTextLabel default |
+| `FS_BODY_SM` | 12 | hint, footer, desc |
+| `FS_TINY` | 11 | title-hint micro |
+| `FS_LOCK` | 36 | 🔒 overlay glyph |
+| `FS_BAG_GLYPH` | 22 | bag-slot item glyph |
+
+### Asset-path constants (CC0, scripts/art/make_ui_frames.py seed 8131)
+- `ASSET_PARCHMENT_LARGE` → `res://assets/ui/parchment_panel.png` (512×512)
+- `ASSET_PARCHMENT_SMALL` → `res://assets/ui/parchment_panel_small.png` (256×256)
+- `ASSET_WOOD_PANEL` → `res://assets/ui/wood_panel.png` (512×384)
+- `ASSET_BTN_NORMAL`/`HOVER`/`PRESSED` → `res://assets/ui/button_*.png` (192×64)
+- `ASSET_DIVIDER_ORNATE` → `res://assets/ui/divider_ornate.png` (384×24)
+- `ASSET_SCROLL_BANNER` → `res://assets/ui/scroll_banner.png` (512×128)
+- 9-slice patches: `PATCH_BIG=64`, `PATCH_SMALL=32`, `PATCH_BTN=16`
+
+### Helper API
+```
+UITheme.style_panel_parchment(panel)         # NinePatchRect bg, idempotent
+UITheme.style_panel_wood(panel)              # wood_panel.png variant
+UITheme.style_iron_button(btn)               # 3-state texture stylebox
+UITheme.style_title_label(lbl)               # 24pt gold + outline
+UITheme.style_subtitle_label(lbl)            # 16pt gold
+UITheme.style_name_label(lbl)                # 16pt gold + outline (cards)
+UITheme.style_count_label(lbl)               # 14pt cream
+UITheme.style_body_label(lbl)                # 13pt cream
+UITheme.style_desc_label(lbl)                # 12pt cream
+UITheme.style_hint_label(lbl)                # 12pt dim white
+UITheme.style_micro_hint_label(lbl)          # 11pt brass
+UITheme.style_lock_label(lbl)                # 36pt dim w/ cream outline
+UITheme.style_tooltip_label(lbl)             # 13pt white + outline
+UITheme.style_richtext(rt)                   # RichTextLabel cream defaults
+UITheme.make_toast_label(text) -> Label      # 28pt gold + outline
+UITheme.self_test() -> [bool, String]        # asset reachability
+```
+
+### Idempotency contract
+`style_panel_parchment` and `style_panel_wood` set
+`panel.set_meta("_eldoria_themed", true)`. Re-calling on the same panel
+is a no-op. Marker child `EldoriaParchmentBG` added at index 0 so all
+existing children draw on top.
+
+### Run-15 callsites (initial migration)
+- `World.gd::_show_toast` — uses `make_toast_label`
+- `World.gd::_build_inventory_ui` — `style_panel_parchment`,
+  `style_title_label`, `style_iron_button` (close ✕),
+  `style_subtitle_label` (×2), `style_richtext`, `style_hint_label`,
+  `style_tooltip_label`
+- `World.gd::_build_achievements_ui` — `style_panel_parchment`,
+  `style_title_label`, `style_iron_button` (close ✕),
+  `style_subtitle_label`, `style_count_label`, `style_desc_label`
+- `World.gd::_build_one_achievement_card` — `style_lock_label`,
+  `style_name_label`, `style_desc_label`, `style_micro_hint_label`
+
+### Future seams (next-run hooks)
+- DialoguePanel (Main.tscn) — replace `theme_override_*` directly in
+  the .tscn with `UITheme.style_panel_parchment` + label helpers in
+  `_setup_dialogue_actions`
+- Future bestiary panel — should call `style_panel_parchment` + grid
+  pattern from `_build_achievements_ui`
+- HUD bars (HPBar/MPBar/XPBar) — could move to UITheme.style_progressbar
+  in a follow-up, currently still tscn-defined
+- Smith Edda forge UI (backlog #2) — start with `style_panel_parchment`,
+  three-tab layout reusing the bag-grid pattern

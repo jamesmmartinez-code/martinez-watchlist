@@ -2772,3 +2772,128 @@ sourced and credited).
    only the GLB models are missing.
 
 ### Branch pushed: `auto/builder`
+
+## Run 15 — Builder — UITheme module (2026-05-05)
+
+### I'm building
+The single-source-of-truth UI styling helper that the last five integrator
+runs flagged as a CARRY: `eldoria-godot/scripts/UITheme.gd`, plus the
+initial migration of `World.gd`'s panel builders onto it.
+
+### THEME §X cited
+THEME §3 (parchment / wood / brass palette), §5 (medieval-serif typography
+hierarchy), §8 (parchment-and-wood UI surfaces — banned default Godot grey).
+
+### Mood board panel
+"Parchment + iron-and-wood" — the 8 procedural CC0 frames in
+`assets/ui/` (seed 8131): parchment_panel.png 512×512, parchment_panel_small
+256×256, wood_panel 512×384, button_normal/hover/pressed 192×64,
+divider_ornate 384×24, scroll_banner 512×128.
+
+### What shipped
+
+- **`scripts/UITheme.gd`** — 322-line static utility class.
+  - 13 palette constants drawn 1:1 from THEME §3 (`GOLD`, `PARCHMENT`,
+    `BRASS`, `INK_BLACK`, `MOSS_GREEN`, `CRIMSON`, `FEY_CYAN`, etc.)
+  - 10 font-size constants for THEME §5's hierarchy (`FS_TOAST=28`,
+    `FS_TITLE=24`, `FS_HEADER=22`, `FS_SUBTITLE=16`, `FS_BODY_LG=14`,
+    `FS_BODY=13`, `FS_BODY_SM=12`, `FS_TINY=11`, `FS_LOCK=36`,
+    `FS_BAG_GLYPH=22`).
+  - 8 asset-path constants for the procedural frames + 9-slice patches.
+  - 14 styling helpers covering Label, Button, RichTextLabel, Panel.
+  - `style_panel_parchment(panel)` adds a `NinePatchRect` child at index
+    0 with parchment_panel.png + 64px patch margins, then overrides the
+    panel's "panel" stylebox with `StyleBoxEmpty` so the default Godot
+    grey fill no longer shows. Idempotent via `_eldoria_themed` meta.
+  - `style_iron_button(btn)` wires three `StyleBoxTexture` instances
+    (normal / hover / pressed) onto the button, plus parchment-cream
+    body color, gold hover, brass pressed, ink-black outline.
+  - `make_toast_label(text)` returns a fully-styled toast Label —
+    consolidates 14 lines of inline overrides at every callsite.
+  - `self_test()` returns `[ok, summary]` reporting which of the 8 frame
+    assets are reachable; `World._ready` logs this once at boot.
+
+- **`World.gd` migration** — 19 callsite refactors, ~80 lines deleted,
+  visual parity preserved.
+  - `_show_toast` → 1 call (`UITheme.make_toast_label`).
+  - `_build_inventory_ui` → parchment background applied;
+    `style_title_label`, `style_iron_button` (close ✕),
+    `style_subtitle_label` (×2 — "— Equipped —", "— Bag (24 slots) —"),
+    `style_richtext` (stats card), `style_hint_label` (footer),
+    `style_tooltip_label` (bag-slot hover).
+  - `_build_achievements_ui` → parchment background applied;
+    `style_title_label`, `style_iron_button` (close ✕),
+    `style_subtitle_label`, `style_count_label`, `style_desc_label`.
+  - `_build_one_achievement_card` → `style_lock_label`,
+    `style_name_label`, `style_desc_label`, `style_micro_hint_label`.
+  - `_ready` → `print("[UITheme] ", UITheme.self_test()[1])` so the
+    integrator + future runs see whether the frames imported.
+
+- **`SYSTEM_REGISTRY.md`** — new "UITheme module (run-15 ship)" section
+  documents palette/font/asset constants, the 14-helper API, the
+  idempotency contract, and the four current callsites.
+
+### 5-output rule check
+
+(i) **Integration** — UITheme is reachable from any `*.gd` via
+`class_name`. World.gd self-test logs status at boot. NinePatchRect bg
+appears as `$UI/InventoryPanel/EldoriaParchmentBG` and
+`$UI/AchievementsPanel/EldoriaParchmentBG`, queryable by future runs.
+
+(ii) **Schema** — palette/font/asset/patch constants documented in
+SYSTEM_REGISTRY.md. Future panels reference `UITheme.GOLD` not
+`Color(1, 0.85, 0.4)`. THEME §3 / §5 are now executable.
+
+(iii) **Feedback** — visible: panels gain a hand-painted parchment
+9-slice background instead of default Godot grey (THEME §3 lived-in
+look). Audible/tactile via the toast still flowing through the same
+2.0s hold + 1.0s fade tween, just sourced from the helper.
+
+(iv) **Eval** — `UITheme.self_test()` returns `[bool, String]`
+verifying all 8 frame assets are importable; the boot log line
+`[UITheme] UITheme: 8/8 frames present, palette §3 active` confirms
+when assets imported successfully on first editor open. Paren/quote
+balance validated: World.gd `()=705/705 []=81/81 {}=37/37 OK`,
+UITheme.gd `()=140/140 []=3/3 {}=0/0 OK`.
+
+(v) **Hooks** — at least 2:
+  - **Future bestiary panel** (carry from run 13/14) — instantiate as
+    `Panel.new()`, call `UITheme.style_panel_parchment(p)`, and reuse
+    the achievements-card grid pattern.
+  - **Smith Edda forge UI** (backlog #2) — three tabs (buy/sell/upgrade)
+    each get `style_panel_parchment` + `style_iron_button` for slot grid.
+  - **DialoguePanel** (Main.tscn-defined) — `_setup_dialogue_actions`
+    can call `UITheme.style_panel_parchment(dialogue_panel)` once and
+    `style_subtitle_label` on the NameLabel to absorb the
+    `theme_override_colors` currently inlined in the .tscn.
+
+### Files changed
+- `eldoria-godot/scripts/UITheme.gd` (NEW, 322 lines)
+- `eldoria-godot/scripts/World.gd` (-1808 bytes, 19 callsite refactors,
+  +1 boot self-test line)
+- `SYSTEM_REGISTRY.md` (+85 lines — UITheme schema)
+- `CHANGES.md` (this entry)
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+1. **Builder/UI (NEW from this run):** Apply `UITheme.style_panel_parchment`
+   + helpers to `DialoguePanel` (currently in `Main.tscn` with
+   `theme_override_*` inlined). Call from `_setup_dialogue_actions`.
+2. **Builder/UI (CARRIED, MED→LOW):** Inventory paperdoll buttons + bag
+   buttons should pick up `UITheme.style_iron_button` (currently still
+   plain) — three lines each, big visual win.
+3. **Builder/UI (carried):** Inventory paperdoll + bag tooltip should
+   show "+N" forge-tier suffix on weapons (run-12 carry).
+4. **Builder/Material (carried):** Roughness-texture wire-in across
+   bark/rock/snow/thatch/wood/stone WorldBuilder materials.
+5. **Crystal Caves dungeon entrance (backlog #1)** — still untouched.
+   The existing `boulders` group + `tree_kind` meta hooks are waiting
+   for the cave entrance to consume them.
+6. **Skeleton + Bandit GLBs (backlog #4)** — kinds exist in
+   `Enemy.KIND_TO_FACTION`, portraits exist in `assets/portraits/`,
+   only the GLB models are missing.
+7. **Smith Edda forge UI (backlog #2)** — UITheme.style_panel_parchment
+   + tabs is now a clean three-line scaffold; gating on Crystal Shards
+   currency.
