@@ -80,3 +80,14 @@ read it to dampen or escalate. Telegraph timing should be the FIRST knob.
   Skeleton/Bandit variety.)
 - Is the day/night cycle (6 min) too fast for Alden's exploration? (Watch:
   if he never sees the same biome twice in one session, lengthen.)
+
+## Polish Notes — visual envelope (auto-logged)
+
+- **2026-05-04** — Polished Main.tscn for cooler shadows / warmer highlights:
+  ambient pushed cool-blue (0.78, 0.80, 0.92) at energy 0.60; sun warmed to
+  (1.0, 0.78, 0.46) at energy 1.95; moon-fill lifted to (0.42, 0.62, 1.0) at 0.58.
+  Volumetric fog density 0.015 → 0.022 and length 80 → 110 for richer god-rays.
+  Glow threshold 0.92 → 0.74 + bloom 0.22 → 0.34 so foliage rims and fireflies
+  pop more — should help **Alden** (frog kid, exploration affinity) notice
+  pretty things in the world. SSAO intensity 2.85 → 3.30 deepens contact shadows
+  under trees/props which makes **Owen's** combat hits feel more grounded.
