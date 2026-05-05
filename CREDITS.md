@@ -40,3 +40,12 @@ in a follow-up commit by querying Sketchfab's API for each model's author and UR
 ## Notes
 - `skeleton.glb` and `wooden_cart.glb` candidates rejected this batch as off-theme (worker character mislabeled as skeleton; modern platform trolley).
 - Future batches must add stricter theme keywords + verify name in commit before pushing.
+
+## Animated character upgrade (2026-05-05)
+
+- `assets/models/Hero.glb` — REPLACED. Now: "Stylized Low poly Animated Character" (Sketchfab CC-BY, 4 animations, 5K faces) — has idle/walk/run/attack
+- `assets/models/Boss.glb` — NEW: "Mountain Orge" (Sketchfab CC-BY, 13 animations!) — for Goblin Warlord
+- `assets/models/npcs/warrior.glb` — NEW: "3DRT Fantasy Warrior" (Sketchfab CC-BY, animated)
+- `assets/models/npcs/mushroom_merchant.glb` — NEW: "Mushroom Merchant Animated" (Sketchfab CC-BY, animated)
+
+Old static Emma (Hero.glb) replaced with animated equivalent. Procedural sword hidden until bone-attachment is wired to new skeleton.

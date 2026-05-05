@@ -380,16 +380,12 @@ func _on_equipment_changed() -> void:
 	stats_changed.emit()
 
 func _rebuild_weapon_visual() -> void:
+	# Procedural sword disabled — needs bone-attachment to new Hero.glb skeleton
+	# TODO: Character agent should attach a sword GLB to a hand bone via BoneAttachment3D
 	if weapon_visual and is_instance_valid(weapon_visual):
 		weapon_visual.queue_free()
-	if not inventory:
-		return
-	var weapon_id = inventory.equipped_weapon_id()
-	if weapon_id == "":
-		return
-	var item := Items.get_item(weapon_id)
-	if item.is_empty():
-		return
+	weapon_visual = null
+
 
 	weapon_visual = Node3D.new()
 	weapon_visual.name = "WeaponVisual"
