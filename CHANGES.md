@@ -1,3 +1,29 @@
+## 2026-05-05 (integrator run 4) — 4 branches merged, 2 carried gaps
+
+### Branches merged into main
+- `auto/builder` (1 commit) — `player_renown` first-class scalar + RenownLabel HUD + Lyra `use_json_dialogue:true` flip (closes 3-run carried gap)
+- `auto/polisher` (1 commit) — `Chest.gd` interaction polish (10 REFINE-tagged tweaks)
+- `auto/art` (1 commit) — 6 procedural 64×64 affix overlay icons (frost, embers, bear, swiftness, dragon, stars) + `gen_affix_icons.py` + `AFFIX_SUFFIXES.affix_icon_path` metadata
+- `auto/lore` (1 commit) — `mara_merchant.md` NPC backstory + WORLD_STATE.md lexicon notes
+
+### Branches skipped
+- `auto/character` — 0 ahead (no new work this run)
+- `auto/qa` — 0 ahead
+- `auto/environment`, `auto/audio` — branch does not exist
+
+### Conflict resolved
+- `WORLD_STATE.md` had a content conflict where Builder appended a "Renown — first-class scalar (run 11)" section AND Lore appended lexicon/origin notes to the same trailing region of the file. Both additions were non-overlapping appendix-style content; resolution kept BOTH sections in original order (builder's renown notes first, then lore's lexicon notes). No information lost.
+
+### [INTEGRATOR-GAP] — affix icons authored but not consumed
+Builder/Items.gd now emits `affix_icon_path:"res://assets/icons/affix/<name>.png"` on every `AFFIX_SUFFIXES` entry, and Art/run-4 ships the matching PNGs. However, NO UI code (Inventory.gd, loot tooltips, item display) actually reads `affix_icon_path` to render the badge. Today the field is metadata-only — `icon_overlay` (emoji) is still the only thing rendered. The ATTRIBUTION.md sibling note in `assets/icons/affix/` explicitly documents the intent ("UI to prefer affix_icon_path over icon_overlay when present") but the consumer-side patch is missing. **Next polisher/builder run should:** in whatever script renders affix indicators on inventory slots/tooltips, branch on `affix.has("affix_icon_path") and ResourceLoader.exists(affix.affix_icon_path)` and prefer the PNG over the emoji.
+
+### [INTEGRATOR-GAP] — NPC backstory markdown is still orphan
+`eldoria-godot/lore/npcs/` now holds `elder_maeve.md`, `smith_edda.md`, `innkeeper_bram.md`, `herbalist_lyra.md`, and (new this run) `mara_merchant.md`, plus `lore/world.md`. Nothing in `eldoria-godot/scripts/` reads any of those files. They are author-time reference material for dialogue writers (and for the lore agent itself) but there is no `LoreLoader.gd`, no `lore_book` UI, no NPC method that surfaces a snippet. This was already noted in earlier integrator runs and remains carried. **Next builder run could:** add a tiny `LoreLoader` autoload that exposes `get_npc_lore(npc_name) -> String` reading `res://lore/npcs/<slug>.md` and surface a single quote in the dialogue-end footer (or a `[J]ournal` keybind) so the markdown becomes player-visible.
+
+### Next run TODO
+- Feed both gaps above to next builder/polisher run.
+- `auto/character` and `auto/qa` haven't pushed in 2+ runs — worth checking whether those agents are healthy or if the work-picker is starving them.
+
 ## 2026-05-05 (run 10) — Boss world-flag wire (`seen_warlord` / `warlord_dead`) + Bram JSON opt-in
 
 ### Build target picked
