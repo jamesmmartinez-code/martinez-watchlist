@@ -86,19 +86,31 @@ run easier — what's the *next* thing that compounds?)
   to multiple readers without sprawl. Visible "agitated" ⚡ prefix on the
   floating name fires when cooldown < 1.30 so kids can read pacing change
   per-enemy, not just per-density.
-- 🔥 **Top-priority next:** Roan (Stablemaster) → `dire_wolves` faction tier.
-  Smoke-tests the 4-tier dialogue system on an NPC with no warm_flag at
-  all. Schema is in place, only WorldBuilder edits required. After runs
-  6 + 7, Roan's faction-tier lines now have TWO partners: wolf spawn
-  density already speaks the state AND the surviving wolves visibly
-  agitate (⚡ prefix) — dialogue completes the FOURTH leg of the
-  `dire_wolves` compound (dialogue + density + cooldown + visual marker).
-- 🔥 **Adjacent next:** Roan-issued wolf-bounty quest (-0.1 reducer for
-  `dire_wolves`). Mirrors `ears_for_mara` as the second goblin reducer.
-  Trips the second wolf-spawn threshold (3 → 2) AND drops cooldown another
-  step — single quest, two visible world changes, both readable to a kid.
-  Compose with Roan's faction-tier dialogue above to ship a complete
-  Roan-arc on the `dire_wolves` compound.
+- ✅ **Resolved 2026-05-04 (run 8):** Roan (Stablemaster) carries 4
+  faction-tier lines on `dire_wolves` < 0.5. He is the FIRST NPC with NO
+  `warm_flag` of his own — every prior warm-faction author (Maeve, Lyra)
+  also carries an NPC-flag tier, so Roan smoke-tests the 4-tier dialogue
+  stack on a villager whose ONLY warm tier is the faction read. The
+  schema generalizes. `World.faction_pressure("dire_wolves")` now has
+  THREE consumers (wolf spawn density, enemy attack cooldown, Roan
+  dialogue tier 3), and the `dire_wolves` compound now has its FOURTH
+  leg landed: a single -0.1 quest (`pelt_for_lyra`) changes the world
+  on four readable axes — who he sees, how many he sees, how fast they
+  hit, and what the stablemaster says about it.
+- 🔥 **Top-priority next:** Roan-issued wolf-bounty quest (-0.1 reducer
+  for `dire_wolves`). Mirrors `ears_for_mara` as the second goblin
+  reducer. Trips the second wolf-spawn threshold (0.4 → 0.3, 3 → 2
+  wolves) AND drops attack cooldown another step AND keeps Roan's
+  faction-tier lines firing — single quest, three visible world changes,
+  all readable to a kid. Now that Roan's dialogue (run 8) speaks the
+  state, Roan-issuing the bounty is the canonical NPC↔quest pairing.
+- 🔥 **Adjacent next:** Bram (Innkeeper) faction-tier on `whisperwood_goblins`
+  < 0.4 OR Hala (Trainer) faction-tier on `dire_wolves` < 0.3 — second
+  proof of the no-warm_flag pattern Roan just established, and a chance
+  to put a dialogue tier on a low-threshold ("the wood is almost
+  ours again") moment that the player rarely reaches but that pays
+  off enormously when they do. Use the same ~6-line authoring rule
+  documented in SYSTEM_REGISTRY.md.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
@@ -117,7 +129,7 @@ Populated as runs ship reactive dialogue.)
 | Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | `good_customer` (ears_for_mara) |
 | Herbalist Lyra       | alchemy  | warms after pelts   | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | `trusts_player` (pelt_for_lyra), `lyra_potion_brew` (world flag) |
 | Innkeeper Bram       | inn      | neutral             | ❌ (no quest yet) | —                       |
-| Stablemaster Roan    | stable   | neutral             | ❌ (no quest yet) | —                       |
+| Stablemaster Roan    | stable   | warms when wolves thin | ✅ 4 (faction, run 8) | `dire_wolves` pressure < 0.5 |
 | Trainer Hala         | trainer  | neutral             | ❌ (no quest yet) | —                       |
 
 Live data in `World.npc_flags[npc_name] -> Array[String]`. Read with
@@ -132,7 +144,7 @@ by direct dialogue branches (those READ flags, they don't WRITE them).
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing)** |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); Roan speaks at <0.5 (run-8 dialogue tier 3)** |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) — fires the moment the dungeon ships** |
 
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated

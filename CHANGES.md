@@ -1088,3 +1088,100 @@ goblin scalar that already drives dialogue tier 3 (run 4) + spawn density
 fresh-save goblin still telegraphs at child-readable speed. After that,
 Roan's `dire_wolves` faction-tier dialogue (4 lines, mirrors Maeve) +
 a Roan-issued -0.1 wolf-bounty quest, both of which compose with run-6.
+
+## 2026-05-04 (run 8) — Roan (Stablemaster) `dire_wolves` faction-tier dialogue
+
+### Plan
+- 5 ledgers consulted. Top-priority hook from WORLD_STATE was the Roan
+  faction tier — it had been queued as the natural next step after runs
+  6 + 7 wired wolf spawn density and adaptive cooldown to the same
+  `dire_wolves` scalar. Roan's lines complete the FOURTH leg of that
+  compound (dialogue + density + cooldown + visual ⚡ marker).
+- Rule 1 (compound, don't sprawl): no new primitive, no new schema, no
+  new tier. Reuses the run-4 `warm_faction_id` / `warm_faction_below` /
+  `warm_faction_lines` schema verbatim. Adds Roan as the SECOND author
+  of the schema after Maeve, and the FIRST author whose ONLY warm tier
+  is the faction read (Maeve also carries `warm_flag:first_quest_done`).
+- Rule 2 (5 outputs): see explicit checklist below.
+- Rule 5 (endless ≠ infinite map): Briarwood feels different on a save
+  reload after `pelt_for_lyra` ships — Roan now narrates the change at
+  every time-of-day bucket, no new geometry.
+
+### Build
+- `eldoria-godot/scripts/WorldBuilder.gd` (+24 / 0):
+  - NPCS Roan dict gains `warm_faction_id`, `warm_faction_below`, and a
+    4-line `warm_faction_lines` array (morning / midday / evening / night),
+    inserted directly under his existing `lines` array. Threshold 0.5
+    matches the run-6 wolf-spawn first-trip threshold so dialogue and
+    density flip together on the same -0.1 quest.
+  - 12-line block comment above the new fields documents the smoke-test
+    intent (no `warm_flag` → only warm tier is the faction read), the
+    threshold rationale, and the four-leg compound it completes.
+- `WORLD_STATE.md`:
+  - Top-priority Roan-dialogue hook marked Resolved (run 8).
+  - Promoted Roan-issued wolf-bounty quest to new top-priority. New
+    adjacent-next: Bram or Hala faction-tier as the second proof of the
+    no-`warm_flag` pattern.
+  - NPC Memory table: Roan row flips from "neutral / ❌ no quest" to
+    "warms when wolves thin / ✅ 4 (faction, run 8)" with the
+    `dire_wolves < 0.5` flag-consumed call-out.
+  - Faction State table: Dire Wolves row appends "Roan speaks at <0.5
+    (run-8 dialogue tier 3)" alongside the existing density + cooldown
+    annotations.
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `World.faction_pressure(
+        "dire_wolves")` from NPC.gd's existing tier-3 path. The scalar
+        had two readers entering the run (wolf spawn density, attack
+        cooldown); it now has THREE (Roan dialogue), and the 4-tier
+        dialogue stack now has TWO faction authors instead of one.
+- (ii)  Queryable schema: no new schema. Proves the run-4
+        `warm_faction_*` schema reuses cleanly across NPCs without a
+        `warm_flag`. Authoring template captured in the in-file block
+        comment above the new fields.
+- (iii) Player-facing feedback: 4 new dialogue lines fire when the player
+        approaches Roan after `pelt_for_lyra` has dropped `dire_wolves`
+        below 0.5. Each of the 4 time-of-day buckets has its own line so
+        the change is visible at any hour the player chooses to talk.
+        Composes with run-6's "thinner wolves" toast (announces *moment*)
+        and run-7's per-enemy ⚡ prefix (announces *pacing change*).
+- (iv)  Evaluation: parens / brackets / braces balance check passes
+        (1079/1079, 56/56, 36/36 in WorldBuilder.gd). New dictionary
+        keys all use the existing `.get(..., default)` loader path, so
+        every other NPC continues to load with empty defaults. No new
+        `var` declarations introduced (pure dict-literal data).
+- (v)   Future hooks (≥ 2):
+        1. **Roan-issued wolf-bounty quest (-0.1 reducer for `dire_wolves`)**
+           — now the canonical NPC↔quest pairing because Roan's dialogue
+           already speaks the state. Trips the second wolf-spawn threshold
+           (0.4 → 0.3, 3 → 2 wolves) AND drops attack cooldown another step
+           AND keeps Roan's faction-tier lines firing. Single quest, three
+           visible world changes. Promoted to new top-priority hook.
+        2. **Bram (Innkeeper) faction-tier on `whisperwood_goblins` < 0.4**
+           — second proof of the no-`warm_flag` pattern Roan just
+           established. Bram has a different vibe (warm hearth, gossip
+           radius) so his lines should narrate "the travelers feel
+           safer" rather than "I sleep easier".
+        3. **Hala (Trainer) faction-tier on `dire_wolves` < 0.3** — a
+           low-threshold author who only fires when the wolves are nearly
+           extinct. Rare-but-rich payoff. Trains the kids to keep
+           pursuing the hook even when the obvious ones (Roan, Maeve)
+           have already paid out.
+        4. **Lower-threshold Roan tier (`dire_wolves` < 0.15)** — same
+           NPC, second tier on the same scalar. Currently the schema
+           supports one threshold per NPC; either bump the schema OR
+           wait for the wolf-extinction lines to land in a sibling NPC.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Roan-issued wolf-bounty quest (-0.1 reducer for `dire_wolves`).** Mirror
+of `ears_for_mara` for the wolf faction. Trips the second wolf-spawn
+threshold (0.4 → 0.3, 3 → 2 wolves), drops attack cooldown another step,
+and KEEPS Roan's faction-tier lines firing — they remain valid because
+the threshold is `< 0.5`. Single quest, three readable world changes.
+Authoring is just a Quest entry in QuestRegistry plus a ConsequenceMap
+row; no new schemas. After that, Bram or Hala faction-tier lines are
+the next-cheapest second proof of the no-`warm_flag` pattern.

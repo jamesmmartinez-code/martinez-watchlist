@@ -222,6 +222,27 @@ const NPCS = [
 		"I trust my horses more than most men. They've never lied to me.",
 		"Sun's down — saddle up only if your errand can't wait.",
 		"Riding by moonlight? Bold. Or fool. Or both. Take the gray mare.",
+	 ],
+	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Roan is the
+	 # FIRST NPC with NO `warm_flag` of his own — every prior warm-faction
+	 # author (Maeve, Lyra) also carries an NPC-flag tier. Roan smoke-tests
+	 # the 4-tier dialogue stack on a villager whose ONLY warm tier is the
+	 # faction read, proving the schema generalizes to NPCs without quests.
+	 # Threshold 0.5 fires the moment `pelt_for_lyra` (-0.1) drops the
+	 # `dire_wolves` pressure from its fresh-save 0.5 to 0.4 — the same
+	 # quest that already dropped wolf spawn density (run 6) and tightened
+	 # wolf attack cooldown (run 7). Roan's lines complete the FOURTH leg
+	 # of the `dire_wolves` compound (dialogue + density + cooldown +
+	 # visual ag-prefix), so a single -0.1 quest now changes the world on
+	 # four readable axes: who he sees, how many he sees, how fast they
+	 # hit, and what the stablemaster says about it.
+	 "warm_faction_id":"dire_wolves",
+	 "warm_faction_below":0.5,
+	 "warm_faction_lines":[
+		"The mares grazed all night without spooking. Wolves are giving us room — your work, I'd wager.",
+		"Used to be I couldn't ride the north loop without losing a horse. Today, only birdsong out there.",
+		"Saddled the gray mare for the late patrol — first time in years she didn't lay her ears back at the wood.",
+		"No howls tonight. The stable sleeps easy. Tea's still warm if you've a moment.",
 	 ]},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
 	 "line":"Each level, your spirit grows. Pour it into what you trust.",
