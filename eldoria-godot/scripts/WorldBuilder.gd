@@ -1823,15 +1823,32 @@ func _global_scale_sweep() -> void:
 	for body in root.find_children("*", "StaticBody3D", true):
 		_check_and_normalize(body, _expected_height_for(body))
 
+# SIZE_STANDARDS — see eldoria-godot/SIZE_STANDARDS.md (single source of truth).
+# Tuple = (target_height_m, tolerance_fraction).  Outside band → snap to target.
+const SIZE_STANDARDS := {
+	"player":  [1.80, 0.10],
+	"npcs":    [1.80, 0.15],
+	"pets":    [0.70, 0.20],
+	"enemies": [1.40, 0.20],   # default to small-enemy band
+	"bosses":  [3.20, 0.20],
+}
+
 func _expected_height_for(body: Node) -> float:
-	# Heuristic: pick a target height by node name / group membership
-	if body.is_in_group("bosses"): return 3.0
-	if body.is_in_group("pets"): return 0.7
-	if body.is_in_group("enemies"): return 1.5
-	if body.is_in_group("player"): return 1.8
-	if body.is_in_group("npcs"): return 1.8
-	# Default
+	# Match group membership against SIZE_STANDARDS, narrowest first.
+	if body.is_in_group("bosses"):  return SIZE_STANDARDS["bosses"][0]
+	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][0]
+	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][0]
+	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][0]
+	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][0]
 	return 1.8
+
+func _tolerance_for(body: Node) -> float:
+	if body.is_in_group("bosses"):  return SIZE_STANDARDS["bosses"][1]
+	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][1]
+	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][1]
+	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][1]
+	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][1]
+	return 0.15
 
 func _check_and_normalize(body: Node, target_height: float) -> void:
 	var aabb := AABB()
@@ -1847,12 +1864,16 @@ func _check_and_normalize(body: Node, target_height: float) -> void:
 			aabb = aabb.merge(a)
 	if not has or aabb.size.y <= 0.001:
 		return
-	# If the body's visible mesh is reasonable, leave it
-	if aabb.size.y >= target_height * 0.5 and aabb.size.y <= target_height * 1.5:
+	# If the body's visible mesh is within tolerance, leave it
+	var tol: float = _tolerance_for(body)
+	if aabb.size.y >= target_height * (1.0 - tol) and aabb.size.y <= target_height * (1.0 + tol):
 		return
-	# Otherwise rescale via the FIRST direct Node3D child (the model wrapper)
+	# Otherwise rescale via the FIRST direct Node3D child (the model wrapper).
+	# Compute the absolute scale needed: current_visual_scale * (target / current_height).
 	for child in body.get_children():
 		if child is Node3D and child.has_method("get_children"):
-			var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
-			(child as Node3D).scale = (child as Node3D).scale * s
+			var c := child as Node3D
+			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
+			var new_s: float = clamp(avg_cur * (target_height / aabb.size.y), 0.05, 5.0)
+			c.scale = Vector3(new_s, new_s, new_s)
 			break
