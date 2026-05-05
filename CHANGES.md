@@ -3689,3 +3689,80 @@ SYSTEM_REGISTRY.md updated with the new material + quest entries.
    Today the icon falls back to the 🦷 emoji; ResourceLoader.exists
    guards against the missing PNG (same fail-soft as run-15
    achievement crests).
+
+## 2026-05-05 — Art run (mood-boards bootstrap)
+
+### What I'm shipping
+The `mood-boards/` directory, populated for the first time. Five canonical panels
+plus a README so other agents can cite a board instead of re-paraphrasing THEME.md
+mid-run.
+
+### THEME §X cited
+- §1 (painterly, warm sunset dominant) — drives `lighting_compass.png` 50%
+  weight on the dusk band.
+- §2 (1300–1500 era window) — `era_window.png` allowed/forbidden columns are a
+  direct render of the §2 table.
+- §3 (color palette) — `palette.png` is a verbatim render of every named hex in
+  §3, with the §3 banned colors slashed in red.
+- §4 (silhouette-distinct NPCs / enemy scale rules) — `silhouette_check.png`
+  for the 7 villagers + player; `enemy_silhouettes.png` for goblin/brute/wolf/
+  warlord/skeleton/elemental at relative scale.
+
+### Mood board panel
+N/A — this run *creates* the boards. Future agents cite them.
+
+### Closes the gap
+Builder run-17 logged: *"mood-boards/ directory not present. Cited THEME.md §1,
+§2, §4, §6, §7 directly per the THEME-gate fallback."* The fallback now has a
+non-fallback target. Future runs should cite a panel by filename in their
+"Mood board panel" section.
+
+### Pipeline used
+Pillow only — no Adobe Firefly, no Canva, no stock sourcing for this run. The
+panels are intentionally schematic (palette swatches + primitive silhouettes)
+rather than painterly — they exist to point at decisions, not inspire by mood.
+Painterly *reference* art (vista_briarwood_dusk.png, npc_portrait_painted.png)
+belongs under `concept/` per `ARTIST_AGENT.md` — separate, parallel surface.
+
+### Files added
+- `mood-boards/README.md` — index + how-to-cite + provenance.
+- `mood-boards/palette.png` — 1024×1024, every THEME §3 hex with banned-range
+  swatches slashed in red.
+- `mood-boards/era_window.png` — 1280×720, allowed/forbidden columns from §2.
+- `mood-boards/silhouette_check.png` — 1280×720, 8 silhouettes (player + 7 NPCs)
+  at ground line. Each one is read-distinct from 30m: Maeve has the staff +
+  stoop, Edda has the hammer, Mara has the satchel-bulge, Lyra has the herb
+  basket, Bram has the mug, Roan has the lean cloak triangle, Hala has the tall
+  finialed staff.
+- `mood-boards/enemy_silhouettes.png` — 1280×600, scale comparison vs player.
+  Goblin Grunt 0.78×, Goblin Brute 1.05×, Dire Wolf 1.05×, Skeleton 1.00× (bone
+  white), Crystal Elemental 1.10× (crystal blue), Goblin Warlord 1.50× (crown
+  + banner pole) — matches THEME §4 scale ranges.
+- `mood-boards/lighting_compass.png` — 1280×720, four time-of-day bands (dawn /
+  midday / dusk / night) with the recommended weight (15/20/50/15%) per band
+  reflecting §1's "warm sunset palette dominant" rule.
+- `mood-boards/_generate.py` — Pillow regeneration script (palette function
+  preserved in full; other panels marked bootstrap-fixed — future runs adding a
+  panel follow the same `random.seed` + `OUT` pattern).
+
+### What next run picks up
+
+1. **`mood-boards/architecture_palette.png`** — Briarwood timber-frame house
+   elevations (4 variants), Smithy, Inn, Whisperwood goblin tent, Crystal Caves
+   entrance arch. Architect agent wants this as a 30-second visual gate before
+   placing GLBs.
+2. **`mood-boards/prop_sheet.png`** — well, banner pole, cart, woodpile, market
+   stall, lantern, signpost together at one scale + palette so the village reads
+   cohesive. Builder cites this when authoring new village dressings.
+3. **`mood-boards/magic_glow_reference.png`** — fey cyan, warlock purple, frost
+   silver auras at 3 intensities each on a dusk background. Polisher agent uses
+   this when tuning particle / point-light intensity for spells & potion glows.
+4. **`mood-boards/ui_chrome.png`** — composite of parchment_panel + wood_panel +
+   button states + ornate divider so UI agents see the assembled chrome instead
+   of mentally compositing isolated atlas pieces.
+5. **`wolf_fang.png` painterly upgrade** — current `assets/icons/wolf_fang.png`
+   is 7.4 KB (placeholder-sized; the sister `wolf_pelt.png` is 19.8 KB). A
+   painterly hand-painted 128×128 PNG keeps the crit/material panel visually
+   parity with the rest of the inventory tier.
+
+### Branch pushed: `auto/art`
