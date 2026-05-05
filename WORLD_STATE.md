@@ -1457,3 +1457,68 @@ warmth-words live in Old Faerie.
   be kept.
 - Frost is on the cairn. The cairn is on the high road. Neither
   is to be discovered without the silence Hala's hooks describe.
+
+---
+
+## Whisperwood asset wire-up (run 13)
+
+The Whisperwood is no longer made of identical lumpy sphere-stacks.
+
+The four Sketchfab CC-BY tree GLBs that have been sitting unused under
+`assets/models/trees/` are now the canonical Whisperwood flora:
+
+- **Oak** (`oak_tree.glb`) — broad-canopied hardwood, 45% weight in the
+  scatter. Scales 1.20× to 1.85×. The dominant species across the wood
+  ring north and east of Briarwood. Robust trunk capsule collider —
+  oaks block movement.
+- **Pine** (`pine_tree.glb`) — tall and thin, 30% weight, scales 1.40×
+  to 2.10×. The silhouette spike that catches the eye against the
+  Mountain Ring horizon. Thin tall capsule collider.
+- **Bush** (`bush.glb`) — low groundcover, 20% weight, scales 0.55× to
+  0.95×. NO collider — bushes are walk-through cover, the way the
+  player can dive into them when fleeing wolves.
+- **Dead tree** (`dead_tree.glb`) — skeletal, 5% weight, scales 1.10×
+  to 1.55×. Sparse but signature — every dead tree the player sees is
+  a small lore beat (the Sundering wounded the wood; some trees never
+  came back). Thinner trunk capsule.
+
+Every tree joins group `"trees"` so the wind-sway loop already in
+`WorldBuilder._process` rotates them on a sin curve. Every tree queues a
+deferred `_settle_to_ground` call so its visible base sits at y=0
+regardless of whether the source GLB pivots at feet or center. THEME §12
+motion and §13 ground-contact compliance are now systematic for the
+Whisperwood, not per-asset hand-tuned.
+
+The boulder GLB (`assets/models/props/boulder.glb`) is now what
+`_scatter_rocks(36)` spawns. Boulders carry real silhouette mass instead
+of squashed sphere-mesh stand-ins. The 36 boulders join group
+`"boulders"` — a NEW group that future readers can use for:
+
+- **Cover-aware AI** — goblins could ambush from behind boulders.
+- **Crystal Caves entrance dressing** (backlog #1, Vector3(-50, 0, -40)) —
+  the cave mouth NW of the village can be flanked with two large
+  boulders that read as "the door is hidden here."
+- **Quest hide-spots** — Mara's lost-cargo quest (run-9 lore) could
+  hide a chest behind a specific boulder.
+
+### The fallback contract is the world's safety net
+
+If a GLB ever fails to load — corrupt asset, missing import file,
+content-policy strip — the spawner returns false and the legacy
+procedural primitive (lumpy sphere blob tree, sphere boulder) is used
+instead. The world is never empty. The contract is documented in
+`SYSTEM_REGISTRY.md` "Authoring rules" §1: every future GLB wire-up
+follows the same shape.
+
+### Closed loops; do not casually re-open
+
+- The procedural blob-tree look is **not** the visual canon. It exists
+  only as a fallback. Future runs should not re-design around it.
+- The four-variant tree set (oak / pine / bush / dead) is the canon
+  Whisperwood flora. New species can be added to TREE_VARIANTS, but
+  removing oak/pine/bush/dead would break silhouette continuity with
+  the lore (the Sundering wounded the wood — dead trees are part of
+  the wound; oaks and pines are part of the recovery).
+- The `_settle_to_ground` helper is the official answer to "asset is
+  half-buried / floating." Future asset wire-ups should call it instead
+  of hand-tuning `position.y` per asset.

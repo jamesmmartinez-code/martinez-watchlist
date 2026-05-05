@@ -32,6 +32,27 @@ const NPC_SCALES := {
 
 var _buildings_built: bool = false
 
+# ─── THEME §1, §11, §12 — Whisperwood asset wire-up ──────────────────────────
+# Sketchfab CC-BY tree GLBs (oak / pine / bush / dead) replacing the procedural
+# blob trees that previously made every tree look like the same lumpy sphere
+# stack. Variants are picked by weight per scatter pass; if `load()` returns
+# null (asset not importable yet, missing on disk, etc.) `_make_glb_tree`
+# returns false and `_make_tree` falls through to the legacy procedural path
+# so the world NEVER spawns empty.
+const TREE_VARIANTS: Array = [
+	{"path": "res://assets/models/trees/oak_tree.glb",  "weight": 0.45,
+	 "scale_min": 1.20, "scale_max": 1.85, "kind": "oak"},
+	{"path": "res://assets/models/trees/pine_tree.glb", "weight": 0.30,
+	 "scale_min": 1.40, "scale_max": 2.10, "kind": "pine"},
+	{"path": "res://assets/models/trees/bush.glb",      "weight": 0.20,
+	 "scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
+	{"path": "res://assets/models/trees/dead_tree.glb", "weight": 0.05,
+	 "scale_min": 1.10, "scale_max": 1.55, "kind": "dead"},
+]
+# Sketchfab CC-BY boulder GLB used by `_scatter_rocks` in place of the lumpy
+# sphere primitives. Same fallback contract as TREE_VARIANTS above.
+const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
+
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
 
@@ -526,6 +547,12 @@ func _scatter_trees(count: int) -> void:
 		_make_tree(pos, rng)
 
 func _make_tree(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	# THEME §1, §11 — try a Sketchfab CC-BY tree GLB first (oak / pine / bush /
+	# dead). Fall through to the procedural primitive blob tree below if the
+	# asset isn't loadable, so the world never goes empty.
+	if _make_glb_tree(pos, rng):
+		return
+	# ─── Procedural fallback (legacy primitive path) ─────────────────────────
 	var tree := Node3D.new()
 	tree.position = pos
 	tree.rotation.y = rng.randf() * TAU
@@ -617,6 +644,11 @@ func _scatter_rocks(count: int) -> void:
 		var ang := rng.randf() * TAU
 		var dist := rng.randf_range(20, 70)
 		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		# THEME §1 — try the Sketchfab CC-BY boulder GLB first; fall through to
+		# the legacy sphere-primitive path if the asset isn't loadable.
+		if _make_glb_boulder(pos, rng):
+			continue
+		# ─── Procedural fallback (legacy primitive path) ─────────────────────
 		var size := rng.randf_range(0.7, 1.8)
 		var rock := MeshInstance3D.new()
 		var sm := SphereMesh.new()
@@ -1914,6 +1946,151 @@ func _global_scale_sweep() -> void:
 			var aabb := _measure_aabb(body)
 			if aabb.size.y > 12.0:
 				_emergency_shrink(body, aabb, _expected_height_for(body))
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# GLB FOREST + BOULDER WIRE-UP (run 13)
+# ════════════════════════════════════════════════════════════════════════════
+# Replaces the procedural blob trees and sphere rocks with the Sketchfab
+# CC-BY GLBs that have been sitting unused under assets/models/trees/ and
+# assets/models/props/. Every helper is null-safe — if the GLB can't load,
+# the caller falls back to the legacy primitive code path. No save state.
+# THEME §1 (medieval canon), §11 (silhouette diversity), §12 (motion: every
+# tree joins group "trees" so the existing _process wind-sway picks it up),
+# §13 (ground contact: deferred AABB-driven settle so no half-buried trunks).
+
+# Loads a GLB safely, returning null if the path doesn't exist or doesn't
+# resolve to a PackedScene. Used by tree / boulder / future prop spawners
+# so a missing asset NEVER breaks the world build.
+func _load_glb_safe(path: String) -> PackedScene:
+	if not ResourceLoader.exists(path):
+		return null
+	var res: Resource = load(path)
+	if res is PackedScene:
+		return res as PackedScene
+	return null
+
+# Weighted-random pick over TREE_VARIANTS. Pure: same RNG state → same pick.
+func _pick_tree_variant(rng: RandomNumberGenerator) -> Dictionary:
+	var total: float = 0.0
+	for v in TREE_VARIANTS:
+		total += float(v.get("weight", 0.0))
+	if total <= 0.0:
+		return TREE_VARIANTS[0]
+	var r: float = rng.randf() * total
+	var acc: float = 0.0
+	for v in TREE_VARIANTS:
+		acc += float(v.get("weight", 0.0))
+		if r <= acc:
+			return v
+	return TREE_VARIANTS[0]
+
+# THEME §13 — after a model has been added to the tree and its AABB is
+# measurable, lift or drop the wrapper so the visible base of the model sits
+# at the wrapper's y. Handles both feet-pivoted and center-pivoted GLBs.
+# Called via call_deferred so AABB is valid.
+func _settle_to_ground(node: Node3D) -> void:
+	if not is_instance_valid(node):
+		return
+	var aabb: AABB = _measure_aabb(node)
+	if aabb.size == Vector3.ZERO:
+		return
+	# Convert global-space AABB.position.y to a local-space delta by
+	# subtracting the wrapper's own global y.
+	var bottom_global: float = aabb.position.y
+	var pivot_global: float = node.global_transform.origin.y
+	var bottom_offset: float = bottom_global - pivot_global
+	# If model extends below the pivot (negative offset), lift it. If it
+	# floats noticeably above, pull it down.
+	if bottom_offset < -0.05:
+		node.position.y -= bottom_offset
+	elif bottom_offset > 0.25:
+		node.position.y -= bottom_offset
+
+# Instances a tree GLB at `pos`, randomizes scale + rotation, adds a coarse
+# capsule trunk collider, joins group "trees" (so the wind-sway loop in
+# _process applies), and queues a deferred ground-settle.
+# Returns true on success — false means the GLB couldn't load and the
+# caller should fall back to the procedural path.
+func _make_glb_tree(pos: Vector3, rng: RandomNumberGenerator) -> bool:
+	var variant: Dictionary = _pick_tree_variant(rng)
+	var path: String = String(variant.get("path", ""))
+	var packed: PackedScene = _load_glb_safe(path)
+	if packed == null:
+		return false
+	var inst: Node = packed.instantiate()
+	if inst == null:
+		return false
+	var holder: Node3D = Node3D.new()
+	holder.position = pos
+	holder.rotation.y = rng.randf() * TAU
+	holder.add_to_group("trees")
+	var kind: String = String(variant.get("kind", "oak"))
+	holder.set_meta("tree_kind", kind)
+	add_child(holder)
+	holder.add_child(inst)
+	var s_min: float = float(variant.get("scale_min", 1.0))
+	var s_max: float = float(variant.get("scale_max", 1.2))
+	var s: float = rng.randf_range(s_min, s_max)
+	if inst is Node3D:
+		(inst as Node3D).scale = Vector3(s, s, s)
+	# Trunk-shaped capsule collider per kind. Bushes are walk-through cover.
+	var radius: float = 0.55 * s
+	var height: float = 3.0 * s
+	match kind:
+		"bush":
+			radius = 0.0
+		"dead":
+			radius = 0.32 * s
+			height = 2.6 * s
+		"pine":
+			radius = 0.42 * s
+			height = 3.4 * s
+		_:
+			radius = 0.55 * s
+			height = 3.0 * s
+	if radius > 0.05:
+		var body: StaticBody3D = StaticBody3D.new()
+		var col: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = radius
+		cap.height = max(height, radius * 2.1)
+		col.shape = cap
+		col.position.y = cap.height * 0.5
+		body.add_child(col)
+		holder.add_child(body)
+	call_deferred("_settle_to_ground", holder)
+	return true
+
+# Instances the boulder GLB at `pos` with randomized rotation, scale, and a
+# box collider. Joins group "boulders". Returns true on success; false means
+# the GLB couldn't load and `_scatter_rocks` falls back to the sphere mesh.
+func _make_glb_boulder(pos: Vector3, rng: RandomNumberGenerator) -> bool:
+	var packed: PackedScene = _load_glb_safe(BOULDER_GLB_PATH)
+	if packed == null:
+		return false
+	var inst: Node = packed.instantiate()
+	if inst == null:
+		return false
+	var holder: Node3D = Node3D.new()
+	holder.position = pos
+	holder.rotation = Vector3(rng.randf() * 0.4, rng.randf() * TAU, rng.randf() * 0.4)
+	holder.add_to_group("boulders")
+	add_child(holder)
+	holder.add_child(inst)
+	var s: float = rng.randf_range(0.55, 1.30)
+	if inst is Node3D:
+		(inst as Node3D).scale = Vector3(s, s, s * rng.randf_range(0.85, 1.15))
+	var body: StaticBody3D = StaticBody3D.new()
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(1.4 * s, 1.0 * s, 1.4 * s)
+	col.shape = box
+	col.position.y = 0.5 * s
+	body.add_child(col)
+	holder.add_child(body)
+	call_deferred("_settle_to_ground", holder)
+	return true
 
 func _measure_aabb(node: Node) -> AABB:
 	var aabb := AABB()
