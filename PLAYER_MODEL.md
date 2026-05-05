@@ -312,3 +312,61 @@ narrative + density + pacing.
     the punish; consider raising xp_reward on agitated kills before
     raising the chase ceiling.
 
+
+- **2026-05-04 (run 9)** — Visual polish, environment & lighting in
+  `scenes/Main.tscn`. First Polisher run to refine the Main scene since
+  the Art agent landed the PolyHaven sunset HDRI panorama (commit 6eb3ebb
+  on 2026-05-04). Pulls the Environment + Sun + MoonFill values into
+  THEME §1/§3 canon ("warm sunset palette dominant, 70% of frame; cool
+  tones reserved for night, mist, magic"):
+
+  - **Tonemap & post:** `tonemap_exposure 0.85 → 0.92`,
+    `tonemap_white 8.0 → 7.0` (earlier highlight rolloff, paint-like, less
+    burnout on the new HDRI's bright sky band). `adjustment_saturation
+    1.05 → 1.10` for a richer painterly palette.
+  - **Bloom:** `glow_intensity 0.35 → 0.42`, `glow_strength 0.85 → 0.95`,
+    `glow_hdr_threshold 0.74 → 0.66` so the §3 sunset golds (`#FFD86B`)
+    bloom into a soft Ghibli/BotW haze instead of the previous tight
+    HDR-only bloom.
+  - **Ambient:** `ambient_light_color (0.78, 0.80, 0.92) → (0.82, 0.81,
+    0.88)` and `energy 0.55 → 0.50` — strips out the cold-blue cast that
+    was fighting the sunset key, lets the sun direction read more cleanly.
+  - **Fog:** `fog_density 0.0025 → 0.0032` (more atmospheric depth-cue),
+    `fog_light_color (0.85, 0.78, 0.70) → (0.92, 0.78, 0.62)` (warmer
+    sepia, in §3 parchment range), `volumetric_fog_emission_energy
+    0.10 → 0.16` (the burnt-orange volumetric godrays now read at distance,
+    selling the painterly haze the HDRI sky implies).
+  - **Sun:** `light_energy 1.20 → 1.28`, `light_indirect_energy 1.45 →
+    1.55` for a slightly stronger painterly key/bounce. `shadow_bias
+    0.05 → 0.04` and `shadow_normal_bias 1.15 → 0.95` tighten ground
+    contact per THEME §13 (no more floating shoes on the Hero rig).
+    `directional_shadow_split_1 0.08 → 0.10` widens the near cascade so
+    character-feet shadows read sharply at default camera distance.
+  - **MoonFill:** `light_energy 0.58 → 0.50` and color
+    `(0.42, 0.62, 1.00) → (0.48, 0.62, 0.95)` — the cool fill backs off
+    so the warm sun owns ≥70% of the frame per §3.
+
+  **Why this serves both kids:**
+  - **Alden (9):** the warmer atmosphere reads as "safe afternoon" instead
+    of "neutral overcast" — Briarwood feels more like the friendly hub
+    his Exploration affinity wants to wander out FROM. Tighter feet-to-
+    ground shadows kill the half-floating look on the Hero rig that was
+    breaking the §13 ground-contact rule (he notices when characters
+    look "wrong on the ground"). No mechanical change: spawn, HP,
+    enemies, quest text — all byte-identical.
+  - **Owen (11):** the slightly stronger bloom + denser warm volumetric
+    fog adds visible depth at distance, which serves his Speed affinity
+    when sprinting toward the mountain ring — there's now a readable
+    haze gradient between Briarwood and Whisperwood that wasn't there
+    before. Rewards traversal without any new traversal mechanic.
+
+  **Compound, don't sprawl:** zero new resources, zero new nodes, zero
+  script changes — only existing Environment/Light properties retuned.
+  All values inside Godot 4 ranges and §3 palette bounds. The Art agent's
+  HDRI sky was the precondition; this run is the env-tuning that the
+  HDRI was implicitly asking for.
+
+  **Signal to watch:** Alden's average session dwell-time in Briarwood at
+  dusk (`World.time_of_day` ∈ [0.6, 0.85]) — if the warmer mid-tones
+  pull him to linger longer at the campfire/well, the tuning is right;
+  if dusk sessions truncate, exposure may need to ease back to 0.88.
