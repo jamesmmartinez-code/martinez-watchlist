@@ -1681,3 +1681,100 @@ This is also the first run where NPCs join the `npcs` group; future
 schedule, memory, and faction-aware readers can iterate that group
 to "see everyone in Briarwood right now" in O(n) without reaching
 into WorldBuilder's NPCS const.
+
+## Lorekeeper run — Codex seeded (Stag-Court's Courtesy)
+
+The `eldoria-godot/data/codex/` directory now exists. Its first entry
+is a discoverable fragment found in the Crystal Caves on first-visit
+after player_level 6: **The Stag-Court's Courtesy** — an in-world
+scribe's account of being offered a seat at the Antler Crown and
+declining. The fragment establishes that the Stag-Court's offer to
+mortals is a recurring formal courtesy (*ai-mhorren*), not a fey
+trap; that the cost of the seat is "one mortal year, remembered
+backwards"; and that the offer, once made, is set down rather than
+withdrawn. This is the mythic frame that makes Elder Maeve's
+private situation (`elder_maeve.md`, "A secret she keeps") canonical
+without forcing a resolution — the rule exists; Maeve's specific
+story stays where her bible keeps it.
+
+### Codex file format established by this run
+
+Codex entries live in `eldoria-godot/data/codex/{id}.md` with a
+YAML frontmatter block followed by markdown body:
+
+```yaml
+---
+id: stag_courts_courtesy
+title: The Stag-Court's Courtesy
+category: fragments               # fragments | bestiary | flora | history | song
+region: crystal_caves
+discover_trigger:
+  kind: enter_region
+  region: crystal_caves
+  first_visit_only: true
+gating:
+  player_level_gte: 6
+  world_flag_required: crystal_caves_unlocked
+narrator: in_world_scribe
+era: pre_sundering_late
+length: short                     # short | medium | long
+codex_unlock_announce: "A folded leaf..."
+icon_glyph: leaf-and-antler
+---
+```
+
+The body is the in-world text plus a "What this establishes / does
+NOT establish" section, cross-canon refs, and hooks for future
+runs — same shape downstream agents already expect from the
+`lore/npcs/*.md` files. Frontmatter validates as YAML; future
+Builder/UI run can parse it with the same loader they use for
+quest catalog metadata.
+
+### Old Faerie additions
+
+Three new words enter canon: ***vael-i-thirren*** ("we are
+remembering you"), ***ai-mhorren*** ("the gift that is the
+asking"), ***velhain-tor*** ("go warmly"). They sit alongside
+*thirre*, *ai-velin*, *kerrithen* (`world.md`), *vael-tor*,
+*thressa-mai* (`elder_maeve.md`), and *haethe*, *unnen*
+(`smith_edda.md`). Future runs may reference any of the eight
+without re-defining; the canonical home of each definition is
+the file it was first seeded in.
+
+### What downstream agents may now build on
+
+- **Builder/UI:** a Codex panel keyed by `category → entries[]` with
+  the YAML frontmatter as the parse target. Fragments first;
+  bestiary/flora/history/song reserved.
+- **Builder (region):** a loose flagstone in the Crystal Caves on
+  the third turn after the second crystal arch, triggering a
+  one-shot codex unlock + the announce-toast quoted in the
+  frontmatter.
+- **Audio:** a single Celtic flute note when the leaf drops, no
+  chord. The leaf falls to silence.
+- **Character (NPC):** Maeve's reaction to the codex being
+  presented to her is `silence + anim_nod_slow`. Not a spoken
+  line. Past 3 collected fragments, she gains one new dialogue
+  branch — *"You have been listening, traveler. Walk warmly."*
+  (the parting blessing in untranslated Common).
+- **Festival timing:** a Foxthaw-only line — *"Mind the
+  forest-line tonight, traveler."* — is now lore-eligible for
+  Maeve, Lyra, and Roan only. Not the others.
+
+### Closed loops; do not casually re-open
+
+- The Stag-Court is a **courtesy**, not a trap. The Antler-King is
+  glad when mortals refuse the seat. Future writers must not
+  flip this softness for a cheap betrayal beat. If a darker fey
+  power is needed, write it under the older-than-the-Sundering
+  layer (`world.md`: *"There are older powers under these"*) and
+  leave the Stag-Court as it is.
+- The fragment's scribe is not named. She remains a *thressa-mai*
+  in the village's memory. Don't name her cheaply.
+- The Antler-King is the speaking voice of the Court at one
+  moment of one offering. Whether there is one King or many, a
+  Queen, a rotation — open question. Future Lorekeeper runs may
+  shape it; please leave it open until then.
+- Maeve does not speak the Stag-Court's offer aloud. Ever. A
+  Builder run wiring a codex-presented branch on her dialogue
+  tree must use silence + nod, not text.
