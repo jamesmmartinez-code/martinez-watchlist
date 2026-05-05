@@ -251,12 +251,12 @@ const AFFIX_PREFIXES = {
 	"Ancient":   {"weight":2,  "rarity":"legendary","damage_pct":0.80, "armor_pct":0.40, "hp_bonus":60, "crit_bonus":0.10},
 }
 const AFFIX_SUFFIXES = {
-	"of Frost":       {"weight":10, "icon_overlay":"❄", "tint":Color(0.55,0.85,1.00),"crit_bonus":0.05},
-	"of Embers":      {"weight":10, "icon_overlay":"🔥","tint":Color(1.00,0.55,0.20),"damage_pct":0.15},
-	"of the Bear":    {"weight":10, "icon_overlay":"🐻","tint":Color(0.65,0.45,0.25),"hp_bonus":30},
-	"of Swiftness":   {"weight":8,  "icon_overlay":"💨","tint":Color(0.65,0.95,0.65),"crit_bonus":0.10},
-	"of the Dragon":  {"weight":3,  "icon_overlay":"🐉","tint":Color(1.00,0.85,0.20),"damage_pct":0.40, "hp_bonus":40},
-	"of Stars":       {"weight":4,  "icon_overlay":"✨","tint":Color(0.85,0.85,1.00),"mp_bonus":25, "crit_bonus":0.05},
+	"of Frost":       {"weight":10, "icon_overlay":"❄", "affix_icon_path":"res://assets/icons/affix/frost.png",     "tint":Color(0.55,0.85,1.00),"crit_bonus":0.05},
+	"of Embers":      {"weight":10, "icon_overlay":"🔥","affix_icon_path":"res://assets/icons/affix/embers.png",    "tint":Color(1.00,0.55,0.20),"damage_pct":0.15},
+	"of the Bear":    {"weight":10, "icon_overlay":"🐻","affix_icon_path":"res://assets/icons/affix/bear.png",      "tint":Color(0.65,0.45,0.25),"hp_bonus":30},
+	"of Swiftness":   {"weight":8,  "icon_overlay":"💨","affix_icon_path":"res://assets/icons/affix/swiftness.png", "tint":Color(0.65,0.95,0.65),"crit_bonus":0.10},
+	"of the Dragon":  {"weight":3,  "icon_overlay":"🐉","affix_icon_path":"res://assets/icons/affix/dragon.png",    "tint":Color(1.00,0.85,0.20),"damage_pct":0.40, "hp_bonus":40},
+	"of Stars":       {"weight":4,  "icon_overlay":"✨","affix_icon_path":"res://assets/icons/affix/stars.png",     "tint":Color(0.85,0.85,1.00),"mp_bonus":25, "crit_bonus":0.05},
 }
 
 static func _pick_weighted(table: Dictionary, rng: RandomNumberGenerator) -> String:
