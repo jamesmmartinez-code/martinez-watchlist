@@ -554,3 +554,117 @@ one new tier slot, and the consequence resolver loop is fully closed.
 Adjacent option: faction pressure → spawn density. Lower payoff than
 dialogue (player feels it less directly than a line of speech) but lower
 risk and would close the same unread-output gap.
+
+## 2026-05-04 (run 4) — Faction-pressure dialogue tier (closes the consequence-resolver loop)
+
+### What
+Added a THIRD warmed dialogue tier in `NPC.gd`, slotted between the world-flag
+warm tier (run-3 follow-up) and the time-of-day variants. NPCs can now react
+to the *shape* of the world by reading `World.faction_pressure(id)` directly —
+no flag intermediary required. Maeve picks up 4 new lines on the new tier,
+gated by `whisperwood_goblins` pressure dropping below 0.9.
+
+### Why (Rule 1 — compounds, doesn't sprawl)
+ONE new primitive (faction-pressure threshold check) wired into THREE existing
+systems:
+1. **NPC.gd's tier walker** — same `variants == dialogue_variants` short-circuit
+   pattern that runs 3 and 3-follow-up established. Pure extension, zero
+   re-architecture.
+2. **`World.faction_pressure(id)` accessor** — declared in run 2, written by 3
+   quests, READ BY NOTHING UNTIL NOW. This run gives it its first reader.
+3. **`WorldBuilder._make_npc()` plumbing** — same `data.get("warm_*", default)`
+   copy pattern, same shape onto the NPC node.
+
+This satisfies Rule 5 (endlessness from memory + reaction): the world contains
+a fact ("the Whisperwood is forgetting the goblins") that surfaces through
+dialogue without any per-NPC bookkeeping. Faction pressure was a write-only
+store for two runs; now it speaks.
+
+### Authoring lesson learned during VERIFY phase
+First seed targeted Maeve with threshold 0.7. Caught during verification: the
+faction tier only fires when warm_flag is NOT set, but cleansing (the quest
+that sets Maeve's `first_quest_done` flag) is also the quest that reduces
+goblin pressure by -0.2. With cleansing done, tier-1 wins; without cleansing,
+the only goblin reducer is `ears_for_mara` (-0.15) bringing pressure to 0.85,
+which never crosses 0.7. Threshold raised to 0.9, and the tier now fires on
+the "ears-before-cleansing" path — a real emergent moment where Maeve notices
+goblin retreat caused by Mara's bounty before the player has spoken to Maeve
+about her own quest. This authoring trap (faction reduction and warm_flag
+issuance bound to the same quest) is documented in SYSTEM_REGISTRY.md so
+future runs avoid it.
+
+### Files changed
+- `eldoria-godot/scripts/NPC.gd` — added `warmed_faction_id: String`,
+  `warmed_faction_below: float`, `warmed_faction_dialogue_variants:
+  PackedStringArray` exports; in `_on_interact()`, inserted the faction-tier
+  check between the world-flag block and the time-of-day variant render,
+  guarded by `variants == dialogue_variants` so tiers 1 and 2 always win when
+  they fire. Runtime guard on `has_method("faction_pressure")` keeps older
+  saves / older `World` autoloads from crashing.
+- `eldoria-godot/scripts/WorldBuilder.gd` — Maeve's `NPCS` entry gains
+  `warm_faction_id`, `warm_faction_below`, and 4 `warm_faction_lines`.
+  `_make_npc()` copies the new fields onto the NPC node (mirrors the
+  integrator's pattern-A and the run-3 world-flag plumbing).
+- `WORLD_STATE.md` — Faction State table now shows the consumer; Active Hooks
+  promotes goblin spawn density (now the next adjacent compound).
+- `SYSTEM_REGISTRY.md` — NPC Schema rewritten to document the full 4-tier
+  precedence (added Tier 3: faction-pressure). Added an "Authoring traps"
+  callout warning against pairing a faction reducer with the same quest that
+  issues the NPC's warm_flag.
+- `PLAYER_MODEL.md` — polish note: faction tier serves Alden by making the
+  village respond to the *aggregate* of his work, not just the individual
+  quests he completed; serves Owen by giving the consequence ladder one more
+  visible rung to climb.
+- `CHANGES.md` — this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `factions[id].pressure` finally
+        consumes a store written by 3 quests since run 2 with no readers.
+        WORLD_STATE.md updated to reflect the new consumer.
+- (ii)  Queryable schema: `NPC.warmed_faction_id: String`,
+        `NPC.warmed_faction_below: float`,
+        `NPC.warmed_faction_dialogue_variants: PackedStringArray` —
+        documented in SYSTEM_REGISTRY.md "NPC Schema" alongside tiers 1+2,
+        with full 4-tier precedence rules and the authoring-traps callout.
+- (iii) Player-facing feedback: 4 new dialogue strings (Maeve × 4 buckets)
+        surfaced through the existing `World.show_dialogue` panel; total
+        warmed strings in production = 20 (16 prior + this run's 4).
+- (iv)  Evaluation: parens/quotes balance check passes for both touched
+        files; runtime `has_method("faction_pressure")` guard so an older
+        World autoload still falls through cleanly to tier 4; the
+        `variants == dialogue_variants` short-circuit guarantees tiers 1 + 2
+        are never demoted by tier 3; explicit type annotation
+        `var fp: float = float(...)` keeps Godot 4.6 strict mode happy.
+- (v)   Future hooks (≥ 2):
+        1. **Goblin spawn density** — the most direct compound: enemy spawns
+           in Whisperwood camps could read `World.faction_pressure("whisperwood
+           _goblins")` and scale count / respawn-time. Single read, big
+           behavior delta. Now top-priority hook in WORLD_STATE.md.
+        2. Roan (Stablemaster) → `dire_wolves` faction tier — schema is in
+           place, only WorldBuilder edits needed. Wolves spook horses;
+           pressure < 0.5 (after one pelt quest) and Roan speaks.
+        3. The 4 still-faction-quiet NPCs (Edda, Bram, Roan, Hala) get
+           reactive dialogue automatically the moment they get faction lines
+           — no NPC.gd or WorldBuilder structural changes required.
+        4. Difficulty knob (PLAYER_MODEL adaptive proposal): `Enemy.gd
+           attack_cooldown` could `lerp(1.45, 1.05, 1.0 - faction_pressure)`
+           — calm-faction enemies hit harder/faster, stressed-faction enemies
+           recover more — turning the same scalar into both narrative and
+           pacing.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Goblin spawn density driven by `faction_pressure("whisperwood_goblins")`.**
+This is the matching write→read pair on the spawn side: dialogue speaks the
+faction state, spawning *enacts* it. Single read in the goblin spawn loop
+(WorldBuilder spawns or World's enemy roster), scale count / respawn-time
+inversely with pressure. Every quest the player completes against goblins
+will then make the wood quieter to walk through AND Maeve will narrate it.
+That's the consequence-resolver loop closed on both ends.
+
+Adjacent option: Roan + dire_wolves dialogue (smallest-possible follow-up,
+zero new code paths, only WorldBuilder edits). Lower payoff (one NPC, one
+faction) but useful as a smoke-test that the 4-tier system handles the
+"NPC with no warm_flag at all" path cleanly.

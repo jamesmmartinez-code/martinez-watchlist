@@ -24,6 +24,16 @@ class_name NPC
 # no other readers until now.
 @export var warmed_world_flag: String = ""
 @export var warmed_world_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 4): a THIRD warmed tier keyed on a *faction*'s pressure scalar
+# rather than a flag. Lower priority than `warmed_world_flag` — used only when
+# neither flag tier fires. Lets villagers react to the SHAPE of the world ("the
+# Whisperwood is forgetting the goblins") at any pressure level the author
+# chooses. Closes the consequence-resolver loop: faction_pressure() is written
+# by 3 quests since run 2 and had ZERO readers until now. Reuses pattern A's
+# mood-bucket array shape; consumes `World.faction_pressure(id)`.
+@export var warmed_faction_id: String = ""
+@export var warmed_faction_below: float = 1.0
+@export var warmed_faction_dialogue_variants: PackedStringArray = PackedStringArray()
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
@@ -78,6 +88,15 @@ func _on_interact() -> void:
 	if variants == dialogue_variants and warmed_world_flag != "" and not warmed_world_dialogue_variants.is_empty() and w and w.has_method("has_world_flag"):
 		if w.has_world_flag(warmed_world_flag):
 			variants = warmed_world_dialogue_variants
+	# COMPOUND (run 4): only consult the faction-pressure tier if neither flag
+	# tier already promoted variants. Pressure thresholds are author-set, so a
+	# threshold of 1.0 always fires (use 0.7 / 0.5 / 0.3 for "lightly safer" /
+	# "noticeably safer" / "definitively safer"). Runtime guard on
+	# `has_method("faction_pressure")` keeps older World autoloads safe.
+	if variants == dialogue_variants and warmed_faction_id != "" and not warmed_faction_dialogue_variants.is_empty() and w and w.has_method("faction_pressure"):
+		var fp: float = float(w.faction_pressure(warmed_faction_id))
+		if fp < warmed_faction_below:
+			variants = warmed_faction_dialogue_variants
 	if not variants.is_empty():
 		var tod: float = 11.0
 		if w and ("time_of_day" in w):

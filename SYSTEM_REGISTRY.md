@@ -91,7 +91,7 @@ Defined in `WorldBuilder.NPCS`. Fields:
   (morning / midday / evening / night).
 
 ✅ **Shipped 2026-05-04 (run 3 — integrator + follow-up): Reactive dialogue.**
-NPC.gd consults World on each interaction and walks 3 tiers, picking the
+NPC.gd consults World on each interaction and walks 4 tiers, picking the
 first hit:
 
 1. `warm_flag: String` + `warm_lines: Array[String]` (4 buckets).
@@ -102,22 +102,51 @@ first hit:
    tier 1 didn't already match. World warmth: "you helped our cause."
    Shipped by run-3 follow-up. Reads `World.world_flags`, which had no
    other consumer until now.
-3. `lines: Array[String]` (the mood-bucketed default).
-4. `line: String` (single fallback).
+3. `warm_faction_id: String` + `warm_faction_below: float` +
+   `warm_faction_lines: Array[String]` (4 buckets).
+   Fires when `World.faction_pressure(warm_faction_id) < warm_faction_below`
+   AND neither flag tier already matched. Faction-shape warmth: "the world
+   has changed in a measurable way." Shipped by run 4. Reads
+   `World.faction_pressure()`, which had no other consumer until now.
+4. `lines: Array[String]` (the mood-bucketed default).
+5. `line: String` (single fallback).
 
 `_make_npc()` copies these fields onto the NPC node:
 - `npc.warmed_flag` ← `data.warm_flag`
 - `npc.warmed_dialogue_variants` ← `data.warm_lines`
 - `npc.warmed_world_flag` ← `data.warm_world_flag`
 - `npc.warmed_world_dialogue_variants` ← `data.warm_world_lines`
+- `npc.warmed_faction_id` ← `data.warm_faction_id`
+- `npc.warmed_faction_below` ← `data.warm_faction_below` (default 1.0)
+- `npc.warmed_faction_dialogue_variants` ← `data.warm_faction_lines`
 
 Authoring rules:
 - `warm_flag` MUST match a flag actually written by some quest's
   `consequence` — see WORLD_STATE.md "NPC Memory" table for the live set.
 - `warm_world_flag` MUST match a key in `World.world_flags` — see
   WORLD_STATE.md "World Flags (Active)".
+- `warm_faction_id` MUST match a key in `World.factions` — see
+  WORLD_STATE.md "Faction State". `warm_faction_below` is a strict
+  less-than threshold against `pressure` (range [0.0, 1.0]); use 0.9 / 0.7 /
+  0.5 / 0.3 for "any reduction" / "noticeably safer" / "halfway tamed" /
+  "definitively tamed".
 - Warmed arrays SHOULD have exactly 4 entries (one per time bucket); a
   shorter array clamps to its last entry via `min(bucket, size-1)`.
+
+**Authoring traps (run-4 lesson learned):**
+- ⚠ Do NOT pair a faction reducer with the same quest that issues the NPC's
+  `warm_flag` *if the NPC's faction tier targets that same faction*. The
+  warm_flag tier always wins once set, so the faction tier can only fire
+  before the warm_flag is earned — i.e. before the only quest that would
+  reduce the faction. Result: unreachable dialogue. Fix: target a DIFFERENT
+  faction with the faction tier, OR pick a threshold reachable by a
+  different quest's reducer. Maeve targets `whisperwood_goblins` because
+  `ears_for_mara` (-0.15) reduces it without setting Maeve's flag, so the
+  tier is reachable on the "ears-before-cleansing" path.
+- ⚠ NPCs with NO `warm_flag` and NO `warm_world_flag` will fall straight
+  through tiers 1+2 to the faction tier. This is intentional — Edda, Bram,
+  Roan, Hala are pre-wired for the faction tier the moment they get
+  `warm_faction_lines`. No structural code change required.
 
 ## Time Schema
 

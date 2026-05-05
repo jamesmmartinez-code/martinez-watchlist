@@ -120,6 +120,21 @@ const NPCS = [
 		"Goblins still scratch our edges, but with you about, they keep their distance.",
 		"My old bones thank you — I sleep deeper since you cleared the wood.",
 		"Walk safe — though even the wolves walk softer since your last errand.",
+	 ],
+	 # COMPOUND (run 4): faction-pressure tier. Maeve gave the cleansing quest
+	 # and feels the Whisperwood as a fellow inhabitant. The faction tier only
+	 # fires when warm_flag (first_quest_done) is NOT set — i.e. the player
+	 # tackled Mara's bounty BEFORE Maeve's cleansing. In that path, ears for
+	 # Mara has already dropped goblin pressure to 0.85 and Maeve notices
+	 # (threshold 0.9 → triggers on any goblin-reduction quest pre-cleansing).
+	 # Once cleansing is done, warm_flag tier wins and personal warmth narrates.
+	 "warm_faction_id":"whisperwood_goblins",
+	 "warm_faction_below":0.9,
+	 "warm_faction_lines":[
+		"The Whisperwood breathes easier this dawn. Even the crows fly bolder.",
+		"You hear that midday hush? That's a forest with fewer wicked things in it.",
+		"The light slants through the trees and not a goblin lantern in sight — beautiful.",
+		"Owls again at last — they only sing when the wood is theirs again. Sleep well.",
 	 ]},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -967,6 +982,13 @@ func _make_npc(data: Dictionary) -> void:
 	# player hasn't personally earned a memory yet.
 	npc.warmed_world_flag = String(data.get("warm_world_flag", ""))
 	npc.warmed_world_dialogue_variants = PackedStringArray(data.get("warm_world_lines", []))
+	# COMPOUND (run 4): wire the faction-pressure tier so an NPC can sense the
+	# SHAPE of the world (e.g. Maeve → whisperwood_goblins pressure). Closes
+	# the consequence-resolver loop: faction_pressure() is written by 3 quests
+	# since run 2 and now has its first reader.
+	npc.warmed_faction_id = String(data.get("warm_faction_id", ""))
+	npc.warmed_faction_below = float(data.get("warm_faction_below", 1.0))
+	npc.warmed_faction_dialogue_variants = PackedStringArray(data.get("warm_faction_lines", []))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()

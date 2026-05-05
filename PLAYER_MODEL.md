@@ -124,9 +124,23 @@ loops feel like the world relents — both child-friendly outcomes per Rule 6.
   separate from any one NPC liking him. **Owen**'s playstyle is unaffected
   (still one-button interact, no friction added).
 
-- **2026-05-04** — Polished **combat — boss feel** (Goblin Warlord readability + heft). Pure number tweaks tagged `# REFINE: combat — boss feel`; no new functions, no new patterns.
-  - **Telegraph readability** (`Boss.gd::_show_telegraph_ring`, `::_show_telegraph_line`): albedo alpha `0.55 → 0.72` and emission_energy_multiplier `1.6 → 2.6`. The slam ring and charge lane now pop hard against the dappled forest canopy. This is the single biggest knob for **Alden**'s combat tolerance — the rule "telegraphs that linger" applies to brightness as well as duration.
-  - **Telegraph windups** (`_attack_slam`: `0.7 → 0.9`, `_attack_charge`: `0.6 → 0.78`, both for the visual *and* the `await create_timer().timeout`): roughly +0.2s and +0.18s respectively. Big enough that a 9-year-old can react, small enough that **Owen** still has to actually move out of the way. Slam damage (×1.4) and charge speed (`18.0`) and charge-hit damage (×1.6) are *unchanged* — Owen's "the boss is dangerous" feel is preserved.
-  - **Aura presence** (`Boss.gd::_ready` BossAura `OmniLight3D`): `light_energy 2.5 → 2.9`, `omni_range 14.0 → 15.5`. The Warlord glows more cinematically as the player approaches; helps the boss read as a *boss* even from outside the 30m intro radius.
-  - **Boss damage numbers** (`Boss.gd::_spawn_damage_number`): `font_size 44 → 50`, outline `6 → 7`, modulate `(1.0, 0.65, 0.30) → (1.0, 0.74, 0.32)`. Brighter / chunkier hits per Owen's mastery-feedback affinity. Note: regular `Enemy.gd` damage numbers were already polished in run 3 (font 38/56→44/62) — this brings the boss numbers up another notch above the mob baseline so Owen can feel that boss hits matter more.
-  - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, telegraph windup is the first knob to wire — `lerp(0.78, 1.05, 1.0 - pressure)` on charge and `lerp(0.9, 1.20, 1.0 - pressure)` on slam. A stressed player gets even more reaction time; a calm player faces tighter telegraphs. Combine with `World.faction_pressure(id)` per the formula already noted above. Telegraph alpha/emission stay constant — readability shouldn't be a difficulty axis, only timing.
+
+- **2026-05-04 (run 4)** — Layered a faction-pressure warmed dialogue tier
+  (Tier 3) on top of the integrator's pattern-A NPC-flag tier and the
+  run-3-follow-up world-flag tier. Maeve now picks up 4 lines that fire
+  when `whisperwood_goblins` pressure drops below 0.9 — reachable on the
+  "ears-before-cleansing" path where Mara's bounty makes the wood notably
+  safer before Maeve has any personal reason to warm to the player. Serves
+  **Alden** (frog kid, high Companions affinity) by making the village
+  respond to the *aggregate* of his work — not just to specific quest
+  completions — so the world feels like it has a memory of his choices
+  even when he hasn't talked to anyone in particular yet. Serves **Owen**
+  (race kid, mastery affinity) by adding one more visible rung to the
+  consequence ladder he climbs: "I did the bounty → the wood feels different
+  → the elder narrates it back to me." No friction added (one E press still
+  resolves to a quest panel). **Adaptive proposal for the next run:** the
+  same `faction_pressure(id)` scalar should drive `Enemy.gd attack_cooldown`
+  via `lerp(1.45, 1.05, 1.0 - pressure)` — calm-faction enemies recover
+  faster (Owen gets the harder fight he wants), stressed-faction enemies
+  give more breathing room (Alden gets the recovery valve). One scalar,
+  two outputs, both player-models served.
