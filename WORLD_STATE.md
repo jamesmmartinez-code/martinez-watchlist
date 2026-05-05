@@ -1803,3 +1803,130 @@ the file it was first seeded in.
 - Maeve does not speak the Stag-Court's offer aloud. Ever. A
   Builder run wiring a codex-presented branch on her dialogue
   tree must use silence + nod, not text.
+
+
+## Lore Run — 2026-05-05 (The Steppe-Rider's Refusal — codex pair-fragment)
+
+### Artifact shipped
+
+- `eldoria-godot/data/codex/steppe_riders_refusal.md` — the second
+  Crystal-Caves fragment, narratively pressed beneath the Briarwood
+  scribe's leaf from the first fragment. A Steppe-rider's hand,
+  block-cut and runic, pinned with a thorn of cold iron. The two
+  fragments now form a canonical **pair** ("what the cave keeps"),
+  and the codex system is asked (gently) to support a
+  `prerequisite_codex` field so the second leaf gates on the first.
+
+### What is now canon (load-bearing)
+
+- **Stone-Tongue is writable.** Three Stone-Tongue words enter canon:
+  *korthain* ("I refuse, but warmly," with hand-on-ground gesture),
+  *thrunn* ("the Stone-oath kept in writing"), *korr* ("what you owe
+  to weather"). The cultural rule is now explicit: Stone-Tongue
+  **binds**, where Old Faerie **describes.** Stone-Tongue lexicon
+  ceiling for now is **ten** words; add sparingly.
+- **The Stag-Court's offer is universal.** Not a Briarwood-only
+  custom. Any mortal who walks close enough to the forest-line on
+  the right Foxthaw night may receive *ai-mhorren*; the cost is the
+  same (one mortal year, remembered backwards), the wording is the
+  same.
+- **The Court's authority has a humility-shaped limit.** The Court
+  does not keep High Steppe names; the cairns do. The Antler-King
+  acknowledges this in the Old Faerie compound *drevenn-i-haern*
+  ("the watching-stones already hold her"). The Court declines to
+  claim what is not theirs to claim. Future Court-vs-anything writing
+  must remember this.
+- **The Crystal Caves are a *thirre* held jointly** by Vellum and the
+  Court. *"The cave does not belong to the Court, but the Court
+  visits."* This locks the Caves as the canonical fragment-bearing
+  region; future codex pages of category `fragments` should be
+  preferentially seeded here.
+- **A Briarwood-Steppe linguistic bridge:** *velhain-tor* (Briarwood,
+  warm-hearth-return) and *korr* (Steppe, weather-debt) pair as
+  parallel parting-words. Any future NPC who knows both has crossed
+  cultures. Roan canonically qualifies; Maeve silently might.
+
+### Old Faerie + Stone-Tongue glossary — additions
+
+- ***korthain*** *(KOR-thayn)* — Stone-Tongue. "I refuse, but
+  warmly." With hand-on-ground gesture.
+- ***thrunn*** *(THRUHN)* — Stone-Tongue. "The Stone-oath kept in
+  writing." Bound twice — in bones and in writing — and still
+  binding if the writing is destroyed.
+- ***korr*** *(KOR)* — Stone-Tongue. "What you owe to weather." Used
+  as benediction and private acknowledgement.
+- ***drevenn-i-haern*** *(DREV-en ee HAYRN)* — Old Faerie compound,
+  Court phrasing. "The watching-stones already hold her." Said by
+  the Court of a Steppe death, in respectful deference to cairn-keeping.
+  Briarwood scholars may use it for Steppe deaths; not for Briarwood deaths.
+
+Old Faerie lexicon now: 19 words. Stone-Tongue lexicon now: 3 words.
+
+### Cross-references seeded this run
+
+- The fragment quotes *vael-i-thirren, ai-mhorren, velhain-tor* (first
+  fragment) and *thirre, kerritha-ed* (`world.md`,
+  `stablemaster_roan.md`), all in their canonical senses.
+- **Stablemaster Roan**: gets one new optional Foxthaw-evening
+  dialogue line — *"I have read what the cave keeps, traveler.
+  Korr."* — gated on both fragments read AND month == Foxthaw.
+  Builder may wire when convenient.
+- **Elder Maeve**: silent reaction to the Stag-Court codex extends
+  when both fragments are presented in sequence — silence, slow nod,
+  and one inline gesture (palm-down on table, *korthain* without
+  the saying). Builder: gate on `anim_hand_lay_flat` existing or
+  `anim_palm_down_table`; ship slow-nod alone if no animation
+  available.
+- **The Foxthaw warning line** ("Mind the forest-line tonight,
+  traveler"), queued for Maeve/Lyra/Roan in run 9, gains a Roan-only
+  Stone-Tongue variant: *"Mind the forest-line tonight. Korr."*
+  Gate identically.
+
+### Withholding ledger (do-not-surface canon)
+
+- The Antler-King is not named, and may or may not be a single
+  individual across centuries. Both fragments are silent on this.
+  Please leave it silent.
+- The Steppe-rider in this fragment has no name and never will.
+  Stone-Tongue does not sign. Future writers may quote and refer
+  but must not name.
+- The kin the Steppe-rider came south to find has no name. She is
+  explicitly **not Cailen** (different gender, different role —
+  she *won* the Stone Crown). She is unnamed by the rider's
+  *thrunn*; the cave keeps her name with his.
+- What lies beyond the forest-line is still withheld. The Court is
+  encountered *at* the line, not past it.
+- The Stone-Tongue glossary is capped at ten words for now.
+  Builder/UI must not surface a "learn Stone-Tongue" mechanic.
+
+### Hooks queued for future runs
+
+- A **third fragment** is structurally allowed but should not be
+  written reflexively. If written, the hand should be from a
+  third direction not yet covered (a southern scribe? a bard of
+  Erris?). It must add a third refusal *or* a fourth shape; do not
+  resolve either of the first two. *Withhold "yes" canon.*
+- **Cailen's Horseshoe** quest, if ever written, now has a clear
+  destination: a *thirre*-stone on the **High Steppe**, not anywhere
+  in Whisperwood. The Court has already declined that name.
+- **Audio**: a single low Steppe drum-beat paired with the first
+  fragment's flute note, played quietly when a player who has read
+  both fragments re-enters the Caves. Audio agent owns.
+- **UI**: when both fragments are unlocked, render them as a bound
+  pair in the Codex panel ("What the cave keeps").
+- **Renown**: a "Caves-keeper" sub-track may surface; reading both
+  fragments is the natural first tick. Label: *"You have read what
+  the cave keeps."*
+
+### Top-priority next (refresh)
+
+- Item flavor text in `data/items_flavor.json` (priority 4) — still
+  not started. Strong candidate for a future Lore run: a small
+  curated set of named items (Cailen's Horseshoe iron, Edda's
+  *haethe*-blade, Lyra's *thalen-ai* salve, the small Steppe-iron
+  nail Roan keeps) with hand-painted prose. Stays in canon by
+  pulling from existing NPC bibles.
+- Faction politics (priority 6) — still not started. Iron Crown's
+  decision-not-yet-made about Briarwood is the load-bearing seed.
+- A **third fragment** is *allowed* but should be deferred at least
+  one Lore run; let the pair sit.
