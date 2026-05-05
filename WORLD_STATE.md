@@ -1612,3 +1612,22 @@ copies it verbatim.
 - `_last_achievement_unlocked` is ephemeral session state — it does not
   persist across save/load. The pulse is a "this just happened, look at
   it" affordance, not a "this is special forever" affordance.
+
+
+## Briarwood Prop Wire-Up — run 14 (2026-05-05)
+
+Briarwood Village now reads as inhabited at every scale. The four landmark
+props that previously rendered as procedural primitive stacks (windmill,
+well, lantern, campfire) instance hand-painted Sketchfab CC-BY GLBs from
+`assets/models/props/` when those load successfully — falling back cleanly
+to the legacy procedural build when not. Three new scatter passes add
+visual layers the world didn't have at all: **70 ferns** under the
+Whisperwood canopy (group `fern_scatter`), **~14 toadstool fairy rings** of
+3-6 mushrooms each (group `mushroom_clusters`), and **7 fixed wooden barrels**
+propped against existing inn / smith / stable / well walls (group
+`barrel_scatter`). Every prop attach goes through a single integration seam
+(`_try_attach_prop_glb`) that tags the holder with `prop_glb_key` meta and
+queues a deferred AABB-based ground settle (THEME §13 contract from run 13).
+The §12 motion contracts (lantern flicker, blade rotation, campfire flicker)
+are attached unconditionally regardless of which body rendered. Visible
+canon: **Briarwood is now propped**, not just blocked-out.

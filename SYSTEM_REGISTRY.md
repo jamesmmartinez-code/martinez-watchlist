@@ -1069,3 +1069,60 @@ PRODUCES:
 - `KEY_J` binding in Player.gd — first new keybinding since the M-mount
   toggle. Future panels (M for map, K for skill tree, etc.) follow the
   same `get_tree().call_group("world", ...)` shape.
+
+
+## Prop GLB Schema — run 14 (2026-05-05)
+
+### Constants (top of `WorldBuilder.gd`)
+- `PROP_GLB_PATHS: Dictionary` — keyed by stable string ID, value is
+  `res://...glb` path. 7 entries: `windmill`, `stone_well`, `campfire`,
+  `lantern`, `wooden_barrel`, `fern`, `mushroom_red`. Adding a new prop is a
+  one-row append.
+- `PROP_GLB_SCALES: Dictionary` — same keys, value is `Vector3` canonical
+  scale. Caller-applied scale jitter (typically `±15%`) layers on top.
+
+### Integration seam
+```
+func _try_attach_prop_glb(parent: Node3D, key: String) -> bool
+```
+Returns `true` if the GLB at `PROP_GLB_PATHS[key]` loaded, instantiated, and
+was added as a child of `parent` with the canonical scale. On `true`,
+the holder is tagged via `parent.set_meta("prop_glb_key", key)` and a
+deferred `_settle_to_ground(parent)` is queued (THEME §13). On `false`,
+nothing is mutated and the caller falls back to its procedural primitive
+build path. Every prop callsite in run 14 (`_build_windmill`, `_make_lantern`,
+`_build_well`, `_build_campfire`, `_scatter_ferns`,
+`_scatter_mushroom_clusters`, `_scatter_barrels`) goes through this seam.
+
+### New groups (typed scene hooks for future passes)
+| Group | Members | Future-run hooks |
+|-------|---------|------------------|
+| `wells` | Stone well at (0, 0, 6) | Audio rope-creak SFX, splash particles |
+| `fern_scatter` | 70 fern.glb instances under Whisperwood canopy | Audio rustle-on-pass, foragable herb |
+| `mushroom_clusters` | ~14 fairy rings of 3-6 mushroom_red.glb instances | Lore harvestable, §12 cap-bob anim |
+| `barrel_scatter` | 7 fixed wooden_barrel.glb instances (inn/smith/stable/well) | Breakable-barrel loot, crack SFX |
+
+### Meta-tag schema
+Every holder spawned via `_try_attach_prop_glb` carries
+`get_meta("prop_glb_key")` returning its `PROP_GLB_PATHS` key. Future passes
+can address specific prop kinds without parsing scene paths:
+
+```
+for h in get_tree().get_nodes_in_group("barrel_scatter"):
+    if h.get_meta("prop_glb_key", "") == "wooden_barrel":
+        # attach breakable hit-box, etc.
+```
+
+### Fallback contract
+- GLB missing on disk → `ResourceLoader.exists()` returns false →
+  `_load_glb_safe` returns null → `_try_attach_prop_glb` returns false →
+  caller's `if not glb_attached:` branch builds the procedural primitive.
+- World is NEVER left with an empty prop slot for the four pre-existing
+  builders (windmill, well, lantern, campfire). The three new scatters
+  (ferns, mushrooms, barrels) bail-without-spawning if their GLB is
+  missing — these are additive content, not core village geometry.
+
+### Compounds with run 13 (Whisperwood Asset Wire-Up)
+- Reuses `_load_glb_safe`, `_settle_to_ground`, `_measure_aabb` (run-13 helpers).
+- Same idempotency / null-safety contract.
+- Same THEME §13 ground-settle deferred call pattern.
