@@ -44,8 +44,20 @@ class_name Minimap
 const SIZE_PX: float = 178.0
 const FRAME_PX: float = 6.0
 const DEFAULT_RADIUS_M: float = 30.0
-const PING_LIFETIME: float = 1.4
-const ENEMY_FLASH_RANGE: float = 8.0
+# REFINE: visual — minimap polish run. THEME §3 (palette) + §4 (silhouette-distinct
+# at 30m, applied to minimap pins too) + §12 (motion that doesn't feel mechanical).
+# Compounds on UITheme.gd §3-conformance run, NPC.gd InteractArea radius lift (2.7m),
+# Pet.gd bark_radius lift (9.0m), Chest.gd burst-fade slowdown convention.
+# REFINE: visual — PING_LIFETIME 1.4 → 1.6s. Longer expand-and-fade tail so the
+# quest-hint ring reads as "look this way" not a flash. Matches the Chest.gd
+# burst-fade slowdown convention from the prior visual run.
+const PING_LIFETIME: float = 1.6
+# REFINE: visual — ENEMY_FLASH_RANGE 8.0 → 9.0m. Cross-system consistency: matches
+# Pet.gd bark_radius (9.0) and the NPC.gd run-12 InteractArea radius lift (2.7m
+# bubble + sloped centering). 9m is the "this matters" proximity perimeter for
+# UI cues across the whole project. Alden gets a half-step earlier pre-aggro
+# warning; Owen still reads the threat in time for combat reorient.
+const ENEMY_FLASH_RANGE: float = 9.0
 const PIN_RADIUS_PX: float = 3.4
 
 const COL_PARCHMENT: Color = Color(0.852, 0.788, 0.608)
@@ -53,14 +65,25 @@ const COL_PARCHMENT_DARK: Color = Color(0.62, 0.55, 0.40)
 const COL_FRAME_ORANGE: Color = Color(1.000, 0.502, 0.000)
 const COL_FRAME_BRONZE: Color = Color(0.690, 0.455, 0.165)
 const COL_INK: Color = Color(0.055, 0.039, 0.055, 0.9)
-const COL_PLAYER: Color = Color(1.000, 0.847, 0.420)
+# REFINE: visual — COL_PLAYER (1.000, 0.847, 0.420) → (1.000, 0.760, 0.300).
+# Was identical to COL_NPC (#FFD86B sunset-gold) — player and villager pins were
+# pixel-indistinguishable. New tone sits between THEME §3 burnt-orange (#FF8000)
+# and sunset-gold (#FFD86B) — call it ember-gold (~#FFC24D). Still on §3 palette
+# (the §3 transition band that Chest.gd glow_color and ember NPC accents already
+# inhabit). Player now reads silhouette-distinct from NPC dots — THEME §4
+# "recognize at 30m" applied to the minimap.
+const COL_PLAYER: Color = Color(1.000, 0.760, 0.300)
 const COL_NPC: Color = Color(1.000, 0.847, 0.420)
 const COL_ENEMY: Color = Color(0.627, 0.125, 0.125)
 const COL_BOSS: Color = Color(0.486, 0.247, 0.690)
 const COL_CHEST: Color = Color(0.690, 0.455, 0.165)
 const COL_CRYSTAL: Color = Color(0.396, 0.875, 0.898)
 const COL_FIRE: Color = Color(1.000, 0.604, 0.247)
-const COL_GRID: Color = Color(0.40, 0.34, 0.22, 0.45)
+# REFINE: visual — COL_GRID alpha 0.45 → 0.36. Concentric range guides should
+# read as parchment ink suggestion, not active gridlines. Compounds on UITheme.gd
+# §3-conformance run that pulled UI elements away from flat-grey/black mechanical
+# affect; minimap grid lines were tugging at the eye against the parchment disc.
+const COL_GRID: Color = Color(0.40, 0.34, 0.22, 0.36)
 
 const LANDMARKS: Array = [
 	{"pos": Vector3(  0.0, 0.0,  0.0),  "name": "Briarwood Square",
@@ -192,7 +215,13 @@ func _draw() -> void:
 				dist_e = (enode.global_position - player.global_position).length()
 			var ec: Color = COL_ENEMY
 			if dist_e < ENEMY_FLASH_RANGE:
-				var a: float = 0.55 + 0.45 * (sin(_pulse_t * 8.0) * 0.5 + 0.5)
+				# REFINE: visual — enemy aggro flash rate 8.0 → 6.5 rad/s
+				# (≈1.04 Hz vs prior 1.27 Hz). The new wider ENEMY_FLASH_RANGE
+				# (9.0m) means more pins flash per frame; each flash should read
+				# calmer so the cluster doesn't strobe. THEME §12 motion that
+				# doesn't feel mechanical — minimap warning is a heartbeat, not
+				# a strobe. Alden's low-to-medium combat tolerance directly served.
+				var a: float = 0.55 + 0.45 * (sin(_pulse_t * 6.5) * 0.5 + 0.5)
 				ec = Color(ec.r, ec.g, ec.b, a)
 			_pin_at(enode.global_position, ec, player, player_yaw,
 					center, radius_px, PIN_RADIUS_PX)
@@ -210,15 +239,32 @@ func _draw() -> void:
 		var alpha: float = 1.0 - k
 		var rad: float = lerp(2.0, 14.0, k)
 		var pp: Vector2 = _world_to_minimap(ppos, player, player_yaw, center, radius_px)
-		draw_arc(pp, rad, 0.0, TAU, 24, Color(pcol.r, pcol.g, pcol.b, alpha), 1.6, true)
+		# REFINE: visual — ping ring stroke 1.6 → 1.8 px. Pairs with the longer
+		# PING_LIFETIME (1.6s) — the expanding ring now carries visible weight
+		# throughout its tail instead of dissolving into one-pixel thinness near
+		# the end of the fade.
+		draw_arc(pp, rad, 0.0, TAU, 24, Color(pcol.r, pcol.g, pcol.b, alpha), 1.8, true)
 
-	var pulse: float = 0.85 + 0.15 * sin(_pulse_t * 3.0)
-	draw_circle(center, 4.6 * pulse, COL_INK)
-	draw_circle(center, 3.2 * pulse, COL_PLAYER)
+	# REFINE: visual — player pulse rate 3.0 → 2.5 rad/s (≈0.40 Hz instead of
+	# 0.48 Hz). Matches THEME §12 character idle breathing period (2.5s Y-bob);
+	# minimap player heartbeat now syncs with the procedural character breathing
+	# the §12 rule describes. Cross-system rhythm.
+	var pulse: float = 0.85 + 0.15 * sin(_pulse_t * 2.5)
+	# REFINE: visual — player center radius 4.6/3.2 → 5.0/3.6 px. Player reads as
+	# the "you are here" anchor; tiny size lift differentiates from NPC pins
+	# (PIN_RADIUS_PX 3.4) without overwhelming the disc. Pairs with the COL_PLAYER
+	# ember-gold differentiation above — color AND size now both signal
+	# "this dot is you", not "this dot is one of seven gold villagers".
+	draw_circle(center, 5.0 * pulse, COL_INK)
+	draw_circle(center, 3.6 * pulse, COL_PLAYER)
+	# REFINE: visual — heading triangle slightly larger (Y -8 → -8.5, flanks
+	# ±3.5/-2.5 → ±3.8/-2.7). ~6% more silhouette area reads cleaner at the
+	# small minimap scale, especially at the camera polish run's wider rest
+	# frame (default distance 8.0m).
 	var tri: PackedVector2Array = PackedVector2Array([
-		center + Vector2(0.0, -8.0),
-		center + Vector2( 3.5, -2.5),
-		center + Vector2(-3.5, -2.5),
+		center + Vector2(0.0, -8.5),
+		center + Vector2( 3.8, -2.7),
+		center + Vector2(-3.8, -2.7),
 	])
 	draw_colored_polygon(tri, COL_PLAYER)
 	draw_polyline(PackedVector2Array([tri[0], tri[1], tri[2], tri[0]]), COL_INK, 1.2, true)
