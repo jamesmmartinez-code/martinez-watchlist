@@ -1522,3 +1522,93 @@ follows the same shape.
 - The `_settle_to_ground` helper is the official answer to "asset is
   half-buried / floating." Future asset wire-ups should call it instead
   of hand-tuning `position.y` per asset.
+
+
+## Achievements panel — the painterly crests are visible at last (run 13)
+
+For four integrator runs the same gap was flagged: Art shipped six
+painterly 128×128 PNG achievement crests (anvil, sapling, paw-print,
+sword, handshake, castle) to `assets/icons/achievements/` and the
+Achievements.gd schema carried `icon_path` for each entry, but no UI
+scene loaded them. Today is the first session where a player can press
+`J` and **see the painterly crests rendered in the world**.
+
+### What the player sees on press-J
+
+A 740×580 parchment-styled panel centered on screen:
+
+- "📜 Achievements & Titles" header, palette §3 burnt gold with black
+  outline.
+- An "Equipped Title:" strip showing whatever the auto-equipper picked
+  ("✨ the Apprentice" / "✨ the Forged" / "✨ Wolf-Friend" / etc.) — the
+  same string drawn above the player's head as a Label3D, so a kid
+  reading at 30m camera distance can confirm what's equipped.
+- "Earned: X of N" running count.
+- A 2-column grid of 6 cards (priority-ordered: Apprentice → Forged →
+  Wolf-Friend → Goblin-Bane → Trusted → Warden). Each card:
+  - 96×96 painterly crest, full color when unlocked, 0.45 grey-dim when
+    locked, with 🔒 overlay.
+  - Name in palette §3 burnt gold (or dim grey if locked).
+  - Desc in parchment cream, autowrap — these are the kid-readable
+    hints at how to earn each entry. ("Bring Edda to the anvil — feel
+    her hammer." for First Forge; "Drive the dire wolves below their
+    first threshold." for Pack Thinner.)
+  - "✨ Grants: \"the Apprentice\"" hint line so the player knows which
+    title each entry awards.
+
+### The pulse — THEME §12 motion in the UI
+
+When a player unlocks an achievement, `_check_achievements` writes the
+ID into `world._last_achievement_unlocked` (NEW field this run). On the
+next panel open, that card pulses softly — 2 loops of sine-eased
+modulate (1.25, 1.15, 0.85) over 0.9 seconds — drawing the player's
+eye to the new entry. The pulse field clears when the panel closes, so
+re-opening on a stale id doesn't re-fire.
+
+### Why the auto-equipper didn't already do this
+
+The auto-equipper (run 11) just floats the highest-priority unlocked
+title above the player's head. It does NOT show the catalog, the
+locked entries, the descriptions that hint at how to unlock the rest,
+or the painterly art. The auto-equipper is the visible consequence;
+the panel is the BROWSE surface — they are complementary.
+
+### The four-run gap finally closes
+
+Run 5 integrator gap, run 6 integrator gap, run 11 integrator gap, run
+12 integrator gap — all flagged the same shape: "icon_path field
+exists on every achievement entry; no UI scene loads it; the 🔨 / 🌱 /
+🐺 / ⚔ / 🤝 / 🏰 emoji fallback is what actually displays." This run
+ships the canonical `load(icon_path) -> Texture2D -> TextureRect`
+pattern — six crests visible immediately, plus a documented reference
+implementation other panels can copy to close the same gap for 13 NPC
+portraits, 8 enemy portraits, and ~40 item icons.
+
+### The unblocked pattern
+
+The exact callsite that closes the gap is short enough to quote:
+
+```gdscript
+var icon_path: String = String(entry.get("icon_path", ""))
+if icon_path != "" and ResourceLoader.exists(icon_path):
+    var tex: Texture2D = load(icon_path) as Texture2D
+    if tex != null:
+        crest.texture = tex
+```
+
+That is the entire pattern. Any future panel needing a painterly icon
+copies it verbatim.
+
+### Closed loops; do not casually re-open
+
+- The `J` key is now spoken-for as the Journal/Achievements toggle. If
+  a future run wants Journal proper (quest log, lore index, etc.), it
+  should re-bind the achievements panel to a different key (e.g. `K`)
+  rather than commandeer `J`.
+- The widget bundle `ach_card_widgets[id] -> {root, crest, name, desc,
+  title_hint, lock}` is the documented schema. Future per-card features
+  (click-to-track, quest-jump-shortcut, etc.) re-enter through this
+  registry, not by re-walking the GridContainer children.
+- `_last_achievement_unlocked` is ephemeral session state — it does not
+  persist across save/load. The pulse is a "this just happened, look at
+  it" affordance, not a "this is special forever" affordance.

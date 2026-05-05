@@ -219,6 +219,12 @@ func _input(event: InputEvent) -> void:
 		var k: int = event.keycode
 		if k == KEY_I:
 			get_tree().call_group("world", "toggle_inventory")
+		elif k == KEY_J:
+			# Journal / Achievements panel — surfaces the painterly crests
+			# Art shipped to assets/icons/achievements/ and lets the player
+			# browse locked entries to plan what to chase next. World.gd
+			# owns the build/refresh; this is just the trigger surface.
+			get_tree().call_group("world", "toggle_achievements")
 		elif k == KEY_Q:
 			# Quaff health potion (the first hp_potion_s/l in bag)
 			_quick_use_potion()

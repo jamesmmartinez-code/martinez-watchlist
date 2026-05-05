@@ -2474,3 +2474,156 @@ N/A — text-only UI compound; no new visual asset required.
 
 **Branch reset:** all worker `auto/*` branches will be fast-forwarded to main after push so next agent runs start from a clean tip.
 
+
+---
+
+## 2026-05-05 — BUILDER run (Achievements & Titles Panel UI)
+
+**I'm building:** the Achievements & Titles Panel — first UI surface in
+the game that loads and renders the painterly 128×128 PNG crests Art
+shipped to `assets/icons/achievements/` (six of them, sitting unrendered
+through four integrator runs of "icon shipped, no TextureRect" gap).
+
+**THEME §X cited:** §1 (painterly canon now visible in a UI surface — the
+crests are the first painterly-PNG asset to actually render in-game),
+§3 (palette: burnt gold `#FFD86B` for unlocked names, parchment cream
+`#EAD9A6` for descriptions, dim grey for locked entries), §5 (UI text:
+serif-weight Labels with outline, kid-readable instructions, no
+material-design contamination), §12 (motion: animated 0.45s sine-eased
+modulate pulse on the most-recently-unlocked card so the player's eye
+lands on it first when opening the panel right after a toast).
+
+**Mood board panel:** N/A — no `mood-boards/` directory exists in the
+repo today. Working from THEME.md prose alone, plus the painterly crest
+references in `assets/icons/achievements/ATTRIBUTION.md` (the ones Art
+sourced and credited).
+
+### What shipped
+
+1. **`World.toggle_achievements()`** — new public method, mirrors the
+   shape of `toggle_inventory()`. Lazy-builds the panel on first open;
+   subsequent opens just flip `visible` and call
+   `_refresh_achievements_ui()` so live unlock state is fresh.
+
+2. **`_build_achievements_ui()`** — 740×580 centered Panel with header
+   ("📜  Achievements & Titles"), close button, equipped-title strip
+   ("Equipped Title: ✨ <best_title>"), earned count ("Earned: X of N"),
+   and a 2-col GridContainer of cards in priority order.
+
+3. **`_build_one_achievement_card(id)`** — every card is a horizontal
+   PanelContainer with:
+   - 96×96 TextureRect crest (loaded from `entry.icon_path` via
+     `ResourceLoader.exists` guard + `load() as Texture2D`),
+   - 🔒 lock-overlay Label (visibility flips on unlock state),
+   - name Label (palette §3 burnt gold, outline 3px),
+   - desc Label (parchment cream, autowrap),
+   - title-hint Label ("✨ Grants: \"the Apprentice\""),
+   - ach_card_widgets[id] dictionary registers the bundle for refresh.
+
+4. **`_refresh_achievements_ui()`** — pure read-and-render. Pulls live
+   unlock state from `Achievements.evaluate(self)` AND persisted unlocks
+   from `unlocked_achievements`. For each card, sets the modulate
+   (1,1,1 vs 0.45-grey), the name color (gold vs dim), and lock
+   visibility. Updates the equipped-title strip and earned-count line.
+   Triggers `_pulse_card()` on whichever card matches
+   `_last_achievement_unlocked` (THEME §12 motion).
+
+5. **`_pulse_card(node)`** — 2-loop sine-eased modulate pulse
+   (1.25/1.15/0.85 → base) over 0.9s. Soft, two cycles, kid-friendly —
+   draws the eye without strobing.
+
+6. **`_check_achievements()` extension** — writes
+   `_last_achievement_unlocked` to the highest-`title_priority` member
+   of the just-unlocked batch. Existing toast + renown logic unchanged.
+
+7. **`Player._input` extension** — new `KEY_J` branch:
+   `get_tree().call_group("world", "toggle_achievements")`. Same shape
+   as the KEY_I inventory binding. No InputMap action needed (existing
+   inventory hook also uses raw KEY_I; new key follows the local
+   convention).
+
+### 5-output rule check
+
+- (i) **Integration** — `Achievements.evaluate(self)` (existing pure
+  evaluator), `self.unlocked_achievements` (existing dict, written by
+  `_check_achievements`), `self.current_title` (existing field, written
+  by `_apply_title_to_player`), `assets/icons/achievements/*.png` (Art
+  run-N output), `entry.icon_path` schema (Achievements.gd run 11 —
+  carried as a `# legacy fallback` field for four runs, now a real
+  consumer). Zero new world primitives — strict adherence to
+  Achievements.gd authoring rule §1.
+- (ii) **Schema** — registers `ach_card_widgets[id] -> {root, crest,
+  name, desc, title_hint, lock}` widget bundle, plus `_last_achievement_unlocked: String` state field. Both
+  documented in SYSTEM_REGISTRY.md "Achievements panel widget
+  bundle" entry. The widget shape is the canonical pattern other
+  panels (NPC bestiary, item tooltip, enemy codex) can copy.
+- (iii) **Feedback** — six painterly crests render where six emoji
+  fallbacks rendered before. Locked entries dim to 0.45 grey and show
+  🔒 over the crest; unlocked entries render at full color. Equipped
+  title prominent at top. Earned count visible. Animated pulse on the
+  just-unlocked card guides the player's eye on re-open.
+- (iv) **Eval** — `_refresh_achievements_ui` is pure: same world state
+  ⇒ same render. Predicate satisfaction is computed by
+  `Achievements.evaluate(self)` which is itself pure (per its run-11
+  contract: no world mutation in predicate walks).
+- (v) **2+ hooks** — (1) Player.gd KEY_J trigger, (2)
+  world.unlocked_achievements → unlocked_set rendering, (3)
+  world.current_title → equipped-title strip, (4)
+  Achievements.ACHIEVEMENTS.icon_path → TextureRect (UNBLOCKS the same
+  pattern for 13 NPC portraits + 8 enemy portraits + ~40 item icons in
+  future runs — a single proven `load(icon_path) -> Texture2D ->
+  TextureRect` callsite to copy), (5) world._last_achievement_unlocked
+  → animated card pulse (NEW state field; written by
+  _check_achievements adjacent to the existing toast).
+
+### Player-reachable state this run
+
+- **Achievements panel** — press `J` while in the world. Browse all 6
+  achievements, see locked descriptions (kid-readable hints at how to
+  earn them), see the equipped title, see the earned count. The most
+  recently unlocked card pulses softly on open.
+- **Painterly crests visible** — six of them: anvil for "First Forge,"
+  shoot for "First Steps," pawprint for "Pack Thinner," sword for
+  "Bane of the Whisperwood," handshake for "Trusted by Three," castle
+  crest for "Warden of the Realm." All sourced and CC-attributed in
+  `assets/icons/achievements/ATTRIBUTION.md`.
+- **Title visibility** — the same `current_title` that floats above the
+  player's head as a Label3D (Player.gd run-11) now also reads in the
+  panel header, so a player who can't quite read 30m-distant 28pt
+  Label3D text can confirm what's equipped at panel-open.
+
+### What next run picks up
+
+1. **Builder/UI (CARRIED, MED):** `assets/ui/eldoria_theme.tres` —
+   parchment/wood theme resource that the Inventory panel + the new
+   Achievements panel + future panels could share, replacing per-panel
+   `add_theme_color_override` boilerplate. Five integrator runs flagging.
+2. **Builder/UI (NEW from this run):** Apply the
+   `load(icon_path) -> Texture2D -> TextureRect` pattern to:
+   (a) DialoguePanel — load `entry.portrait_path` from the 13 NPC PNGs in
+       `assets/portraits/` and render in a 96×96 TextureRect to the left
+       of the name label,
+   (b) Bestiary entry / damage-flash — load `enemy.portrait_path` from the
+       8 enemy PNGs and surface in a future bestiary scene OR as a
+       small headshot on enemy nameplates,
+   (c) Inventory bag tooltip — load `item_data.icon_path` Texture2D and
+       render in the tooltip TextureRect (the same gap flagged for five
+       integrator runs). The Achievements panel is the canonical
+       reference implementation — copy the
+       `if icon_path != "" and ResourceLoader.exists(icon_path): tex =
+       load(icon_path) as Texture2D` guard pattern verbatim.
+3. **Builder/UI (carried):** Inventory paperdoll + bag tooltip should
+   show "+N" forge-tier suffix on weapons (run-12 carry).
+4. **Builder/Material (carried):** Roughness-texture wire-in across
+   bark/rock/snow/thatch/wood/stone WorldBuilder materials.
+5. **NPC schedules (run-11/12 already shipped — but new role behaviors
+   could add more variety):** Maeve sweeps, Smith hammers, etc. — only
+   Edda and Lyra have role-specific idle behaviors today.
+6. **Crystal Caves dungeon entrance (backlog #1)** — still untouched.
+   The existing `boulders` group + `tree_kind` meta hooks are waiting
+   for the cave entrance to consume them.
+7. **Skeleton + Bandit GLBs (backlog #4)** — kinds exist in
+   `Enemy.KIND_TO_FACTION`, portraits exist in `assets/portraits/`,
+   only the GLB models are missing.
+
+### Branch pushed: `auto/builder`

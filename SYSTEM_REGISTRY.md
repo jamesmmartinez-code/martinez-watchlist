@@ -968,3 +968,104 @@ PRODUCES:
 - `_settle_to_ground(node)` — generic ground-contact helper, not
   GLB-specific; can be called after any deferred-spawn flow that needs
   THEME §13 compliance.
+
+
+## Achievements Panel (run 13 — UI surface)
+
+The Achievements & Titles Panel is the FIRST UI surface in the engine
+that loads and renders a painterly icon asset (PNG → Texture2D →
+TextureRect). The pattern is intentionally simple so future panels (NPC
+portraits, enemy bestiary, item icons) can copy it verbatim.
+
+### Trigger
+
+`KEY_J` in `Player._input` calls `get_tree().call_group("world",
+"toggle_achievements")`. Same shape as the KEY_I inventory binding.
+
+### Owner
+
+`World.gd`. Lazy build on first `toggle_achievements()`. Subsequent
+opens just flip `visible` and call `_refresh_achievements_ui()`.
+
+### Widget bundle schema
+
+`ach_card_widgets[id] -> Dictionary` with shape:
+
+```
+{
+  "root":       PanelContainer,   # the card's outer container — pulse target
+  "crest":      TextureRect,      # 96×96 painterly PNG (load(icon_path))
+  "name":       Label,            # icon + name, palette §3 burnt gold
+  "desc":       Label,            # description, parchment cream, autowrap
+  "title_hint": Label,            # "Grants: \"<title>\"" line
+  "lock":       Label,            # 🔒 over the crest, hidden when unlocked
+}
+```
+
+### Rendering rules
+
+| State    | crest.modulate              | name color | lock visible |
+|----------|-----------------------------|------------|--------------|
+| Unlocked | (1, 1, 1, 1)                | gold §3    | false        |
+| Locked   | (0.45, 0.45, 0.45, 0.85)    | dim grey   | true         |
+
+### THEME §12 motion contract
+
+`_pulse_card(node)` — 2-loop sine-eased modulate pulse over 0.9s,
+amplitude `(1.25, 1.15, 0.85)`. Fires on the card whose id matches
+`world._last_achievement_unlocked` when the panel opens. The state
+field is written by `_check_achievements` adjacent to the existing
+toast logic — same write site, separate read consumer.
+
+### Icon-path → TextureRect pattern (canonical)
+
+```gdscript
+var icon_path: String = String(entry.get("icon_path", ""))
+if icon_path != "" and ResourceLoader.exists(icon_path):
+    var tex: Texture2D = load(icon_path) as Texture2D
+    if tex != null:
+        crest.texture = tex
+```
+
+Future panels (NPC portrait dialogue, item bag tooltip, enemy bestiary)
+SHOULD copy this guard verbatim. The `ResourceLoader.exists` check makes
+the call fail-soft when an asset is missing — the TextureRect simply
+stays empty, the rest of the card renders normally.
+
+### Authoring rules
+
+1. **No new world primitive in this panel.** Same constraint as
+   `Achievements.gd` — every render-time read must hit existing world
+   state (`unlocked_achievements`, `current_title`,
+   `Achievements.evaluate(self)`).
+2. **Priority-ordered render.** `_achievements_in_priority_order()` sorts
+   by `title_priority` so the panel reads as a left-to-right
+   apprenticeship-to-mastery ladder. Lower priority renders first.
+3. **Fail-soft on missing assets.** `ResourceLoader.exists` guards every
+   `load()`. A missing PNG leaves the TextureRect empty; the emoji
+   `entry.icon` glyph remains visible in the name label as the
+   text-fallback path.
+
+### Hooks consumed / produced this run
+
+CONSUMES:
+- `Achievements.ACHIEVEMENTS` (existing schema) — single source of truth.
+- `Achievements.evaluate(self)` (existing pure evaluator).
+- `world.unlocked_achievements: Dictionary[String, bool]` (existing).
+- `world.current_title: String` (existing).
+- `entry.icon_path: String` schema field (existing on Achievements
+  entries since run 11; this is the FIRST consumer).
+- `assets/icons/achievements/*.png` (Art shipped six painterly crests).
+
+PRODUCES:
+- `world.toggle_achievements()` — public method, group-callable.
+- `world._last_achievement_unlocked: String` — NEW state field, written
+  by `_check_achievements`, consumed by `_refresh_achievements_ui` to
+  drive the just-unlocked pulse.
+- `world.ach_card_widgets: Dictionary[String, Dictionary]` — widget
+  registry, one entry per achievement id; future extensions (per-card
+  click-to-show-quest-tip, etc.) can re-enter this registry without a
+  rebuild.
+- `KEY_J` binding in Player.gd — first new keybinding since the M-mount
+  toggle. Future panels (M for map, K for skill tree, etc.) follow the
+  same `get_tree().call_group("world", ...)` shape.
