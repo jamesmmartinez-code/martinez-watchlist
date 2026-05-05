@@ -1,13 +1,17 @@
 extends CharacterBody3D
 class_name Player
 
-# SAFE_SPAWN — clear open spot NORTH of the village center on the main path.
-# Village layout (from WorldBuilder.gd):
-#   campfire at (0, 0, -2), well at (0, 0, 6), market stalls at (±2.5, 0, 0)
-# Old spawn (0, 2, 0) put player BETWEEN the stalls; old respawn (0, 1, 6.5)
-# put them INSIDE the well. PX 2026-05-05: moved both to (0, 2.5, -10) which
-# is on the north path with no structures within 8m.
-const SAFE_SPAWN := Vector3(0, 2.5, -10)
+# SAFE_SPAWN — clear open spot SOUTH of the well, on the main N-S path.
+# Verified clearance against every entry in WorldBuilder.gd:
+#   campfire (0,0,-2):    13m S — clear
+#   well (0,0,6):          4m S — clear of 1.1m radius well structure
+#   market stalls (±2.5,0,0): >10m S — clear
+#   Trainer Hala (0,0,-10): 20m S — clear (was the bug in v1 of this fix)
+#   nearest building (6,0,6): 7.2m diagonal — clear
+#   path: ON the north-south path z=-12..12, x=0
+# Old spawn (0,2,0) put player BETWEEN the stalls; old respawn (0,1,6.5)
+# put them INSIDE the well water. PX 2026-05-05.
+const SAFE_SPAWN := Vector3(0, 3.0, 10)
 
 # Realm of Eldoria — Player controller (third-person)
 # WASD or Arrow keys to move, Space to jump, E to interact, left-click to attack
