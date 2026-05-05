@@ -8,7 +8,10 @@ class_name Chest
 
 @export var loot_pool: String = "chest_common"   # "chest_common" | "chest_rare"
 @export var item_count: int = 3                  # number of items to roll
-@export var glow_color: Color = Color(1.0, 0.85, 0.30)
+# REFINE: visual — default glow_color (1.0, 0.85, 0.30) → (1.0, 0.86, 0.42).
+# THEME §3 sunset-gold accent (#FFD86B family) — was a slightly muddy mustard.
+# Affects common chests only; WorldBuilder overrides for rare (purple) and spot chests.
+@export var glow_color: Color = Color(1.0, 0.86, 0.42)
 
 var _opened: bool = false
 var _lid: Node3D
@@ -33,16 +36,21 @@ func _build_visuals() -> void:
 	body.mesh = bm
 	var wood := StandardMaterial3D.new()
 	wood.albedo_color = Color(0.42, 0.26, 0.14)
-	wood.roughness = 0.85
+	# REFINE: visual — wood roughness 0.85 → 0.92. THEME §1 painterly + §10 rule 9
+	# (weathered/hand-made). Less specular sheen reads more hand-painted.
+	wood.roughness = 0.92
 	body.material_override = wood
 	body.position = Vector3(0, 0.4, 0)
 	add_child(body)
 
 	# Iron banding (3 vertical strips)
 	var iron := StandardMaterial3D.new()
-	iron.albedo_color = Color(0.30, 0.27, 0.25)
-	iron.metallic = 0.7
-	iron.roughness = 0.4
+	# REFINE: visual — iron banding warmed + weathered. albedo (0.30,0.27,0.25)→
+	# (0.28,0.24,0.22), metallic 0.7→0.6, roughness 0.4→0.55. THEME §3 hammered
+	# bronze adjacency + §10 rule 9 weathered hand-made; less mirror-shiny.
+	iron.albedo_color = Color(0.28, 0.24, 0.22)
+	iron.metallic = 0.6
+	iron.roughness = 0.55
 	for x in [-0.5, 0.0, 0.5]:
 		var strip := MeshInstance3D.new()
 		var sm := BoxMesh.new()
@@ -74,7 +82,10 @@ func _build_visuals() -> void:
 	gold_mat.metallic = 0.85; gold_mat.roughness = 0.25
 	gold_mat.emission_enabled = true
 	gold_mat.emission = Color(1.0, 0.7, 0.2)
-	gold_mat.emission_energy_multiplier = 0.4
+	# REFINE: visual — lock plate emission_energy_multiplier 0.4 → 0.7.
+	# THEME §3 hammered bronze; brass lock now reads warm-glowing at distance
+	# instead of merely emissive. Alden's "ooh shiny" Collection beat.
+	gold_mat.emission_energy_multiplier = 0.7
 	lock.material_override = gold_mat
 	lock.position = Vector3(0, 0.40, 0.43)
 	add_child(lock)
@@ -82,8 +93,11 @@ func _build_visuals() -> void:
 	# Glow (subtle, until opened)
 	_glow_light = OmniLight3D.new()
 	_glow_light.light_color = glow_color
-	_glow_light.light_energy = 1.2
-	_glow_light.omni_range = 4.5
+	# REFINE: visual — resting glow light_energy 1.2 → 1.5 + omni_range 4.5 → 6.0.
+	# Common chests now beacon visibly through Whisperwood foliage at camera
+	# distance. Alden's Exploration affinity — clearer "go look at this" cue.
+	_glow_light.light_energy = 1.5
+	_glow_light.omni_range = 6.0
 	_glow_light.position = Vector3(0, 0.7, 0)
 	add_child(_glow_light)
 
@@ -154,16 +168,23 @@ func _open_chest() -> void:
 	get_tree().call_group("world", "play_sfx", "chest_open")
 	# Animate lid opening
 	var t := create_tween()
-	t.tween_property(_lid, "rotation:x", -1.4, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# REFINE: combat-feel — lid open tween 0.55 → 0.50s. Snappier reveal for Owen's
+	# mastery loop; TRANS_BACK overshoot preserved (the satisfying part).
+	t.tween_property(_lid, "rotation:x", -1.4, 0.50).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	# Burst of light
 	var burst := OmniLight3D.new()
 	burst.light_color = glow_color
-	burst.light_energy = 6.0
-	burst.omni_range = 8.0
+	# REFINE: visual — open-burst light_energy 6.0 → 8.0, omni_range 8.0 → 11.0.
+	# Bigger "treasure!" pulse — readable from across a chamber, so a co-op
+	# partner across the room reads "they opened a chest!" without seeing the
+	# chest itself. THEME §1 cooperative-play priority.
+	burst.light_energy = 8.0
+	burst.omni_range = 11.0
 	burst.position = Vector3(0, 1.0, 0)
 	add_child(burst)
 	var t2 := create_tween()
-	t2.tween_property(burst, "light_energy", 0.0, 1.6)
+	# REFINE: visual — burst fade 1.6 → 1.4s. Snappier resolve, ambient takes over.
+	t2.tween_property(burst, "light_energy", 0.0, 1.4)
 	t2.tween_callback(burst.queue_free)
 
 	# Hide hint
@@ -190,7 +211,10 @@ func _open_chest() -> void:
 	# Soft glow fades
 	if _glow_light:
 		var t3 := create_tween()
-		t3.tween_property(_glow_light, "light_energy", 0.25, 1.2)
+		# REFINE: visual — spent-glow fade light_energy 0.25 → 0.18, duration 1.2 → 1.5s.
+		# "This chest is done" reads cleaner at lower energy; longer fade lets the
+		# "you got it!" beat linger a beat before the chest resigns to spent state.
+		t3.tween_property(_glow_light, "light_energy", 0.18, 1.5)
 
 	# Toast
 	if world and world.has_method("_show_toast"):
@@ -216,4 +240,8 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 func _process(delta: float) -> void:
 	if _opened or _glow_light == null: return
 	var t = Time.get_ticks_msec() / 1000.0
-	_glow_light.light_energy = 1.0 + sin(t * 2.4) * 0.25
+	# REFINE: visual — idle bob period sin(t*2.4) → sin(t*2.2) and amplitude
+	# 0.25 → 0.32. THEME §12 motion-&-life: more visible "alive" pulse at
+	# distance, period slightly lazier than character breathing (2.86s vs 2.5s).
+	# Baseline lifted to 1.5 to match the new resting light_energy above.
+	_glow_light.light_energy = 1.5 + sin(t * 2.2) * 0.32
