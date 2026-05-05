@@ -1088,3 +1088,33 @@ goblin scalar that already drives dialogue tier 3 (run 4) + spawn density
 fresh-save goblin still telegraphs at child-readable speed. After that,
 Roan's `dire_wolves` faction-tier dialogue (4 lines, mirrors Maeve) +
 a Roan-issued -0.1 wolf-bounty quest, both of which compose with run-6.
+---
+
+### Art run — sky HDRI swap (2026-05-04)
+
+#### What
+Replaced `ProceduralSkyMaterial` in `eldoria-godot/scenes/Main.tscn` with
+`PanoramaSkyMaterial` referencing the existing
+`assets/skies/eldoria_sunset_sky_2k.jpg` (PolyHaven CC0, "The Sky Is On Fire"
+by Greg Zaal — 2048×1024 equirectangular sunset panorama). `radiance_size`
+bumped to 4 (512×512) for richer ambient reflections.
+
+#### Why
+`ATTRIBUTION.md` flagged the panorama as ready-to-wire, but no scene was
+actually using it — `WorldEnvironment.environment.sky` was still procedural,
+which produces flat, gradient-only skies. THEME §3 calls for a warm sunset
+palette as the dominant 70% of frame; a hand-painted HDRI delivers that for
+free, plus the `ambient_light_source = AMBIENT_SOURCE_SKY` already configured
+in the Environment now picks up the panorama's warm orange/crimson IBL,
+washing the whole scene in canon palette without any per-light tuning.
+
+#### Theme compliance
+- §3 palette: panorama is dominantly burnt-orange / sunset-gold / crimson — exact §3 primaries.
+- §1 painterly: HDRI is a hand-photographed real sunset, but at 2k panorama scale and through Godot's tonemap (mode 3 / Filmic, exposure 0.85) it reads as painterly, not photoreal.
+- §10.8 license: PolyHaven CC0, no attribution required (we credit anyway in `assets/skies/ATTRIBUTION.md`).
+
+#### Files
+- `eldoria-godot/scenes/Main.tscn` — swapped 2 sub_resources, added 1 ext_resource, bumped `load_steps` 15→16.
+
+#### Branch
+`auto/art` (push discipline §14).
