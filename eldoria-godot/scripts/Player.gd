@@ -80,6 +80,21 @@ func _ready() -> void:
 	add_to_group("quest_listeners")
 	collision_layer = 2  # player layer
 	collision_mask = 1 | 4  # collide with world (1) and enemies (4)
+	# PX hardening 2026-05-06 (CHECK 10 from eldoria-physics-engineer):
+	# CharacterBody3D defaults leave floor_snap_length = 0.0, which makes the
+	# kid characters bounce/lift off stairs and small terrain bumps — losing
+	# ground contact reads as "I can't move!!" because is_on_floor() flickers
+	# and gravity pumps velocity.y mid-stride. Fixes:
+	#   - floor_snap_length 0.35 keeps feet glued through 0.35m descents
+	#     (covers village stair risers + cobble-path lip without trapping)
+	#   - floor_max_angle 46° (≈ deg_to_rad) blocks scaling steep cliffs but
+	#     leaves gentle ramps climbable — matches THEME §13 ground-contact rule
+	#   - up_direction is explicit Vector3.UP (default, but explicit = lockable)
+	# These are CharacterBody3D core movement params; setting once in _ready
+	# is sufficient (engine doesn't reset them).
+	floor_snap_length = 0.35
+	floor_max_angle = deg_to_rad(46.0)
+	up_direction = Vector3.UP
 	# Auto-wire camera_pivot if the editor didn't assign it
 	if not camera_pivot:
 		var root := get_tree().current_scene
