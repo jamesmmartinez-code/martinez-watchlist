@@ -24,19 +24,19 @@ const H: float = 540.0
 const PAD: float = 28.0
 const RANGE_M: float = 80.0   # ±80m world radius covered by the map face
 
-const COL_PARCHMENT: Color = Color(0.872, 0.808, 0.624)
-const COL_PARCHMENT_LIGHT: Color = Color(0.93, 0.87, 0.69)
+const COL_PARCHMENT: Color = Color(0.851, 0.788, 0.608)  # REFINE: visual — §3 sepia exact #D9C99B (was 0.872/0.808/0.624)
+const COL_PARCHMENT_LIGHT: Color = Color(0.94, 0.86, 0.62)  # REFINE: visual — converge with UITheme PARCHMENT_CREAM (was 0.93/0.87/0.69)
 const COL_FRAME_ORANGE: Color = Color(1.000, 0.502, 0.000)
 const COL_FRAME_BRONZE: Color = Color(0.690, 0.455, 0.165)
 const COL_INK: Color = Color(0.055, 0.039, 0.055, 0.92)
-const COL_TITLE: Color = Color(1.0, 0.847, 0.42)
-const COL_PLAYER_STAR: Color = Color(1.0, 0.925, 0.55)
+const COL_TITLE: Color = Color(1.00, 0.85, 0.42)  # REFINE: visual — exact §3 #FFD86B (matches UITheme GOLD, Chest glow_color)
+const COL_PLAYER_STAR: Color = Color(1.00, 0.88, 0.50)  # REFINE: visual — pulled toward §3 sunset-gold; reads as ember not pastel-yellow (was 1.0/0.925/0.55)
 
 # Region polygons — outlines of named zones in WORLD XZ. Drawn first as
 # soft watercolor washes underneath the landmarks.  THEME §8 tints.
 const REGIONS: Array = [
 	{"name": "Briarwood",
-	 "color": Color(1.0, 0.847, 0.42, 0.18),
+	 "color": Color(1.00, 0.85, 0.42, 0.22),  # REFINE: visual — §3 #FFD86B exact + warmer alpha 0.18→0.22
 	 "poly": [Vector2(-22, -22), Vector2(22, -22), Vector2(22, 22), Vector2(-22, 22)]},
 	{"name": "Whisperwood",
 	 "color": Color(0.290, 0.439, 0.220, 0.22),
@@ -45,7 +45,7 @@ const REGIONS: Array = [
 	 "color": Color(0.290, 0.439, 0.220, 0.18),
 	 "poly": [Vector2(22, -55), Vector2(65, -55), Vector2(65, 55), Vector2(22, 55)]},
 	{"name": "Crystal Caves",
-	 "color": Color(0.396, 0.875, 0.898, 0.20),
+	 "color": Color(0.396, 0.875, 0.898, 0.24),  # REFINE: visual — alpha 0.20→0.24, converges with Crystal-Caves polish run (cooler/darker cave reads from map too)
 	 "poly": [Vector2(-65, -55), Vector2(-32, -55), Vector2(-32, -28), Vector2(-65, -28)]},
 	{"name": "Mountain Pass",
 	 "color": Color(0.482, 0.525, 0.576, 0.30),
@@ -94,21 +94,21 @@ func _ready() -> void:
 	title_label.text = "Realm of Eldoria"
 	title_label.add_theme_color_override("font_color", COL_TITLE)
 	title_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	title_label.add_theme_font_size_override("font_size", 30)
-	title_label.add_theme_constant_override("outline_size", 6)
+	title_label.add_theme_font_size_override("font_size", 32)  # REFINE: visual — title 30→32 for full-screen banner readability
+	title_label.add_theme_constant_override("outline_size", 7)  # REFINE: visual — outline 6→7, matches UITheme outline-lift pattern
 	title_label.position = Vector2(PAD, 8)
 	add_child(title_label)
 
 	hint_label = Label.new()
 	hint_label.text = "[ N ] close   ·   gold = you   ·   ❖ Crystal Caves   ·   ☠ Boss"
 	hint_label.add_theme_color_override("font_color", Color(0.30, 0.22, 0.15))
-	hint_label.add_theme_font_size_override("font_size", 14)
+	hint_label.add_theme_font_size_override("font_size", 15)  # REFINE: visual — hint 14→15 for Alden 9yo back-of-screen reading
 	hint_label.position = Vector2(PAD, H - 28)
 	add_child(hint_label)
 
 	stats_label = Label.new()
 	stats_label.add_theme_color_override("font_color", Color(0.30, 0.22, 0.15))
-	stats_label.add_theme_font_size_override("font_size", 14)
+	stats_label.add_theme_font_size_override("font_size", 15)  # REFINE: visual — stats 14→15 parallel with hint
 	stats_label.position = Vector2(W - 280, 14)
 	stats_label.size = Vector2(260, 60)
 	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -156,7 +156,7 @@ func _draw() -> void:
 	# Map face rect (what we project world XZ onto).
 	var face: Rect2 = Rect2(Vector2(PAD, 60), Vector2(W - PAD * 2.0, H - 110))
 	draw_rect(face, Color(0.93, 0.86, 0.65), true)
-	draw_rect(face, COL_FRAME_BRONZE, false, 1.6)
+	draw_rect(face, COL_FRAME_BRONZE, false, 1.8)  # REFINE: visual — frame thickness 1.6→1.8 for painterly heft
 
 	# 1. Region watercolor washes.
 	for r in REGIONS:
@@ -200,34 +200,34 @@ func _draw() -> void:
 			var np: Vector2 = _world_xz_to_face(
 				Vector2((n as Node3D).global_position.x, (n as Node3D).global_position.z), face)
 			draw_circle(np, 4.5, COL_INK)
-			draw_circle(np, 3.0, Color(1.0, 0.847, 0.42))
+			draw_circle(np, 3.0, Color(1.0, 0.86, 0.46))  # REFINE: visual — match NPC nameplate modulate (NPC polish run convergence)
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if e is Node3D:
 			var ep: Vector2 = _world_xz_to_face(
 				Vector2((e as Node3D).global_position.x, (e as Node3D).global_position.z), face)
 			draw_circle(ep, 3.4, COL_INK)
-			draw_circle(ep, 2.4, Color(0.627, 0.125, 0.125))
+			draw_circle(ep, 2.6, Color(0.627, 0.125, 0.125))  # REFINE: visual — enemy core 2.4→2.6 silhouette readability
 	for b in get_tree().get_nodes_in_group("bosses"):
 		if b is Node3D:
 			var bp: Vector2 = _world_xz_to_face(
 				Vector2((b as Node3D).global_position.x, (b as Node3D).global_position.z), face)
 			draw_circle(bp, 7.0, COL_INK)
-			draw_circle(bp, 5.5, Color(0.486, 0.247, 0.690))
+			draw_circle(bp, 6.2, Color(0.486, 0.247, 0.690))  # REFINE: visual — boss core 5.5→6.2; bigger contrast vs enemy at map scale
 
 	# 5. Player star (you-are-here) — pulsed gold (THEME §12 motion).
 	var player: Node3D = _player_node()
 	if player != null:
 		var sp: Vector2 = _world_xz_to_face(
 			Vector2(player.global_position.x, player.global_position.z), face)
-		var pulse: float = 0.85 + 0.15 * sin(_pulse_t * 4.0)
+		var pulse: float = 0.85 + 0.18 * sin(_pulse_t * 2.6)  # REFINE: visual — slower painterly heartbeat 4.0→2.6, larger sway 0.15→0.18 (mirrors Minimap flash-rate slowdown)
 		_draw_star(sp, 9.0 * pulse, COL_PLAYER_STAR)
 		# Heading wedge.
 		var yaw: float = player.rotation.y
 		var fwd: Vector2 = Vector2(sin(yaw), -cos(yaw))   # world -Z forward → screen up
 		# Convert to face-space direction (face flips world-Z to screen-Y).
 		var screen_fwd: Vector2 = Vector2(fwd.x, -fwd.y)
-		var tip: Vector2 = sp + screen_fwd * 16.0
-		draw_line(sp, tip, COL_INK, 1.6, true)
+		var tip: Vector2 = sp + screen_fwd * 18.0  # REFINE: visual — wedge length 16→18 for heading clarity
+		draw_line(sp, tip, COL_INK, 1.8, true)  # REFINE: visual — wedge thickness 1.6→1.8 (matches face frame heft)
 
 	# 6. Compass rose in lower-right of the face.
 	var rose_center: Vector2 = Vector2(face.position.x + face.size.x - 30,
@@ -240,7 +240,7 @@ func _draw() -> void:
 		var t2: Vector2 = rose_center + Vector2(cos(a), sin(a)) * 18.0
 		draw_line(t1, t2, COL_INK, 1.4, true)
 	draw_string(get_theme_default_font(), rose_center + Vector2(-3, -19),
-		"N", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, COL_INK)
+		"N", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COL_INK)  # REFINE: visual — compass N 13→14 readability
 
 # ----------------------------------------------------------------------
 # Helpers
@@ -303,7 +303,7 @@ func _draw_star(p: Vector2, r: float, col: Color) -> void:
 	draw_colored_polygon(pts, col)
 	draw_polyline(pts, COL_INK, 1.2, true)
 	# Inner gleam.
-	draw_circle(p, r * 0.18, Color(1.0, 1.0, 0.85))
+	draw_circle(p, r * 0.22, Color(1.0, 1.0, 0.85))  # REFINE: visual — gleam core 0.18→0.22; player-star reads from back of screen
 
 func _world_xz_to_face(world_xz: Vector2, face: Rect2) -> Vector2:
 	# Map world (-RANGE_M..RANGE_M) → face rect.  +X right, +Z down (screen).
