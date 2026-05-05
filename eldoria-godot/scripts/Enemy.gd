@@ -20,7 +20,7 @@ class_name Enemy
 @export var gold_reward: int = 4
 @export var respawn_delay: float = 35.0
 @export var tint: Color = Color(0.45, 0.85, 0.30)
-@export var enemy_model: PackedScene = preload("res://assets/models/RobotExpressive.glb")
+@export var enemy_model: PackedScene = preload("res://assets/models/npcs/worker_girl.glb")
 # THEME §4 — per-kind real fantasy models override the placeholder RobotExpressive.
 # Source-credited GLBs (CC-BY) live under assets/models/enemies/. When a kind has
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
