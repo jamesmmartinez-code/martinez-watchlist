@@ -52,12 +52,20 @@ func _ready() -> void:
 	cs.position.y = 1.4
 	add_child(cs)
 
-	# Visual model — bigger, glowing
+	# Visual model — bigger, glowing.
+	# THEME §4 — Boss.glb is a hand-painted Mountain Ogre with its own painterly
+	# textures. The legacy goblin-green modulate (0.5, 0.85, 0.30) muddied those
+	# textures and made the boss read as plastic. The red BossAura OmniLight3D
+	# below already supplies the warlord's threat color via lighting, which
+	# preserves the model's original albedo. Tint removed.
 	_model = enemy_model.instantiate()
 	call_deferred("_normalize_to_height", _model, 3.0)  # boss ~3m, imposing
 	_model.scale = Vector3(1.6, 1.6, 1.6)
 	add_child(_model)
-	_model.call_deferred("propagate_call", "set", ["modulate", Color(0.5, 0.85, 0.30)])
+	# Auto-play idle animation if Boss.glb (or whatever PackedScene replaces it)
+	# carries one. Boss.glb ships with 13 animations including an idle — without
+	# this call the warlord stands T-posed before combat (banned by THEME §12).
+	call_deferred("_play_model_idle_anim")
 
 	# Crown
 	var crown := MeshInstance3D.new()
@@ -408,3 +416,31 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 		return
 	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
 	model.scale = Vector3(s, s, s)
+
+
+# THEME §12 — every visible character must be in motion. Walks the spawned
+# model subtree for an AnimationPlayer and plays an idle animation if one
+# exists. Boss.glb (Mountain Ogre) ships 13 anims; pick the first idle-shaped
+# name we find, fall back to whatever's first.
+func _play_model_idle_anim() -> void:
+	if not is_instance_valid(_model):
+		return
+	var ap: AnimationPlayer = _find_animation_player(_model)
+	if ap == null:
+		return
+	for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle", "Idle_A", "idle_loop"]:
+		if ap.has_animation(n):
+			ap.play(n)
+			return
+	var names := ap.get_animation_list()
+	if names.size() > 0:
+		ap.play(names[0])
+
+func _find_animation_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var found := _find_animation_player(c)
+		if found != null:
+			return found
+	return null
