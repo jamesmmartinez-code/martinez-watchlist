@@ -563,6 +563,146 @@ Authoring rules:
   must remain in sync on the `KIND_TO_FACTION` / faction-id keys. Any
   rename of a faction id is a cross-cutting refactor, not a local edit.
 
+## Enemy Damage Schema
+
+✅ **Shipped 2026-05-05 (run 9).** Per-enemy `damage` derives from
+`World.faction_pressure(faction_id)` at spawn. Lives in
+`Enemy.gd → _resolve_adaptive_damage()`. Reuses the `KIND_TO_FACTION`
+map that the cooldown + chase schemas already declared — single source
+of truth for kind → faction routing.
+
+Like the chase schema, damage is **multiplicative**: each kind's
+WorldBuilder-assigned baseline is preserved at fresh save and lifted by up
+to `+DAMAGE_AGITATION_GAIN` (=`0.12`, +12%) at pressure 0.0. The band is
+TIGHTER than chase_speed's +17% because damage compounds *with* the other
+two enemy outputs on the same pressure scalar (faster chase + faster swing
++ harder hit = three vectors of pressure on Alden's 9-yo combat tolerance,
+not one). Damage is the subordinate knob.
+
+| Enemy kind          | Faction id              | Baseline → Ceiling (pressure 1.0 → 0.0) |
+|---------------------|-------------------------|------------------------------------------|
+| `goblin` (Scout)    | `whisperwood_goblins`   | `6 → 7` (+17% rounded — small-baseline floor) |
+| `goblin` (Brute)    | `whisperwood_goblins`   | `11 → 13` (round(12.32) → ceil 13)       |
+| `wolf`              | `dire_wolves`           | `9 → 11` (round(10.08) → ceil 11)        |
+| `skeleton`          | `crystal_caves`         | `8 → 10` (round(8.96) → ceil 10)         |
+| `crystal_elemental` | `crystal_caves`         | `14 → 16` (round(15.68) → ceil 16)       |
+| `crystal_guardian`  | `crystal_caves`         | `26 → 30` (round(29.12) → ceil 30)       |
+| `bandit`            | (unmapped)              | baseline only (no faction yet)           |
+
+Resolved value = `clamp(round(lerp(baseline, baseline*(1+GAIN), 1-pressure)), baseline, ceil(baseline*(1+GAIN)))`
+where `baseline` is the int damage assigned by `WorldBuilder._spawn_enemy`
+(or the `@export` default if WorldBuilder didn't override). The `ceil()` on
+the upper bound is load-bearing for small baselines: a 6-damage scout's
++12% lifts to 6.72 which would round-to-baseline without the ceiling lift.
+
+Player-facing feedback: **no new visual cue** — the cooldown schema's
+`⚡` prefix already fires below pressure ~0.625 and now subsumes ALL THREE
+adaptive enemy outputs (cooldown + chase + damage). One marker, three
+coupled effects: kids see one symbol and learn it means "this one's faster,
+chases harder, *and* hits harder." Adding a third marker for damage would
+clutter the floating-name HUD without adding information.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
+  guards as the cooldown + chase schemas: missing world group, missing
+  accessor, OR unmapped `enemy_kind` ALL fall through to the
+  WorldBuilder-assigned baseline (no crash, no hidden behavior change).
+- Resolved value is **clamped** to `[baseline, ceil(baseline*(1+GAIN))]`
+  and asserted against the same band. Widening `DAMAGE_AGITATION_GAIN`
+  past 0.12 requires a fresh PLAYER_MODEL.md tuning pass — it is the
+  most tolerance-sensitive of the three coupled outputs.
+- damage is resolved ONCE at first `_ready()` AFTER WorldBuilder has
+  assigned the per-kind baseline. `_respawn()` does NOT re-sample —
+  matches the cooldown + chase schemas: world reactivity is *save-reload*
+  granular, not real-time.
+- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd` — the SAME
+  map cooldown, chase, and damage all consult.
+
+
+## Enemy XP Reward Schema
+
+✅ **Shipped 2026-05-05 (run 10).** Per-enemy `xp_reward` derives from
+`World.faction_pressure(faction_id)` at spawn. Lives in
+`Enemy.gd → _resolve_adaptive_xp_reward()`. Reuses the `KIND_TO_FACTION`
+map that the cooldown + chase + damage schemas already declared — single
+source of truth for kind → faction routing.
+
+The xp schema is **multiplicative AND inverse-direction-symmetric** with the
+three punisher schemas: at the SAME pressure, a `⚡` agitated enemy hits
+faster, chases faster, hits harder, AND grants more xp per kill. The
+inversion isn't a separate scalar — it's the same `lerp(baseline, ceiling,
+1.0 - pressure)` shape every other resolver uses; "harder fight pays more"
+is naturally encoded because `xp_reward`'s *baseline* is the LOW end and
+the *ceiling* is the HIGH end (vs. cooldown's baseline-high / min-low).
+
+Wider band (+20%) than damage (+12%) and chase_speed (+17%) because
+xp_reward is a **pure-positive knob** — there's no Alden-combat-tolerance
+pressure to balance against on the reward side, AND the size of the ⚡
+reward should *feel* commensurate with the three coupled punisher-buffs
+the prefix already promises. Asymmetric on purpose: the punishment side
+stays tight, the reward side opens up.
+
+| Enemy kind          | Faction id              | Baseline → Ceiling (pressure 1.0 → 0.0) |
+|---------------------|-------------------------|------------------------------------------|
+| `goblin` (Scout)    | `whisperwood_goblins`   | `18 → 22` (round(21.6) → ceil 22)        |
+| `goblin` (Brute)    | `whisperwood_goblins`   | `36 → 44` (round(43.2) → ceil 44)        |
+| `wolf`              | `dire_wolves`           | `28 → 34` (round(33.6) → ceil 34)        |
+| `skeleton`          | `crystal_caves`         | `24 → 29` (round(28.8) → ceil 29)        |
+| `crystal_elemental` | `crystal_caves`         | `55 → 66` (round(66.0) → ceil 66)        |
+| `crystal_guardian`  | `crystal_caves`         | `480 → 576` (round(576.0) → ceil 576)    |
+| `bandit`            | (unmapped)              | baseline only (no faction yet)           |
+
+Resolved value = `clamp(round(lerp(baseline, baseline*(1+GAIN), 1-pressure)), baseline, ceil(baseline*(1+GAIN)))`
+where `baseline` is the int xp_reward assigned by `WorldBuilder._spawn_enemy`
+(or the `@export` default if WorldBuilder didn't override). The `ceil()` on
+the upper bound is load-bearing for small baselines: an 18-xp scout's
++20% lifts to 21.6 which rounds cleanly, but kinds with mid-range
+baselines (e.g. a hypothetical 5-xp variant → 6.0) need the ceiling-lift
+to make the +20% bump actually land.
+
+Player-facing feedback: **no new visual cue** — the cooldown schema's
+`⚡` prefix already fires below pressure ~0.625 and now subsumes ALL FOUR
+adaptive enemy outputs (cooldown + chase + damage + xp_reward). One
+marker, four coupled effects: kids see one symbol and learn it means
+"this one's faster, chases harder, hits harder, *and* pays more." Adding
+a separate xp marker would clutter the floating-name HUD without adding
+information (the four outputs lerp on the same scalar — they trip
+together).
+
+Mastery-loop closure: a ⚡ kill is now a +20% XP windfall on top of the
++12%-damage punishing fight Owen worked through. The harder fight is the
+bigger reward — exactly the Mastery-affinity rung PLAYER_MODEL.md calls
+for in run-9's xp follow-up. Alden's first hour stays at baseline because
+pressure 1.0 keeps the lerp at the floor.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
+  guards as the cooldown + chase + damage schemas: missing world group,
+  missing accessor, OR unmapped `enemy_kind` ALL fall through to the
+  WorldBuilder-assigned baseline (no crash, no hidden behavior change).
+- Resolved value is **clamped** to `[baseline, ceil(baseline*(1+GAIN))]`
+  and asserted against the same band. Widening `XP_REWARD_AGITATION_GAIN`
+  past 0.20 risks making ⚡ farming the *only* viable XP path —
+  PLAYER_MODEL.md's "no FOMO / no pressure" hard constraint requires that
+  baseline kills remain a satisfying progression on their own.
+- xp_reward is resolved ONCE at first `_ready()` AFTER WorldBuilder has
+  assigned the per-kind baseline. `_respawn()` does NOT re-sample —
+  matches all three prior enemy schemas: world reactivity is *save-reload*
+  granular, not real-time.
+- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd` — the SAME
+  map cooldown, chase, damage, AND xp_reward all consult.
+
+**The enemy axis of `faction_pressure` is fully wired after run 10.**
+Six outputs lerp on a single scalar: NPC dialogue tier 3 (run 4), goblin
+spawn density (run 5), wolf spawn density (run 6), attack cooldown (run
+7), chase speed (run 8), damage (run 9), xp_reward (run 10). The next
+true frontier is the day `World.player_pressure_signal()` ships — at
+which point the queued knobs (`Player.gd.crit_chance`, `Items.gd` affix
+odds, `CameraController.gd.smooth_lerp`, `Chest.gd` resting-glow,
+`NPC.gd.schedule_speed`, `xp_for_next_level()` re-lerp, and post-process
+glow_intensity) all become candidate Output #1's on the new axis.
+
+
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a
