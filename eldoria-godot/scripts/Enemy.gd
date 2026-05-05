@@ -98,6 +98,12 @@ func _spawn_model() -> void:
 			_model.rotation.x = -PI / 2  # quadruped
 		"bandit":
 			_model.scale = Vector3(1.05, 1.05, 1.05)
+		"skeleton":
+			_model.scale = Vector3(1.00, 1.05, 1.00)
+		"crystal_elemental":
+			_model.scale = Vector3(1.10, 1.20, 1.10)
+		"crystal_guardian":
+			_model.scale = Vector3(1.55, 1.65, 1.55)
 		_:
 			_model.scale = Vector3(1.0, 1.0, 1.0)
 	add_child(_model)

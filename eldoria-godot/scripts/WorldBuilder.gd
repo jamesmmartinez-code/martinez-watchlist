@@ -144,6 +144,7 @@ func _ready() -> void:
 	_build_enemies()
 	_build_pet()
 	_build_loot_chests()
+	_build_crystal_caves(Vector3(-50, 0, -40))
 
 # ============================================================================
 # A textured ground patch is added on TOP of the existing flat ground so the
@@ -1279,3 +1280,226 @@ func _build_chests() -> void:
 		# Random small rotation so chests don't all face the same way
 		chest.rotation.y = randf_range(-PI, PI) * 0.3
 		add_child(chest)
+
+# ============================================================================
+# CRYSTAL CAVES DUNGEON
+# Dark cavern NW of the village. Glowing blue crystal formations, ambient
+# blue light, undead + crystal-elemental encounters, boss room with the
+# Crystal Guardian. Reuses Items.gd `crystal_shard` material drop.
+# ============================================================================
+func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent: Node3D, rng: RandomNumberGenerator) -> void:
+	# A cluster of 3–6 elongated emissive shards radiating from a base point.
+	var cluster := Node3D.new()
+	cluster.position = pos
+	parent.add_child(cluster)
+	var shard_count: int = rng.randi_range(3, 6)
+	for i in shard_count:
+		var shard := MeshInstance3D.new()
+		var pm := PrismMesh.new()
+		pm.size = Vector3(0.45 * base_scale, rng.randf_range(1.2, 2.6) * base_scale, 0.45 * base_scale)
+		shard.mesh = pm
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = color
+		mat.emission_enabled = true
+		mat.emission = color
+		mat.emission_energy_multiplier = 2.4
+		mat.metallic = 0.20
+		mat.roughness = 0.18
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.albedo_color.a = 0.85
+		shard.material_override = mat
+		var ang: float = (float(i) / float(shard_count)) * TAU + rng.randf_range(-0.4, 0.4)
+		var r_off: float = rng.randf_range(0.0, 0.4) * base_scale
+		shard.position = Vector3(cos(ang) * r_off, pm.size.y * 0.5, sin(ang) * r_off)
+		shard.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf_range(0, TAU), rng.randf_range(-0.3, 0.3))
+		cluster.add_child(shard)
+	# Pulsing omni light at the heart of the cluster
+	var light := OmniLight3D.new()
+	light.light_color = color
+	light.light_energy = 1.6
+	light.omni_range = 7.0 * base_scale
+	light.position.y = 1.0
+	cluster.add_child(light)
+
+func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: bool = false) -> void:
+	var sm := MeshInstance3D.new()
+	var pm := PrismMesh.new()
+	pm.size = Vector3(0.7, height, 0.7)
+	sm.mesh = pm
+	sm.material_override = MAT_ROCK(1.0)
+	sm.position = pos
+	if point_down:
+		sm.position.y = pos.y - height * 0.5
+		sm.rotation.x = PI
+	else:
+		sm.position.y = pos.y + height * 0.5
+	sm.rotation.y = randf() * TAU
+	parent.add_child(sm)
+
+func _build_crystal_caves(entrance: Vector3) -> void:
+	var caves := Node3D.new()
+	caves.name = "CrystalCaves"
+	caves.position = entrance
+	add_child(caves)
+	var rng := RandomNumberGenerator.new(); rng.randomize()
+	var crystal_blue: Color = Color(0.45, 0.80, 1.00)
+	var crystal_violet: Color = Color(0.70, 0.55, 1.00)
+	var crystal_teal: Color = Color(0.45, 1.00, 0.85)
+
+	# ── Cavern dome (inverted) — the dark interior shell ──
+	# Done as a downward-scaled half-sphere shell offset upward so it caps the
+	# play area without blocking the camera too aggressively.
+	var dome := MeshInstance3D.new()
+	var dm := SphereMesh.new()
+	dm.radius = 24.0; dm.height = 22.0
+	dome.mesh = dm
+	var dome_mat := StandardMaterial3D.new()
+	dome_mat.albedo_color = Color(0.06, 0.08, 0.14)
+	dome_mat.roughness = 0.95
+	dome_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render the inside
+	dome.material_override = dome_mat
+	dome.position = Vector3(0, 4.0, 0)
+	caves.add_child(dome)
+
+	# ── Entrance arch (two stone columns + capstone) ──
+	for sx in [-3.2, 3.2]:
+		var col := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = 5.5
+		col.mesh = cm
+		col.material_override = MAT_ROCK(1.5)
+		col.position = Vector3(sx, 2.75, 22.0)
+		caves.add_child(col)
+	var cap := MeshInstance3D.new()
+	var capm := BoxMesh.new()
+	capm.size = Vector3(8.4, 1.2, 1.6)
+	cap.mesh = capm
+	cap.material_override = MAT_ROCK(1.5)
+	cap.position = Vector3(0, 6.1, 22.0)
+	caves.add_child(cap)
+	# Glowing entrance crystal above the arch — a beacon from the village
+	var beacon := MeshInstance3D.new()
+	var bm := PrismMesh.new()
+	bm.size = Vector3(1.0, 2.4, 1.0)
+	beacon.mesh = bm
+	var beacon_mat := StandardMaterial3D.new()
+	beacon_mat.albedo_color = crystal_blue
+	beacon_mat.emission_enabled = true
+	beacon_mat.emission = crystal_blue
+	beacon_mat.emission_energy_multiplier = 3.0
+	beacon.material_override = beacon_mat
+	beacon.position = Vector3(0, 8.0, 22.0)
+	caves.add_child(beacon)
+	var beacon_light := OmniLight3D.new()
+	beacon_light.light_color = crystal_blue
+	beacon_light.light_energy = 2.5
+	beacon_light.omni_range = 14.0
+	beacon_light.position = Vector3(0, 8.0, 22.0)
+	caves.add_child(beacon_light)
+
+	# ── Ambient blue cave light ──
+	var amb := OmniLight3D.new()
+	amb.light_color = crystal_blue
+	amb.light_energy = 0.85
+	amb.omni_range = 28.0
+	amb.position = Vector3(0, 9.0, 0)
+	caves.add_child(amb)
+	# Secondary deep-violet light at the boss room end
+	var boss_amb := OmniLight3D.new()
+	boss_amb.light_color = crystal_violet
+	boss_amb.light_energy = 1.6
+	boss_amb.omni_range = 18.0
+	boss_amb.position = Vector3(0, 4.0, -16.0)
+	caves.add_child(boss_amb)
+
+	# ── Stone floor disc — a darker rocky ground inside the cave ──
+	var floor_mesh := MeshInstance3D.new()
+	var pm_floor := CylinderMesh.new()
+	pm_floor.top_radius = 22.0; pm_floor.bottom_radius = 22.0; pm_floor.height = 0.4
+	floor_mesh.mesh = pm_floor
+	var floor_mat := StandardMaterial3D.new()
+	floor_mat.albedo_color = Color(0.18, 0.20, 0.26)
+	floor_mat.roughness = 0.95
+	floor_mesh.material_override = floor_mat
+	floor_mesh.position = Vector3(0, 0.05, 0)
+	caves.add_child(floor_mesh)
+
+	# ── Glowing crystal formations scattered through the cave ──
+	var crystal_spots: Array = [
+		{"p": Vector3(-8, 0, 14), "s": 1.4, "c": crystal_blue},
+		{"p": Vector3( 9, 0, 11), "s": 1.2, "c": crystal_blue},
+		{"p": Vector3(14, 0,  4), "s": 1.6, "c": crystal_teal},
+		{"p": Vector3(-12,0,  2), "s": 1.5, "c": crystal_blue},
+		{"p": Vector3(  4,0, -4), "s": 1.0, "c": crystal_teal},
+		{"p": Vector3(-6, 0, -8), "s": 1.3, "c": crystal_violet},
+		{"p": Vector3( 12,0, -10),"s": 1.4, "c": crystal_violet},
+		{"p": Vector3(-14,0,-12), "s": 1.1, "c": crystal_blue},
+		{"p": Vector3(  0,0, -18),"s": 2.2, "c": crystal_violet},  # giant central crystal in boss room
+	]
+	for spot in crystal_spots:
+		var p: Vector3 = spot["p"]
+		var s: float = spot["s"]
+		var c: Color = spot["c"]
+		_make_crystal_cluster(p, s, c, caves, rng)
+
+	# ── Stalagmites (floor) and stalactites (ceiling) ──
+	for i in 18:
+		var ang: float = rng.randf() * TAU
+		var r: float = rng.randf_range(6.0, 19.0)
+		var pos: Vector3 = Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		var h: float = rng.randf_range(1.2, 3.0)
+		_make_stalagmite(pos, h, caves, false)
+	for i in 12:
+		var ang2: float = rng.randf() * TAU
+		var r2: float = rng.randf_range(4.0, 18.0)
+		var pos2: Vector3 = Vector3(cos(ang2) * r2, 11.5, sin(ang2) * r2)
+		var h2: float = rng.randf_range(1.5, 3.5)
+		_make_stalagmite(pos2, h2, caves, true)
+
+	# ── Boss room divider — a stone arch separating the entry chamber from the boss room ──
+	for sx2 in [-6.0, 6.0]:
+		var pillar := MeshInstance3D.new()
+		var pillm := CylinderMesh.new()
+		pillm.top_radius = 0.6; pillm.bottom_radius = 0.9; pillm.height = 7.0
+		pillar.mesh = pillm
+		pillar.material_override = MAT_ROCK(1.5)
+		pillar.position = Vector3(sx2, 3.5, -10.0)
+		caves.add_child(pillar)
+
+	# ── Skull pile in front of the boss crystal — ominous ──
+	for i in 6:
+		var skull := MeshInstance3D.new()
+		var sm2 := SphereMesh.new()
+		sm2.radius = 0.20; sm2.height = 0.32
+		skull.mesh = sm2
+		var sklm := StandardMaterial3D.new()
+		sklm.albedo_color = Color(0.85, 0.80, 0.72)
+		sklm.roughness = 0.85
+		skull.material_override = sklm
+		skull.position = Vector3(rng.randf_range(-1.4, 1.4), 0.18, -16.0 + rng.randf_range(-1.4, 1.4))
+		caves.add_child(skull)
+
+	# ── ENEMY SPAWNS ──
+	# Skeletons (use enemy_kind="skeleton", bone-white tint)
+	var skel_color: Color = Color(0.95, 0.95, 0.92)
+	var skel_spots: Array = [
+		Vector3(-6, 0, 12), Vector3( 7, 0, 8), Vector3(11, 0, -2),
+		Vector3(-10, 0, -4), Vector3( 4, 0, -8),
+	]
+	for sp in skel_spots:
+		var pos3: Vector3 = caves.position + sp
+		_spawn_enemy("skeleton", pos3, "Restless Skeleton", 36, 8, 24, 7, skel_color, 2.4, 4.4)
+
+	# Crystal Elementals — slower, hard-hitting, glowing
+	var elem_color: Color = Color(0.55, 0.85, 1.00)
+	var elem_spots: Array = [
+		Vector3(-12, 0, 0), Vector3(13, 0, -6), Vector3(-4, 0, -12),
+	]
+	for ep in elem_spots:
+		var pos4: Vector3 = caves.position + ep
+		_spawn_enemy("crystal_elemental", pos4, "Crystal Elemental", 70, 14, 55, 14, elem_color, 1.8, 3.2)
+
+	# Boss: Crystal Guardian — beefy crystal_guardian with massive HP and big drops
+	var guardian_pos: Vector3 = caves.position + Vector3(0, 0, -16.0)
+	_spawn_enemy("crystal_guardian", guardian_pos, "Crystal Guardian",
+		420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)

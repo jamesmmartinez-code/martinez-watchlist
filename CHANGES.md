@@ -9,6 +9,55 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 
 ---
 
+## 2026-05-04 (autonomous run) — Crystal Caves dungeon (NW of village)
+
+### New zone: Crystal Caves
+- New `_build_crystal_caves(Vector3(-50, 0, -40))` in `WorldBuilder.gd` (~165 new lines, plus two helpers `_make_crystal_cluster` and `_make_stalagmite`)
+- Cavern dome (inverted sphere shell, dark slate interior) caps the play area without blocking the camera
+- Stone entrance arch facing the village: two tapered columns + capstone + a glowing blue beacon crystal that radiates omni light so the kids can spot the entrance from the Whisperwood
+- Dim ambient blue OmniLight (energy 0.85, range 28m) for the main chamber + a deeper violet OmniLight (energy 1.6) seeded near the boss room
+- Dark stone floor disc (22m radius)
+- 9 procedural crystal clusters scattered around the cave — 3–6 emissive PrismMesh shards per cluster, pulsing OmniLight at the heart, alpha-blended translucent shards in three palettes (blue / teal / violet); the giant central crystal in the boss room is scale 2.2
+- 18 floor stalagmites + 12 ceiling stalactites randomized in radius and height
+- Stone arch separating the entry chamber from the boss room (two pillars at z=-10)
+- Skull pile in front of the boss crystal — ominous flavor
+
+### New enemies
+- **Restless Skeleton** — 5 spawn around the cavern (HP 36, dmg 8, XP 24, gold 7, bone-white tint Color(0.95,0.95,0.92), move 2.4 / chase 4.4)
+- **Crystal Elemental** — 3 spawn deeper in the cave (HP 70, dmg 14, XP 55, gold 14, glowing cyan, slower at 1.8/3.2 but hits hard)
+- **Crystal Guardian** (boss) — 1 spawn in the back of the cave at (-50, 0, -56). HP 420, dmg 26, XP 480, gold 200. Uses `crystal_guardian` enemy_kind with scale 1.55 and crystal-blue tint.
+- `Enemy.gd` updated with model scales for the new kinds (`skeleton`, `crystal_elemental`, `crystal_guardian`)
+
+### Loot
+- New legendary trinket `guardian_core` (Guardian's Core 💠) — +60 HP, +40 MP, +8% crit, value 1800
+- New drop tables in `Items.gd`:
+  - `skeleton` — crystal_shard / rusty_sword / iron_sword / chainmail / hp_potion_s / mp_potion / steel_blade
+  - `crystal_elemental` — crystal_shard (60%) / mp_potion / hp_potion_l / ring_focus / frost_saber rare
+  - `crystal_guardian` — guardian_core + 3-5 crystal_shards guaranteed-ish + frost_saber / steel_plate / emberforge / ring_focus / hp_potion_l + 2% dragonscale
+- Reuses existing `crystal_shard` material drop as the cave's signature trash currency
+
+### Files changed
+- `scripts/WorldBuilder.gd` (+165 lines: `_build_crystal_caves` + 2 helpers, hooked into `_ready`)
+- `scripts/Enemy.gd` (+6 lines: scale match cases for skeleton, crystal_elemental, crystal_guardian)
+- `scripts/Items.gd` (+34 lines: guardian_core trinket + 3 drop tables)
+
+### Validation
+- Bracket/brace/quote balance: PASS for WorldBuilder.gd, Enemy.gd, Items.gd
+- All new walrus declarations (`var x := Constructor.new()`) are on concrete types — no Variant strict-mode violations
+- Enemy.gd has a `_:` fallback for unknown kinds, so existing goblin/wolf/bandit behavior unaffected
+
+### Status
+✅ Pushed to `main` — GitHub Actions should auto-build the Web export within 3-5 min
+
+### Next run should pick up
+- **Backlog item 2: Fantasy character replacement** — Soldier.glb is jarring in a fantasy world. Try Quaternius RPG Hero Polypack (CC0) or use CesiumMan + procedural cape/helmet, and at minimum hide the rifle.
+- **Backlog item 3: Better trees** — current cone+sphere stack is placeholder-tier; either source Kenney Nature Kit or rewrite `_make_tree` for irregular foliage with multiple jittered spheres + branching trunks
+- **Backlog item 4: Smith Edda forge UI** — buy/sell/upgrade weapons, enchant action that costs gold + Crystal Shards (we now have a steady source from the caves!)
+
+---
+
+---
+
 ## 2026-05-04 (latest run) — Goblin Warlord boss, audio engine, pet & mount system
 
 ### Goblin Warlord boss fight

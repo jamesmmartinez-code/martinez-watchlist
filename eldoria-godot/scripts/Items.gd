@@ -52,6 +52,8 @@ const ITEMS = {
 	                  "icon":"🌳","color":Color(0.40,0.65,0.20), "hp_bonus":18, "value":75},
 	"crit_amulet":   {"name":"Hawk's Amulet", "type":"trinket","slot":"trinket","rarity":"rare",
 	                  "icon":"🦅","color":Color(0.80,0.55,0.20), "crit_bonus":0.10, "value":190},
+	"guardian_core": {"name":"Guardian's Core","type":"trinket","slot":"trinket","rarity":"legendary",
+	                  "icon":"💠","color":Color(0.50,0.90,1.00), "hp_bonus":60, "mp_bonus":40, "crit_bonus":0.08, "value":1800},
 
 	# ── Consumables ───────────────────────────────────────────────────────
 	"hp_potion_s":   {"name":"Lesser Health Potion","type":"consumable","slot":"","rarity":"common",
@@ -99,6 +101,32 @@ const DROP_TABLE = {
 		{"id":"hp_potion_l",   "weight":25, "qty":[2,4]},
 		{"id":"warlord_horn",  "weight":80, "qty":[1,1]},
 		{"id":"dragonfang",    "weight":2,  "qty":[1,1]},
+		{"id":"dragonscale",   "weight":2,  "qty":[1,1]},
+	],
+	"skeleton": [
+		{"id":"hp_potion_s",  "weight":30, "qty":[1,1]},
+		{"id":"crystal_shard","weight":18, "qty":[1,1]},
+		{"id":"rusty_sword",  "weight":15, "qty":[1,1]},
+		{"id":"iron_sword",   "weight":10, "qty":[1,1]},
+		{"id":"chainmail",    "weight":8,  "qty":[1,1]},
+		{"id":"steel_blade",  "weight":3,  "qty":[1,1]},
+		{"id":"mp_potion",    "weight":12, "qty":[1,1]},
+	],
+	"crystal_elemental": [
+		{"id":"crystal_shard","weight":60, "qty":[1,2]},
+		{"id":"mp_potion",    "weight":20, "qty":[1,2]},
+		{"id":"hp_potion_l",  "weight":12, "qty":[1,1]},
+		{"id":"ring_focus",   "weight":8,  "qty":[1,1]},
+		{"id":"frost_saber",  "weight":3,  "qty":[1,1]},
+	],
+	"crystal_guardian": [
+		{"id":"crystal_shard", "weight":80, "qty":[3,5]},
+		{"id":"guardian_core", "weight":80, "qty":[1,1]},
+		{"id":"frost_saber",   "weight":18, "qty":[1,1]},
+		{"id":"steel_plate",   "weight":15, "qty":[1,1]},
+		{"id":"emberforge",    "weight":8,  "qty":[1,1]},
+		{"id":"ring_focus",    "weight":15, "qty":[1,1]},
+		{"id":"hp_potion_l",   "weight":25, "qty":[2,3]},
 		{"id":"dragonscale",   "weight":2,  "qty":[1,1]},
 	],
 	"chest_common": [
