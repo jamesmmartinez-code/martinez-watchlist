@@ -382,3 +382,79 @@ narrative + density + pacing.
   - **Why this serves both kids:** Alden gets two forgiveness-valve knobs (range + arc) and a more readable crit flash; Owen gets a tighter swing loop (-12% total swing duration) and 21% more crit-amplitude expected per minute (`Δ = 0.14×2.15 / 0.12×2.0 - 1`). The fight pacing tightens for Owen *without* punishing Alden — both ends of the player-model band move in the direction each kid wants.
   - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, `crit_chance` is the cleanest knob to lerp on it — `lerp(0.14, 0.20, 1.0 - pressure)` so a stressed Alden gets MORE crit-luck (free recovery) while a calm Owen keeps his earned baseline. Pure number knob, fits the 4-output pattern the faction-pressure scalar already exemplifies. Output #1 on the new `player_pressure_signal()` axis.
 
+
+- **2026-05-05 (polish run — visual: post-processing pass on Main.tscn)** —
+  Complementary follow-on to the prior env-warm run (which retuned ambient,
+  fog density, sun energy and shadow biases). That run set the *atmosphere*;
+  this run polishes the *post-processing rack* — eleven property tweaks on
+  the existing Environment + Sun nodes in `eldoria-godot/scenes/Main.tscn`.
+  No new resources, no new nodes, no script changes; pure number knobs on
+  glow / SSAO / tonemap white / color adjustments / sun-fog godrays. THEME
+  §3 (palette) and §11 (painterly references) cited; §13 (ground contact)
+  reinforced via SSAO power.
+  - **Tonemap white:** `tonemap_white 7.0 → 5.5`. Lower white-point pulls
+    more highlight info into the visible range — softer, painterly highlight
+    roll-off on the burnt-orange sunset HDRI rather than the previous
+    over-bright clip on bright sky pixels. Squarely on the §1/§11 painterly
+    target (Studio Ghibli watercolor, Alan Lee illustration).
+  - **Glow:** `glow_intensity 0.42 → 0.55`, `glow_strength 0.95 → 1.05`,
+    `glow_bloom 0.05 → 0.10`, `glow_hdr_threshold 0.66 → 0.58`. The threshold
+    drop is the consequential one — more pixels qualify as bloom, so warm
+    sunset rim-lighting on foliage edges, fireflies, and lantern-glass now
+    catches a soft halo instead of clipping flat. Intensity/strength bumps
+    are in the same direction the 2026-05-04 ambient/fog run was implicitly
+    asking for (warmer sky → warmer bloom).
+  - **SSAO:** `ssao_intensity 1.5 → 2.10`, `ssao_radius 1.8 → 1.6`,
+    `ssao_power 1.65 → 1.85`. Tighter radius + stronger intensity/power =
+    deeper, more localized contact shadows under stalls, banners, market
+    boxes, the campfire ring, and (importantly) at character feet. THEME
+    §13 ground-contact reads sharper without changing any geometry — a
+    Hero rig that used to look "almost-floating" now reads planted under
+    the new sunset key.
+  - **Color adjustments:** `adjustment_contrast 1.0 → 1.04`,
+    `adjustment_saturation 1.10 → 1.16`. A hair more saturation pushes
+    burnt-orange / crimson / forest-moss further into the §3 palette
+    without crossing into the banned neon range (the saturation ceiling
+    is well below the `adjustment_saturation 1.5+` band where greens go
+    radioactive). The contrast lift is small enough that mid-tone parchment
+    sepia stays soft — no sudden pop into "modern HDR look."
+  - **Sun-fog godrays:** `light_volumetric_fog_energy 2.0 → 2.4` on the
+    Sun DirectionalLight. The volumetric fog from the prior run finally
+    has the sun-shaft punch to render at distance — burnt-orange shafts
+    cut through the canopy/mountain-ring silhouettes the way the painterly
+    references show.
+
+  **Why this serves both kids:**
+  - **Alden (9):** glow + threshold drop make fireflies, lantern halos,
+    crystal-cluster emissives, and crit-flash damage numbers visibly
+    *prettier* — every "look at this thing" beat in his Exploration affinity
+    rewards a beat longer. The painterly tonemap roll-off softens the
+    overbright dusk sky that was previously washing out his frog-pond
+    silhouette during golden hour.
+  - **Owen (11):** tighter SSAO under hits = combat impacts read more
+    grounded; his swing now lands enemies into a more visibly weighted
+    shadow-pocket. The sun-fog godrays give his sprint-toward-mountain
+    traversal more depth-cue per second, so "I went farther" reads
+    visually faster.
+
+  **Compound, don't sprawl:** zero new resources, zero new nodes, zero
+  script changes — only existing post-processing properties retuned, all
+  values inside Godot 4 ranges, all colors/intensities inside §3 palette
+  bounds. The 2026-05-04 ambient/fog/sun run was the precondition; this
+  run is the post-processing pass that warm atmosphere was implicitly
+  asking for. Total Main.tscn diff: 11 insertions, 11 deletions.
+
+  **Adaptive proposal for the next polish run:** when
+  `World.player_pressure_signal()` ships, `glow_intensity` is the cleanest
+  knob to lerp on it — a stressed player (high deaths/min) gets `lerp(0.55,
+  0.72, pressure)` for a softer, dreamier frame (recovery valve, Alden
+  affinity); a calm player keeps the crisper 0.55 baseline (Owen's
+  combat-clarity rung). Pure number knob, fits the existing 4-output
+  pattern the faction-pressure scalar already exemplifies. Output #1 on
+  the post-processing axis of `player_pressure_signal()`.
+
+  **Signal to watch:** if Alden's session screenshots (organic, not staged)
+  start trending toward "look at this view" frames at golden hour
+  (`World.time_of_day` ∈ [0.65, 0.80]), the bloom/godray tuning is right.
+  If frame rate drops on lower-end hardware (SSAO power 1.85 + intensity
+  2.10 is the most expensive change), back SSAO power down to 1.7 first.
