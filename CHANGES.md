@@ -8,6 +8,77 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
+## 2026-05-05 (autonomous run) — Player + all 7 villagers swapped to real fantasy GLBs
+
+### What changed
+The player hero and every villager in Briarwood were rendering as the same generic mannequin tinted differently per role. Specifically: the Player used `Hero.glb` ("Stylized Low poly Animated Character" — a generic animated mannequin), and every NPC in `WorldBuilder._make_npc` instanced `CesiumMan.glb` (a totally placeholder mannequin) and applied a per-NPC color tint as the only differentiator. So the seven villagers were silhouette-identical — a direct violation of THEME §4 ("each NPC should be silhouette-distinct — you should recognize them at 30m").
+
+This run swaps the player and all 7 NPCs to per-character hand-curated GLBs, sourced as a mix of fresh Sketchfab CC-BY pulls and re-use of previously-orphaned npcs/ GLBs that earlier batches added but never wired in.
+
+### New mapping (in-game role → source GLB)
+| Role | GLB | Source / why this fits |
+|---|---|---|
+| **Player hero** | `hero_lange.glb` | "Lange - Half-Elf Knight" (CC-BY, 2 anims, ~21k faces) — dark teal tunic, leather armor, sash, dagger at hip, eyepatch. Reads as fantasy adventurer per THEME §4 |
+| **Elder Maeve** | `npcs/elder_maeve.glb` | "Old Village Granny" (CC-BY, 1 anim) — gray-haired elderly woman in red-orange dress and apron. Literal grandmother |
+| **Smith Edda** | `npcs/worker_girl.glb` (reused) | Generic working-clothes female from Char batch 2 — silhouette of a stocky working woman, fits THEME blacksmith |
+| **Mara the Merchant** | `npcs/mushroom_merchant.glb` (reused) | Has bag, scroll, scarf (mesh names confirm) — perfect merchant silhouette |
+| **Herbalist Lyra** | `npcs/herbalist_lyra.glb` | "Low Poly Forest Druid" (CC-BY) — chibi-stylized hooded green-themed druid; silhouette matches herbalist with leaf-tangled hair |
+| **Innkeeper Bram** | `npcs/innkeeper_bram.glb` | "Stylized Hand Painted Dwarf" (CC-BY) — bald with orange handlebar mustache, green tunic, leather wraps. The trope incarnate |
+| **Stablemaster Roan** | `npcs/stablemaster_roan.glb` | "Stylized Outlaw" (CC-BY) — lean, rangy figure with vest and gloves. Acceptable rough-around-the-edges ranger |
+| **Trainer Hala** | `npcs/warrior.glb` (reused) | Sword + shield + warrior body — fits warrior-monk |
+
+### Wiring
+- **`Main.tscn`** — single `ext_resource` path swap from `Hero.glb` → `hero_lange.glb` for ID `8_hero`. Player node still instances `ExtResource("8_hero")` so the change is purely the asset binding.
+- **`WorldBuilder.gd`** (+30 lines, additive)
+  - New `const NPC_MODELS` dict keyed on `data.name` (matches `NPCS` const) → `PackedScene`
+  - New `const NPC_SCALES` dict for per-NPC visual scale tuning (different sources have different native heights — first-pass values; future runs can refine)
+  - `_make_npc()` now picks `NPC_MODELS.get(data.name, npc_scene)` and tracks `uses_real_model`. The flat tint modulate is applied **only** to the placeholder fallback — real models keep their painted textures
+  - When a real model is used, `npc.call_deferred("_npc_play_idle_anim_if_any")` triggers an animation if the source GLB ships one
+- **`NPC.gd`** (+22 lines) — added `_npc_play_idle_anim_if_any()` and `_find_first_anim_player(n)` recursive helpers. Tries common idle-animation spellings (`Idle` / `idle` / `IdleAnimation` / `ArmatureAction.001` / `Take 001` / `Scene`), then falls back to the first available
+
+### Theme citations
+- THEME §1 — no modern, no sci-fi: every chosen model is painterly stylized fantasy. Three sci-fi/modern candidates were rejected mid-run (a sci-fi female "Hunter" with energy gun, a modern grandma with a walking frame in jeans, and a modern peasant in fighting stance) before download became a commit
+- THEME §4 — each villager is now silhouette-distinct: an old crone in a red dress, a stocky woman in working clothes, a robed merchant, a green druid, a bald dwarf, a lean outlaw, a sworded warrior, plus an adventurer with eyepatch + sash for the player. From 30m they read different
+- THEME §10 rule 8 — every asset is source-credited (CC-BY) in CREDITS.md
+
+### Files touched
+- `eldoria-godot/assets/models/hero_lange.glb` (NEW, 12.7 MB)
+- `eldoria-godot/assets/models/hero_lange.glb.import` (NEW)
+- `eldoria-godot/assets/models/npcs/elder_maeve.glb` (NEW, 250 KB)
+- `eldoria-godot/assets/models/npcs/elder_maeve.glb.import` (NEW)
+- `eldoria-godot/assets/models/npcs/herbalist_lyra.glb` (NEW, 320 KB)
+- `eldoria-godot/assets/models/npcs/herbalist_lyra.glb.import` (NEW)
+- `eldoria-godot/assets/models/npcs/innkeeper_bram.glb` (NEW, 903 KB)
+- `eldoria-godot/assets/models/npcs/innkeeper_bram.glb.import` (NEW)
+- `eldoria-godot/assets/models/npcs/stablemaster_roan.glb` (NEW, 2.6 MB)
+- `eldoria-godot/assets/models/npcs/stablemaster_roan.glb.import` (NEW)
+- `eldoria-godot/assets/models/npcs/mushroom_merchant.glb.import` (NEW import for already-present GLB)
+- `eldoria-godot/assets/models/npcs/warrior.glb.import` (NEW import for already-present GLB)
+- `eldoria-godot/assets/models/npcs/worker_girl.glb.import` (NEW import for already-present GLB)
+- `eldoria-godot/scenes/Main.tscn` (one ext_resource path swap)
+- `eldoria-godot/scripts/WorldBuilder.gd` (NPC_MODELS, NPC_SCALES, `_make_npc` selector branch)
+- `eldoria-godot/scripts/NPC.gd` (idle-anim helper)
+- `CREDITS.md` (8 new credit lines)
+
+### Validation
+- Bracket / brace / paren balance: PASS for both edited GDScripts (`WorldBuilder.gd` 1125/1125, `NPC.gd` 68/68)
+- Single definition of `NPC_MODELS`, `NPC_SCALES`, `_make_npc`, `_npc_play_idle_anim_if_any`, `_find_first_anim_player`
+- All 7 NPCs in the `NPCS` const are keyed in `NPC_MODELS` — none fall through to placeholder
+- No procedural primitives parented to character bodies — THEME §10 ban respected
+- Soldier.glb still untouched as a visible character — BAN respected
+- Old `Hero.glb` left in tree (still referenced by some import metadata); future cleanup can remove it once no other code references it
+
+### Next run should pick up
+- **Boss.glb wiring** — there's a 4.7 MB "Mountain Orge" GLB at `assets/models/Boss.glb` with 13 animations including Death/Ideal/Jump that's not wired anywhere. Add it to `Enemy.gd::KIND_MODELS` for `crystal_guardian` (or as `goblin_warlord` boss when that kind ships)
+- **Wolf wiring** — `assets/models/enemies/wolf.glb` (real quadruped, 1 anim) is sitting unwired since Char batch 2. Add to `KIND_MODELS["wolf"]` and remove the `_model.rotation.x = -PI / 2` rotation hack once the model's forward axis is verified
+- **Skeleton + Crystal Elemental** — both still using RobotExpressive in the Crystal Caves dungeon
+- **Per-NPC scale tuning** — `NPC_SCALES` values are first-pass guesses. Once the build deploys, dial each NPC up/down so heights look right next to the player
+
+### Status
+Pushed to `main` — GitHub Actions will rebuild the web export within 3-5 min.
+
+---
+
 ## Run 7 2026-05-04 (autonomous) — Adaptive enemy attack cooldown (3rd output on faction_pressure)
 
 ### Plan

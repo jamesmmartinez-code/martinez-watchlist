@@ -5,6 +5,29 @@ class_name WorldBuilder
 # faces with snow caps, cobble paths, market stalls, lanterns, banners, NPCs.
 
 @export var npc_scene: PackedScene = preload("res://assets/models/CesiumMan.glb")
+# THEME §4 — silhouette-distinct NPC models. Each villager gets a hand-crafted
+# (or hand-curated) GLB that reads as the right archetype from 30m. NPCs whose
+# `name` is missing here fall through to `npc_scene` (CesiumMan placeholder),
+# so wiring is additive and safe.
+const NPC_MODELS := {
+	"Elder Maeve":         preload("res://assets/models/npcs/elder_maeve.glb"),
+	"Smith Edda":          preload("res://assets/models/npcs/worker_girl.glb"),
+	"Mara the Merchant":   preload("res://assets/models/npcs/mushroom_merchant.glb"),
+	"Herbalist Lyra":      preload("res://assets/models/npcs/herbalist_lyra.glb"),
+	"Innkeeper Bram":      preload("res://assets/models/npcs/innkeeper_bram.glb"),
+	"Stablemaster Roan":   preload("res://assets/models/npcs/stablemaster_roan.glb"),
+	"Trainer Hala":        preload("res://assets/models/npcs/warrior.glb"),
+}
+# Per-NPC scale tweak — different sources have different native heights.
+const NPC_SCALES := {
+	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
+	"Smith Edda":          Vector3(1.05, 1.05, 1.05),
+	"Mara the Merchant":   Vector3(1.10, 1.10, 1.10),
+	"Herbalist Lyra":      Vector3(1.30, 1.30, 1.30),
+	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
+	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
+	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
+}
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
 var _buildings_built: bool = false
@@ -998,12 +1021,23 @@ func _make_npc(data: Dictionary) -> void:
 	col.position.y = 0.9
 	npc.add_child(col)
 
-	var model := npc_scene.instantiate()
-	# Normalize NPC visual scale so any GLB ends up ~1.8m tall regardless of authored size
-	model.scale = Vector3(1.0, 1.0, 1.0)
+	# THEME §4: prefer the per-name hand-crafted GLB; fall back to CesiumMan only
+	# for NPCs we haven't sourced yet. The flat tint is applied ONLY to the
+	# placeholder — real models carry their own painted textures.
+	var src: PackedScene = NPC_MODELS.get(data.name, npc_scene)
+	var uses_real_model: bool = src != npc_scene
+	var model := src.instantiate()
+	# Auto-normalize to ~1.8m tall (handles any authored size — supersedes the
+	# hardcoded NPC_SCALES dict; the dict is left in place as a manual override
+	# fallback if a future run wants to bias a specific NPC up or down).
+	model.scale = NPC_SCALES.get(data.name, Vector3(1.0, 1.0, 1.0))
 	call_deferred("_normalize_npc_scale", model)
 	npc.add_child(model)
-	model.call_deferred("propagate_call", "set", ["modulate", data.tint])
+	if not uses_real_model:
+		model.call_deferred("propagate_call", "set", ["modulate", data.tint])
+	else:
+		# Auto-play any embedded idle animation if the source GLB ships one.
+		npc.call_deferred("_npc_play_idle_anim_if_any")
 
 	var label := Label3D.new()
 	label.text = data.name

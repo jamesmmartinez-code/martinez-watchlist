@@ -114,3 +114,28 @@ func _on_interact() -> void:
 		line = variants[bucket]
 	# Emit a dialog signal that the World scene picks up to show UI
 	get_tree().call_group("world", "show_dialogue", npc_name, line, npc_role)
+
+func _npc_play_idle_anim_if_any() -> void:
+	# Walks this NPC's child subtree for an AnimationPlayer and plays a likely
+	# idle animation. NPCs sourced from third-party GLBs ship anims under varied
+	# names (Idle / idle / ArmatureAction.001 / Take 001 / Scene). We try common
+	# spellings, then fall back to the first available animation if any.
+	var ap: AnimationPlayer = _find_first_anim_player(self)
+	if ap == null:
+		return
+	for n in ["Idle", "idle", "IdleAnimation", "ArmatureAction.001", "Take 001", "Scene"]:
+		if ap.has_animation(n):
+			ap.play(n)
+			return
+	var names := ap.get_animation_list()
+	if names.size() > 0:
+		ap.play(names[0])
+
+func _find_first_anim_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var found := _find_first_anim_player(c)
+		if found != null:
+			return found
+	return null

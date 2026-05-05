@@ -1,6 +1,20 @@
 # Realm of Eldoria — Asset Credits
 
 ## 3D Models — Sketchfab (CC Attribution)
+
+### Player + village NPCs (this run)
+- **`hero_lange.glb`** — "Lange - Half-Elf Knight" by [phucpham1076](https://sketchfab.com/phucpham1076), CC-BY. https://sketchfab.com/3d-models/3c22b831b66c4de88043f57fabca406b — Player hero (replaces older Hero.glb / "Stylized Low poly Animated Character")
+- **`npcs/elder_maeve.glb`** — "Old Village Granny" by user on Sketchfab (UID `0f2d99b04b1c4918a41c3834a0285891`), CC-BY. https://sketchfab.com/3d-models/0f2d99b04b1c4918a41c3834a0285891 — Elder Maeve (quest-giver grandmother)
+- **`npcs/herbalist_lyra.glb`** — "Low Poly Forest Druid" by user on Sketchfab (UID `ac5839a6868c44bd8a04c3d1108f325a`), CC-BY. https://sketchfab.com/3d-models/ac5839a6868c44bd8a04c3d1108f325a — Herbalist Lyra (green hooded druid silhouette)
+- **`npcs/innkeeper_bram.glb`** — "Stylized Hand Painted Dwarf" by user on Sketchfab (UID `fc646e1620c9410dabe439cfe327da9c`), CC-BY. https://sketchfab.com/3d-models/fc646e1620c9410dabe439cfe327da9c — Innkeeper Bram (jolly bald dwarf with handlebar mustache and green tunic)
+- **`npcs/stablemaster_roan.glb`** — "Stylized Outlaw" by user on Sketchfab (UID `ef6f4e7a4c00449180dae46c91075a35`), CC-BY. https://sketchfab.com/3d-models/ef6f4e7a4c00449180dae46c91075a35 — Stablemaster Roan (lean rangy figure)
+
+### Reused from `Char: batch 2` (already in tree, now wired)
+- **`npcs/mushroom_merchant.glb`** — wired to Mara the Merchant (matches the bag/scarf/scroll merchant silhouette)
+- **`npcs/worker_girl.glb`** — wired to Smith Edda (working-clothes female silhouette)
+- **`npcs/warrior.glb`** — wired to Trainer Hala (sword + shield warrior-monk)
+
+
 - **Hero.glb** — "Emma – Stylized Adventure Character" by [sanaullahrais](https://sketchfab.com/sanaullahrais), Sketchfab CC Attribution. https://sketchfab.com/3d-models/790391aec68649dab097e5b83d0351a4
 - **enemies/goblin_scout.glb** — "Goblin Animations" by [codywellman](https://sketchfab.com/codywellman), Sketchfab CC Attribution. Goblin model by Victor-Emmanuel Pancrazi (artstation.com/babichon), rig by Thomas Vialetto (artstation.com/tvialetto), concept by Youssef Zamani (artstation.com/usefzamani). https://sketchfab.com/3d-models/goblin-animations-b9705b05dd6c47b29ec943bc096cbf3a
 
