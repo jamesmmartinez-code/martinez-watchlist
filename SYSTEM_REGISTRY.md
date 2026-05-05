@@ -65,14 +65,14 @@ Currently keyed: `goblin`, `wolf`, `goblin_warlord`, `skeleton`,
 `crystal_elemental`, `bandit` (entries vary). New enemy kinds MUST add a drop
 table entry; do not let an enemy ship without loot.
 
-### Live wolf table (run 19 — Builder)
+### Live wolf table (run 20 — Builder)
 
 | id            | weight | qty   | notes                                              |
 |---------------|--------|-------|----------------------------------------------------|
 | `hp_potion_s` |   22   | 1-2   | Owen-tier survival floor                           |
 | `wolf_pelt`   |   35   | 1     | fetch material for `pelt_for_lyra` (38 → 35 run 19) |
 | `wolf_fang`   |   15   | 1     | fetch material for `wolf_fang_for_roan` (18 → 15 run 19) |
-| `wolf_heart`  |    8   | 1     | **NEW (run 19)** — RARE; fetch material for `wolf_heart_for_bram` |
+| `wolf_heart`  |    8   | 1     | **NEW (run 20)** — RARE; fetch material for `wolf_heart_for_bram` |
 | `leather`     |   10   | 1     | crafting material (12 → 10 run 19)                 |
 | `chainmail`   |    6   | 1     | mid-tier armor                                     |
 | `steel_blade` |    4   | 1     | mid-tier weapon                                    |
@@ -1401,3 +1401,85 @@ fallback when nothing more newsworthy is in scope.
   by gating tier resolution on BOTH `visits >= min` AND
   `npc_days_since_last_visit < N`.
 
+
+## NPC Stranger schema (run 20 — Builder)
+
+`World.npc_seen: Dictionary[String, bool]` is a per-session "have we ever
+met?" ledger, set by `World.mark_npc_seen(name)` and read by
+`World.is_stranger(name)` and (transparently) by
+`DialogueDB.choose_line()`'s pre-existing 5th-tier `stranger` predicate.
+
+### API
+
+| Member | Direction | Notes |
+|---|---|---|
+| `npc_seen: Dictionary` | field | Public; DialogueDB.choose_line() reads via `world_node.get("npc_seen")` directly. Future readers should prefer `is_stranger(name)`. |
+| `mark_npc_seen(name: String)` | mutator (sole writer) | Called from `World.show_dialogue(speaker, …)` AFTER `dialogue_panel.visible = true`. Idempotent. Empty / null name → no-op. |
+| `is_stranger(name: String) -> bool` | read | Returns true for any NPC who has not yet had a `show_dialogue` call complete. Future quest predicates / achievements should consume via this accessor, not the raw dict. |
+
+### Why `mark_npc_seen` runs from `show_dialogue` (post-condition)
+
+NPC.gd's `_on_interact` does, in order:
+1. `record_npc_visit(name)` — `visits` increments to ≥ 1 (run 16).
+2. `DialogueDB.choose_line(name, ctx)` — predicates evaluate against the
+   CURRENT `npc_seen` state. The `stranger` check fires only when
+   `npc_seen[name] != true` (the ELSE branch of the bool coercion in
+   `DialogueDB`).
+3. `world.show_dialogue(name, line, role)` — pushes line to UI panel,
+   then calls `mark_npc_seen(name)` as the final step.
+
+If `mark_npc_seen` ran any earlier (e.g. inside `record_npc_visit`), the
+`stranger` predicate would never fire because by step (2) the entry
+would already be `true`. The post-condition order is the only correct
+order.
+
+### Distinct from `npc_memory.visits`
+
+| Field | When it changes | First-visit window |
+|---|---|---|
+| `npc_memory.visits` | TOP of `_on_interact` (`record_npc_visit` — run 16) | invisible to a `visits == 0` predicate; visits is already 1 by the time DialogueDB sees it |
+| `npc_seen[name]` | END of `show_dialogue` (`mark_npc_seen` — run 19) | the OLD `false` is what DialogueDB reads on the first hello, the NEW `true` is what every subsequent hello sees |
+
+Both fields are owned by `World`; both are session-scoped today (no
+save/load yet); both are pure post-conditions of `_on_interact`.
+
+### Lights up
+
+Wiring `npc_seen` activates the `stranger` JSON key for every NPC that
+opts into JSON dialogue. As of run 20 that is **all 7 villagers**:
+Elder Maeve, Smith Edda, Mara the Merchant, Herbalist Lyra, Innkeeper
+Bram, Stablemaster Roan, Trainer Hala. Each `stranger` key was authored
+by the Lore Keeper agent on 2026-05-04 and has been dormant ever since.
+
+The DialogueDB priority order means `stranger` outranks the 4
+time-of-day mood buckets and the legacy `after_first_quest_complete`
+JSON key — so the FIRST hello to a never-met NPC is guaranteed to be
+the authored "stranger" line, not a generic morning/midday greeting.
+The SECOND hello falls back into the normal predicate stack.
+
+### Failsafe contract (forward)
+
+- `mark_npc_seen("")` → no-op (defensive against bare/empty speaker
+  strings reaching `show_dialogue`).
+- Re-marking an already-seen NPC → idempotent overwrite, no events.
+- Older saves missing the `npc_seen` field → coerced to empty
+  Dictionary by Godot's default-value rule on the typed field.
+  Effective behavior: every NPC reads as a stranger on the first
+  hello after load. This is the desired UX for save/load semantics
+  (the player just woke up; meeting feels fresh).
+
+### Future seams (next-run hooks)
+
+- **"Met every villager" achievement** — `Achievements.gd` predicate
+  iterating WorldBuilder.NPCS and checking
+  `not World.is_stranger(name)`. Pairs with the run-16 "Visited every
+  villager" hook (different threshold: 1 vs N visits).
+- **"Stranger no longer" world flag** — could fire once
+  `npc_seen.size() >= 7`, opening up cross-NPC dialogue lines that
+  reference the ENTIRE village having met the player. Pure derivation
+  from `npc_seen`, no new state.
+- **Per-NPC first-meeting day** — extending the value type from `bool`
+  to `Dictionary {seen: true, met_day: int, met_tod: float}` would let
+  NPCs say things like "you've been around three days now". The
+  accessor signature stays stable because callers use
+  `is_stranger(name)` rather than reading the dict directly.

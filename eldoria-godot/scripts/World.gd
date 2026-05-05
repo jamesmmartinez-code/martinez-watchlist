@@ -82,6 +82,39 @@ var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 # all enter through the same accessor surface.
 var npc_memory: Dictionary = {}
 
+# Run 20 (Builder) — npc_seen: per-NPC "have we ever met?" ledger.
+# Schema: { npc_name -> bool }. An entry of `true` means the player has
+# completed at least one full _on_interact tick with this NPC (i.e. dialogue
+# was actually shown — recorded inside `show_dialogue`, AFTER DialogueDB has
+# already chosen its line, so the FIRST hello fires the JSON `stranger` key).
+#
+# WRITES: `mark_npc_seen(name)` only — invoked from `show_dialogue` AFTER
+# the line is set on the panel. Calling it earlier would race with
+# DialogueDB.choose_line and the `stranger` predicate would never fire.
+# Idempotent: re-marking an already-seen NPC is a no-op.
+#
+# READS:
+#   * DialogueDB.gd `stranger` predicate (5th tier — see DialogueDB.gd
+#     priority list). Fail-soft contract was already in place: when the
+#     field didn't exist, the predicate skipped silently; now that it
+#     does, every NPC's `stranger` JSON key fires on first encounter
+#     and only on first encounter. All 7 NPC JSONs already author this
+#     key (lore agent, 2026-05-04), so wiring this field lights up
+#     7 already-on-disk lines with no JSON edit required.
+#   * `is_stranger(name)` accessor — symmetry with `npc_visits()` /
+#     `has_world_flag()` / `npc_has_flag()`. Future quest predicates
+#     keyed on "first meeting" route through here, not the raw dict.
+#
+# Distinct from `npc_memory.visits` because:
+#   * `visits` increments at the TOP of _on_interact (run 16) — by the
+#     time DialogueDB resolves, visits is already ≥ 1 for the current
+#     visit, so the first-visit window is invisible to a `visits == 0`
+#     predicate.
+#   * `npc_seen` flips at the END of dialogue display, so the `stranger`
+#     check during DialogueDB resolution sees the OLD (false) value on
+#     the first call and the NEW (true) value from the second onward.
+var npc_seen: Dictionary = {}
+
 # Achievement / Title state — read-only externally; mutated only by
 # `_check_achievements()` which is invoked at the end of `apply_consequence`
 # and once at `_ready` (so a fresh world boot picks up any pre-existing
@@ -309,7 +342,7 @@ const QUEST_CATALOG := {
 			"toast": "🥋 Hala nods. The form holds.",
 		},
 	},
-	# COMPOUND (run 19 — Builder): Bram-issued wolf-heart bounty quest. FOURTH
+	# COMPOUND (run 20 — Builder): Bram-issued wolf-heart bounty quest. FOURTH
 	# `dire_wolves` reducer (after `pelt_for_lyra` -0.1, `wolf_fang_for_roan`
 	# -0.1, and `wolf_form_with_hala` -0.1). Trips the run-6 THIRD CLIFF
 	# (< 0.15 → packs of 1) — at fresh-save 0.5, all four reducers stack to
@@ -488,6 +521,29 @@ func npc_days_since_last_visit(npc_name: String) -> int:
 	if last < 0:
 		return -1
 	return max(0, world_day - last)
+
+# Run 20 (Builder) — `mark_npc_seen` is the SOLE writer of `npc_seen`.
+# Called from `show_dialogue` AFTER the dialogue panel has been updated, so
+# DialogueDB.choose_line (which runs BEFORE show_dialogue, inside NPC.gd's
+# _on_interact) sees the OLD npc_seen state — i.e. on the very first hello
+# the entry is still missing/false and the JSON `stranger` key fires.
+# Idempotent: re-marking an already-seen NPC is a no-op (Dictionary
+# overwrite, no event side effects).
+func mark_npc_seen(npc_name: String) -> void:
+	if npc_name == "":
+		return
+	npc_seen[npc_name] = true
+
+# Symmetric read accessor for the rest of the engine. Returns true the
+# FIRST time it's called for a never-met NPC — quest predicates and
+# achievement triggers should consume this rather than reaching into the
+# raw dict so future schema changes (e.g. tracking *which day* you first
+# met them, or *what tier* they were warmed at on first contact) can
+# extend the entry from `bool` to `Dictionary` without breaking callers.
+func is_stranger(npc_name: String) -> bool:
+	if npc_name == "":
+		return true
+	return not bool(npc_seen.get(npc_name, false))
 
 # Direct world-flag write — sister to apply_consequence's flag step but with
 # no faction / npc / toast side-effects. Used when an emergent runtime event
@@ -873,6 +929,14 @@ func show_dialogue(speaker: String, text: String, role: String = "") -> void:
 	if reforge_btn:
 		_refresh_reforge_button(reforge_btn, role, player)
 	dialogue_panel.visible = true
+	# COMPOUND (run 20 — Builder): mark this NPC seen AFTER the panel is
+	# populated. show_dialogue is called from NPC.gd::_on_interact AFTER
+	# DialogueDB.choose_line has already resolved the line, so the `stranger`
+	# predicate in DialogueDB sees the OLD npc_seen state on the first hello
+	# and the NEW state on every subsequent hello. Pure post-condition: the
+	# moment a player has ACTUALLY heard a line from this NPC, they are no
+	# longer a stranger. Fail-soft on bare/empty speaker names.
+	mark_npc_seen(speaker)
 
 func close_dialogue() -> void:
 	if dialogue_panel:

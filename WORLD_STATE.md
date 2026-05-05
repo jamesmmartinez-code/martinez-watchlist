@@ -275,11 +275,29 @@ run easier — what's the *next* thing that compounds?)
   `high_renown` JSON lines fire. DialogueDB reads `world.player_renown >=
   renown_threshold` (default 100) and the JSONs are pre-authored. Single
   field write + one quest hook.
-- 🔥 **Adjacent next:** Wire a `World.npc_seen` Dictionary (keyed by
-  npc_name) flipped to true on first interaction in NPC.gd. Lights up the
-  `stranger` JSON keys for first-encounter warmth — Maeve's "*peers up the
-  stick at you* — A face I don't yet know", Edda's "Don't touch the anvil.
-  Ask first.", Bram's "Welcome to the Long Lantern! New face, new tale."
+- ✅ **Resolved 2026-05-05 (run 20 — Builder):** `World.npc_seen` Dictionary
+  + `mark_npc_seen(name)` writer + `is_stranger(name)` reader, all
+  session-scoped on the World autoload. Wired into `World.show_dialogue`
+  as a POST-condition (after `dialogue_panel.visible = true`) so
+  DialogueDB.choose_line — which runs BEFORE show_dialogue inside
+  NPC.gd::_on_interact — sees the OLD `npc_seen` state on the FIRST
+  hello and the NEW state from the SECOND onward. Lights up DialogueDB's
+  pre-existing 5th-tier `stranger` predicate for every NPC opted into
+  JSON dialogue: all 7 villagers (Maeve, Edda, Mara, Lyra, Bram, Roan,
+  Hala) carry an authored `stranger` key written by the Lore Keeper on
+  2026-05-04. Seven dormant lines become reachable in the player flow
+  in a single field+method add. No NPC.gd or DialogueDB.gd edits
+  required (DialogueDB had a fail-soft `"npc_seen" in world_node` guard
+  in place from run 9; the predicate had been waiting for the field
+  to land). `World.npc_seen` joins `World.player_renown` (run 11) as
+  the SECOND DialogueDB-only consumer field — both shipped with no
+  in-game UI surface, both purely route authored dialogue tiers to
+  authored predicates. Pattern proven: world-state fields whose ONLY
+  consumer is DialogueDB don't need their own HUD/UX and still carry
+  meaningful in-game weight. `stranger` predicate priority sits ABOVE
+  the time-of-day mood bucket so the FIRST hello to any never-met NPC
+  is guaranteed to surface the authored stranger line, not a generic
+  morning/midday greeting.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
@@ -315,9 +333,22 @@ Live data:
   `_on_interact` BEFORE tier resolution so the triggering visit counts.
 * `World.world_day` — integer counter; increments when `time_of_day` wraps
   past midnight. Pure derivation from `time_of_day`, no separate timer.
+* `World.npc_seen[npc_name] -> bool` — per-NPC "have we ever met?" ledger
+  (run 20 — Builder). Read with `World.is_stranger(name)`. Mutated by
+  `World.mark_npc_seen(name)` only, called from `World.show_dialogue`
+  AFTER `dialogue_panel.visible = true` so DialogueDB.choose_line (which
+  runs BEFORE show_dialogue, inside NPC.gd::_on_interact) sees the OLD
+  state on the FIRST hello and the NEW state on every subsequent hello.
+  First reader is DialogueDB's pre-existing 5th-tier `stranger` predicate
+  (run 9, fail-soft on missing field — now active). All 7 villagers carry
+  authored `stranger` JSON keys (Lore Keeper, 2026-05-04), reachable in
+  the player flow as of this run.
 
 The dialogue tier order (highest → lowest priority) is:
-1. JSON-tree (DialogueDB, opt-in via `use_json_dialogue`)
+1. JSON-tree (DialogueDB, opt-in via `use_json_dialogue`) — internal
+   predicate sub-priority: low_health_player → boss_slain → boss_alive →
+   high_renown → **stranger (run 20 — wired via `World.npc_seen`)** →
+   festival keys → after_first_quest_complete → mood bucket → default.
 2. NPC-flag warmed (`warmed_flag` + `warmed_dialogue_variants`)
 3. World-flag warmed (`warmed_world_flag` + `warmed_world_dialogue_variants`)
 4. Faction-pressure warmed (`warmed_faction_id` + `warmed_faction_below` + variants)

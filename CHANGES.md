@@ -1,3 +1,121 @@
+## 2026-05-05T19:25Z — BUILDER run 20 (npc_seen / stranger predicate wire)
+
+I'm building: `World.npc_seen` Dictionary + `mark_npc_seen(name)` writer
++ `is_stranger(name)` reader. Wires DialogueDB's pre-existing 5th-tier
+`stranger` predicate to in-game state. All seven NPCs already carry
+authored `stranger` JSON keys (Lore Keeper, 2026-05-04); seven dormant
+lines become live in the player flow on a single field+method add.
+
+THEME §X cited: §1 (high fantasy, NPC-as-mentor — "stranger" tone is
+the warm-gravitas first-meet beat the JSONs already carry), §7 (warm
+gravitas dialogue voice, child-safe — Maeve's *peers up the stick at
+you* / Lyra's *both hands open* are exactly the §7 register), §10 hard
+rule 1 (read THEME first; nothing in the canon edited).
+
+Mood board panel: not applicable (run 20 is data wiring — no new model,
+no new texture, no new color, no new asset). Visual canon held by
+non-edit.
+
+### Commit
+*Auto: npc_seen wire — DialogueDB stranger predicate now lights up for
+every JSON-opted NPC on first hello.*
+
+### Phase reached + feature shipped
+**Phase: dormant-predicate activation, second axis.** Run 11 wired
+`World.player_renown` to light up DialogueDB's `high_renown` predicate.
+Run 20 wires `World.npc_seen` to light up the `stranger` predicate.
+Both fields share the same shape: per-session, World-owned, one
+mutator, one reader, fail-soft for older saves, NO HUD/UX surface,
+ENTIRELY in service of routing already-authored JSON tiers to
+already-authored predicates. Pattern proven generalizable: world-state
+fields whose ONLY consumer is DialogueDB don't need their own visible
+surface and still carry meaningful in-game weight.
+
+### 5-output check
+
+(i) **Integration** — single file edit + two doc updates:
+- `World.gd` gains `var npc_seen: Dictionary = {}`, `mark_npc_seen(name)`,
+  `is_stranger(name)`, plus a single `mark_npc_seen(speaker)` callsite
+  inside `show_dialogue` AFTER `dialogue_panel.visible = true`.
+- Pre-existing readers WIRE THEMSELVES with no edits required:
+  - `DialogueDB.choose_line()` step 5 (run 9): the `"npc_seen" in
+    world_node` guard had been fail-soft — when the field didn't exist,
+    the predicate skipped silently. Now that it does, every NPC's
+    authored `stranger` key fires on first encounter and only on first
+    encounter.
+  - `NPC.gd::_on_interact` is unchanged. The dialogue resolution chain
+    (record_npc_visit → DialogueDB.choose_line → show_dialogue) is
+    preserved verbatim; the new mark happens at the END of show_dialogue,
+    so it's a strict post-condition with no race window.
+
+(ii) **Schema** — no new primitive. Reuses existing patterns:
+- Field shape mirrors `world_flags`, `npc_flags`, `npc_memory`: a
+  Dictionary on the World autoload, default `{}`, mutated via a single
+  named writer.
+- Method signatures mirror `has_world_flag(name) -> bool`,
+  `npc_has_flag(npc, flag) -> bool`, `npc_visits(name) -> int`:
+  predictable accessor pattern.
+- DialogueDB integration shape mirrors run-11's `player_renown`: an
+  int/dict on World, a fail-soft `"<field>" in world_node` predicate
+  in DialogueDB, no DialogueDB edits needed because the guard was
+  authored ahead of the field.
+
+(iii) **Feedback** — visible in-game on a single grind:
+- Walk into Briarwood as a fresh save. Talk to Elder Maeve. Her FIRST
+  line reads as the authored `stranger` JSON key:
+  *"*peers up the stick at you* — A face I don't yet know. Sit, then.
+  Tell me your village before you tell me your business — that is how
+  it's done in Briarwood."* (vs. the prior generic morning/midday line).
+- Talk to Maeve again immediately. The `stranger` predicate has now
+  flipped — falls through to the legacy mood bucket / warmed-flag
+  resolution, exactly as before.
+- Repeat for Lyra (rises from her bundle, "Heart's-ease for what aches
+  inside, dogwort for what aches outside"), Roan (curt — "Aye. Stable's
+  open. Mind the bay. Don't touch the lintel."), Hala (watches your
+  feet cross the green twice — "Pick the staff up before the blade,
+  traveler. The staff forgives. The blade does not."), Edda (terse —
+  "Don't touch the anvil. Ask first."), Bram (warm — "Welcome to the
+  Long Lantern! New face, new tale."), and Mara (a merchant's pitch,
+  authored). Seven distinct first-meet beats now reach the player.
+
+(iv) **Eval** — gd-script bracket / paren / quote balance preserved:
+- World.gd `(` vs `)` delta: 0 (orig) → 0 (patched).
+- World.gd `[` vs `]` delta: −1 (orig, from `[i]"%s"[/i]` strings) → −1
+  (patched). My added text contributes one `[` and one `]` from the
+  `is_stranger()` accessor's docstring example.
+- World.gd `{` vs `}` delta: 0 (orig) → 0 (patched).
+- No JSON files edited (all 7 stranger keys already on disk and
+  syntactically valid — verified via `python3 -c json.load` on each).
+
+(v) **Hooks (≥ 2)** — concrete next-run hooks unlocked:
+1. **"Met every villager" achievement** — `Achievements.gd` predicate
+   could iterate WorldBuilder.NPCS and check `not World.is_stranger(name)`
+   for each. Pairs with the run-16 "Visited every villager" hook
+   (different threshold: 1 vs N visits). The accessor already exists.
+2. **`stranger_no_longer` world flag** — fires once `npc_seen.size()
+   >= 7`, opens cross-NPC dialogue lines that reference the entire
+   village having met the player. Pure derivation from `npc_seen`,
+   one new constant, no schema change.
+3. **Per-NPC first-met-day extension** — extend the value type from
+   `bool` to `Dictionary {seen: true, met_day: int, met_tod: float}`
+   to let NPCs say "you've been around three days now". Caller
+   surface stays stable (`is_stranger(name)` continues to return bool)
+   so this is forward-compatible.
+4. **JSON-tree predicate audit pass** — three DialogueDB predicates
+   were authored with fail-soft guards (run 9): `high_renown` (wired
+   run 11), `stranger` (wired today), `current_festival` (still
+   dormant — needs a calendar/festival system). The festival hook is
+   the last unwired predicate; its activation cost is one int field
+   + one date-based update loop.
+
+### Files changed
+
+```
+M  eldoria-godot/scripts/World.gd        (+45 lines: 1 field + 2 methods + 1 callsite + comments)
+M  WORLD_STATE.md                         (run-19 resolved entry; live-data table updated; tier-order note expanded)
+M  SYSTEM_REGISTRY.md                     (new "NPC Stranger schema (run 20 — Builder)" section, ~70 lines)
+M  CHANGES.md                             (this entry)
+```
 ## 2026-05-05T18:30Z — BUILDER run 19 (4th wolf reducer — Bram's bounty)
 
 I'm building: `wolf_heart_for_bram` quest entry — FOURTH `dire_wolves`
@@ -213,6 +331,25 @@ refreshed wolf DROP_TABLE row breakdown.
 
 ### What next run picks up
 
+1. **`current_festival` wire** — last fail-soft DialogueDB predicate
+   waiting for a World field. Authored seasonal keys
+   (`longnight_vigil`, `honeysong_eve`, `spring_first_warm_day`,
+   `tess_remembrance`, `greenshield_first_pick`, etc.) sit dormant
+   in 5 of the 7 NPC JSONs. A single calendar field + a per-day update
+   tick lights up ~20 dormant lines.
+2. **"Met every villager" achievement** — single-row addition to
+   `Achievements.gd`. `Achievements.met_every_villager` predicate
+   reads `not World.is_stranger(name)` for each NPC in
+   WorldBuilder.NPCS. Renown reward 50, fits the existing tier
+   ladder.
+3. **`stranger_no_longer` world flag** — derived flag from
+   `npc_seen.size() >= 7`. Future cross-NPC dialogue lines read it
+   via existing `has_world_flag()` accessor. Single-line check
+   inside `mark_npc_seen` after the dict write.
+4. **NPC schedules** (backlog #3) — still unimplemented. Use
+   `World.time_of_day`. Maeve sweeps at dawn, Smith hammers
+   midday, Lyra grinds herbs in evening — THEME §12 demands every
+   visible NPC moves; current state is single idle anim only.
 1. **Maeve mentions Bram** — `WorldBuilder.NPCS` Maeve entry adds
    `warm_world_flag: "bram_nights_quiet"` + 4 lines. Pure data. Closes
    the FOURTH cross-NPC flag-recognition pattern (after Mara, Lyra,
