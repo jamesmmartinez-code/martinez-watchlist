@@ -2,7 +2,7 @@
 """
 Realm of Eldoria — procedural achievement crest icon generator.
 
-Produces 6 painterly 128x128 PNG heraldic crests, one per entry in
+Produces 7 painterly 128x128 PNG heraldic crests, one per entry in
 Achievements.ACHIEVEMENTS. Each crest is a hand-painted-feel disc with
 a stylised symbol in the achievement's themed palette per THEME.md §3.
 
@@ -14,7 +14,7 @@ Style targets (THEME.md):
   - §5 hand-painted look, not crisp vector. Soft brushstroke rim,
     Gaussian-softened edges.
 
-Output: 6 RGBA PNGs at 128x128, transparent background.
+Output: 7 RGBA PNGs at 128x128, transparent background.
 
 Slugs (mirror Achievements.ACHIEVEMENTS keys):
   - first_steps      the Apprentice       — sprout on parchment
@@ -23,6 +23,7 @@ Slugs (mirror Achievements.ACHIEVEMENTS keys):
   - trusted_three    the Trusted          — three interlocking rings
   - realm_warden     Warden of Eldoria    — keep tower with banner
   - first_forge      the Forged           — anvil + crossed hammer with sparks
+  - wolf_tamer       the Wolf-Tamer       — wolf head profile under three stars
 
 License: CC0 — generated procedurally with Pillow, no external assets.
 
@@ -46,6 +47,7 @@ CRIMSON = (140, 32, 32, 255)
 WINE = (110, 24, 24, 255)
 MOSS = (74, 112, 56, 255)
 MOSS_LT = (120, 160, 90, 255)
+MOSS_DK = (44, 70, 32, 255)
 BRASS = (176, 116, 42, 255)
 BRASS_LT = (210, 160, 90, 255)
 FROST_CYAN = (101, 223, 229, 255)
@@ -453,6 +455,106 @@ def _paint_anvil_hammer(draw, seed):
 	draw.ellipse((impact_x - 6, impact_y - 6, impact_x + 6, impact_y + 6), fill=col)
 
 
+
+def _paint_wolf_profile_three_stars(draw, seed):
+	"""Wolf head in left-facing profile under three sunset-gold stars
+	in a constellation arc — for `wolf_tamer` ("Tamer of the Wolfwoods").
+
+	Visually distinct from `pack_thinner` (frontal head, frost-cyan eye):
+	side profile reads as calm / kept-promise. The three stars stand in
+	for Lyra / Roan / Hala — the three NPCs whose trust unlocks the
+	title.
+	"""
+	r = _rand(seed)
+	cx, cy = W // 2, W // 2
+
+	# Stars first so the head can overlap them slightly.
+	star_centers = [
+		(cx - int(W * 0.24), cy - int(W * 0.30)),  # Lyra
+		(cx,                cy - int(W * 0.36)),   # Roan
+		(cx + int(W * 0.24), cy - int(W * 0.30)),  # Hala
+	]
+	for (sx, sy) in star_centers:
+		for k in range(7, 0, -1):
+			col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], int(45 * k / 7))
+			draw.ellipse((sx - 3 * k, sy - 3 * k, sx + 3 * k, sy + 3 * k), fill=col)
+		col = (255, 240, 200, 250)
+		draw.ellipse((sx - 5, sy - 5, sx + 5, sy + 5), fill=col)
+		flare = 13
+		col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], 230)
+		draw.line((sx - flare, sy, sx + flare, sy), fill=col, width=3)
+		draw.line((sx, sy - flare, sx, sy + flare), fill=col, width=3)
+
+	hx = cx + int(W * 0.04)
+	hy = cy + int(W * 0.04)
+	pts = [
+		(hx + int(W * 0.16), hy - int(W * 0.18)),
+		(hx + int(W * 0.20), hy - int(W * 0.30)),
+		(hx + int(W * 0.24), hy - int(W * 0.16)),
+		(hx + int(W * 0.10), hy - int(W * 0.14)),
+		(hx + int(W * 0.06), hy - int(W * 0.28)),
+		(hx - int(W * 0.02), hy - int(W * 0.14)),
+		(hx - int(W * 0.10), hy - int(W * 0.16)),
+		(hx - int(W * 0.18), hy - int(W * 0.12)),
+		(hx - int(W * 0.26), hy - int(W * 0.04)),
+		(hx - int(W * 0.34), hy + int(W * 0.02)),
+		(hx - int(W * 0.36), hy + int(W * 0.06)),
+		(hx - int(W * 0.32), hy + int(W * 0.10)),
+		(hx - int(W * 0.24), hy + int(W * 0.10)),
+		(hx - int(W * 0.16), hy + int(W * 0.16)),
+		(hx - int(W * 0.06), hy + int(W * 0.20)),
+		(hx + int(W * 0.04), hy + int(W * 0.24)),
+		(hx + int(W * 0.14), hy + int(W * 0.22)),
+		(hx + int(W * 0.22), hy + int(W * 0.06)),
+		(hx + int(W * 0.20), hy - int(W * 0.06)),
+	]
+	col = (INK[0], INK[1], INK[2], 245)
+	draw.polygon(pts, fill=col)
+
+	inner_ear_pts = [
+		(hx + int(W * 0.20), hy - int(W * 0.27)),
+		(hx + int(W * 0.22), hy - int(W * 0.18)),
+		(hx + int(W * 0.18), hy - int(W * 0.18)),
+	]
+	col = (90, 60, 40, 200)
+	draw.polygon(inner_ear_pts, fill=col)
+
+	for _ in range(40):
+		ang = r.uniform(0, math.tau)
+		rx = r.uniform(W * 0.12, W * 0.24)
+		ry = r.uniform(W * 0.10, W * 0.22)
+		x = hx + int(math.cos(ang) * rx)
+		y = hy + int(math.sin(ang) * ry)
+		col = (60, 70, 80, r.randint(40, 90))
+		draw.ellipse((x - 4, y - 4, x + 4, y + 4), fill=col)
+
+	hl_pts = [
+		(hx + int(W * 0.16), hy - int(W * 0.16)),
+		(hx + int(W * 0.10), hy - int(W * 0.10)),
+		(hx + int(W * 0.20), hy + int(W * 0.06)),
+	]
+	for (x, y) in hl_pts:
+		for k in range(5, 0, -1):
+			col = (SILVER[0], SILVER[1], SILVER[2], int(55 * k / 5))
+			draw.ellipse((x - 5 * k, y - 2 * k, x + 5 * k, y + 2 * k), fill=col)
+
+	eye_x, eye_y = hx - int(W * 0.10), hy - int(W * 0.04)
+	for i in range(4, 0, -1):
+		col = (MOSS_LT[0], MOSS_LT[1], MOSS_LT[2], int(80 * i / 4))
+		draw.ellipse((eye_x - 3 * i, eye_y - 3 * i, eye_x + 3 * i, eye_y + 3 * i), fill=col)
+	col = (235, 240, 220, 240)
+	draw.ellipse((eye_x - 5, eye_y - 4, eye_x + 5, eye_y + 4), fill=col)
+	col = (INK[0], INK[1], INK[2], 240)
+	draw.ellipse((eye_x - 2, eye_y - 2, eye_x + 2, eye_y + 2), fill=col)
+
+	nose_x, nose_y = hx - int(W * 0.33), hy + int(W * 0.05)
+	col = (40, 38, 42, 240)
+	draw.ellipse((nose_x - 6, nose_y - 4, nose_x + 6, nose_y + 4), fill=col)
+	col = (SILVER[0], SILVER[1], SILVER[2], 200)
+	draw.ellipse((nose_x - 2, nose_y - 3, nose_x + 1, nose_y - 1), fill=col)
+
+
+
 CRESTS = {
 	"first_steps":   {"seed": 9101, "base_dark": (60, 90, 45, 255),  "base_light": MOSS_LT,              "rim": BRASS,             "painter": _paint_sprout},
 	"pack_thinner":  {"seed": 9102, "base_dark": (50, 60, 70, 255),  "base_light": (130, 145, 160, 255), "rim": SILVER,            "painter": _paint_wolf_head},
@@ -460,6 +562,7 @@ CRESTS = {
 	"trusted_three": {"seed": 9104, "base_dark": PARCHMENT_DK,        "base_light": PARCHMENT,           "rim": (110, 80, 30, 255),"painter": _paint_three_rings},
 	"realm_warden":  {"seed": 9105, "base_dark": SUNSET_DK,           "base_light": SUNSET_GOLD,         "rim": (110, 60, 20, 255),"painter": _paint_keep},
 	"first_forge":   {"seed": 9106, "base_dark": (90, 40, 18, 255),  "base_light": (200, 110, 50, 255), "rim": BRASS,            "painter": _paint_anvil_hammer},
+	"wolf_tamer":    {"seed": 9107, "base_dark": MOSS_DK,             "base_light": MOSS_LT,             "rim": BRASS,            "painter": _paint_wolf_profile_three_stars},
 }
 
 
