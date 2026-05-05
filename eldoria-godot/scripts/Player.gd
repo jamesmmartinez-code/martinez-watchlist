@@ -15,6 +15,10 @@ var gravity: float = 20.0
 var current_speed: float
 var is_attacking: bool = false
 var is_dead: bool = false
+# Stuck-recovery timers (kids need this to never feel locked out)
+var _attack_timeout: float = 0.0
+var _dead_timer: float = 0.0
+var _jam_timer: float = 0.0
 
 # Stats
 var hp: int = 120
@@ -116,18 +120,38 @@ func _ready() -> void:
 	call_deferred("load_game")
 
 func _physics_process(delta: float) -> void:
-	# Stuck-recovery: if we've fallen out of the world or punched through the
+	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
 		global_position = Vector3(0, 2, 0)
 		velocity = Vector3.ZERO
+
+	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
+	# If it does, the attack callback was lost — force-clear it.
+	if is_attacking:
+		_attack_timeout += delta
+		if _attack_timeout > 1.2:
+			is_attacking = false
+			_attack_timeout = 0.0
+	else:
+		_attack_timeout = 0.0
+
 	# Autosave every N seconds
 	_save_timer += delta
 	if _save_timer >= _save_interval:
 		_save_timer = 0.0
 		save_game()
+
+	# Stuck-recovery #3: if dead but somehow still in physics for >5s, auto-revive.
 	if is_dead:
+		_dead_timer += delta
+		if _dead_timer > 5.0:
+			is_dead = false
+			hp = max(1, hp)
+			_dead_timer = 0.0
 		return
+	else:
+		_dead_timer = 0.0
 
 	# Gravity
 	if not is_on_floor():
@@ -141,6 +165,19 @@ func _physics_process(delta: float) -> void:
 
 	# Run modifier (left shift)
 	current_speed = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
+
+	# Stuck-recovery #4: if input is being pressed but we haven't moved horizontally for >1s,
+	# something is jamming us (collision wedge, frozen state). Teleport up 1m and clear velocity.
+	var horiz_speed := Vector2(velocity.x, velocity.z).length()
+	if input_dir.length() > 0.1 and horiz_speed < 0.05:
+		_jam_timer += delta
+		if _jam_timer > 1.0:
+			global_position.y += 1.5
+			velocity = Vector3.ZERO
+			_jam_timer = 0.0
+			print("[Player] auto-unstick: teleported up 1.5m")
+	else:
+		_jam_timer = 0.0
 
 	if direction.length() > 0.01:
 		velocity.x = direction.x * current_speed
@@ -177,6 +214,29 @@ func _input(event: InputEvent) -> void:
 		elif k == KEY_M:
 			# Mount/dismount toggle
 			get_tree().call_group("world", "toggle_mount")
+		elif k == KEY_BACKSPACE:
+			# Full unstick: clear all transient state, teleport to spawn, reset save.
+			print("[Player] BACKSPACE — full unstick")
+			is_dead = false
+			is_attacking = false
+			mounted = false
+			mount_node = null
+			velocity = Vector3.ZERO
+			global_position = Vector3(0, 2, 0)
+			hp = max(1, hp)
+			_attack_timeout = 0.0
+			_dead_timer = 0.0
+			_jam_timer = 0.0
+		elif k == KEY_F1:
+			# Soft unstick: just reset position to spawn.
+			print("[Player] F1 — teleport to spawn")
+			velocity = Vector3.ZERO
+			global_position = Vector3(0, 2, 0)
+		elif k == KEY_F2:
+			# Nuclear option: wipe save and reload.
+			print("[Player] F2 — wiping save")
+			reset_save()
+			get_tree().reload_current_scene()
 
 func _attack() -> void:
 	if is_attacking or is_dead:
