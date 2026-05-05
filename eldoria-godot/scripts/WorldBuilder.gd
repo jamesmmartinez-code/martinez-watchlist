@@ -399,6 +399,7 @@ func _ready() -> void:
 	_build_campfire()
 	_build_enemies()
 	_build_pet()
+	_build_stable_horse()
 	_build_loot_chests()
 	call_deferred("_global_scale_sweep")
 	_build_crystal_caves(Vector3(-50, 0, -40))
@@ -1425,6 +1426,82 @@ func _build_pet() -> void:
 	pet.set_script(PET_SCRIPT)
 	pet.position = Vector3(2, 1.0, 2)
 	add_child(pet)
+
+# ============================================================================
+# Stable horse — wires Horse.glb (previously unused on disk). Stands in the
+# yard south-west of Stablemaster Roan's anchor, named "Pippin" after the
+# mare in Roan's dialogue ("Look — Pippin's grazing past the fence again").
+# THEME §4 silhouette: a real horse next to the stablemaster. THEME §12
+# motion: Horse.glb ships a `horse_A_` morph-target weights animation that
+# auto-plays — quiet breathing/grazing, no T-pose. THEME §13 ground contact:
+# horse spawned at y=0 and the source GLB has its origin near the feet
+# (POSITION accessor min.y ≈ 0.8 at native units → ~0.0075 m at chosen
+# scale 1/110 — well under the 0.05 m ground-contact tolerance).
+# Marked as "scenery" so the global scale sweep skips it (its expected
+# height is not a character standard).
+# ============================================================================
+const HORSE_GLB: PackedScene = preload("res://assets/models/Horse.glb")
+
+func _build_stable_horse() -> void:
+	var horse_root := Node3D.new()
+	horse_root.name = "Pippin"
+	horse_root.add_to_group("scenery")
+	horse_root.add_to_group("stable_horses")
+	# Position: south-west of the stable building (-10, 0, 0) and Roan's
+	# anchor (-10, 0, -2). (-12.5, 0, -3.5) sits in the open yard; rotation
+	# faces north-east so the horse looks toward Roan.
+	horse_root.position = Vector3(-12.5, 0.0, -3.5)
+	horse_root.rotation.y = deg_to_rad(40)
+	add_child(horse_root)
+
+	var horse_model := HORSE_GLB.instantiate()
+	# Horse.glb is a Three.js export at native units (POSITION min/max y
+	# spans ~182 units). Scale 1/110 puts withers at ~1.65 m — believable
+	# riding-horse height; head at ~2.0 m. Keep uniform.
+	var s: float = 1.0 / 110.0
+	horse_model.scale = Vector3(s, s, s)
+	horse_root.add_child(horse_model)
+
+	# Auto-play whatever idle-flavored animation the GLB ships. Horse.glb's
+	# only animation is `horse_A_` (morph-target weights — quiet breathing).
+	# Defer one frame so the AnimationPlayer is fully wired by the importer.
+	horse_root.call_deferred("set_meta", "_horse_anim_pending", true)
+	call_deferred("_play_horse_idle_anim", horse_root)
+
+	# Floating nameplate, same shape as villager Label3D (THEME §3 sunset-gold).
+	var label := Label3D.new()
+	label.text = "Pippin"
+	label.font_size = 24
+	label.outline_size = 6
+	label.outline_modulate = Color(0, 0, 0)
+	label.modulate = Color(1.0, 0.86, 0.46)
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = Vector3(0, 2.2, 0)
+	label.no_depth_test = false
+	horse_root.add_child(label)
+
+func _play_horse_idle_anim(horse_root: Node) -> void:
+	if not is_instance_valid(horse_root):
+		return
+	var ap: AnimationPlayer = _find_horse_animation_player(horse_root)
+	if ap == null:
+		return
+	for n in ["horse_A_", "Idle", "idle", "IdleAnimation"]:
+		if ap.has_animation(n):
+			ap.play(n)
+			return
+	var names := ap.get_animation_list()
+	if names.size() > 0:
+		ap.play(names[0])
+
+func _find_horse_animation_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var found := _find_horse_animation_player(c)
+		if found != null:
+			return found
+	return null
 
 func _build_loot_chests() -> void:
 	# Common chests scattered around the wilds, plus a rare chest deeper in
