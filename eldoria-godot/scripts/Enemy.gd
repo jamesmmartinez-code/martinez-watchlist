@@ -27,6 +27,15 @@ class_name Enemy
 # (the model carries its own hand-painted textures — tinting muddies them).
 const KIND_MODELS := {
 	"goblin": preload("res://assets/models/enemies/goblin.glb"),
+	# THEME §4 + §12 — wolf.glb (CC-BY) is a real quadruped wolf with embedded
+	# idle/walk/run animations. Replaces the worker_girl.glb fallback that had
+	# been making "Dire Wolves" appear as a humanoid woman model — silhouette-
+	# broken at 30m and immersion-shattering. wolf.glb stands on its own four
+	# legs (Y-up, forward in -Z), so the legacy `rotation.x = -PI/2` quadruped
+	# hack below is GUARDED behind uses_real_model — applying it to a real
+	# quadruped would flip the wolf onto its back. Idle anim auto-plays via
+	# _play_model_idle_anim().
+	"wolf":   preload("res://assets/models/enemies/wolf.glb"),
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
@@ -154,8 +163,15 @@ func _spawn_model() -> void:
 		"goblin":
 			_model.scale = Vector3(0.85, 0.85, 0.85)
 		"wolf":
-			_model.scale = Vector3(0.70, 0.70, 1.05)
-			_model.rotation.x = -PI / 2  # quadruped
+			# Real wolf.glb stands on its own four legs (Y-up). _global_scale_sweep
+			# (SIZE_STANDARDS small-enemy target 1.40m ±20%) handles final size.
+			# NO unconditional rotation.x = -PI/2 — that legacy hack would flip a
+			# real quadruped onto its back. Apply it ONLY when the kind has fallen
+			# back to a humanoid placeholder (worker_girl) so the silhouette at
+			# least suggests a four-legged shape.
+			_model.scale = Vector3(0.95, 0.95, 0.95)
+			if not uses_real_model:
+				_model.rotation.x = -PI / 2  # placeholder-only quadruped hack
 		"bandit":
 			_model.scale = Vector3(1.05, 1.05, 1.05)
 		"skeleton":
@@ -500,10 +516,18 @@ func _resolve_adaptive_chase_speed() -> void:
 	chase_speed = resolved
 
 
-# Normalize 3D model scale so it ends up ~target_height tall.
-# Prevents giants from Sketchfab GLBs with mixed units.
+# Normalize 3D model scale so it ends up ~target_height tall, AND lift the
+# model so its BOTTOM aligns with the body's feet (THEME §13 — no half-buried
+# characters). Sketchfab GLBs commonly arrive with center-pivots; without this
+# lift, half the model sinks below the ground plane on spawn.
+# Note: SIZE_STANDARDS.md treats _global_scale_sweep as the authoritative
+# scaler — this initial normalize stays so freshly-spawned models read close
+# to target before the 0.5s sweep snaps them inside the tolerance band.
 func _normalize_to_height(model: Node, target_height: float) -> void:
 	await get_tree().process_frame
+	if not is_instance_valid(model):
+		return
+	# Pass 1: world-space AABB → choose uniform scale to hit target_height.
 	var aabb := AABB()
 	var has := false
 	for c in model.find_children("*", "VisualInstance3D", true):
@@ -519,3 +543,32 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 		return
 	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
 	model.scale = Vector3(s, s, s)
+	# Pass 2 (THEME §13 ground contact): re-measure in MODEL-LOCAL space to
+	# find the bottom of the visible mesh relative to the model's pivot, then
+	# lift the model so the bottom sits at body-local y ≈ 0. The body's capsule
+	# rests its bottom near y ≈ 0.1 once gravity settles, so feet-at-0 reads
+	# as planted, not floating. If the GLB pivot is already at the feet,
+	# local_min_y ≈ 0 and the lift is a no-op.
+	await get_tree().process_frame
+	if not is_instance_valid(model) or not (model is Node3D):
+		return
+	var local_min_y: float = INF
+	var local_has := false
+	var inv_xform: Transform3D = (model as Node3D).global_transform.affine_inverse()
+	for c2 in model.find_children("*", "VisualInstance3D", true):
+		var v2 := c2 as VisualInstance3D
+		if not v2: continue
+		var a2 := v2.get_aabb()
+		# Convert from v2's local frame → world → model's local frame.
+		a2 = (inv_xform * v2.global_transform) * a2
+		if not local_has:
+			local_min_y = a2.position.y
+			local_has = true
+		else:
+			local_min_y = min(local_min_y, a2.position.y)
+	if local_has and local_min_y < -0.05:
+		# Model bottom is BELOW its own pivot — center-pivot GLB. Lift it so
+		# bottom == 0 in body-local frame. Cap the lift to a sane range so a
+		# pathological measurement can't catapult a model into the sky.
+		var lift: float = clamp(-local_min_y, 0.0, 2.0)
+		(model as Node3D).position.y = lift
