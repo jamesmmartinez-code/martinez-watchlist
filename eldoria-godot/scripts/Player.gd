@@ -1,6 +1,14 @@
 extends CharacterBody3D
 class_name Player
 
+# SAFE_SPAWN — clear open spot NORTH of the village center on the main path.
+# Village layout (from WorldBuilder.gd):
+#   campfire at (0, 0, -2), well at (0, 0, 6), market stalls at (±2.5, 0, 0)
+# Old spawn (0, 2, 0) put player BETWEEN the stalls; old respawn (0, 1, 6.5)
+# put them INSIDE the well. PX 2026-05-05: moved both to (0, 2.5, -10) which
+# is on the north path with no structures within 8m.
+const SAFE_SPAWN := Vector3(0, 2.5, -10)
+
 # Realm of Eldoria — Player controller (third-person)
 # WASD or Arrow keys to move, Space to jump, E to interact, left-click to attack
 
@@ -137,7 +145,7 @@ func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = Vector3(0, 2, 0)
+		global_position = SAFE_SPAWN
 		velocity = Vector3.ZERO
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
@@ -270,7 +278,7 @@ func _panic_unstick(keycode: int) -> void:
 		mounted = false
 		mount_node = null
 		velocity = Vector3.ZERO
-		global_position = Vector3(0, 2, 0)
+		global_position = SAFE_SPAWN
 		hp = max(1, hp)
 		_attack_timeout = 0.0
 		_dead_timer = 0.0
@@ -278,7 +286,7 @@ func _panic_unstick(keycode: int) -> void:
 	elif keycode == KEY_F1:
 		print("[Player] PANIC F1 — teleport to spawn")
 		velocity = Vector3.ZERO
-		global_position = Vector3(0, 2, 0)
+		global_position = SAFE_SPAWN
 		is_attacking = false
 		is_dead = false
 		hp = max(1, hp)
@@ -431,7 +439,7 @@ func _die() -> void:
 
 func _respawn_at_well() -> void:
 	# Well is at (0, 0, 6) per WorldBuilder
-	global_position = Vector3(0, 1.0, 6.5)
+	global_position = SAFE_SPAWN
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
