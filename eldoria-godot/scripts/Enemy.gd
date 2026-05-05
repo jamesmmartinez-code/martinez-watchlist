@@ -106,6 +106,29 @@ const AGITATED_COOLDOWN_THRESHOLD: float = 1.30
 # baseline, so Alden's first-hour combat feels identical to runs 1–7.
 const CHASE_SPEED_AGITATION_GAIN: float = 0.17
 
+# REFINE: adaptive — Run-9 damage band. FIFTH output on the same
+# `faction_pressure` scalar that already drives NPC dialogue tier 3 (run 4),
+# goblin spawn density (run 5), wolf spawn density (run 6), attack
+# cooldown (run 7), and chase speed (run 8). The PLAYER_MODEL.md run-7
+# follow-up explicitly named adaptive damage as Output #5 — and warned
+# that damage is the most sensitive of the four enemy knobs because it
+# compounds *with* cooldown and chase_speed (faster chase + faster swing
+# + bigger hit = three vectors stacking on Alden's 9-yo combat tolerance).
+# Therefore the band is TIGHTER than chase_speed's +17%: +12% ceiling.
+# Multiplicative because per-kind damage varies (Brute > Scout, Boss >>
+# everything) — preserving each kind's role-shape matters more than a
+# flat ceiling. A goblin scout's 6 damage lifts to round(6.72) = 7 at
+# pressure 0.0, a brute's 9 lifts to round(10.08) = 10, a boss's 22
+# lifts to round(24.64) = 25 — proportional, role preserved. The clamp
+# uses ceil(ceiling_f) (=11 for the brute case) so a future tighter
+# round() rule can't escape the band. At pressure 1.0
+# (fresh save) every enemy stays at its WorldBuilder-assigned baseline,
+# so Alden's first-hour combat feels byte-identical to runs 1–8. The
+# `⚡` agitated prefix from _resolve_adaptive_cooldown is reused — same
+# pressure scalar trips the same threshold; one marker, three coupled
+# effects (cooldown + chase_speed + damage) for cleaner readability.
+const DAMAGE_AGITATION_GAIN: float = 0.12
+
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
 var _player: CharacterBody3D = null
@@ -132,6 +155,12 @@ func _ready() -> void:
 	# Fail-soft contract is identical to cooldown's; runs AFTER WorldBuilder
 	# has set the per-kind chase_speed export so the baseline read is correct.
 	_resolve_adaptive_chase_speed()
+	# REFINE: adaptive — Run-9 damage lerp on the same scalar (Output #5).
+	# Same fail-soft contract; runs AFTER WorldBuilder has set the per-kind
+	# damage export so the baseline read is correct. Tightest band of the
+	# three (+12% vs cooldown's [1.05,1.45]/+38% and chase_speed's +17%)
+	# because damage compounds with the other two on the same pressure axis.
+	_resolve_adaptive_damage()
 	_spawn_pos = global_position
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
@@ -608,3 +637,63 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 		# pathological measurement can't catapult a model into the sky.
 		var lift: float = clamp(-local_min_y, 0.0, 2.0)
 		(model as Node3D).position.y = lift
+
+# ──────────────────────────────────────────────────────────────────────────
+# REFINE: adaptive — Run-9: Adaptive damage (FIFTH output on the
+# faction_pressure scalar). Same shape as _resolve_adaptive_chase_speed:
+#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
+#   • Multiplicative, NOT absolute: each enemy kind's role-shape (light Scout,
+#     heavier Brute, boss-tier Warlord) is preserved — every kind gets the
+#     SAME +12% ceiling at pressure 0, NOT the same absolute damage.
+#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown +
+#     chase_speed already use).
+#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
+#     third visual cue, because all three outputs (cooldown / chase_speed /
+#     damage) lerp on the SAME pressure scalar and trip the threshold at the
+#     same point. One marker, three coupled effects: cleaner readability for
+#     the kids than three markers.
+#   • Tighter band (+12%) than chase_speed (+17%) and cooldown's effective
+#     ~+38% (1.45 → 1.05 implies the LOWER value hits faster, so the
+#     tightening is asymmetric) because damage stacks WITH the other two on
+#     the same pressure axis: a faster-chasing, faster-swinging, harder-
+#     hitting enemy is three vectors of pressure on Alden's combat tolerance,
+#     not one. Damage stays the subordinate knob.
+#   • Integer rounding: damage is int, so we round() the lerped float and
+#     clamp the int result to [baseline, ceil(baseline*(1+gain))]. This
+#     ensures the ceiling actually lands at high pressure (e.g. 6 → 7 at
+#     pressure 0.0; without round-up the +12% bump would round-to-zero on
+#     small baselines).
+#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
+#     preserved (never crash, never gate on world readiness).
+# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
+# damage exactly — Alden's first-hour combat is byte-identical to runs 1–8.
+# At pressure 0.0 the few survivors of a tamed faction hit 12% harder —
+# Owen's mastery rung. See SYSTEM_REGISTRY.md "Enemy Damage Schema."
+# ──────────────────────────────────────────────────────────────────────────
+func _resolve_adaptive_damage() -> void:
+	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
+	if faction_id == "":
+		return  # Unmapped kind (bandit, etc.) → baseline
+	var world_node: Node = get_tree().get_first_node_in_group("world")
+	if world_node == null or not world_node.has_method("faction_pressure"):
+		return  # Older World.gd or world not yet ready → baseline
+	var pressure: float = float(world_node.faction_pressure(faction_id))
+	pressure = clamp(pressure, 0.0, 1.0)
+	var baseline_i: int = damage
+	if baseline_i <= 0:
+		return  # Defensive: a zero/negative baseline shouldn't be amplified.
+	var baseline_f: float = float(baseline_i)
+	var ceiling_f: float = baseline_f * (1.0 + DAMAGE_AGITATION_GAIN)
+	var resolved_f: float = lerp(baseline_f, ceiling_f, 1.0 - pressure)
+	# Round to int, then clamp to the integer band. Ceil(ceiling_f) is the
+	# integer ceiling (e.g. 6.72 → 7) so the +12% bump actually lands on
+	# small-baseline enemies; round() on resolved_f handles the interior of
+	# the band cleanly (lerp at pressure 0.5 of baseline 6 returns 6.36 →
+	# round → 6, which stays at baseline as expected for the middle band).
+	var ceiling_i: int = int(ceil(ceiling_f))
+	var resolved_i: int = int(round(resolved_f))
+	resolved_i = clamp(resolved_i, baseline_i, ceiling_i)
+	assert(resolved_i >= baseline_i and resolved_i <= ceiling_i,
+		"Enemy.damage out of contract band [baseline, ceil(baseline*1.12)]")
+	damage = resolved_i
+
