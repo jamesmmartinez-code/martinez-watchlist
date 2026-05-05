@@ -102,11 +102,15 @@ jobs:
           mkdir -p eldoria
           cp -R eldoria-godot/web-export/* eldoria/
 
+      - name: Split index.pck into <100MB chunks (GitHub blob limit)
+        run: |
+          python3 .github/scripts/split-pck.py eldoria
+
       - name: Commit + push the built /eldoria/ folder (with rebase retry)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add eldoria/
+          git add -A eldoria/
           if git diff --cached --quiet; then
             echo "✅ No build output changes to commit."
             exit 0
