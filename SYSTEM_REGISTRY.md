@@ -334,6 +334,74 @@ Authoring rules:
   `quest_listeners.on_enemy_killed(enemy_kind)` operate on `enemy_kind`, not
   on `enemy_name`, so the prefix never breaks loot tables or quest matching.
 
+## Enemy Chase Schema
+
+✅ **Shipped 2026-05-04 (run 8).** Per-enemy `chase_speed` derives from
+`World.faction_pressure(faction_id)` at spawn. Lives in
+`Enemy.gd → _resolve_adaptive_chase_speed()`. Reuses the `KIND_TO_FACTION`
+map that the cooldown schema already declared — single source of truth for
+kind → faction routing.
+
+Unlike the cooldown schema's absolute band, chase_speed is **multiplicative**:
+each kind's WorldBuilder-assigned baseline is preserved at fresh save and
+lifted by up to `+CHASE_SPEED_AGITATION_GAIN` (=`0.17`, +17%) at pressure
+0.0. This keeps role-shape intact — Goblin Brutes stay tank-slow, Crystal
+Elementals stay ponderous, Goblin Scouts stay quick — while every kind
+gets the SAME mastery-rung ceiling experience for Owen.
+
+| Enemy kind          | Faction id              | Baseline → Ceiling (pressure 1.0 → 0.0) |
+|---------------------|-------------------------|------------------------------------------|
+| `goblin` (Scout)    | `whisperwood_goblins`   | `4.6 → 5.38`                             |
+| `goblin` (Brute)    | `whisperwood_goblins`   | `1.0 → 1.17` (tank role preserved)       |
+| `wolf`              | `dire_wolves`           | `1.05 → 1.23`                            |
+| `skeleton`          | `crystal_caves`         | `4.4 → 5.15`                             |
+| `crystal_elemental` | `crystal_caves`         | `3.2 → 3.74`                             |
+| `crystal_guardian`  | `crystal_caves`         | `3.4 → 3.98`                             |
+| `bandit`            | (unmapped)              | baseline only (no faction yet)           |
+
+Resolved value = `lerp(baseline, baseline * (1 + GAIN), 1.0 - pressure)`
+where `baseline` is the chase_speed assigned by `WorldBuilder._spawn_enemy`
+(or the `@export` default if WorldBuilder didn't override). Endpoint table
+for the default-4.6 scout:
+
+| Pressure | chase_speed | Co-fires with                                       |
+|----------|-------------|-----------------------------------------------------|
+| ≥ 1.0    | 4.60        | (baseline; identical to pre-run-8 behavior)         |
+| 0.85     | 4.72        | (Mara's bounty alone; barely-felt 2.5% bump)        |
+| 0.65     | 4.87        | (Mara + Maeve path; first readable acceleration)    |
+| 0.40     | 5.07        | (halfway tamed band; +10%)                          |
+| 0.15     | 5.27        | (definitively tamed; +14.5%)                        |
+| 0.00     | 5.38        | (faction extinct; +17% ceiling, the few hunt hard)  |
+
+Player-facing feedback: **no new visual cue** — the cooldown schema's
+`⚡` prefix already fires below pressure ~0.625 and now subsumes BOTH
+adaptive outputs. One marker, two coupled effects: kids see one symbol
+and learn it means "this one's faster *and* punishier." Adding a second
+marker for chase would clutter the floating-name HUD without adding
+information (the two outputs lerp on the same scalar — they trip together).
+
+Authoring rules:
+- Read accessor is `World.faction_pressure(faction_id)`. Same fail-soft
+  guards as the cooldown schema: missing world group, missing accessor, OR
+  unmapped `enemy_kind` ALL fall through to the WorldBuilder-assigned
+  baseline (no crash, no hidden behavior change).
+- Resolved value is **clamped** to `[baseline, baseline * (1 + GAIN)]`
+  and asserted against the same band. Widening `CHASE_SPEED_AGITATION_GAIN`
+  past 0.17 requires a fresh PLAYER_MODEL.md tuning pass — pushing past
+  +25% would risk breaking Alden's "I can outrun them" exploration valve.
+- chase_speed is resolved ONCE at first `_ready()` AFTER WorldBuilder has
+  assigned the per-kind baseline. `_respawn()` does NOT re-sample — same
+  world, same chase, until the player reloads. Matches the cooldown schema
+  and WorldBuilder spawn-density semantics: world reactivity is
+  *save-reload* granular, not real-time.
+- Future enemy kinds: add to `KIND_TO_FACTION` in `Enemy.gd` — the SAME
+  map both cooldown and chase consult. If the kind's faction id isn't in
+  `World.factions`, behavior is identical to baseline.
+- The four `faction_pressure` consumers (NPC dialogue tier 3, goblin spawn
+  density, wolf spawn density, enemy attack cooldown, **enemy chase speed**)
+  must remain in sync on the `KIND_TO_FACTION` / faction-id keys. Any
+  rename of a faction id is a cross-cutting refactor, not a local edit.
+
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a

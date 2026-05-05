@@ -55,6 +55,18 @@ const ATTACK_COOLDOWN_MIN: float = 1.05
 # — clearly past the first reducer for either goblins or wolves.
 const AGITATED_COOLDOWN_THRESHOLD: float = 1.30
 
+# REFINE: adaptive — Run-8 chase_speed band. FOURTH output on the same
+# `faction_pressure` scalar that already drives NPC dialogue tier 3 (run 4),
+# goblin spawn density (run 5), wolf spawn density (run 6), and attack
+# cooldown (run 7). Multiplicative because per-kind chase_speed varies
+# (Brutes are tank-slow, scouts/skeletons are fast) — preserving each kind's
+# role-shape matters more than a flat ceiling. +17% lands a default-4.6
+# scout at ~5.38 at pressure 0, matching run-7's proposed [4.6, 5.4] band.
+# A wolf at chase_speed 1.05 lifts to ~1.23 — proportional, role preserved.
+# At pressure 1.0 (fresh save) every enemy stays at its WorldBuilder-assigned
+# baseline, so Alden's first-hour combat feels identical to runs 1–7.
+const CHASE_SPEED_AGITATION_GAIN: float = 0.17
+
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
 var _player: CharacterBody3D = null
@@ -77,6 +89,10 @@ func _ready() -> void:
 	# (not per-frame) so combat hot path stays cheap. Mutates `attack_cooldown`
 	# in-place — the existing _do_attack() path is untouched.
 	_resolve_adaptive_cooldown()
+	# REFINE: adaptive — Run-8 chase_speed lerp on the same scalar.
+	# Fail-soft contract is identical to cooldown's; runs AFTER WorldBuilder
+	# has set the per-kind chase_speed export so the baseline read is correct.
+	_resolve_adaptive_chase_speed()
 	_spawn_pos = global_position
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
@@ -444,6 +460,44 @@ func _resolve_adaptive_cooldown() -> void:
 	# in _ready(), so the label picks up the prefix automatically.
 	if resolved < AGITATED_COOLDOWN_THRESHOLD:
 		enemy_name = "⚡ " + enemy_name
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# REFINE: adaptive — Run-8: Adaptive chase_speed (FOURTH output on the
+# faction_pressure scalar). Same shape as _resolve_adaptive_cooldown:
+#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
+#   • Multiplicative, NOT absolute: each enemy kind's role-shape (tank-slow
+#     Brute, fast Scout, ponderous Crystal Elemental) is preserved — every
+#     kind gets the SAME +17% ceiling at pressure 0, NOT the same absolute
+#     speed. Owen reads "tamed-wood survivors hunt harder" for ALL kinds.
+#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown uses).
+#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
+#     second visual cue, because BOTH outputs lerp on the SAME pressure
+#     scalar and trip the threshold at the same point. One marker, two
+#     coupled effects: cleaner readability for the kids than two markers.
+#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
+#     preserved (never crash, never gate on world readiness).
+# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
+# chase_speed exactly — Alden's first-hour pacing is byte-identical to runs
+# 1–7. At pressure 0.0 the few survivors of a tamed faction chase 17%
+# faster — Owen's mastery rung. See SYSTEM_REGISTRY.md "Enemy Chase Schema."
+# ──────────────────────────────────────────────────────────────────────────
+func _resolve_adaptive_chase_speed() -> void:
+	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
+	if faction_id == "":
+		return  # Unmapped kind (bandit, etc.) → baseline
+	var world_node: Node = get_tree().get_first_node_in_group("world")
+	if world_node == null or not world_node.has_method("faction_pressure"):
+		return  # Older World.gd or world not yet ready → baseline
+	var pressure: float = float(world_node.faction_pressure(faction_id))
+	pressure = clamp(pressure, 0.0, 1.0)
+	var baseline: float = chase_speed
+	var ceiling: float = baseline * (1.0 + CHASE_SPEED_AGITATION_GAIN)
+	var resolved: float = lerp(baseline, ceiling, 1.0 - pressure)
+	resolved = clamp(resolved, baseline, ceiling)
+	assert(resolved >= baseline and resolved <= ceiling,
+		"Enemy.chase_speed out of contract band [baseline, baseline*1.17]")
+	chase_speed = resolved
 
 
 # Normalize 3D model scale so it ends up ~target_height tall.

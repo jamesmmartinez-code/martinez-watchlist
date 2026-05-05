@@ -263,3 +263,52 @@ narrative + density + pacing.
     Per-player band tuning would be the first true *adaptive difficulty*
     feature in the engine, gating off `PLAYER_MODEL.md` rather than a
     difficulty menu (kids never see a menu; the world adapts to them).
+
+- **2026-05-04 (run 8)** — Adaptive `Enemy.gd.chase_speed` (FOURTH output
+  on the same `faction_pressure` scalar that already drives NPC dialogue
+  tier 3 (run 4), goblin spawn density (run 5), wolf spawn density (run 6),
+  and enemy attack cooldown (run 7)). Multiplicative band — each enemy
+  kind's WorldBuilder-assigned chase_speed is preserved at fresh save and
+  lerps up to `+17%` at pressure 0.0 (`CHASE_SPEED_AGITATION_GAIN = 0.17`).
+  Resolved ONCE at spawn via `_resolve_adaptive_chase_speed()`; same
+  fail-soft contract as run 7's cooldown resolver (missing world / missing
+  accessor / unmapped kind → baseline preserved). REFINE-tagged, no new
+  mechanic, no new state in `World.gd`.
+
+  **Why this serves both kids:**
+  - **Alden (9):** at pressure 1.0 (fresh save) every enemy keeps its
+    WorldBuilder-assigned baseline EXACTLY — first-hour combat is
+    byte-identical to runs 1–7. The recovery valve from run 7 (+0.40s
+    cooldown) is unchanged. No new pressure on his low-medium combat
+    tolerance until *his own quest choices* trip the band.
+  - **Owen (11):** the multiplicative shape preserves each kind's
+    role-shape — Goblin Brutes stay tank-slow even when "agitated"
+    (1.0 → 1.17), Goblin Scouts stay quick (4.6 → 5.38). His "Speed
+    affinity" gets a coherent answer to a question he'd ask after a
+    full goblin sweep: "are the survivors actually scarier?" — yes,
+    they hit 28% faster (run 7) AND chase 17% faster (run 8). One
+    decision, two compounded mastery-rungs.
+
+  **No new visual cue:** the run-7 `⚡` agitated-name prefix already
+  fires below pressure ~0.625 and now subsumes BOTH adaptive outputs.
+  Cooldown and chase lerp on the same scalar — they trip together. One
+  marker, two coupled effects. This is the cleaner readability choice
+  for kids than two markers (also frees marker bandwidth for a future
+  output #5 if it earns its own cue).
+
+  **Mastery-rung budget update:** Run 7 forecast was that one scalar
+  driving 3+ outputs proves generalizable; run 8 ships output #4 on the
+  same shape. Output #5 candidate (per run 7's note): adaptive `damage`
+  with a SYMMETRIC `xp_reward` lerp — harder hit, more reward, so
+  Alden's HP economy doesn't break asymmetrically. PLAYER_MODEL.md
+  gating still applies; that's a *next* run, not a this-run compound.
+
+  **Difficulty signals to watch (run 9 telemetry candidates):**
+  - Sprint-distance-from-enemy in late game (faction pressure < 0.4) —
+    if Alden gets caught more often than at fresh-save, the band is
+    too aggressive at his end of the spectrum and should drop to +12%.
+  - Owen's voluntary aggression rate on agitated enemies — if he
+    avoids ⚡ enemies, the band's not yet rewarding enough to justify
+    the punish; consider raising xp_reward on agitated kills before
+    raising the chase ceiling.
+
