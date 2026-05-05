@@ -1220,3 +1220,25 @@ washing the whole scene in canon palette without any per-light tuning.
 
 #### Branch
 `auto/art` (push discipline §14).
+
+---
+
+### Integrator run — 2026-05-04 (merge batch)
+
+Merged 5 worker branches into `main`:
+- `auto/builder` (1 commit)  → Roan dire_wolves faction-tier dialogue (run 8)
+- `auto/polisher` (1 commit) → Enemy.chase_speed lerp on faction_pressure (run 8 output #4) — **resolved WORLD_STATE.md conflict by keeping BOTH run-8 narratives** (Roan dialogue + adaptive chase). Both legitimately landed in the same run from different agents; faction table rows merged row-by-row to keep every `(run-N)` annotation.
+- `auto/art` (2 commits) → sky HDRI swap + Items.gd `icon_path` fields
+- `auto/lore` (1 commit) → Elder Maeve dialogue JSON + lore .md
+- `auto/qa` (1 commit) → split-pck.py for >100MB index.pck — **resolved build-eldoria.yml conflict by keeping BOTH** the qa "Split index.pck" step AND main's existing rebase-retry commit step name. Both improvements compose; qa's split runs before main's commit.
+
+Branches not present this run: `auto/character`, `auto/environment`, `auto/audio` (no work landed).
+
+[INTEGRATOR-GAP] **Lore dialogue JSONs are NOT loaded by NPC.gd.** `eldoria-godot/data/dialogue/elder_maeve.json` and `smith_edda.json` shipped from `auto/lore` with mood-keyed trees (default/morning/midday/evening/night/after_first_quest_complete/low_health_player/boss_alive/boss_slain/high_renown/stranger/longnight_vigil/honeysong_eve/spring_first_warm_day) plus voice_rules and consequence_hooks metadata. NPC.gd reads `dialogue_variants` / `warmed_dialogue_variants` / `warmed_world_dialogue_variants` / `warmed_faction_dialogue_variants` exported PackedStringArrays populated by WorldBuilder — there is no JSON loader. The JSONs even self-describe as "for the Builder/Polisher's NPC.gd reader" but no reader exists. Next builder/lore run should add a JSON-driven dialogue path in NPC.gd (or have WorldBuilder ingest the JSONs at startup) so these files become live. Until then, the .json + .md content is canon-only — informational, not in-game.
+
+[INTEGRATOR-GAP] **Items.gd `icon_path` fields are not consumed yet.** The art branch added `icon_path` to every entry in `ITEMS = {...}` pointing to real PNGs in `assets/icons/` — files exist on disk. But no UI code reads either `icon` or `icon_path` keys (grep across `scripts/` is empty). Inventory rendering still uses whatever path it had before. Forward-looking — when an inventory UI lands, the data is already there to wire.
+
+Next run TODO:
+1. Builder or Lore: add JSON dialogue loader in NPC.gd (or WorldBuilder.NPCS ingest at `_ready`). Without it, lore-keeper output sits dormant.
+2. Builder: surface `icon_path` in inventory UI (Inventory.gd has no icon read path today).
+3. Builder per existing top-priority hook: Roan-issued wolf-bounty quest (-0.1 dire_wolves reducer), now that Roan's faction-tier dialogue is live and the bounty has compounding effects (dialogue stays warm, second wolf-spawn threshold trips, adaptive cooldown drops another step).
