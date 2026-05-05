@@ -51,6 +51,7 @@ var active_quest: Dictionary = {}    # {"target":"goblin", "needed":5, "killed":
 var mounted: bool = false
 var mount_node: Node3D = null
 
+const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -70,6 +71,7 @@ signal stats_changed
 signal interact_pressed
 
 func _ready() -> void:
+	print("[Player] BOOT: PX panic-key build add6ab5+ — keys: Backspace, F1, F2, ] (right-bracket)")
 	# PX hardening 2026-05-05: run input handler even if World pauses or scene gets paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	current_speed = walk_speed
@@ -154,20 +156,29 @@ func _physics_process(delta: float) -> void:
 		_save_timer = 0.0
 		save_game()
 
-	# Stuck-recovery #3: if dead but somehow still in physics for >5s, auto-revive.
+	# Gravity ALWAYS applies — even when dead. PX 2026-05-05 hardening:
+	# the old code returned early when is_dead, which meant zero gravity →
+	# user reported "I'm just floating here". Now you always fall to the ground.
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+
+	# Stuck-recovery #3: if dead, auto-revive in 1.2s (was 5.0). Also: ANY
+	# movement input is a clear "I want to play" signal — clear is_dead now.
 	if is_dead:
 		_dead_timer += delta
-		if _dead_timer > 5.0:
+		var _wants_to_play := Input.get_vector("move_left", "move_right", "move_forward", "move_back").length() > 0.1
+		if _wants_to_play or _dead_timer > 1.2:
 			is_dead = false
 			hp = max(1, hp)
 			_dead_timer = 0.0
-		return
+			print("[Player] auto-revive: cleared is_dead (input=%s, timer=%.2f)" % [str(_wants_to_play), _dead_timer])
+		else:
+			# Still dead this frame — apply move_and_slide so gravity actually
+			# moves the character down. Then bail before processing inputs.
+			move_and_slide()
+			return
 	else:
 		_dead_timer = 0.0
-
-	# Gravity
-	if not is_on_floor():
-		velocity.y -= gravity * delta
 
 	# Camera-relative input
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -348,8 +359,18 @@ func _roll_damage() -> Dictionary:
 
 func _spawn_crit_flash() -> void:
 	# A quick screen-edge flash via a Label3D popup at the player
+	var crit := Label3D.new()
+	crit.set_script(DAMAGE_NUMBER_SCRIPT)
+	crit.text = "CRIT!"
 	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.85,0.20) → (1.0,0.92,0.28) sits squarely in THEME §3 sunset-gold (#FFD86B family) instead of the slightly muddy mustard.
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.0, 0.92, 0.28), 56, 8)
+	crit.font_size = 56
+	crit.outline_size = 8
+	crit.outline_modulate = Color(0, 0, 0)
+	crit.modulate = Color(1.0, 0.92, 0.28)
+	crit.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	crit.no_depth_test = true
+	crit.position = global_position + Vector3(0, 2.6, 0)
+	get_tree().current_scene.add_child(crit)
 
 func _play_anim(name: String) -> void:
 	if not animation_player:
@@ -384,7 +405,17 @@ func take_damage(amount: int) -> void:
 	stats_changed.emit()
 	get_tree().call_group("world", "play_sfx", "damage_taken")
 	# Damage number above player
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "-%d" % actual, Color(1.0, 0.30, 0.30), 32, 5)
+	var dn := Label3D.new()
+	dn.set_script(DAMAGE_NUMBER_SCRIPT)
+	dn.text = "-%d" % actual
+	dn.font_size = 32
+	dn.outline_size = 5
+	dn.outline_modulate = Color(0, 0, 0)
+	dn.modulate = Color(1.0, 0.30, 0.30)
+	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dn.no_depth_test = true
+	dn.position = global_position + Vector3(0, 2.4, 0)
+	get_tree().current_scene.add_child(dn)
 	if hp <= 0:
 		_die()
 
@@ -395,7 +426,7 @@ func _die() -> void:
 	get_tree().call_group("world", "play_sfx", "player_death")
 	# Death overlay
 	get_tree().call_group("world", "show_death_overlay")
-	await get_tree().create_timer(2.5).timeout
+	await get_tree().create_timer(1.0).timeout
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
@@ -443,7 +474,17 @@ func gain_xp(amount: int) -> void:
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		# Level-up celebration popup
-		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.0, 0.85, 0.30), 56, 7)
+		var pop := Label3D.new()
+		pop.set_script(DAMAGE_NUMBER_SCRIPT)
+		pop.text = "LEVEL UP!"
+		pop.font_size = 56
+		pop.outline_size = 7
+		pop.outline_modulate = Color(0, 0, 0)
+		pop.modulate = Color(1.0, 0.85, 0.30)
+		pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		pop.no_depth_test = true
+		pop.position = global_position + Vector3(0, 3.0, 0)
+		get_tree().current_scene.add_child(pop)
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
@@ -673,7 +714,17 @@ func _quick_use_potion() -> void:
 		if slot.id.begins_with("hp_potion"):
 			inventory.use_item(i, self)
 			# Heal popup
-			UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "+HEAL", Color(0.30, 0.95, 0.45), 36, 5)
+			var pop := Label3D.new()
+			pop.set_script(DAMAGE_NUMBER_SCRIPT)
+			pop.text = "+HEAL"
+			pop.font_size = 36
+			pop.outline_size = 5
+			pop.outline_modulate = Color(0, 0, 0)
+			pop.modulate = Color(0.30, 0.95, 0.45)
+			pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+			pop.no_depth_test = true
+			pop.position = global_position + Vector3(0, 2.6, 0)
+			get_tree().current_scene.add_child(pop)
 			return
 
 
