@@ -177,3 +177,21 @@ loops feel like the world relents — both child-friendly outcomes per Rule 6.
   pacing. After that lands, the *fourth* coupling is per-frame pressure
   decay (kills_by_kind → faction reduction) so per-kill impact routes
   back through the same channel without quest gating.
+
+
+## Run 6 — Wolf spawn density (mirror of goblin pattern)
+
+Run 6 generalizes the run-5 compound to a second faction. Same shape:
+faction pressure scalar drives BOTH dialogue (when Roan ships) and density
+(now). For Alden: Whisperwood gets visibly quieter on TWO axes (goblins +
+wolves) as the kids progress, so the "you tamed the woods" feeling
+compounds rather than plateaus. For Owen: the proof that the run-5 helper
+PATTERN generalizes — every future faction (bandit, skeleton, crystal) can
+ship density on a single read of `faction_pressure(id)` plus a
+`_<kind>_pack_size(pressure)` helper. The mastery-rung budget extends.
+
+Adaptive proposal for run 7: use the same goblin pressure for a THIRD
+output coupling — `Enemy.gd.attack_cooldown = lerp(1.45, 1.05, 1.0 - p)`.
+A calmed-wood goblin hits faster (Owen's harder fight); a fresh-save
+goblin hits slower (Alden's recovery valve). One scalar, three outputs:
+narrative + density + pacing.

@@ -234,6 +234,42 @@ Authoring rules:
 - Future enemy kinds (skeleton, bandit, wolf) SHOULD mirror this helper
   pattern: `_<kind>_pack_size(pressure)` with its own faction id.
 
+## Wolf Spawn Schema
+
+✅ **Shipped 2026-05-04 (run 6).** Per-load wolf count derives from
+`World.faction_pressure("dire_wolves")`. Lives in
+`WorldBuilder.gd → _wolf_pack_size(pressure: float) -> Dictionary`.
+Returns `{"count": int}` with thresholds:
+
+| Pressure | Wolves | Co-fires with                                  |
+|----------|--------|------------------------------------------------|
+| ≥ 0.5    | 4      | (baseline; fresh-save default — `dire_wolves`) |
+| < 0.5    | 3      | `pelt_for_lyra` completion (-0.1 → 0.4)        |
+| < 0.3    | 2      | (future second reducer, e.g. Roan bounty)      |
+| < 0.15   | 1      | (definitively tamed; near-empty wood)          |
+
+`_build_enemies()` reads `dire_wolves` pressure once at world build, derives
+pack size, and spawns `wolf_count` wolves from the FRONT of a stable 4-element
+`wolf_spots` array. Dropping from the BACK of the list keeps the same wolves
+in the same forest patches across loads — a player who eliminates pack #4
+sees pack #4's spot stay empty rather than wolves "shuffling around."
+
+Player-facing feedback: deferred call to `World._show_toast(
+"🐺 The wolf packs feel thinner.")` at world build if `wolf_count < 4`.
+Messaged separately from the goblin toast so kids can tell which faction
+shrank — both can co-fire on the same load if both factions are calmed.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure("dire_wolves")`. Same fail-soft
+  guard as goblins (`world_node.has_method("faction_pressure")` → baseline).
+- Assert at the top of the wolf block enforces `wolf_count ∈ [0, 4]`.
+  Threshold edits MUST keep the contract.
+- The 4-element `wolf_spots` array is the canonical spawn-position registry.
+  Never reorder it — saves rely on positional stability across loads.
+- Future enemy kinds (skeleton, bandit, crystal_elemental) SHOULD mirror
+  this helper pattern: `_<kind>_pack_size(pressure)` returning a Dictionary
+  with `{"count": int, ...}` so callers can query named fields, not tuples.
+
 ## World Flag Conventions
 
 `World.world_flags: Dictionary` is keyed by `snake_case` strings naming a

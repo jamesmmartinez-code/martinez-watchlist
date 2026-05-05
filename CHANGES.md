@@ -8,55 +8,6 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
-## 2026-05-05 (autonomous run) — Goblins now look like goblins (Sketchfab CC-BY)
-
-### What changed
-Every enemy in the world (goblins, wolves, bandits, skeletons, crystal elementals, the Crystal Guardian boss) was rendering as the same `RobotExpressive.glb` placeholder, just rescaled and tinted. The robot is the most jarring violation of THEME §1 (no sci-fi) and §4 (goblins should be "small, hunched, green-skinned, ragged loincloths, bone fetishes, crude weapons — never cute, never cartoony"). This run swaps the goblin specifically, leaving the other enemies on the placeholder until future runs source dedicated GLBs for them.
-
-### Asset
-- **`assets/models/enemies/goblin_scout.glb`** — "Goblin Animations" from Sketchfab, CC Attribution. 4.4 MB, ~8.3k faces, rigged, with three baked animations: `IdleAnimation`, `WalkAnimation`, `RunAnimation`. Concept Youssef Zamani · 3D model Victor-Emmanuel Pancrazi · rig Thomas Vialetto · animations codywellman. Credits added to `CREDITS.md`. Source URL: https://sketchfab.com/3d-models/goblin-animations-b9705b05dd6c47b29ec943bc096cbf3a
-
-### Wiring (`Enemy.gd`, +33 lines, all additive)
-- New `const KIND_MODELS := {"goblin": preload("res://assets/models/enemies/goblin_scout.glb")}`. The dict shape lets future runs drop in `wolf`, `skeleton`, `crystal_elemental`, etc. without touching `_spawn_model`'s control flow again.
-- `_spawn_model()` now picks `KIND_MODELS.get(enemy_kind, enemy_model)` and tracks `uses_real_model: bool`. The existing scale-by-kind match runs unchanged for all kinds (goblin still gets `0.85` scale).
-- The flat-green `tint` modulate is **only** applied to fallback-RobotExpressive instances. Tinting the painted goblin texture would muddy it; the painted source already reads green-skinned per THEME §4.
-- New `_play_model_idle_anim()` + `_find_animation_player()` helpers walk the spawned subtree, locate any `AnimationPlayer`, and play `IdleAnimation` / `Idle` / first-available. The Goblin GLB ships with `IdleAnimation` so wandering goblins now breathe in place instead of T-posing. Future Walk/Run integration is a separate state-machine job — leaving that to a follow-up.
-
-### Theme citations
-- THEME §1 — "It is **not**: ❌ Sci-fi (no robots…)". Robot-as-goblin is the explicit anti-pattern. Swapped.
-- THEME §4 — "Goblins — small (0.7-0.95 scale), hunched, green-skinned, ragged loincloths, bone fetishes, crude weapons. NEVER cute, NEVER cartoony — feral." The chosen GLB has green/yellow skin, hunched posture, tribal accessories with feathers and a small coin/bone fetish, and wraps. Stylized rather than photoreal — within the painterly band, well clear of anime/chibi.
-- THEME §10 rule 8 — "Every visual asset must be source-credited CC0 or Canva/Adobe-generated." Source-credited under CC Attribution in `CREDITS.md`.
-
-### Files touched
-- `eldoria-godot/assets/models/enemies/goblin_scout.glb` (new, 4.4 MB)
-- `eldoria-godot/assets/models/enemies/goblin_scout.glb.import` (new, Godot import metadata)
-- `eldoria-godot/scripts/Enemy.gd` (+33 lines: const, two helpers, `_spawn_model` selector branch)
-- `CREDITS.md` (one new line under "Sketchfab CC Attribution")
-
-### Validation
-- Bracket / brace / paren balance: PASS (201/201)
-- Single definition of `_spawn_model`, `_play_model_idle_anim`, `_find_animation_player`, `KIND_MODELS`
-- All other enemy kinds (`wolf`, `bandit`, `skeleton`, `crystal_elemental`, `crystal_guardian`) fall through to `enemy_model` (RobotExpressive) unchanged — no balance shift, no behavior change for any kind that lacks a dedicated GLB
-- No procedural primitives parented to character bodies (THEME ban respected)
-- Soldier.glb still untouched as a visible character (BAN respected)
-
-### Next run should pick up
-- The same pattern on a second character. Highest-impact remaining gaps in priority order:
-  1. **Dire Wolf** — currently a sideways-rotated robot, looks worst of all the kinds. Sketchfab query: `dire wolf low poly`. Quadruped, so the rotation hack at `Enemy.gd` (`_model.rotation.x = -PI / 2`) can be removed when a real four-legged GLB lands.
-  2. **Skeleton** — Crystal Caves dungeon enemy that just shipped; players will see five of them per dungeon visit.
-  3. **Elder Maeve** — quest-giver NPC; currently a tinted CesiumMan mannequin like every other villager. Highest-narrative-weight NPC.
-- Wiring template: copy this run's `KIND_MODELS` pattern. For NPCs the equivalent hook is in `WorldBuilder.gd::_make_npc` where `npc_scene.instantiate()` is called — add a per-role override map there.
-
-### Note for next character agent
-The parallel `Char: batch 2` commit (`48e9f44`, by Eldoria Art Director Bot) added `eldoria-godot/assets/models/enemies/goblin.glb` (lowercase) under the label "Orc Tomahawk by tarik_takasu". On inspection that file is **a tomahawk weapon mesh, not a goblin character** (3 mesh primitives all named `*_M_Tomahawk_0`, 0 animations, 0 skins, 10 nodes). It was left in place to honor the Art Director's commit history but it cannot be used as the goblin character — that is what `goblin_scout.glb` (this run) is for. The lowercase `goblin.glb` could plausibly be repurposed as a held weapon prop in a future iteration.
-
-The same batch also dropped `assets/models/enemies/wolf.glb` (1 skin, 1 anim "Take 001", 56 nodes — a real quadruped) without wiring. That is the next obvious one to add to `KIND_MODELS` once a future run verifies its forward-axis orientation against `Enemy.gd`'s existing `_model.rotation.x = -PI / 2` quadruped rotation hack.
-
-### Status
-Pushed to `main` — GitHub Actions will rebuild the web export within 3-5 min.
-
----
-
 ## Integration 2026-05-04 (integrator) — Quest flags now warm NPC dialogue
 
 ### Gap (pattern A)
@@ -828,4 +779,95 @@ proves the run-5 pattern generalizes and unblocks the same compound for
 every other faction. After wolves, the next compound is the THIRD output
 on the same scalar — Enemy.gd `attack_cooldown` lerped on faction pressure,
 making one number drive narrative + density + pacing.
+
+
+## 2026-05-04 (run 6) — Wolf spawn density driven by `faction_pressure("dire_wolves")`
+
+### Plan
+- 5 ledgers consulted. Top-priority hook from WORLD_STATE was wolf spawn
+  density, mirror of the run-5 goblin pattern. Single read, single helper,
+  proves the run-5 PATTERN generalizes to a second faction.
+- Rule 1 (compound, don't sprawl): no new primitive — recombines existing
+  primitives (faction pressure scalar × spawn count). Adds the SECOND
+  consumer of the `dire_wolves` faction key after pelt_for_lyra wrote it.
+- Rule 5 (endless ≠ infinite map): the wood feels different on EVERY save
+  reload after one quest, without any new geometry, biomes, or maps.
+
+### Build
+- `eldoria-godot/scripts/WorldBuilder.gd` (+33 / -3):
+  - `_build_enemies()`: replaces the hard-coded 4-element wolf loop with a
+    `faction_pressure("dire_wolves")` read + `_wolf_pack_size(pressure)`
+    derivation + assert + bounded loop. Same fail-soft contract as goblins.
+  - `_wolf_pack_size(pressure: float) -> Dictionary` helper inserted
+    directly under `_goblin_camp_size`, with documented threshold table.
+  - One-shot ambient toast `🐺 The wolf packs feel thinner.` at world
+    build when `wolf_count < 4`. Distinct from the goblin toast so the
+    kids can read WHICH faction shrank.
+- `WORLD_STATE.md`: top-priority hook (wolf spawn density) marked Resolved;
+  promoted "third output on goblin scalar" (adaptive Enemy.gd cooldown) as
+  the new top-priority. Faction-state table row for Dire Wolves now lists
+  density as a consumer. Adjacent-next note for Roan dialogue updated to
+  reflect that spawn density already speaks the state; dialogue would be
+  the third leg, not the second.
+- `SYSTEM_REGISTRY.md`: new "Wolf Spawn Schema" section between Goblin
+  Spawn Schema and World Flag Conventions, with threshold table, authoring
+  rules (positional stability!), and the runtime-guard pattern.
+- `PLAYER_MODEL.md`: addendum noting run-6 dual-axis quieting (goblins +
+  wolves) for Alden, and the proof-of-pattern-generalization for Owen's
+  mastery-rung budget. Run-7 adaptive proposal: same goblin scalar drives
+  a THIRD output (Enemy.gd attack_cooldown).
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `factions["dire_wolves"].pressure`
+        adds spawn density as the SECOND consumer of that key. WORLD_STATE.md
+        updated with the consumer in the faction-state table and player-impact
+        ledger ("Wolves spawned per world load").
+- (ii)  Queryable schema: `_wolf_pack_size(pressure: float) -> Dictionary`
+        with `{"count": int}` shape; thresholds 0.5 / 0.3 / 0.15 documented
+        in SYSTEM_REGISTRY.md "Wolf Spawn Schema" with full table and
+        authoring rules. Mirror-shape of `_goblin_camp_size` so callers
+        learn one helper pattern per faction.
+- (iii) Player-facing feedback: visible wolf-count delta on every world
+        load after a wolf-reducing quest (4 → 3 from pelt_for_lyra alone),
+        PLUS a deferred one-shot toast "🐺 The wolf packs feel thinner."
+        that fires only when wolves are below baseline. Pairs with
+        `apply_consequence` per-quest toasts (announces *change-moment*)
+        and the run-5 goblin toast (announces *persistent state*).
+- (iv)  Evaluation: parens/brackets/braces balance check passes
+        (1014/1014, 55/55, 34/34). All new `var` declarations carry
+        explicit type annotations (`var wolf_pressure: float`,
+        `var pack_size: Dictionary`, `var wolf_count: int`,
+        `var wolf_spots: Array`, `var w: Vector3`, `var p: float`,
+        `var count: int`). One runtime assert enforces `wolf_count ∈ [0,4]`.
+        Same fail-soft guard `world_node.has_method("faction_pressure")`
+        as the goblin path.
+- (v)   Future hooks (≥ 2):
+        1. **Adaptive `Enemy.gd.attack_cooldown`** — third output on the
+           goblin scalar. `lerp(1.45, 1.05, 1.0 - pressure)`. Single line
+           edit. Single scalar then drives dialogue + density + pacing.
+           Now top-priority hook in WORLD_STATE.md.
+        2. **Roan dialogue tier 3 on `dire_wolves`** — completes the
+           three-output compound for the wolf faction (dialogue + density
+           + future pacing). Schema is in place; only WorldBuilder edits
+           to NPCS dictionary required.
+        3. **Roan-issued wolf-bounty quest (-0.1 reducer)** — second
+           reducer for `dire_wolves` taking pressure 0.4 → 0.3 (next
+           threshold trip, 3 → 2 wolves). Mirrors the way `ears_for_mara`
+           is a second reducer for goblins after `whisperwood_cleansing`.
+        4. **`_<kind>_pack_size` for skeleton + bandit** — once those
+           ship, Crystal Caves and a future bandit camp each reuse the
+           pattern. Authoring rule documented under "Wolf Spawn Schema."
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Adaptive `Enemy.gd.attack_cooldown` driven by `faction_pressure`.** Same
+goblin scalar that already drives dialogue tier 3 (run 4) + spawn density
+(run 5). Third output on a single scalar = mastery threshold for the
+"compound, don't sprawl" rule. Keep the lerp tight (1.45 → 1.05) so a
+fresh-save goblin still telegraphs at child-readable speed. After that,
+Roan's `dire_wolves` faction-tier dialogue (4 lines, mirrors Maeve) +
+a Roan-issued -0.1 wolf-bounty quest, both of which compose with run-6.
 

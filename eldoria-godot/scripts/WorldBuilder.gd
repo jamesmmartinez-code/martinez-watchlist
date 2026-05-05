@@ -1105,13 +1105,34 @@ func _build_enemies() -> void:
 	if (scout_count < 4 or brute_count < 1) and world_node and world_node.has_method("_show_toast"):
 		world_node.call_deferred("_show_toast", "🌿 You sense fewer goblins in the wood.")
 
-	# A few wolves wandering between camps
-	var wolf_spots = [
+	# REFINE: world-engine (run 6) — wolf pack density mirrors goblin pattern.
+	# Read World.faction_pressure("dire_wolves") (baseline 0.5 from Faction
+	# Schema). pelt_for_lyra is a -0.1 reducer → first completion takes the
+	# wood from 4 wolves to 3. Same fail-soft contract as goblins: missing
+	# accessor → baseline. See SYSTEM_REGISTRY.md "Wolf Spawn Schema".
+	var wolf_pressure: float = 0.5
+	if world_node and world_node.has_method("faction_pressure"):
+		wolf_pressure = float(world_node.faction_pressure("dire_wolves"))
+	var pack_size: Dictionary = _wolf_pack_size(wolf_pressure)
+	var wolf_count: int = int(pack_size.get("count", 4))
+	assert(wolf_count >= 0 and wolf_count <= 4, "wolf_count out of contract")
+
+	# Stable position list — fewer wolves means we drop the LAST entries first
+	# so positions 0..wolf_count remain consistent across saves. Empty patches
+	# of forest where a wolf used to roam read as "they used to be here."
+	var wolf_spots: Array = [
 		Vector3(15, 0, 25), Vector3(-25, 0, -25), Vector3(50, 0, -10), Vector3(-15, 0, 50)
 	]
-	for w in wolf_spots:
+	for i in wolf_count:
+		var w: Vector3 = wolf_spots[i]
 		_spawn_enemy("wolf", w, "Dire Wolf", 40, 9, 28, 6,
 			Color(0.55, 0.50, 0.45), 0.8, 1.05)
+
+	# Player-facing feedback (Rule 2 iii): one-shot toast at world build if
+	# the wolf packs are thinner than baseline. Messaged separately from the
+	# goblin toast so kids can tell which faction shrank. Deferred so HUD exists.
+	if wolf_count < 4 and world_node and world_node.has_method("_show_toast"):
+		world_node.call_deferred("_show_toast", "🐺 The wolf packs feel thinner.")
 
 	# Goblin Warlord — boss in the deepest part of the Whisperwood
 	_build_boss_arena(Vector3(60, 0, 60))
@@ -1139,6 +1160,27 @@ func _goblin_camp_size(pressure: float) -> Dictionary:
 	if p < 0.15:
 		scouts = 1
 	return {"scouts": scouts, "brutes": brutes}
+
+# Wolf Spawn Schema (run 6) — same shape as goblin spawn schema. Read accessor:
+# World.faction_pressure("dire_wolves") in [0.0, 1.0], baseline 0.5.
+# Thresholds were chosen so a SINGLE pelt_for_lyra completion (-0.1 → 0.4)
+# is visible (4 wolves → 3) while still allowing future reducers to taper:
+#   >= 0.5 → 4 wolves (baseline / fresh save)
+#   < 0.5  → 3 wolves (one reducer applied)
+#   < 0.3  → 2 wolves (two further reducers)
+#   < 0.15 → 1 wolf   (definitively tamed Whisperwood)
+# pelt_for_lyra is the single reducer today; future runs will likely add a
+# Roan-issued wolf-bounty to take the path 0.4 → 0.3 → 0.2 in two more steps.
+func _wolf_pack_size(pressure: float) -> Dictionary:
+	var p: float = clamp(pressure, 0.0, 1.0)
+	var count: int = 4
+	if p < 0.5:
+		count = 3
+	if p < 0.3:
+		count = 2
+	if p < 0.15:
+		count = 1
+	return {"count": count}
 
 func _spawn_enemy(kind: String, pos: Vector3, ename: String, hp: int, dmg: int,
 		xp: int, gold: int, tint: Color = Color(0.45, 0.85, 0.30),

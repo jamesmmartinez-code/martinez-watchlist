@@ -61,15 +61,26 @@ run easier — what's the *next* thing that compounds?)
   `World.faction_pressure()` now has TWO consumers (NPC.gd dialogue tier 3,
   WorldBuilder spawn density) — the consequence-resolver loop is closed on
   both narrative and pacing axes.
-- 🔥 **Top-priority next:** Wolf spawn density. Identical pattern: read
-  `World.faction_pressure("dire_wolves")` in `_build_enemies()` after the
-  goblin block, replace the hard-coded 4-element `wolf_spots` with a
-  pressure-driven count via a `_wolf_pack_size(pressure)` mirror helper.
-  `pelt_for_lyra` (-0.1) is the existing reducer, so the path 0.5 → 0.4 → 0.3
-  is reachable in two completions. Single read, single helper, big payoff.
+- ✅ **Resolved 2026-05-04 (run 6):** Wolf spawn density reads
+  `World.faction_pressure("dire_wolves")` in `WorldBuilder._build_enemies()`.
+  `_wolf_pack_size(pressure)` mirror of the goblin helper with thresholds at
+  0.5 / 0.3 / 0.15 — wolves drop from 4 → 3 the moment `pelt_for_lyra` ships
+  (-0.1 takes pressure 0.5 → 0.4, < 0.5 trips the first threshold). Empty
+  forest patches where a wolf used to roam serve as the same "they used to
+  be here" memorial as the empty goblin camps. `World.faction_pressure()`
+  now has THREE consumers (NPC.gd dialogue tier 3, goblin spawn density,
+  wolf spawn density) — pattern proven generalizable to every faction.
+- 🔥 **Top-priority next:** THIRD output on the same scalar — adaptive
+  `Enemy.gd.attack_cooldown` lerped on faction pressure. One number then
+  drives narrative (dialogue tier 3) + density (spawn helpers) + pacing
+  (enemy aggression). `lerp(1.45, 1.05, 1.0 - pressure)` so a calmed-wood
+  goblin hits faster (Owen's harder fight) while a fresh-save goblin hits
+  slower (Alden's recovery valve). Single line edit on Enemy.gd.
 - 🔥 **Adjacent next:** Roan (Stablemaster) → `dire_wolves` faction tier.
   Smoke-tests the 4-tier system on an NPC with no warm_flag at all.
-  Schema is in place, only WorldBuilder edits required.
+  Schema is in place, only WorldBuilder edits required. After run 6, Roan's
+  faction-tier lines have a NEW partner: spawn density already speaks the
+  state, so dialogue completes the third leg of the same compound.
 - Player housing has no anchor point. A flat plot east of Briarwood (positive
   X, near +12,0,+4) is reserved for it.
 - Lyra shop unlock: when `World.has_world_flag("lyra_potion_brew")`, list
@@ -103,7 +114,7 @@ by direct dialogue branches (those READ flags, they don't WRITE them).
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1 |
+| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density)** |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed |
 
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
@@ -133,6 +144,10 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 - Goblins spawned (per world load): now scales from baseline 15 (3 camps × 5)
   down to 3 (3 × 1) as `whisperwood_goblins` pressure drops. Ledger of *what
   the world LOOKS like to the player on save reload* now reflects their work.
+- Wolves spawned (per world load): scales from baseline 4 down to 1 as
+  `dire_wolves` pressure drops. Position list is stable — wolves vanish
+  from the END of `wolf_spots` first, so re-loading the same save shows
+  the SAME wolves missing from the SAME forest patches. (Run 6.)
 - Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
   that NPCs now narrate. `apply_consequence()` is no longer write-only on the
   faction key.
