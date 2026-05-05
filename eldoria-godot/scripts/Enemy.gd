@@ -129,6 +129,31 @@ const CHASE_SPEED_AGITATION_GAIN: float = 0.17
 # effects (cooldown + chase_speed + damage) for cleaner readability.
 const DAMAGE_AGITATION_GAIN: float = 0.12
 
+# REFINE: adaptive — Run-10 xp_reward band. SIXTH and (per the run-9 follow-up)
+# FINAL output on the same `faction_pressure` scalar that already drives NPC
+# dialogue tier 3 (run 4), goblin spawn density (run 5), wolf spawn density
+# (run 6), attack cooldown (run 7), chase speed (run 8), and damage (run 9).
+# The PLAYER_MODEL.md run-9 follow-up explicitly named adaptive xp_reward as
+# Output #6 candidate — *inverted* on the same scalar so the harder fight is
+# also the bigger reward, closing Owen's mastery loop. A tamed faction's
+# survivors are tougher (cooldown / chase / damage all up) AND give MORE XP
+# per kill, not less. +20% ceiling — wider than damage's +12% because xp is
+# a pure-positive knob (no on-Alden tolerance pressure to balance against),
+# and because the size of the ⚡ reward should *feel* commensurate with the
+# three coupled punisher-buffs the prefix already promises. Multiplicative
+# because per-kind xp_reward varies wildly (Scout 18, Boss 480) — preserving
+# each kind's relative weight matters more than a flat ceiling. A scout's
+# 18 xp lifts to round(21.6) = 22 at pressure 0.0; a brute's 36 lifts to
+# round(43.2) = 43; a boss's 480 lifts to round(576.0) = 576 — proportional,
+# role preserved. The clamp uses ceil(ceiling_f) so a future tighter round()
+# rule can't escape the band. At pressure 1.0 (fresh save) every enemy stays
+# at its WorldBuilder-assigned baseline, so Alden's first-hour grind is
+# byte-identical to runs 1–9. After this lands, the enemy axis of
+# `faction_pressure` is FULLY wired (6 outputs: dialogue + 2x density +
+# cooldown + chase + damage + xp); the next true frontier is the day
+# `World.player_pressure_signal()` ships.
+const XP_REWARD_AGITATION_GAIN: float = 0.20
+
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
 var _player: CharacterBody3D = null
@@ -161,6 +186,13 @@ func _ready() -> void:
 	# three (+12% vs cooldown's [1.05,1.45]/+38% and chase_speed's +17%)
 	# because damage compounds with the other two on the same pressure axis.
 	_resolve_adaptive_damage()
+	# REFINE: adaptive — Run-10 xp_reward inverse-lerp on the same scalar
+	# (Output #6, FINAL on the enemy axis). Same fail-soft contract; runs
+	# AFTER WorldBuilder has set the per-kind xp_reward export so the baseline
+	# read is correct. Pure-positive knob (Owen's mastery loop closer) — wider
+	# +20% band than damage's +12% because there's no Alden-tolerance pressure
+	# to balance against on the reward side.
+	_resolve_adaptive_xp_reward()
 	_spawn_pos = global_position
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
@@ -697,3 +729,67 @@ func _resolve_adaptive_damage() -> void:
 		"Enemy.damage out of contract band [baseline, ceil(baseline*1.12)]")
 	damage = resolved_i
 
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# REFINE: adaptive — Run-10: Adaptive xp_reward (SIXTH and final output on
+# the faction_pressure scalar). Same shape as _resolve_adaptive_damage, with
+# ONE deliberate inversion on the *direction* of the lerp:
+#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
+#   • Multiplicative, NOT absolute: each enemy kind's role-shape (Scout 18 xp,
+#     Brute 36, Wolf 28, Skeleton 24, Elemental 55, Boss 480) is preserved —
+#     every kind gets the SAME +20% ceiling at pressure 0, NOT the same
+#     absolute xp. Owen's mastery rung scales proportionally across the
+#     whole bestiary.
+#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown +
+#     chase_speed + damage already use).
+#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
+#     fourth visual cue, because all four outputs (cooldown / chase_speed /
+#     damage / xp_reward) lerp on the SAME pressure scalar and trip the
+#     threshold at the same point. One marker, four coupled effects: clean
+#     readability for the kids — when they see ⚡ they learn it means
+#     "faster, harder, hits more, but pays more too."
+#   • Wider band (+20%) than damage (+12%) and chase_speed (+17%) because
+#     xp_reward is a *pure-positive* knob — there's no Alden-combat-tolerance
+#     pressure to balance against on the reward side, AND the size of the ⚡
+#     reward should *feel* commensurate with the three coupled punisher-buffs
+#     the prefix already promises. Asymmetric on purpose: the punishment side
+#     stays tight, the reward side opens up.
+#   • Integer rounding: xp_reward is int, so we round() the lerped float and
+#     clamp the int result to [baseline, ceil(baseline*(1+gain))]. ceil() on
+#     the upper bound ensures the +20% bump actually lands on small-baseline
+#     enemies (a 6-xp variant would round-to-baseline without it; the actual
+#     small baseline in the bestiary is 18, where 21.6 rounds to 22 cleanly).
+#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
+#     preserved (never crash, never gate on world readiness).
+# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
+# xp_reward exactly — Alden's first-hour grind is byte-identical to runs 1–9.
+# At pressure 0.0 the few survivors of a tamed faction grant 20% more xp per
+# kill — Owen's mastery rung. The enemy axis of `faction_pressure` is fully
+# wired after this run. See SYSTEM_REGISTRY.md "Enemy XP Reward Schema."
+# ──────────────────────────────────────────────────────────────────────────
+func _resolve_adaptive_xp_reward() -> void:
+	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
+	if faction_id == "":
+		return  # Unmapped kind (bandit, etc.) → baseline
+	var world_node: Node = get_tree().get_first_node_in_group("world")
+	if world_node == null or not world_node.has_method("faction_pressure"):
+		return  # Older World.gd or world not yet ready → baseline
+	var pressure: float = float(world_node.faction_pressure(faction_id))
+	pressure = clamp(pressure, 0.0, 1.0)
+	var baseline_i: int = xp_reward
+	if baseline_i <= 0:
+		return  # Defensive: a zero/negative baseline shouldn't be amplified.
+	var baseline_f: float = float(baseline_i)
+	var ceiling_f: float = baseline_f * (1.0 + XP_REWARD_AGITATION_GAIN)
+	var resolved_f: float = lerp(baseline_f, ceiling_f, 1.0 - pressure)
+	# Round to int, then clamp to the integer band. Ceil(ceiling_f) is the
+	# integer ceiling (e.g. 21.6 → 22) so the +20% bump actually lands on
+	# small-baseline enemies; round() on resolved_f handles the interior of
+	# the band cleanly.
+	var ceiling_i: int = int(ceil(ceiling_f))
+	var resolved_i: int = int(round(resolved_f))
+	resolved_i = clamp(resolved_i, baseline_i, ceiling_i)
+	assert(resolved_i >= baseline_i and resolved_i <= ceiling_i,
+		"Enemy.xp_reward out of contract band [baseline, ceil(baseline*1.20)]")
+	xp_reward = resolved_i
