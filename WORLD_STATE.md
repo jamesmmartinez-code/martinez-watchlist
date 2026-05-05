@@ -126,22 +126,28 @@ run easier — what's the *next* thing that compounds?)
   `"use_json_dialogue": true` in `WorldBuilder.NPCS`. Each NPC gets the
   same 9-tier predicate space without a single GDScript edit. Highest-leverage
   next move because the SYSTEM is already shipped and tested on 2 NPCs.
-- 🔥 **Top-priority next:** Roan-issued wolf-bounty quest (-0.1 reducer
-  for `dire_wolves`). Mirrors `ears_for_mara` as the second goblin reducer.
-  After run 8, the dialogue tier is in place but Roan still has no QUEST
-  to OFFER as a wolf-pressure reducer — the only path to drop wolves is
-  Lyra's pelt fetch. A Roan-issued bounty (-0.1) takes pressure 0.4 → 0.3
-  on top of `pelt_for_lyra`, trips the SECOND wolf-spawn threshold (3 → 2),
-  AND drops adaptive cooldown another step — one quest, three visible
-  world changes (Roan's lines stay warm, fewer wolves, faster surviving
-  wolves). Single new quest definition + faction `consequence: -0.1`
-  payload. Composes with the Roan-arc started in run 8.
-- 🔥 **Adjacent next:** Roan `warm_flag` tier. Once Roan ISSUES the
-  bounty quest above, set `first_bounty_done` (or similar) on Roan's
-  `npc_flags` and ship 4 `warm_lines` for personal warmth — promoting
-  Roan from a faction-only NPC to a fully 4-tier NPC. Mirrors Mara's
-  `good_customer` pattern. Together with run 8's faction tier, Roan
-  gets the same dialogue depth as Maeve / Mara / Lyra.
+- ✅ **Resolved 2026-05-05 (run 17 — Builder):** `wolf_fang_for_roan`
+  quest shipped. SECOND `dire_wolves` reducer (`-0.1`) — pressure now
+  tracks `0.5 → 0.4 (Lyra's pelts) → 0.3 (Roan's fangs)` on the canonical
+  reduction path. Trips the run-6 second wolf-spawn cliff (3 → 2 wolves)
+  AND drops adaptive cooldown (run 7) and chase speed (run 8) another
+  step on the same scalar. New material `wolf_fang` (Items.gd) added to
+  the wolf DROP_TABLE at weight 18 (pelt 48 → 38), so a single 5-kill
+  wolf grind produces ~1.9 fangs AND ~2.0 pelts in parallel —
+  `wolf_fang_for_roan` and `pelt_for_lyra` can be progressed together
+  without re-grinding. Standalone (no Lyra) the bounty hits the FIRST
+  cliff (4 → 3) — also visible. Composes with the Roan-arc started in
+  run 8 and the Roan `warm_flag` tier shipped in this same run.
+- ✅ **Resolved 2026-05-05 (run 17 — Builder):** Roan `warm_flag`
+  tier wired in `WorldBuilder.NPCS`. Quest consequence sets
+  `first_bounty_done` on Roan's `npc_flags`; four `warm_lines` author the
+  personal-warmth tier. Roan promoted from faction-only NPC (run 8) to
+  faction + warm_flag NPC — same dialogue depth as Maeve (`first_quest_done`),
+  Mara (`good_customer`), Lyra (`trusts_player`). NPC.gd Tier 2 (warm_flag)
+  fires above Tier 4 (faction-pressure), so warm_lines surface the
+  moment the quest turns in. `line` field updated to the bounty pitch
+  ("Wolves nip my mares again. Bring me 5 wolf fangs and the road's
+  safer.") matching the Mara/Lyra offer-line convention.
 - ✅ **Resolved 2026-05-04 (run 8):** Adaptive `Enemy.gd.chase_speed` is
   now a FOURTH reader of `World.faction_pressure(faction_id)`. Multiplicative
   band — each enemy kind's WorldBuilder-assigned chase_speed lerps up to
@@ -166,12 +172,13 @@ run easier — what's the *next* thing that compounds?)
   density already speaks the state AND the surviving wolves visibly
   agitate (⚡ prefix) — dialogue completes the FOURTH leg of the
   `dire_wolves` compound (dialogue + density + cooldown + visual marker).
-- 🔥 **Adjacent next:** Roan-issued wolf-bounty quest (-0.1 reducer for
-  `dire_wolves`). Mirrors `ears_for_mara` as the second goblin reducer.
-  Trips the second wolf-spawn threshold (3 → 2) AND drops cooldown another
-  step — single quest, two visible world changes, both readable to a kid.
-  Compose with Roan's faction-tier dialogue above to ship a complete
-  Roan-arc on the `dire_wolves` compound.
+- ✅ **Resolved 2026-05-05 (run 17 — Builder):** *(duplicate hook)*
+  Folded into the run-17 wolf-bounty entry above. The Roan-arc on
+  `dire_wolves` is now complete on all four legs: dialogue (tier 4
+  faction + tier 2 warm_flag), spawn density (run 6), adaptive cooldown
+  (run 7), adaptive chase (run 8) — every consumer of
+  `World.faction_pressure("dire_wolves")` is wired to a Roan-issued
+  reduction event.
 - ✅ **Resolved 2026-05-05 (run 10): Boss world-flag wire + 3rd JSON opt-in.**
   Two world flags now flip on Goblin Warlord lifecycle events:
   - `seen_warlord` — set in `Boss._physics_process` immediately after the
@@ -249,7 +256,7 @@ that complements the flag-derived columns below — see
 | Mara the Merchant    | shop     | warms after ear bounty | ✅ 4 (npc-flag, integrator) | ❌ | `good_customer` (ears_for_mara) |
 | Herbalist Lyra       | alchemy  | warms after pelts; senses brewing | ✅ 4 (npc-flag) + ✅ 4 (world-flag, run 3 follow-up) | ❌ | `trusts_player`, `lyra_potion_brew` |
 | Innkeeper Bram       | inn      | "regular at the bar" cadence after 3 visits | ❌ (no quest yet) | ✅ 4 @ visits ≥ 3 | — |
-| Stablemaster Roan    | stable   | warms when wolves quiet | ✅ 4 (faction, run 8) | ❌ | `dire_wolves` < 0.5 |
+| Stablemaster Roan    | stable   | warms after fang bounty; warms when wolves quiet | ✅ 4 (npc-flag, run 17) + ✅ 4 (faction, run 8) | ❌ | `first_bounty_done` (wolf_fang_for_roan); `dire_wolves` < 0.5 |
 | Trainer Hala         | trainer  | recognizes returning student after 3 sessions | ❌ (no quest yet) | ✅ 4 @ visits ≥ 3 | — |
 
 Live data:
@@ -285,7 +292,7 @@ relationship with the player. Flip if play-testing disagrees.
 |------------------|-------------|----------|--------------------------------|
 | Briarwood        | friendly    | 0.0      | safe hub                       |
 | Whisperwood Goblins | hostile  | 1.0      | mutable; cleansing & ear bounty reduce; **Maeve speaks at <0.9 (run-4 dialogue tier 3); spawns drop at <0.9/<0.7/<0.4/<0.15 (run-5 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing)** |
-| Dire Wolves      | hostile     | 0.5      | mutable; pelt quest reduces by 0.1; **Roan speaks at <0.5 (run-8 dialogue tier 3); spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing)** |
+| Dire Wolves      | hostile     | 0.5      | mutable; **two reducers**: `pelt_for_lyra` (-0.1) + `wolf_fang_for_roan` (-0.1, run 17); **Roan speaks at <0.5 (run-8 faction tier) + <warm_flag `first_bounty_done` (run-17 personal tier)**; spawns drop at <0.5/<0.3/<0.15 (run-6 spawn density); attack cooldown lerps 1.45→1.05 (run-7 adaptive pacing); chase_speed lerps +17% (run-8 adaptive pacing) |
 | Crystal Caves    | hostile     | 0.0      | placeholder; dungeon not placed; **skeleton/crystal_elemental/crystal_guardian cooldown wired (run-7) AND chase wired (run-8) — both fire the moment the dungeon ships** |
 Live data in `World.factions`. Read with `World.faction_pressure(id)`. Mutated
 only by `World.apply_consequence({...})`.
@@ -300,6 +307,7 @@ read by dialogue / spawning / future runs.
 | `whisperwood_safer`   | whisperwood_cleansing | unset   | future: roving patrol density |
 | `lyra_potion_brew`    | pelt_for_lyra         | unset   | future: Lyra unlocks rarer potions in shop |
 | `mara_bounty_paid`    | ears_for_mara         | unset   | future: Mara raises buy prices on goblin loot |
+| `roan_bounty_paid`    | wolf_fang_for_roan    | unset   | future: Maeve cross-NPC mention; Edda fang-stitched greaves recipe (run 17) |
 
 Read with `World.has_world_flag(name)`. Convention: flag names are
 `snake_case`, present-tense fact ("safer", "paid", "brew"), never imperative.
@@ -317,7 +325,11 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 - Wolves spawned (per world load): scales from baseline 4 down to 1 as
   `dire_wolves` pressure drops. Position list is stable — wolves vanish
   from the END of `wolf_spots` first, so re-loading the same save shows
-  the SAME wolves missing from the SAME forest patches. (Run 6.)
+  the SAME wolves missing from the SAME forest patches. (Run 6.) Two
+  reducers now drive this: `pelt_for_lyra` (-0.1, run 6) AND
+  `wolf_fang_for_roan` (-0.1, run 17). Running both takes pressure
+  0.5 → 0.3, trips the second cliff (3 → 2 wolves), and lights up
+  Roan's warm_flag tier on the same turn-in.
 - Quests completed: surfaced as toast AND (run 4) as faction-pressure shifts
   that NPCs now narrate. `apply_consequence()` is no longer write-only on the
   faction key.
