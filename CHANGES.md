@@ -1242,3 +1242,150 @@ Next run TODO:
 1. Builder or Lore: add JSON dialogue loader in NPC.gd (or WorldBuilder.NPCS ingest at `_ready`). Without it, lore-keeper output sits dormant.
 2. Builder: surface `icon_path` in inventory UI (Inventory.gd has no icon read path today).
 3. Builder per existing top-priority hook: Roan-issued wolf-bounty quest (-0.1 dire_wolves reducer), now that Roan's faction-tier dialogue is live and the bounty has compounding effects (dialogue stays warm, second wolf-spawn threshold trips, adaptive cooldown drops another step).
+
+
+## 2026-05-05 (run 9) — JSON dialogue trees made live (closes integrator gap)
+
+### Plan
+- 5 ledgers consulted. Top-priority TODO from the 2026-05-04 integrator merge
+  was **explicit**: "add JSON dialogue loader in NPC.gd (or WorldBuilder.NPCS
+  ingest at `_ready`). Without it, lore-keeper output sits dormant." The
+  `data/dialogue/elder_maeve.json` and `smith_edda.json` files have shipped
+  rich mood-keyed trees with low-HP / boss / festival / time-of-day branches,
+  but no reader existed. This run is the reader.
+- Rule 1 (compound, don't sprawl): no new primitive. The lore JSONs already
+  exist on disk (`auto/lore` shipped them 2026-05-04). This run is a single
+  loader + a single predicate resolver + a single-line opt-in flag per NPC.
+- Rule 5 (endless ≠ infinite map): the SAME NPCs the player has known since
+  bootstrap now react to HP, boss state, festival days, and quest history.
+  Briarwood feels lived-in without any new geometry, NPCs, or quests.
+
+### Build
+- `eldoria-godot/scripts/DialogueDB.gd` (NEW, +189 lines): `class_name
+  DialogueDB extends RefCounted` with static methods `load_for(npc_name) ->
+  Dictionary` and `choose_line(npc_name, ctx) -> String`. JSON load uses
+  `FileAccess.file_exists` + `FileAccess.open` + `JSON.parse_string`,
+  cached forever per slug (negative cache for misses). Predicate priority
+  (highest first):
+    1. `low_health_player`           — `Player.hp / Player.max_hp < 0.30`
+    2. `boss_slain`                  — `World.has_world_flag("warlord_dead")`
+    3. `boss_alive`                  — `World.has_world_flag("seen_warlord")` *
+    4. `high_renown`                 — `World.player_renown >= 100` *
+    5. `stranger`                    — `World.npc_seen[name] != true` *
+    6. festival key                  — `World.current_festival == key` *
+    7. `after_first_quest_complete`  — npc_has_flag(warmed_flag) OR
+                                       has_world_flag("first_quest_done")
+    8. mood bucket (tod)             — morning / midday / evening / night
+    9. `default`                     — fallback
+  ( * = fail-soft: World doesn't carry these fields yet; the predicate just
+  doesn't fire today. The day a future Builder adds the field, the existing
+  lines in the JSONs LIGHT UP automatically — no DialogueDB or JSON edit
+  required. Five lines per NPC become live "free" the moment the field
+  lands.)
+- `eldoria-godot/scripts/NPC.gd` (+30 / -2): new `@export var
+  use_dialogue_json: bool = false`. Cached `_player_ref: Player` populated
+  on body_entered, cleared on body_exited (so DialogueDB can read accurate
+  hp_ratio without a fresh group lookup at interact time). At the top of
+  `_on_interact()`, if `use_dialogue_json` is true, builds ctx (world, tod,
+  hp_ratio, warmed_flag), calls `DialogueDB.choose_line(npc_name, ctx)`. If
+  non-empty, emits via `show_dialogue` and returns. Otherwise falls through
+  to the existing 4-tier variants/warmed_* pipeline UNCHANGED.
+- `eldoria-godot/scripts/WorldBuilder.gd` (+15 / -2): added
+  `"use_json_dialogue": true` to the Maeve and Edda dicts in `NPCS`.
+  `_make_npc()` copies `bool(data.get("use_json_dialogue", false))` onto
+  `npc.use_dialogue_json`. Defaults false → all 5 other NPCs unchanged.
+- `SYSTEM_REGISTRY.md`: new top-level section "JSON Dialogue Tree Schema"
+  added between "NPC Schema" and "Time Schema". Documents slug convention,
+  tree shape (9 supported keys), predicate priority, wiring, authoring
+  rules, composition diagram with the existing 4 tiers, authoring traps,
+  and 5 future hooks.
+- `WORLD_STATE.md`: new "Resolved 2026-05-04 (run 9)" entry added before
+  the existing top-priority lines. New top-priority promoted: ship JSON
+  dialogue trees for the other 5 NPCs (Mara, Lyra, Bram, Roan, Hala) —
+  pure data work, zero code change.
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: NO new World writes. New READ paths added:
+        `World.has_world_flag("warlord_dead")`, `World.has_world_flag(
+        "seen_warlord")`, `World.player_renown` (fail-soft), `World.npc_seen`
+        (fail-soft), `World.current_festival` (fail-soft),
+        `World.has_world_flag("first_quest_done")`, `World.npc_has_flag(name,
+        warmed_flag)`. Six READ-only consumers added across DialogueDB.
+        WORLD_STATE.md updated with a Resolved entry plus a NEW top-priority
+        hook (5 more NPCs, data-only).
+- (ii)  Queryable schema: `DialogueDB.load_for(npc_name) -> Dictionary` and
+        `DialogueDB.choose_line(npc_name, ctx: Dictionary) -> String`.
+        Documented in SYSTEM_REGISTRY.md "JSON Dialogue Tree Schema" with
+        the 9-key tree shape table, predicate-priority listing, slug
+        convention, and authoring traps. The `ctx` Dictionary is a stable
+        public contract: 6 fields (world, tod, hp_ratio, warmed_flag,
+        renown_threshold, low_hp_below) — all optional with safe defaults.
+- (iii) Player-facing feedback: Maeve and Edda now react to player HP at
+        every interaction (drop below 30% — both deliver mentor warmth).
+        After the first quest turn-in, both warm to a "Whisperwood / Brigid"
+        beat with stronger character voice than the existing 4-line warm
+        cycles. Time-of-day mood lines for Maeve and Edda are now sourced
+        from the rich JSON authorship (proverbs, hammer-clangs) instead of
+        the terser `lines: []` fallback. Five additional lines per NPC are
+        fail-soft and will light up THE DAY a future Builder adds a renown,
+        festival, npc-seen, or seen-warlord tracker — no further dialogue
+        edits required.
+- (iv)  Evaluation:
+        - DialogueDB.gd: parens 89/89, brackets 15/15, braces 9/9. ✓
+        - NPC.gd: parens 79/79, brackets 3/3, braces 1/1. ✓
+        - WorldBuilder.gd: parens 1084/1084, brackets 56/56, braces 36/36. ✓
+        - All new `var` declarations carry explicit type annotations
+          (`var key: String`, `var f: FileAccess`, `var raw: String`,
+          `var parsed: Variant`, `var tree: Dictionary`, `var world_node:
+          Node`, `var tod: float`, `var hp_ratio: float`, `var warmed_flag:
+          String`, `var renown_threshold: int`, `var low_hp_below: float`,
+          `var first_quest_warm: bool`, `var festival: String`,
+          `var seen: Dictionary`, `var renown: int`, `var mood: String`,
+          `var json_line: String`, `var ctx: Dictionary`, `var path: String`).
+          No walrus on Variant.
+        - JSON load is fail-soft: missing file, parse error, non-Dictionary
+          root, and missing predicate keys all degrade to "" and the legacy
+          variants pipeline takes over. No exceptions, no panics.
+        - Negative cache means misses are O(1) on repeat — won't hammer
+          FileAccess every interact for the 5 not-yet-JSON NPCs.
+- (v)   Future hooks (≥ 2):
+        1. **Ship JSON dialogue trees for Mara / Lyra / Bram / Roan / Hala**
+           — pure data work. Author a `data/dialogue/<slug>.json` per the
+           schema and flip `"use_json_dialogue": true`. Each NPC inherits
+           the full 9-tier predicate space with no GDScript edit. Now the
+           top-priority hook in WORLD_STATE.md.
+        2. **`World.player_renown: int`** — when added, `high_renown` keys
+           for Maeve + Edda fire automatically (their JSONs already author
+           the lines). Single int + a setter from quest XP. Lights up
+           multiple NPCs the moment the field exists.
+        3. **`World.current_festival: String`** — when a calendar/festival
+           system lands, the seasonal keys (`longnight_vigil`,
+           `honeysong_eve`, `spring_first_warm_day`) become live without
+           any JSON edit. Maeve already authors all 3; Edda authors 2.
+           This is the cheapest path to "the village feels different on
+           Halsa-day" gameplay.
+        4. **`World.npc_seen: Dictionary`** — first-interaction tracker.
+           When added, every JSON-tree NPC's `stranger` key fires for the
+           first encounter and only then. Compounds with renown for a
+           2-axis "rookie ↔ legend" arc.
+        5. **`World.has_world_flag("seen_warlord")`** — set by an Enemy or
+           the Boss script the first time the player gets within sight
+           range of the Goblin Warlord. Lights up Maeve + Edda's
+           `boss_alive` lines (currently dormant). One-line write in
+           Boss.gd or a sight-detect Area3D in Whisperwood.
+        6. **Per-line portrait / voice-clip extension:** `choose_line()`
+           could return a Dictionary (line + portrait_path + voice_clip) if
+           any future JSON adds those fields. Tree schema is already
+           extensible (unknown keys are ignored), so additions are
+           non-breaking.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Ship JSON trees for the 5 remaining NPCs** (data work, but high impact —
+proves the schema with five distinct character voices). After that, the
+next compounding move is a `World.player_renown: int` (single field) which
+LIGHTS UP every `high_renown` line in every JSON tree at once.
+

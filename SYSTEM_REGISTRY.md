@@ -156,6 +156,124 @@ Authoring rules:
   Roan, Hala are pre-wired for the faction tier the moment they get
   `warm_faction_lines`. No structural code change required.
 
+## JSON Dialogue Tree Schema
+
+✅ **Shipped 2026-05-04 (run 9): JSON-driven dialogue trees** via the new
+`DialogueDB.gd` static helper. Reads `res://data/dialogue/<npc_slug>.json` and
+applies a predicate priority order to choose ONE line per interaction.
+
+Opt-in per NPC: set `"use_json_dialogue": true` in `WorldBuilder.NPCS`. NPC.gd
+consults DialogueDB BEFORE the variants/warmed_* pipeline; on miss, falls
+through to the existing tiers unchanged. Currently opted-in: **Elder Maeve**,
+**Smith Edda**.
+
+### Slug convention
+`Elder Maeve` → `elder_maeve` (lowercased, spaces → underscores, trimmed).
+JSON file path: `data/dialogue/elder_maeve.json`. Both files for Maeve and
+Edda already shipped from `auto/lore` on 2026-05-04 (integrator gap). This
+schema makes them live.
+
+### Tree shape (top-level keys, all optional except `default`)
+
+| Key                          | Predicate                                                       | Notes |
+|------------------------------|-----------------------------------------------------------------|-------|
+| `low_health_player`          | `Player.hp / Player.max_hp < 0.30`                              | Highest priority — fires whenever HP is low, regardless of other state. |
+| `boss_slain`                 | `World.has_world_flag("warlord_dead")`                          | Fires after Goblin Warlord kill. |
+| `boss_alive`                 | `World.has_world_flag("seen_warlord")`                          | Fires once player encounters the boss. **Fail-soft** — flag not yet written by any system; lights up the day a future Builder writes it. |
+| `high_renown`                | `World.player_renown >= 100` (configurable)                     | **Fail-soft** — `player_renown` not on World yet; lights up automatically when a renown system lands. |
+| `stranger`                   | `World.npc_seen[npc_name] != true`                              | **Fail-soft** — `npc_seen` not on World yet; lights up when a first-interaction tracker lands. |
+| `longnight_vigil` /<br>`honeysong_eve` /<br>`spring_first_warm_day` | `World.current_festival == <key>` | **Fail-soft** — `current_festival` not on World yet; the JSONs already define these beats so they fire the day a calendar lands. |
+| `after_first_quest_complete` | `World.npc_has_flag(npc, warmed_flag)` OR `World.has_world_flag("first_quest_done")` | Pairs with the existing `warm_flag` tier on `WorldBuilder.NPCS`. |
+| `morning` / `midday` /<br>`evening` / `night` | `World.time_of_day` bucket                       | Same boundaries as NPC.gd's `dialogue_variants[bucket]` (5/11/17/21). |
+| `default`                    | always (last resort)                                            | Required for every tree — caller falls back to NPC.gd `dialogue` if missing. |
+
+### Predicate priority (first match wins)
+
+```
+1. low_health_player
+2. boss_slain
+3. boss_alive               (fail-soft on world_flag "seen_warlord")
+4. high_renown              (fail-soft on World.player_renown)
+5. stranger                 (fail-soft on World.npc_seen)
+6. festival key             (fail-soft on World.current_festival)
+7. after_first_quest_complete
+8. mood bucket (morning/midday/evening/night)
+9. default
+```
+
+### Wiring
+- `eldoria-godot/scripts/DialogueDB.gd` — static helper. Methods:
+  - `DialogueDB.load_for(npc_name) -> Dictionary` — cached JSON load (negative cache safe).
+  - `DialogueDB.choose_line(npc_name, ctx) -> String` — predicate resolver. Returns `""` on miss.
+- `eldoria-godot/scripts/NPC.gd` — `@export var use_dialogue_json: bool`.
+  When true, `_on_interact()` builds ctx (world, tod, hp_ratio, warmed_flag),
+  calls `choose_line()`, and uses the result if non-empty. Else falls through.
+- `eldoria-godot/scripts/WorldBuilder.gd` — per-NPC `"use_json_dialogue": true`
+  data field; `_make_npc()` copies it to `npc.use_dialogue_json`.
+
+### Authoring rules
+- Every JSON tree MUST define `default` (loader falls through on missing
+  default and NPC.gd uses its `dialogue` String fallback — works, but loud
+  and silent are different failure modes).
+- Tree may omit any optional key — predicate just doesn't fire for that NPC.
+- Lines should NOT exceed ~280 chars (UI clamp). Use line breaks `\n` if
+  longer narrative is required.
+- `lore_notes` and any other keys are IGNORED at runtime — safe parking for
+  voice rules, withholding rules, consequence-hook docs (see Maeve / Edda).
+- The `npc_name` and `role` keys at the top of the JSON are also ignored —
+  the npc name is the dispatch key (slug), the role comes from
+  WorldBuilder.NPCS already.
+
+### Composition with existing dialogue tiers
+
+JSON-tree resolution sits ABOVE all 4 existing tiers. The tiers compose:
+
+```
+DialogueDB JSON (run 9, this) ─────────── tier 0 (use_json_dialogue=true)
+  ↓ miss
+warmed_flag        + warmed_dialogue_variants     ── tier 1 (run 3)
+  ↓ miss
+warmed_world_flag  + warmed_world_dialogue_variants ─ tier 2 (run 3 follow-up)
+  ↓ miss
+warmed_faction_id  + warmed_faction_dialogue_variants ─ tier 3 (run 4)
+  ↓ miss
+dialogue_variants  (mood bucket)                   ── tier 4
+  ↓ empty
+dialogue           (single fallback)               ── tier 5
+```
+
+This means an NPC can have BOTH a JSON tree AND warm_lines populated; the
+JSON wins when opted in. Authors can migrate per-NPC at their own pace.
+
+### Authoring traps
+- ⚠ Slug must match exactly. `Mara the Merchant` → `mara_the_merchant.json`.
+  If the file is misnamed, the NPC silently falls back to the variants
+  pipeline. This is intentional fail-soft, but log-level "I expected JSON"
+  diagnostics are NOT yet wired — author confirms the slug visually.
+- ⚠ Predicate priority is intentional and not author-overridable. If you
+  want a `morning` greeting to win over a `low_health_player` warning, you
+  need to delete `low_health_player` from the tree (or move the threshold
+  via `low_hp_below` ctx — currently hard-coded to 0.30).
+- ⚠ Fail-soft predicates (`boss_alive`, `high_renown`, `stranger`,
+  festival keys) DO NOT fire today. They are forward-compatible. If you
+  need them live, add the corresponding World fields BEFORE the JSON tree
+  ships — otherwise the line you authored is dead text.
+
+### Future hooks
+1. The other 5 NPCs (Mara, Lyra, Bram, Roan, Hala) need only a JSON file
+   following this schema + `"use_json_dialogue": true` in WorldBuilder.NPCS.
+   Zero code change.
+2. `World.player_renown: int` — when added, `high_renown` keys for Maeve +
+   Edda fire automatically (their JSONs already define them).
+3. `World.current_festival: String` — when a calendar/festival system
+   lands, the seasonal keys (`longnight_vigil`, `honeysong_eve`,
+   `spring_first_warm_day`) become live without any JSON edit.
+4. `World.npc_seen: Dictionary` — when a first-interaction tracker lands,
+   every NPC's `stranger` key fires correctly.
+5. Per-line portrait / voice-clip extension: `choose_line()` could return a
+   Dictionary (line + portrait_path + voice_clip) if any future JSON adds
+   those fields. Tree schema is already extensible — added keys are ignored.
+
 ## Time Schema
 
 `World.time_of_day: float` — 0.0..1.0 (0.0 dawn, 0.25 noon, 0.5 dusk, 0.75

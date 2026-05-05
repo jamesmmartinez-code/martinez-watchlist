@@ -34,12 +34,26 @@ class_name NPC
 @export var warmed_faction_id: String = ""
 @export var warmed_faction_below: float = 1.0
 @export var warmed_faction_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 9 — JSON dialogue tree): when set true, this NPC's lines are
+# resolved by `DialogueDB.choose_line(npc_name, ctx)` from a JSON tree at
+# `res://data/dialogue/<npc_slug>.json` BEFORE falling back to the
+# variants/warmed_* pipeline. JSON trees support a richer predicate set
+# (low_health_player, boss_slain, boss_alive, high_renown, stranger, festival
+# keys, after_first_quest_complete, time-of-day mood, default). On JSON miss
+# (no file, parse error, or no matching predicate) the existing variants
+# pipeline below is used unchanged. Defaults false so legacy NPCs are
+# untouched. WorldBuilder.gd opts NPCs in via `"use_json_dialogue": true`.
+@export var use_dialogue_json: bool = false
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
 @onready var anim: AnimationPlayer = get_node_or_null("AnimationPlayer")
 
 var player_in_range: bool = false
+# COMPOUND (run 9): cached Player ref captured on body_entered so that
+# DialogueDB ctx can carry an accurate hp_ratio without a fresh group lookup.
+# Cleared on body_exited.
+var _player_ref: Player = null
 
 func _ready() -> void:
 	if label_3d:
@@ -60,6 +74,7 @@ func _process(_delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
 		player_in_range = true
+		_player_ref = body as Player
 		(body as Player).interact_pressed.connect(_on_interact)
 
 func _on_body_exited(body: Node) -> void:
@@ -67,6 +82,8 @@ func _on_body_exited(body: Node) -> void:
 		player_in_range = false
 		if (body as Player).interact_pressed.is_connected(_on_interact):
 			(body as Player).interact_pressed.disconnect(_on_interact)
+		if _player_ref == body:
+			_player_ref = null
 
 func _on_interact() -> void:
 	if not player_in_range:
@@ -78,6 +95,27 @@ func _on_interact() -> void:
 	# Quest consequences write these flags via World.apply_consequence().
 	var line: String = dialogue
 	var w = get_tree().get_first_node_in_group("world")
+	# COMPOUND (run 9): JSON-tree dialogue resolves FIRST when opted-in. The
+	# tree supports a richer predicate set (HP, boss state, festival, etc.)
+	# than the four time-of-day mood buckets below. Misses fall through to the
+	# legacy variants/warmed_* pipeline so opt-in is purely additive.
+	if use_dialogue_json:
+		var hp_ratio: float = 1.0
+		if _player_ref != null and _player_ref.max_hp > 0:
+			hp_ratio = float(_player_ref.hp) / float(_player_ref.max_hp)
+		var tod: float = 11.0
+		if w and ("time_of_day" in w):
+			tod = float(w.time_of_day)
+		var ctx: Dictionary = {
+			"world": w,
+			"tod": tod,
+			"hp_ratio": hp_ratio,
+			"warmed_flag": warmed_flag,
+		}
+		var json_line: String = DialogueDB.choose_line(npc_name, ctx)
+		if json_line != "":
+			get_tree().call_group("world", "show_dialogue", npc_name, json_line, npc_role)
+			return
 	var variants: PackedStringArray = dialogue_variants
 	if warmed_flag != "" and not warmed_dialogue_variants.is_empty() and w and w.has_method("npc_has_flag"):
 		if w.npc_has_flag(npc_name, warmed_flag):
