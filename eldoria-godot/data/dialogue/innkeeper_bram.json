@@ -1,0 +1,39 @@
+{
+  "npc_name": "Innkeeper Bram",
+  "role": "inn",
+  "default": "Welcome to the Long Lantern, friend. The stew's warm, the bench's open, and the road can wait outside. *polishes mug*",
+  "morning": "*sets down a clean mug* — Coals are up, kettle's on, and Erris kept the door honest overnight. What'll fill you?",
+  "midday": "*wipes the bar* — Hungry road, hungry hour. Bowl of stew, wedge of bread, mug of small-beer — that's the noon set, friend.",
+  "evening": "*lights a second lantern* — Sit by the fire. The day's been long for someone — might as well be your turn to put it down.",
+  "night": "*hums a road-song under his breath* — Late hours are honest hours. There's a bench by the hearth and a mug if you need one. Quiet's free.",
+  "after_first_quest_complete": "*pours without being asked* — Word came in with the dusk-cart. You've been busy out there, friend. *slides the mug across* — On the house. Don't thank me — thank Erris. She likes a verse with her ale.",
+  "low_health_player": "*sets down the cloth and comes around the bar* — Sit. SIT. *guides you to the bench* — No coin tonight. Stew first. Story later — or not at all. Whichever you can carry.",
+  "boss_alive": "*polishes the same mug for a long moment* — Some folk who walked into the Whisperwood I still set a place for at supper. Habit. — You'll be back. Drink something hot before you go.",
+  "boss_slain": "*sets the mug down very carefully* — Some debts get paid in iron, friend. *long pause, then a small, real smile* — The next bowl's mine. Don't argue.",
+  "high_renown": "*nods once, the warm-loud nod he saves for the road-bards* — Heard your name in two songs this week and a third one humming. The Long Lantern remembers names, friend. *Ai-velin.*",
+  "stranger": "*broad smile, mug in hand* — Welcome to the Long Lantern! New face, new tale, same warm hearth. Sit anywhere that's empty. The stew's the stew. The bench is the bench.",
+  "longnight_vigil": "*ladles a second bowl of stew, wraps it in cloth* — Edda's forge first. Always Edda's forge first. *steps to the back door, pauses* — Light a candle for someone tonight, if there's someone. The word for it is *vethar.* It's an old word and it's a kind one.",
+  "honeysong_eve": "*sets a folded paper lantern on the bar between you* — Midsummer. The pond's open and Erris is listening. Set one for someone whose road's not ended yet. *quiet, almost not aloud* — I'll set two.",
+  "lore_notes": {
+    "_comment": "Mood-keyed surface for Innkeeper Bram. Tree shape mirrors data/dialogue/smith_edda.json exactly so NPC.gd can read both through a single code path once Builder wires it. The seasonal slot is honeysong_eve (Bram's loaded day) instead of Edda's spring_first_warm_day. Backstory in lore/npcs/innkeeper_bram.md.",
+    "voice_rules": [
+      "First three sentences are warmth and welcome; quieter by degrees after that. Default line is the warmest default in the village.",
+      "*polishes mug* / *wipes the bar* / *sets down the mug* as punctuation tics — used the way Edda uses *hammer-clang*.",
+      "Hums old road-songs while working. Caedr taught him every one. Never names Caedr aloud unprompted.",
+      "Invokes Erris of the Two Roads at door, barrel, and stranger. Does not invoke Brigid (Edda's god) or the Hollow King by name on Longnight.",
+      "Old Faerie words used sparingly: vethar (the candle in the window), haisten (the song with no last verse), breos (what the bowl remembers), ai-velin (the long path / a complete life). All other NPCs may use ai-velin too; vethar/haisten/breos are Bram-coded — other NPCs should use them only when speaking to or about him."
+    ],
+    "consequence_hooks": [
+      "boss_slain is intentionally non-confirming about Smith Edda's saber. Bram knows; Bram does not say. The 'debts paid in iron' line is the most he will say on the matter, ever. If Builder wires the Warlord drop to Edda, Bram fires this line on the same in-game day Edda fires hers. They are designed to read as a pair.",
+      "longnight_vigil composes with Edda's longnight_vigil line. If both fire on the same Longnight Vigil tick, the village's quietest two-person scene plays itself: Edda doesn't look up from the cooling blade; Bram brings the stew anyway.",
+      "honeysong_eve is the canonical hook for a future seasonal quest (paper_lantern fetch, npc_flag 'lantern_set', reward bram_road_knife). The line as written is safe to fire even if no quest is offered yet — it reads as a wistful innkeeper at midsummer, nothing more, to a player who hasn't read the backstory file.",
+      "after_first_quest_complete is agnostic across which first quest completed — same convention as Edda's. Safe on whisperwood_cleansing OR pelt_for_lyra OR ears_for_mara turn-ins.",
+      "low_health_player is intentionally the most actively caring line in the village. Bram comes AROUND the bar. This is the only mood-key in his tree where he stops polishing the mug entirely."
+    ],
+    "future_keys_reserved": [
+      "warmed_flag: 'lantern_set' — once the Honeysong Eve quest ships, four warmed_dialogue_variants per the integrator's tier-1 schema.",
+      "warmed_world_flag: 'bram_last_verse_offered' — explicitly NOT to be wired without re-reading THEME.md §7. The Last Verse is haisten on purpose.",
+      "faction_pressure tier 3: not applicable — Bram has no faction stake. He is the room where every faction sets down its mug."
+    ]
+  }
+}
