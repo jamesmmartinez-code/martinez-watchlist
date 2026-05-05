@@ -222,6 +222,25 @@ const NPCS = [
 		"I trust my horses more than most men. They've never lied to me.",
 		"Sun's down — saddle up only if your errand can't wait.",
 		"Riding by moonlight? Bold. Or fool. Or both. Take the gray mare.",
+	 ],
+	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Roan has
+	 # no `warm_flag` and no `warm_world_flag` — this run smoke-tests the
+	 # 4-tier dialogue stack on an NPC whose ONLY warming channel is the
+	 # faction scalar. Threshold 0.5 mirrors the run-6 wolf-spawn first
+	 # cliff (`pelt_for_lyra` drops `dire_wolves` 0.5 → 0.4 on completion),
+	 # so Roan starts speaking the moment any wolf-reducing quest ships.
+	 # Pairs with run-6 spawn density and run-7 adaptive cooldown — the
+	 # same scalar now drives Roan dialogue + wolf count + wolf pacing,
+	 # closing the FIVE-consumer compound on `dire_wolves` (NPC.gd reads
+	 # it twice — Maeve via `whisperwood_goblins`, Roan via this — and
+	 # WorldBuilder + Enemy.gd each read it once).
+	 "warm_faction_id":"dire_wolves",
+	 "warm_faction_below":0.5,
+	 "warm_faction_lines":[
+		"The mares slept through the night, friend. First time in a season — that's your doing.",
+		"Look — Pippin's grazing past the fence again. He only does that when the woods are kind.",
+		"Saddle's lighter at dusk these days. Fewer howls means fewer flinches on the road.",
+		"Quiet enough to hear the owls now. The wolves used to drown them out. Ride safe.",
 	 ]},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
 	 "line":"Each level, your spirit grows. Pour it into what you trust.",

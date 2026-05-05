@@ -11,6 +11,108 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
+## 2026-05-04 (run 8) — Roan dire_wolves faction-tier dialogue (smoke-tests Tier 3 as sole warming channel)
+
+### Plan
+- 5 ledgers consulted. Top-priority hook from WORLD_STATE was Roan's
+  `dire_wolves` faction tier: smoke-tests the 4-tier dialogue stack on
+  an NPC with no `warm_flag` AND no `warm_world_flag`. Schema in place
+  since run 4 (Maeve), but Maeve has a `warm_flag` so the faction tier
+  was always a SECONDARY path on her. Roan proves the faction tier
+  works as a SOLE warming channel.
+- Rule 1 (compound, don't sprawl): no new primitive — recombines the
+  existing 4-tier dialogue stack (NPC.gd, runs 3 / 3-followup / 4) with
+  the existing `dire_wolves` faction scalar (runs 6 / 7). Adds the FOURTH
+  visible consumer of `dire_wolves` after spawn density, adaptive
+  cooldown, and the wolf-pressure write path. Single-NPC data-only edit.
+- Rule 5 (endless ≠ infinite map): one quest completion (`pelt_for_lyra`)
+  now fans out to FOUR visible signals — fewer wolves, faster surviving
+  wolves, ⚡ agitation prefix, and now Roan narrating the change.
+
+### Build
+- `eldoria-godot/scripts/WorldBuilder.gd` (+19 / -1):
+  - Roan's NPCS entry gains `warm_faction_id:"dire_wolves"`,
+    `warm_faction_below:0.5`, `warm_faction_lines` (4 buckets:
+    morning / midday / evening / night).
+  - 14-line compound docblock above the new fields explaining: (a) Roan
+    has no `warm_flag` so this is the sole warming channel, (b) threshold
+    0.5 mirrors the run-6 first cliff so warming triggers on the same
+    quest that drops wolf count, (c) the four-leg `dire_wolves` compound.
+- `WORLD_STATE.md`: top-priority hook (Roan dialogue) marked Resolved with
+  full integration note. NPC Memory table row for Roan flipped from
+  "neutral / no quest yet" to "warms when wolves quiet / 4 (faction, run 8)
+  / dire_wolves pressure < 0.5". Faction State table row for Dire Wolves
+  now lists Roan dialogue as a third consumer alongside spawn density and
+  adaptive cooldown. Two new top-priority hooks promoted: Roan-issued
+  wolf-bounty quest (-0.1 reducer) and a future Roan `warm_flag` tier
+  on `first_bounty_done` once that quest ships.
+- `SYSTEM_REGISTRY.md`: NPC Schema "Tier 3" entry now cites run 8 as the
+  generalization run (Roan = sole-warming-channel proof) alongside run 4
+  (Maeve = secondary-tier proof). Updated consumer count for
+  `World.faction_pressure()` to reflect Roan as a new dialogue reader.
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered
+- (i)   World state: no new writes; new READ of `dire_wolves` pressure
+        from a SECOND NPC dialogue path (after Maeve's `whisperwood_goblins`
+        path). WORLD_STATE.md updated with the new consumer in the NPC
+        Memory table and the faction-state table.
+- (ii)  Queryable schema: no schema additions — exercises the existing
+        `warm_faction_id` / `warm_faction_below` / `warm_faction_lines`
+        contract that has been documented in SYSTEM_REGISTRY.md since
+        run 4. SYSTEM_REGISTRY.md "Tier 3" entry now documents both
+        usage modes (secondary tier behind a flag, OR sole warming
+        channel). Authoring template proven.
+- (iii) Player-facing feedback: 4 new Roan lines that fire the moment
+        any wolf-reducing quest ships (today: `pelt_for_lyra` drops
+        pressure 0.5 → 0.4, < 0.5 trips the threshold). Kid-readable
+        narrative cue ("Pippin's grazing past the fence again") that
+        composes with the ⚡ agitation prefix already on surviving
+        wolves AND the visible drop in wolf count from run 6. Owen's
+        mastery hook: he can read THREE concurrent world-state signals
+        on the SAME completion event.
+- (iv)  Evaluation: parens/brackets/braces balance check passes
+        (1076/1076, 56/56, 36/36). Double-quote parity even (768).
+        NPCS entry count unchanged at 7. New `warm_faction_*` data
+        keys validated against the existing `_make_npc()` reader at
+        line ~1013 (no NPC.gd or _make_npc edits required — pure
+        data extension on Roan's row).
+- (v)   Future hooks (≥ 2):
+        1. **Roan-issued wolf-bounty quest** — second `dire_wolves`
+           reducer (-0.1). Trips the second wolf-spawn threshold
+           (3 → 2 wolves) AND drops adaptive cooldown another step.
+           One new quest entry + faction consequence payload. Now
+           top-priority hook in WORLD_STATE.md. Composes with run 8.
+        2. **Roan `warm_flag` tier (`first_bounty_done`)** — once the
+           bounty quest ships, promote Roan to a fully 4-tier NPC by
+           adding 4 `warm_lines` for personal warmth ("you brought the
+           tally back") on top of the run-8 faction tier. Mirrors
+           Mara's `good_customer` pattern.
+        3. **Skeleton / Bandit faction-tier dialogue** — once those
+           factions ship, any NPC can author 4 lines + 3 fields and
+           speak the new state. Run 8 proves the data-only authoring
+           path works. Crystal Caves placement (top remaining backlog
+           item) unlocks both.
+        4. **Bram and Hala faction-tier lines** — Roan was the
+           lowest-effort NPC to wire because his role (stables,
+           road-safety, mounts) thematically matches the wolf
+           faction. Bram (innkeeper, road-traveler stories) and Hala
+           (warrior-monk, "the world tests you") are the next two
+           NPCs whose voice could sit on a faction scalar with no
+           quest authoring required.
+
+### Phase reached
+Historian — feature shipped, all 5 ledgers updated, ready to commit.
+
+### Next run should pick up
+**Roan-issued wolf-bounty quest (-0.1 reducer for `dire_wolves`).**
+Mirrors `ears_for_mara` as the second goblin reducer. Trips the
+second wolf-spawn threshold (3 → 2) AND drops adaptive cooldown
+another step — single quest, three visible world changes (Roan's
+lines stay warm, fewer wolves, faster survivors). After that, Roan's
+`warm_flag` tier on `first_bounty_done` promotes him to full 4-tier
+parity with Maeve / Mara / Lyra.
+
 ## 2026-05-05 (autonomous run) — NPC re-source: Lyra, Roan, Hala upgraded after self-critique
 
 ### What changed
