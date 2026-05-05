@@ -8,6 +8,44 @@ cd "/Users/jamesmartinez/Library/Application Support/Claude/local-agent-mode-ses
 ```
 
 
+## 2026-05-05 (autonomous run) — NPC re-source: Lyra, Roan, Hala upgraded after self-critique
+
+### What changed
+After the previous batch landed, comparing the eight NPC source thumbnails side-by-side made it obvious that three of the seven villagers didn't fit THEME §4 well. This run swaps those three to better-matched Sketchfab CC-BY pulls. Mara (mushroom-merchant) and Edda (worker_girl) stay as-is because no kid-safe upgrade was available — for Edda specifically, three female-warrior candidates were rejected mid-run (bikini-armor barbarian, sexualized amazon, and a sci-fi mech-knight) per THEME §7 child-safety rules and §1 no-modern/sci-fi.
+
+### Swaps (in-game role → new GLB)
+- **Herbalist Lyra**: `npcs/herbalist_lyra.glb` re-sourced from a chibi green druid → "Eadwien Elf Recruit" (slender female elf in green dress with leather accents). Now actually reads as the "slender healer with leaf-tangled hair" THEME describes
+- **Stablemaster Roan**: `npcs/stablemaster_roan.glb` re-sourced from a quirky outlaw-creature → "Rogue Knight" (hooded grey-clad rogue with leather and a glowing accent). Reads as a lean ranger/scout
+- **Trainer Hala**: now uses new `npcs/trainer_hala.glb` ("Monkey Warrior" — a chunky Sun-Wukong-style martial-artist creature, painterly stylized, 2 baked anims, ~24 MB). Replaces `warrior.glb` for this NPC role (warrior.glb stays in tree for a future guardsman or quest archetype)
+
+### Wiring
+- `WorldBuilder.gd::NPC_MODELS` "Trainer Hala" key changed from `warrior.glb` → `trainer_hala.glb`. The other two NPCs use the same paths as before — only the file contents changed, so no preload swap was needed
+- New `npcs/trainer_hala.glb.import` Godot metadata
+- The two replaced files keep the same UIDs in their existing `.glb.import` files; on next project open Godot will detect the binary change and re-import. No `.import` rewrites needed for those
+
+### Theme citations
+- THEME §1 — no modern, no sci-fi. The Female Knight Model (sci-fi mech), Sci-Fi Hunter (energy gun + breathing mask) were rejected on this gate
+- THEME §7 — sexual content forbidden (audience age 9 and 11). The Warrior Maiden (bikini barbarian) and 3DRT Fantasy Amazon (bikini armor) were rejected on this gate. **Important for future agents:** Sketchfab "female warrior" results skew heavily toward sexualized armor — search "fantasy female knight" or "stylized woman peasant" or "shopkeeper" instead, and verify thumbnails before download
+- THEME §4 — silhouette-distinct: the new lineup adds an elven robed silhouette (Lyra), a hooded grey rogue silhouette (Roan), and a hulking simian martial-artist silhouette (Hala). These are silhouette-distinct from each other and from the rest of the cast (granny, dwarf, generic worker, mushroom person, knight player)
+
+### Files touched
+- `eldoria-godot/assets/models/npcs/herbalist_lyra.glb` (REPLACED, 1.5 MB)
+- `eldoria-godot/assets/models/npcs/stablemaster_roan.glb` (REPLACED, 1.6 MB)
+- `eldoria-godot/assets/models/npcs/trainer_hala.glb` (NEW, 23.9 MB)
+- `eldoria-godot/assets/models/npcs/trainer_hala.glb.import` (NEW)
+- `eldoria-godot/scripts/WorldBuilder.gd` (one preload-path swap for Hala)
+- `CREDITS.md` (3 lines updated)
+
+### What still needs work (next run)
+- **Mara the Merchant** still uses `mushroom_merchant.glb` — whimsical mushroom-person, child-friendly but doesn't match THEME's "plump trader in layered robes". Best candidate found this run was a 2-figure Chinese Merchant pack at 16 MB — too big and contains 2 characters in one file
+- **Smith Edda** still uses `worker_girl.glb` — generic young woman in working clothes. Doesn't match THEME's "stocky soot-streaked smith with leather apron and hammer". CC-BY female-smith art is essentially nonexistent on Sketchfab; future runs may need to fall back to Meshy text-to-3D for this one
+- The current Hala model at 23.9 MB is the largest character file in the project. If web export load times become a concern, future runs should look for a smaller alternative or trim textures
+
+### Status
+Pushed to `main` — GitHub Actions will rebuild the web export within 3-5 min.
+
+---
+
 ## 2026-05-05 (autonomous run) — Player + all 7 villagers swapped to real fantasy GLBs
 
 ### What changed

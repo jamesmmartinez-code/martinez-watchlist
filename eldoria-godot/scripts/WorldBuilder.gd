@@ -16,7 +16,7 @@ const NPC_MODELS := {
 	"Herbalist Lyra":      preload("res://assets/models/npcs/herbalist_lyra.glb"),
 	"Innkeeper Bram":      preload("res://assets/models/npcs/innkeeper_bram.glb"),
 	"Stablemaster Roan":   preload("res://assets/models/npcs/stablemaster_roan.glb"),
-	"Trainer Hala":        preload("res://assets/models/npcs/warrior.glb"),
+	"Trainer Hala":        preload("res://assets/models/npcs/trainer_hala.glb"),
 }
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {

@@ -5,14 +5,15 @@
 ### Player + village NPCs (this run)
 - **`hero_lange.glb`** — "Lange - Half-Elf Knight" by [phucpham1076](https://sketchfab.com/phucpham1076), CC-BY. https://sketchfab.com/3d-models/3c22b831b66c4de88043f57fabca406b — Player hero (replaces older Hero.glb / "Stylized Low poly Animated Character")
 - **`npcs/elder_maeve.glb`** — "Old Village Granny" by user on Sketchfab (UID `0f2d99b04b1c4918a41c3834a0285891`), CC-BY. https://sketchfab.com/3d-models/0f2d99b04b1c4918a41c3834a0285891 — Elder Maeve (quest-giver grandmother)
-- **`npcs/herbalist_lyra.glb`** — "Low Poly Forest Druid" by user on Sketchfab (UID `ac5839a6868c44bd8a04c3d1108f325a`), CC-BY. https://sketchfab.com/3d-models/ac5839a6868c44bd8a04c3d1108f325a — Herbalist Lyra (green hooded druid silhouette)
+- **`npcs/herbalist_lyra.glb`** — "Eadwien Elf Recruit" (Sketchfab UID `5ded70bb63c64a3f8c7140026a5c30fd`), CC-BY. https://sketchfab.com/3d-models/5ded70bb63c64a3f8c7140026a5c30fd — Herbalist Lyra (slender female elf in green dress with leather accents — replaces earlier chibi druid)
 - **`npcs/innkeeper_bram.glb`** — "Stylized Hand Painted Dwarf" by user on Sketchfab (UID `fc646e1620c9410dabe439cfe327da9c`), CC-BY. https://sketchfab.com/3d-models/fc646e1620c9410dabe439cfe327da9c — Innkeeper Bram (jolly bald dwarf with handlebar mustache and green tunic)
-- **`npcs/stablemaster_roan.glb`** — "Stylized Outlaw" by user on Sketchfab (UID `ef6f4e7a4c00449180dae46c91075a35`), CC-BY. https://sketchfab.com/3d-models/ef6f4e7a4c00449180dae46c91075a35 — Stablemaster Roan (lean rangy figure)
+- **`npcs/stablemaster_roan.glb`** — "Rogue Knight" (Sketchfab UID `555f434d1aa44443b2f23c6088fd713b`), CC-BY. https://sketchfab.com/3d-models/555f434d1aa44443b2f23c6088fd713b — Stablemaster Roan (hooded grey-clad rogue with leather armor — replaces earlier outlaw)
 
 ### Reused from `Char: batch 2` (already in tree, now wired)
 - **`npcs/mushroom_merchant.glb`** — wired to Mara the Merchant (matches the bag/scarf/scroll merchant silhouette)
 - **`npcs/worker_girl.glb`** — wired to Smith Edda (working-clothes female silhouette)
-- **`npcs/warrior.glb`** — wired to Trainer Hala (sword + shield warrior-monk)
+- **`npcs/warrior.glb`** — left in tree, no longer wired (was Hala in earlier run; Hala now uses `trainer_hala.glb`)
+- **`npcs/trainer_hala.glb`** — "Monkey Warrior" (Sketchfab UID `5f64793e99e6403a86395c92385fd950`), CC-BY. https://sketchfab.com/3d-models/5f64793e99e6403a86395c92385fd950 — Trainer Hala (chunky simian Sun-Wukong-style martial-artist creature, painterly stylized, 2 anims)
 
 
 - **Hero.glb** — "Emma – Stylized Adventure Character" by [sanaullahrais](https://sketchfab.com/sanaullahrais), Sketchfab CC Attribution. https://sketchfab.com/3d-models/790391aec68649dab097e5b83d0351a4
