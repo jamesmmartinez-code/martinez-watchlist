@@ -111,7 +111,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":103087328,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":123057604,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -199,19 +199,42 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
+		(async function loadChunkedPck() {
+			const manifest = await (await fetch('pck-parts.json')).json();
+			const total = manifest.totalSize;
+			const merged = new Uint8Array(total);
+			let offset = 0;
+			for (const part of manifest.parts) {
+				const r = await fetch(part.name);
+				if (!r.ok) throw new Error('Failed to fetch ' + part.name + ': ' + r.status);
+				const buf = new Uint8Array(await r.arrayBuffer());
+				merged.set(buf, offset);
+				offset += buf.byteLength;
+				statusProgress.value = offset;
+				statusProgress.max = total;
+			}
+			// Monkey-patch preloadFile so Engine.startGame uses our reassembled
+			// buffer instead of fetching a (non-existent) index.pck from the server.
+			const origPreload = engine.preloadFile.bind(engine);
+			engine.preloadFile = function (file, path) {
+				if (file === 'index.pck') {
+					return origPreload(merged.buffer, 'index.pck');
 				}
-			},
-		}).then(() => {
+				return origPreload(file, path);
+			};
+			await engine.startGame({
+				'onProgress': function (current, total) {
+					if (current > 0 && total > 0) {
+						statusProgress.value = current;
+						statusProgress.max = total;
+					} else {
+						statusProgress.removeAttribute('value');
+						statusProgress.removeAttribute('max');
+					}
+				},
+			});
 			setStatusMode('hidden');
-		}, displayFailureNotice);
+		})().catch(displayFailureNotice);
 	}
 }());
 		</script>
