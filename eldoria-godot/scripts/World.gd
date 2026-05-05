@@ -31,6 +31,12 @@ class_name World
 @onready var death_label: Label = $UI/DeathOverlay/DeathLabel
 
 var time_of_day: float = 11.0
+# Run 16 (Builder): integer day-counter that increments every time `time_of_day`
+# wraps from late night back through dawn. Read by `npc_memory` so NPCs know
+# "first met you on day 0, last spoke day 4" (= "you've been gone four days").
+# Pure derivation from time_of_day — `_prev_tod` witnesses the wrap in _process.
+var world_day: int = 0
+var _prev_tod: float = 11.0
 var _current_npc_role: String = ""
 var _current_npc_name: String = ""
 
@@ -57,6 +63,24 @@ var factions: Dictionary = {
 }
 var world_flags: Dictionary = {}      # flag_name -> Variant (usually bool/int)
 var npc_flags: Dictionary = {}        # npc_name -> Array[String]
+# Run 16 (Builder) — npc_memory: per-NPC visit ledger. Schema:
+#   npc_memory[npc_name] = {
+#     "visits":         int,   # total times the player triggered this NPC's
+#                              # _on_interact (incremented by record_npc_visit)
+#     "first_day":      int,   # world_day on first visit (-1 = never met)
+#     "last_day":       int,   # world_day on most recent visit (-1 = never)
+#     "first_tod":      float, # time_of_day on first visit
+#     "last_tod":       float, # time_of_day on most recent visit
+#   }
+# WRITES: `record_npc_visit(name)` only — invoked by NPC.gd at the top of
+# _on_interact BEFORE any tier resolution, so visit-count includes the
+# triggering call.
+# READS: `npc_visits()`, `npc_first_visit_day()`, `npc_last_visit_day()`,
+# `npc_days_since_last_visit()`. The tier-resolution path in NPC.gd
+# (warmed_memory_visits_min) is the first reader; future quest predicates,
+# achievement triggers ("Visited every villager"), and dialogue conditions
+# all enter through the same accessor surface.
+var npc_memory: Dictionary = {}
 
 # Achievement / Title state — read-only externally; mutated only by
 # `_check_achievements()` which is invoked at the end of `apply_consequence`
@@ -238,6 +262,54 @@ func has_world_flag(name: String) -> bool:
 func npc_has_flag(npc_name: String, flag_name: String) -> bool:
 	var arr: Array = npc_flags.get(npc_name, [])
 	return arr.has(flag_name)
+
+# ────────────────────────────────────────────────────────────────────────
+# NPC visit memory (run 16 — Builder)
+# ────────────────────────────────────────────────────────────────────────
+# `record_npc_visit` is the ONLY public mutator of `npc_memory`. NPC.gd
+# calls it at the top of `_on_interact` so the visit count INCLUDES the
+# triggering call (which matters for the warmed_memory_visits_min predicate
+# downstream — a threshold of 3 fires on the third hello, not the fourth).
+# Idempotency: repeated calls with the same name in the same frame each
+# count as a visit; the InteractArea + KEY_E debounce in NPC.gd is what
+# prevents accidental machine-gun increments.
+func record_npc_visit(npc_name: String) -> void:
+	if npc_name == "":
+		return
+	var entry: Dictionary = npc_memory.get(npc_name, {
+		"visits": 0, "first_day": -1, "last_day": -1,
+		"first_tod": -1.0, "last_tod": -1.0,
+	})
+	entry["visits"] = int(entry.get("visits", 0)) + 1
+	if int(entry.get("first_day", -1)) < 0:
+		entry["first_day"] = world_day
+		entry["first_tod"] = time_of_day
+	entry["last_day"] = world_day
+	entry["last_tod"] = time_of_day
+	npc_memory[npc_name] = entry
+
+# Read accessors — fail-soft for never-met NPCs (return 0 / -1).
+func npc_visits(npc_name: String) -> int:
+	var entry: Dictionary = npc_memory.get(npc_name, {})
+	return int(entry.get("visits", 0))
+
+func npc_first_visit_day(npc_name: String) -> int:
+	var entry: Dictionary = npc_memory.get(npc_name, {})
+	return int(entry.get("first_day", -1))
+
+func npc_last_visit_day(npc_name: String) -> int:
+	var entry: Dictionary = npc_memory.get(npc_name, {})
+	return int(entry.get("last_day", -1))
+
+# Days since last visit. Returns -1 if the NPC has never been visited so
+# the caller can distinguish "never met" from "talked to today" (which
+# returns 0). Co-fires with warmed_memory_visits_min in NPC.gd: a future
+# tier could fire on "you've been gone 3+ days" without changing this API.
+func npc_days_since_last_visit(npc_name: String) -> int:
+	var last: int = npc_last_visit_day(npc_name)
+	if last < 0:
+		return -1
+	return max(0, world_day - last)
 
 # Direct world-flag write — sister to apply_consequence's flag step but with
 # no faction / npc / toast side-effects. Used when an emergent runtime event
@@ -527,6 +599,17 @@ func _process(delta: float) -> void:
 		_check_zone_music()
 	# Day/night — full cycle in ~6 minutes
 	time_of_day = fposmod(time_of_day + delta * (24.0 / 360.0), 24.0)
+	# Run 16 (Builder): increment world_day when time_of_day wraps. The
+	# fposmod above means a forward step of `delta * 24/360` (~0.067 sec
+	# of in-game time per real second) NEVER overshoots a full day in one
+	# tick, so a strict "prev was big, current is small" wrap detector is
+	# correct. world_day feeds npc_memory's first_day/last_day; nothing
+	# else reads it yet, which is fine — the field exists so future
+	# season/festival predicates (DialogueDB has a "festival" key already)
+	# have a single integer to key off.
+	if _prev_tod > 22.0 and time_of_day < 2.0:
+		world_day += 1
+	_prev_tod = time_of_day
 	if sun:
 		var elev := sin((time_of_day - 6.0) * PI / 12.0)
 		var azim := (time_of_day - 6.0) / 24.0 * TAU

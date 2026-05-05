@@ -190,6 +190,21 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): morning at the well, midday at her hut,
 	 # evening at the hearth telling stories, night back at the hut door.
 	 "schedule":[Vector3( 0.6, 0,  5.0), Vector3( 6.0, 0,  3.0), Vector3( 0.8, 0, -1.6), Vector3( 6.0, 0,  3.0)],
+	 # COMPOUND (run 16 — Builder): visit-memory tier. After three quiet
+	 # hellos with no specific deed completed, Maeve speaks like she knows
+	 # you. Threshold 3 fires on the third visit (run 16 wiring includes
+	 # the triggering visit in the count). The four-bucket time-of-day
+	 # shape carries through; only the language shifts toward familiarity.
+	 # Note this tier sits below faction-pressure: if the Whisperwood
+	 # pressure has dropped, the faction-tier line wins (the world-state
+	 # lines are louder than the relationship cadence).
+	 "memory_visits_min":3,
+	 "memory_lines":[
+		"Three mornings now you've come by — I count. The kettle's on, dear.",
+		"You sit a while, hm? Even old Maeve enjoys company at midday.",
+		"You've a way of finding my doorstep at dusk. Sit — the bread's still warm.",
+		"Late again? My door knows your knock by now. Come in from the cold.",
+	 ],
 	 "use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -287,6 +302,17 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): sweeps the doorstep at dawn, peak
 	 # service in the evening when Mara joins him for a drink.
 	 "schedule":[Vector3( 9.4, 0, -1.0), Vector3(10.0, 0, -2.0), Vector3( 9.0, 0, -2.0), Vector3(10.0, 0, -2.5)],
+	 # COMPOUND (run 16 — Builder): visit-memory tier. Bram is the village
+	 # rumor-exchange — by the third pull-up he's calling you a regular.
+	 # Threshold 3 mirrors Maeve so cross-NPC pacing matches; tune individual
+	 # NPCs up or down as authored relationships tighten or loosen.
+	 "memory_visits_min":3,
+	 "memory_lines":[
+		"Same stool by the window again? Mug's already on its way, friend.",
+		"You're a regular now. I keep the second-best chair clear at midday.",
+		"Sundown brings my favorite drinker back. Stew's better tonight — try it.",
+		"Fire's low, but I'd never bank it before YOU walked in. Sit, sit.",
+	 ],
 	 "use_json_dialogue":true},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
 	 "line":"Faster mounts mean fewer ambushes. Pick your steed.",
@@ -328,7 +354,19 @@ const NPCS = [
 	 ],
 	 # COMPOUND (run 11 — schedule): never leaves the training field. Slight
 	 # position shifts at evening (lantern-side practice) and night (watch).
-	 "schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)]},
+	 "schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)],
+	 # COMPOUND (run 16 — Builder): visit-memory tier. Hala is THE skill
+	 # mentor — by the third session her tone shifts from generic koan to
+	 # named-student attention. Threshold 3, same as the others, so all
+	 # three memory-aware NPCs warm in the same visit cadence (a player
+	 # making the village rounds three times unlocks all three at once).
+	 "memory_visits_min":3,
+	 "memory_lines":[
+		"Back already, eh? Good. Drills don't care if you're tired — show me.",
+		"You've been here enough to know the form. Today: PRESSURE. Faster.",
+		"Last light's the best teacher. You came back for a reason — show it.",
+		"Past curfew, training under stars. I knew you for the type. Begin.",
+	 ]},
 ]
 
 const BUILDINGS = [
@@ -1128,6 +1166,13 @@ func _make_npc(data: Dictionary) -> void:
 	npc.warmed_faction_id = String(data.get("warm_faction_id", ""))
 	npc.warmed_faction_below = float(data.get("warm_faction_below", 1.0))
 	npc.warmed_faction_dialogue_variants = PackedStringArray(data.get("warm_faction_lines", []))
+	# COMPOUND (run 16 — Builder): wire the visit-memory tier. Both fields
+	# default to off (visits_min=0, empty variants) so NPCs without authored
+	# memory lines keep their existing 4-tier behavior. Maeve, Bram, and Hala
+	# carry authored variants in this run; future NPCs opt in by adding
+	# `memory_visits_min` + `memory_lines` to their NPCS dict entry.
+	npc.warmed_memory_visits_min = int(data.get("memory_visits_min", 0))
+	npc.warmed_memory_dialogue_variants = PackedStringArray(data.get("memory_lines", []))
 	# COMPOUND (run 9 — JSON dialogue tree): opt-in flag for JSON-tree
 	# resolution via DialogueDB. Defaults false so legacy NPCs are untouched.
 	npc.use_dialogue_json = bool(data.get("use_json_dialogue", false))

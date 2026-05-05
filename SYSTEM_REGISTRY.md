@@ -1224,3 +1224,115 @@ existing children draw on top.
   in a follow-up, currently still tscn-defined
 - Smith Edda forge UI (backlog #2) — start with `style_panel_parchment`,
   three-tab layout reusing the bag-grid pattern
+
+
+## NPC Visit Memory schema (run 16 — Builder)
+
+Per-NPC visit ledger maintained by `World.gd`. Complements the existing
+`npc_flags` (quest-derived memory) and `world_flags` (deed-derived memory)
+by capturing the CADENCE of player-NPC interaction independent of quests.
+
+### State
+
+```gdscript
+# World.gd
+var world_day: int = 0          # increments when time_of_day wraps past midnight
+var _prev_tod: float = 11.0     # private witness for the wrap detector
+var npc_memory: Dictionary = {} # npc_name -> entry dict
+```
+
+Entry shape:
+
+```gdscript
+{
+    "visits":     int,    # total triggered _on_interact calls
+    "first_day":  int,    # world_day on first visit (-1 = never met)
+    "last_day":   int,    # world_day on most recent visit
+    "first_tod":  float,  # time_of_day on first visit
+    "last_tod":   float,  # time_of_day on most recent visit
+}
+```
+
+### API
+
+| Method | Direction | Notes |
+|---|---|---|
+| `record_npc_visit(name: String)` | mutator (sole writer) | Called from `NPC.gd::_on_interact` BEFORE tier resolution, so the triggering visit is included in the count. Idempotent within frame in the sense that NPC.gd's KEY_E + InteractArea debounce prevents re-fires. |
+| `npc_visits(name) -> int` | read | 0 if never met. |
+| `npc_first_visit_day(name) -> int` | read | -1 if never met. |
+| `npc_last_visit_day(name) -> int` | read | -1 if never met. |
+| `npc_days_since_last_visit(name) -> int` | read | -1 if never met (lets caller distinguish "never" from "today"). |
+
+### Dialogue tier integration
+
+NPC.gd consumes `npc_visits(name)` via two new exports:
+
+```gdscript
+@export var warmed_memory_visits_min: int = 0
+@export var warmed_memory_dialogue_variants: PackedStringArray = PackedStringArray()
+```
+
+Threshold of 0 disables the tier (default — purely additive). The tier
+sits BETWEEN faction-pressure (tier 4) and time-of-day default (tier 6),
+inserted at line ≈185 of NPC.gd `_on_interact`. The same fail-soft
+pattern as the other tiers: `w and w.has_method("npc_visits")` so older
+World autoloads keep working.
+
+### Tier order (post-run-16)
+
+1. JSON-tree (DialogueDB, `use_json_dialogue`)
+2. NPC-flag warmed (`warmed_flag`)
+3. World-flag warmed (`warmed_world_flag`)
+4. Faction-pressure warmed (`warmed_faction_id` + `warmed_faction_below`)
+5. **Visit-memory warmed (`warmed_memory_visits_min` — run 16)**
+6. Time-of-day default (`dialogue_variants`)
+
+### Run-16 authored consumers
+
+| NPC | `memory_visits_min` | Variant count | Authoring intent |
+|---|---|---|---|
+| Elder Maeve | 3 | 4 (tod buckets) | Recognizes regulars; offers tea by hearth |
+| Innkeeper Bram | 3 | 4 | "Regular at the bar" cadence; reserved chair |
+| Trainer Hala | 3 | 4 | Named-student attention; harder drills |
+
+Threshold uniformity (3 across all three) is deliberate — a player making
+the village rounds three times unlocks all memory-aware NPCs together,
+keeping the "world warmed up" beat coherent rather than staggered.
+
+### Why memory below faction
+
+A villager who senses the Whisperwood is calmer (faction tier) speaks
+about the WORLD; a villager who notices you've come back many times
+speaks about the RELATIONSHIP. The world-state line is louder content
+when both apply — recognizing a returning friend is the conversational
+fallback when nothing more newsworthy is in scope.
+
+### Persistence (forward contract)
+
+`npc_memory` is per-session today. When save/load lands:
+- `world_day` persists as an int (1 token).
+- Per-NPC entry serializes as `[visits, first_day, last_day]` — the
+  `_tod` floats can be dropped on save/load without loss of dialogue
+  tiering (only `visits` drives the existing predicate).
+- A loaded save with `npc_memory == {}` is indistinguishable from a
+  fresh world; nothing breaks if the field is omitted.
+
+### Future seams (next-run hooks)
+
+- **"Visited every villager" achievement** — `Achievements.gd` predicate
+  could iterate WorldBuilder.NPCS, count `World.npc_visits(name) > 0`
+  for each, and unlock at full coverage. The NPC-flag predicate language
+  already exists; a `min_visits_each(npcs[], n)` keyword is a small
+  addition.
+- **Returning-after-absence variants** — a future tier keyed on
+  `npc_days_since_last_visit(name) >= N` (the accessor already returns
+  the value). Concept lines: "Where've you BEEN, you stranger?" — fires
+  when you skip a villager for 3+ in-game days.
+- **Memory-aware quest gating** — quests can require
+  `npc_visits("Smith Edda") >= 1` to unlock the forge questline,
+  closing the "talked once" → "trusted with errands" loop.
+- **Decay** — long-absent visits could halve the visit count or push the
+  player back into cold-greeting variants. Today there is no decay; add
+  by gating tier resolution on BOTH `visits >= min` AND
+  `npc_days_since_last_visit < N`.
+
