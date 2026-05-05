@@ -13,6 +13,12 @@ on:
       - '.github/workflows/build-eldoria.yml'
   workflow_dispatch:   # also allow manual trigger from the Actions tab
 
+# Only ONE build runs at a time; newer pushes cancel older in-progress runs.
+# This stops the "remote rejected, fetch first" race that was killing builds.
+concurrency:
+  group: build-eldoria
+  cancel-in-progress: true
+
 permissions:
   contents: write   # needed to commit the built /eldoria/ folder back
 
@@ -70,7 +76,7 @@ jobs:
           mkdir -p eldoria
           cp -R eldoria-godot/web-export/* eldoria/
 
-      - name: Commit + push the built /eldoria/ folder
+      - name: Commit + push the built /eldoria/ folder (with rebase retry)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -80,4 +86,15 @@ jobs:
             exit 0
           fi
           git commit -m "Auto-build Eldoria Web export ($(date -u +%Y-%m-%dT%H:%MZ))"
-          git push
+          # Retry up to 5 times with rebase to handle concurrent agent pushes.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "✅ pushed on attempt $i"
+              exit 0
+            fi
+            echo "⚠️  push rejected (attempt $i) — pulling with rebase"
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 2))
+          done
+          echo "❌ push failed after 5 retries"
+          exit 1
