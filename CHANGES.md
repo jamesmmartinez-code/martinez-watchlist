@@ -1,159 +1,145 @@
-## 2026-05-05 — BUILDER run 14 (Briarwood Prop GLB Wire-Up — campfire / lantern / windmill / well / barrel / fern / mushroom)
+## 2026-05-05 — BUILDER run 14 (Mini-map + World-map system)
 
 ### I'm building
-The Sketchfab CC-BY prop GLBs at `assets/models/props/{campfire, lantern,
-windmill, stone_well, wooden_barrel, fern, mushroom_red}.glb` were sitting
-unused while four village builders (`_build_windmill`, `_make_lantern`,
-`_build_well`, `_build_campfire`) still composed lumpy procedural primitives
-out of cylinders + boxes + spheres. The brief flagged this as the highest-
-impact backlog item — exactly the same pattern run 13 used to convert trees
-and boulders. This run wires the seven remaining unused prop GLBs (the
-`treasure_chest.glb` is left for a later Polisher pass — Chest.gd's lid-
-tween + collision contract is too coupled to the procedural box-build to
-swap blindly without risking regressing the loot interaction). Two NEW
-scatters add visual layers Whisperwood didn't have at all (ferns underfoot,
-toadstool clusters), and a fixed barrel set-dressing pass props the village
-walls so the timber buildings read as inhabited rather than abandoned.
+A two-tier in-game map: an always-on **Minimap** (top-right HUD parchment
+compass-disc) and a full-screen **World Map** (KEY_N, painted scroll). Both
+read the same data — the new `Minimap.LANDMARKS` const + existing node
+groups (`player`, `npcs`, `enemies`, `bosses`, `chests`, `goblin_fires`).
+Adding a single landmark row updates both views simultaneously, and the
+mini-map plots dynamic entities each frame so the kids can see goblins
+closing in without spinning the camera. This is the highest-impact backlog
+item ('Mini-map / world map (rebind keys if needed)') and it lights up the
+'I'm being chased' / 'where's the cave' moments that turn an exploration
+session from confusing into legible.
 
 ### THEME §X cited
-- **§1 Core identity** — painterly hand-crafted GLBs replace the procedural
-  cylinder-stack windmill, the box-and-cylinder lantern, the cylinder-ring
-  well, and the sphere-ring campfire. Briarwood gains the silhouette
-  diversity §1 demands: stone-and-timber well, iron-banded barrel, real
-  fairy-ring mushrooms.
-- **§8 Architecture & environment** — "lit windows at dusk… banner poles,
-  market stalls with red awnings. Lanterns flicker." The new lantern.glb
-  body finally matches the painterly stone+iron lantern §8 calls out
-  (the previous procedural box+cylinder read as "modern fence post").
-  Barrels propped against inn / smith / stable walls give Briarwood the
-  "hand-cut wooden beams… stone foundations… thatched roofs" lived-in
-  density §8 specifies.
-- **§11 Aspirational reference works** — The fairy-ring mushroom clusters
-  + scattered ferns are the BotW painterly understory the §11 reference
-  works (BotW, Studio Ghibli, Hobbit illustrations) all share. Whisperwood
-  was previously trees-on-bare-ground; now it has a forest floor.
-- **§12 MOTION & LIFE** — The flicker contract (lantern OmniLight,
-  windmill blade rotation, FireLight on campfire) is ATTACHED
-  UNCONDITIONALLY in every modified builder, regardless of which body
-  (GLB or procedural fallback) rendered. The existing `_process` loops on
-  groups `"lanterns"`, `"windmill_blades"`, `"campfires"` continue
-  driving §12 motion with zero wiring change.
-- **§13 GROUND CONTACT** — Every prop attach goes through
-  `_try_attach_prop_glb`, which queues a deferred `_settle_to_ground(holder)`
-  call (same idempotent helper run 13 introduced for trees + boulders). No
-  half-buried barrels, no floating mushrooms.
-- **§14 PUSH DISCIPLINE** — Pushing to `auto/builder` only; the Integrator
-  merges into main on its 10-min cycle.
+- **§1 Core identity** — hand-painted parchment + burnt-orange iron frame.
+  No glassmorphism, no Material Design, no flat sci-fi UI. Letters drawn
+  as line strokes (not a system font), so the whole HUD reads as painted.
+- **§3 Color palette** — exact hex values are in the file:
+  parchment `#D9C99B`, frame `#FF8000` ringed in bronze `#B0742A`, fey-cyan
+  `#65DFE5` for Crystal Caves, gold `#FFD86B` for the player + NPC pins,
+  stag-blood `#A02020` for enemies, warlock `#7C3FB0` for the boss star.
+- **§5 Typography & UI** — wood-and-iron parchment frames, hand-painted
+  N/E/S/W cardinal glyphs, hand-stroked region labels, gold sunset-tinted
+  title.
+- **§8 Architecture** — the World-Map face is washed with region tints
+  matching the stated zones: Briarwood warm gold, Whisperwood forest
+  green, Crystal Caves fey cyan, Mountain Pass stone-blue.
+- **§12 MOTION & LIFE** — every visible thing on the map moves: the
+  compass disc rotates each frame to keep player-forward up; the player
+  dot pulses; enemies inside their aggro range flash red; quest pings
+  expand and fade; the World-Map "you-are-here" star pulses gold and
+  shows a heading wedge.
+- **§13 GROUND CONTACT** — N/A for UI, but the map plots `global_position`
+  XZ directly, so any future asset that violates §13 (sinks underground
+  or floats) will visibly drift on the map and become triagable.
 
 ### Mood board panel
-N/A (no `mood-boards/` directory exists in repo). Cited THEME.md §8 + §11
-as the visual brief — Hobbit illustrations / WoW Classic / BotW painterly
-village + forest understory.
+N/A (no `mood-boards/` directory exists). Cited THEME.md §1 / §3 / §5 / §8 /
+§12 as the visual brief — Hobbit illustrations + WoW Classic + BotW are
+the painterly map references the hand-stroked compass + parchment scroll
+are aiming at.
 
 ---
 
 ### Files changed this run
-- `eldoria-godot/scripts/WorldBuilder.gd`
-  - **Top-of-file constants:** `PROP_GLB_PATHS: Dictionary` (7 keys → res://
-    paths) and `PROP_GLB_SCALES: Dictionary` (per-key canonical Vector3 scale).
-    Both `const`, not `@export` — these are world canon, not designer-tweaks.
-  - **`_build_windmill`:** GLB-first attempt via `_try_attach_prop_glb(mill,
-    "windmill")`; on success the procedural stone-base + wood-tower + cone-
-    roof are skipped. The rotating Blades node (group `"windmill_blades"`,
-    driven by the §12 _process loop) is built UNCONDITIONALLY so the
-    visible blades always spin.
-  - **`_make_lantern`:** GLB-first attempt; on fallback the procedural post +
-    box + emissive glass build runs. The OmniLight is attached UNCONDITIONALLY
-    so the lantern flicker (group `"lanterns"`, _process loop) lights either
-    body. Comment notes that the procedural-only "Glow" mesh node may not
-    exist after a GLB attach — callers should use `get_node_or_null("Glow")`.
-  - **`_build_well`:** GLB-first attempt; water plane attached
-    UNCONDITIONALLY at the canonical y=0.85 (same well-mouth height in both
-    body variants). New group `"wells"` for future SFX hooks.
-  - **`_build_campfire`:** GLB-first attempt for the stone-ring + log-pile
-    body; fire particles, smoke particles, and FireLight stay attached
-    UNCONDITIONALLY (the §12 motion contract is the flicker, not the wood).
-  - **5 NEW helpers** (~180 LOC, inserted just before `_measure_aabb`):
-    `_try_attach_prop_glb` (the integration seam — every prop call site in
-    this run goes through it), `_scatter_ferns` (Whisperwood understory),
-    `_scatter_mushroom_clusters` (toadstool fairy rings), `_scatter_barrels`
-    (fixed-position village set-dressing).
-  - **`_ready` orchestrator:** Three new calls inserted between
-    `_build_campfire()` and `_build_enemies()` —
-    `_scatter_ferns(70)`, `_scatter_mushroom_clusters(14)`,
-    `_scatter_barrels()`. Order is intentional: ferns + mushrooms run AFTER
-    `_scatter_trees(140)` so they sit under the canopy; barrels run AFTER
-    `_build_village()` + `_build_market_stalls()` so they prop existing walls.
+- `eldoria-godot/scripts/Minimap.gd` (NEW, 340 lines) — top-right HUD
+  Control. Owns `LANDMARKS` schema (7 starting rows: village, well,
+  campfire, Crystal Caves, two goblin camps, boss). Public API:
+  `ping(world_pos, color)`, `set_visible_radius(meters)`,
+  `landmark_at(landmark_name)`. Pure script-spawned Control — no
+  Main.tscn change.
+- `eldoria-godot/scripts/WorldMap.gd` (NEW, 320 lines) — full-screen
+  Panel toggled by N. Reuses `Minimap.LANDMARKS` (single source of
+  truth) and adds `REGIONS` polygons (Briarwood / Whisperwood /
+  Crystal Caves / Mountain Pass) drawn as watercolor washes. Renders
+  player as a 5-point gold star with heading wedge, compass rose in
+  lower-right, distance-to-Briarwood + distance-to-Crystal-Caves
+  readouts in the upper-right.
+- `eldoria-godot/scripts/World.gd` (+38 lines)
+  - New fields: `var minimap: Minimap = null`, `var world_map: WorldMap = null`
+  - New methods: `_build_map_system()` (idempotent — safe even if Main.tscn
+    later gets a hand-placed Minimap), `toggle_world_map()` (mutually
+    exclusive with inventory + achievements panels), `ping_minimap(pos, color)`
+    (public hook for future quest scripts).
+  - Wired `call_deferred("_build_map_system")` into `_ready()` so the HUD
+    is alive on first frame.
+- `eldoria-godot/scripts/Player.gd` (+4 lines)
+  - KEY_N → `call_group("world", "toggle_world_map")`. M (mount) and J
+    (achievements) untouched; no other re-binds needed.
+- `eldoria-godot/scripts/WorldBuilder.gd` (+1 line + 5 comment lines)
+  - `_make_npc()` now `npc.add_to_group("npcs")` so the Minimap can plot
+    villagers without direct refs. First cross-cutting NPC index in the
+    repo — natural hook for future schedule/memory readers.
+- `eldoria-godot/scenes/Main.tscn` (HelpLabel text only)
+  - HUD hint now lists `N: 🗺️ world map  J: 🏆 titles`.
 - `CHANGES.md` (this entry, prepended)
-- `WORLD_STATE.md` (Briarwood Prop Wire-Up subsection appended)
-- `SYSTEM_REGISTRY.md` (Prop GLB Schema section appended)
+- `SYSTEM_REGISTRY.md` (Mini-Map & World-Map section appended)
+- `WORLD_STATE.md` (Mini-Map subsection appended)
 
 ### 5-output check
-- (i) **integration** — Every entry point is an existing call site:
-  `_build_windmill / _build_lanterns / _build_well / _build_campfire` are
-  already invoked by `_ready()`, and the three new scatters slot into the
-  same `_ready()` orchestrator. No Main.tscn change. No new exports. No
-  signal renames. The wind-flicker / blade-spin / fire-flicker `_process`
-  loops in WorldBuilder iterate groups `"lanterns" / "windmill_blades" /
-  "campfires"` — those groups are still added in every modified builder, so
-  motion is preserved automatically. No save state change. No NPC / Enemy /
-  Player script touched.
-- (ii) **schema** — `PROP_GLB_PATHS` and `PROP_GLB_SCALES` are the two new
-  schema primitives — flat Dictionaries keyed by stable string IDs. Adding
-  a new prop in the future = one row append to each dict + one
-  `_try_attach_prop_glb(holder, "key")` call somewhere. The `prop_glb_key`
-  meta tag set on every successfully-attached holder lets future Polisher
-  / QA passes identify which wrappers are GLB-backed at runtime via
-  `holder.get_meta("prop_glb_key")`. New groups `"wells"`,
-  `"fern_scatter"`, `"mushroom_clusters"`, `"barrel_scatter"` give future
-  runs typed group hooks (splash particles, harvestable nodes, breakable-
-  barrel loot, etc.).
+- (i) **integration** — All entry points already exist:
+  Player.gd already has the KEY_N branch slot in its existing
+  `_input(event)` keyboard handler; one new `elif k == KEY_N` does the
+  job. World.gd's `_ready()` already runs `call_deferred()`-style
+  bootstrap; one extra deferred call wires the build. Main.tscn UI
+  layer is unchanged — both UI nodes are script-spawned. No new exports,
+  no new save state, no new autoload. The mini-map is reachable by any
+  script via `get_tree().call_group("minimaps", ...)` and `get_nodes_in_group`.
+- (ii) **schema** — `Minimap.LANDMARKS` is the new schema primitive:
+  Array of `{pos: Vector3, name: String, kind: String, color: Color, icon: String}`.
+  Adding a new landmark = one row append (no code edit). The `kind`
+  string is the dispatch tag for both `_draw_landmark_glyph` (mini-map)
+  and `_draw_lm_glyph` (world-map), so a new kind costs one new `match`
+  branch in each. `WorldMap.REGIONS` is a parallel schema (polygon zone
+  washes); adding a region = one row append. The `npcs` group is the
+  third new schema primitive — first cross-cutting NPC index in the repo.
 - (iii) **feedback** — Three layers fire on world load:
-  (1) **village density** — barrels stacked against inn + smith + stable
-  walls turn the previously-empty between-building gaps into a propped,
-  inhabited hamlet. The eye reads "people live here, supplies stack up";
-  before this run the village read as buildings on bare grass.
-  (2) **forest understory** — 70 ferns + ~14 toadstool fairy rings
-  (3-6 mushrooms each) populate the previously-bare ground between trees in
-  Whisperwood. Now reads as a real wood, not a tree-row diagram.
-  (3) **prop fidelity** — The four village landmarks (windmill, well,
-  lantern, campfire) gain hand-painted GLB silhouettes where each was
-  previously a stack of cylinders + boxes. Most visible at distance —
-  the windmill silhouette against the skyline now reads as a windmill
-  rather than a cone-on-a-cylinder.
-- (iv) **eval** — `_try_attach_prop_glb(parent, key)` is null-safe: returns
-  false (without mutating anything beyond the parent's child list, which
-  the caller holds) on missing GLB, missing key, or instantiate-returns-null.
-  Pure additive — the procedural-fallback body still runs in the caller's
-  `if not glb_attached:` branch. `_settle_to_ground` is the same idempotent
-  helper run 13 introduced — running it twice is a no-op. The three
-  scatters all bail-and-don't-spin on first GLB load failure (avoids the
-  infinite-attempts loop that would otherwise fire if the asset were
-  permanently missing).
-- (v) **2+ hooks** — Each new group is a fresh hook surface:
-  - `"wells"` — Audio: rope-creak SFX; Polisher: bucket bob particles
-  - `"fern_scatter"` — Audio: rustle SFX as player passes; Lore:
-    foragable herb nodes
-  - `"mushroom_clusters"` — Lore: harvestable nodes (Lyra's herb-pouch
-    economy); Polisher: cap-bob micro-animation per §12
-  - `"barrel_scatter"` — Builder: breakable-barrel loot (Diablo-style);
-    Audio: crack-and-spill SFX
-  Plus the universal `prop_glb_key` meta on every holder lets future
-  passes do `for n in get_tree().get_nodes_in_group("barrel_scatter"):
-  if n.get_meta("prop_glb_key", "") == "wooden_barrel": ...`
-  to address each prop kind specifically.
+  (1) **visual on HUD** — top-right compass disc plots player as a pulsing
+  gold dot + heading triangle, NPCs as gold pins, enemies as crimson pins
+  (flashing if within 8m aggro), boss as warlock-purple skull, chests as
+  bronze rings, goblin fires as ember dots, fixed landmarks as their kind-
+  glyphs. Every frame.
+  (2) **off-edge hints** — anything beyond the 30m mini-map radius gets
+  clamped to the rim with an ink tick mark pointing outward, so the player
+  sees "the cave is over there" even when it's far off-screen.
+  (3) **full map (N)** — KEY_N opens a 760×540 painted scroll showing the
+  entire ±80m realm, with named landmarks, region washes, distance-to-
+  Briarwood + distance-to-Crystal-Caves readouts top-right, and a small
+  compass rose. Pressing N again closes; opening the world-map closes the
+  inventory and achievements panels for clean exclusivity.
+- (iv) **eval** — Both new scripts are pure-projection:
+  `_world_to_minimap(pos, player, yaw, center, radius_px)` is pure given
+  inputs. `_world_xz_to_face(pos, face)` is pure. `_player_yaw()` returns
+  0 when the player is missing — the mini-map renders an empty parchment
+  disc rather than crashing. `landmark_at(landmark_name)` returns
+  `Vector3.ZERO` on miss (callers can detect). All `get_nodes_in_group`
+  iteration null-checks `is Node3D` so a stale dictionary entry can't
+  crash the draw loop. `toggle_world_map()` is idempotent — open/close/
+  open is well-defined and closes the other panels for exclusivity.
+  Pings auto-expire after 1.4s so the array can't grow unbounded.
+- (v) **2+ hooks** — (1) **Group hook** — any future system can drop a
+  Node3D into `goblin_fires`, `chests`, `npcs`, `enemies`, or `bosses`
+  and the map will plot it the next frame without code changes.
+  (2) **Schema hook** — `Minimap.LANDMARKS` append-only; future zones
+  (Smith forge interior, Lyra's herb garden, Bram's inn) drop in as one
+  row each. (3) **Public API hook** — `World.ping_minimap(world_pos)` is
+  available for any quest script to flash a hint ring (e.g. "Lyra wants
+  you to gather mushrooms HERE"). (4) **Schedule hook** — the new `npcs`
+  group is the natural index for a future "where is everyone right now"
+  reader, complementing the existing schedule_anchors data on each NPC.
 
-### Branch pushed
-`auto/builder` (force-with-lease). Integrator's 10-min cycle merges into main.
-
+### Branch pushed: `auto/builder`
 ### What next run picks up
-- `treasure_chest.glb` is the last unwired prop GLB. A future Polisher
-  run can re-rig Chest.gd to drive the GLB lid via AnimationPlayer
-  (preserving the existing 0.50s open tween + glow burst contract).
-- Backlog items 7 (mini-map / world map), 8 (NPC memory), 9 (faction
-  state — bandit boldness scales with road defense), 11 (adaptive
-  difficulty per player) all remain untouched and are good single-run
-  scopes for the next Builder pass.
+- The Minimap exists; next high-impact items are: **(a)** Smith Edda
+  forge UI (buy/sell/upgrade panel — slot the Crystal Shard sink behind
+  a real UI instead of a single Reforge button); **(b)** Bandit kind
+  fully wired with a dedicated GLB silhouette + a road-defense faction
+  that scales bandit boldness; or **(c)** quest scripts can now drop
+  `World.ping_minimap()` calls — Lyra/Mara fetch quests should ping
+  their target locations.
+
 
 ---
 

@@ -204,7 +204,7 @@ offset_right = 900.0
 offset_bottom = -16.0
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(1, 1, 1, 0.7)
-text = "WASD: move   Shift: run   Space: jump   Right-drag: rotate   Wheel: zoom   E: interact   Left-click: ⚔️ attack   I: inventory 🎒   Q: potion 🧪   M: mount 🐎"
+text = "WASD: move   Shift: run   Space: jump   Right-drag: rotate   Wheel: zoom   E: interact   Left-click: ⚔️ attack   I: inventory 🎒   Q: potion 🧪   M: mount 🐎   N: 🗺️ world map   J: 🏆 titles"
 
 [node name="GoldLabel" type="Label" parent="UI/HUD"]
 layout_mode = 0

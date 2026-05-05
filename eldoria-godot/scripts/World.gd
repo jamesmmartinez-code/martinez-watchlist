@@ -424,6 +424,51 @@ func _ready() -> void:
 	# special-case load path. Also pushes any pre-loaded title onto the
 	# player nameplate after a single frame, once Player._ready ran.
 	call_deferred("_check_achievements")
+	# Builder run 14 — Minimap + WorldMap. Created here (not in Main.tscn)
+	# so the system is purely script-spawned — designers can wipe the scene
+	# and the HUD comes back. Both nodes are added to UI/HUD so they layer
+	# above the gameplay 3D viewport but BELOW the dialogue/inventory panels.
+	call_deferred("_build_map_system")
+
+func _build_map_system() -> void:
+	# Idempotent — safe if Main.tscn ever gets a hand-placed Minimap node.
+	if minimap == null:
+		minimap = Minimap.new()
+		minimap.name = "Minimap"
+		if hud != null:
+			hud.add_child(minimap)
+		else:
+			# Fallback: attach to the UI CanvasLayer if HUD is missing
+			var ui_layer: Node = get_node_or_null("UI")
+			if ui_layer != null:
+				ui_layer.add_child(minimap)
+	if world_map == null:
+		world_map = WorldMap.new()
+		world_map.name = "WorldMap"
+		var ui_layer2: Node = get_node_or_null("UI")
+		if ui_layer2 != null:
+			ui_layer2.add_child(world_map)
+		world_map.bind_minimap(minimap)
+
+func toggle_world_map() -> void:
+	# Player.gd KEY_N → call_group("world", "toggle_world_map").
+	# Idempotent (open → close → open). Mutually exclusive with the
+	# inventory + achievements panels — opening the map closes them.
+	if world_map == null:
+		_build_map_system()
+	if world_map == null:
+		return
+	if inventory_panel != null and inventory_panel.visible:
+		inventory_panel.visible = false
+	if achievements_panel != null and achievements_panel.visible:
+		achievements_panel.visible = false
+	world_map.toggle()
+
+func ping_minimap(world_pos: Vector3, color: Color = Color(0.396, 0.875, 0.898)) -> void:
+	# Public hook so quest scripts can drop a hint ring on the minimap.
+	if minimap == null:
+		return
+	minimap.ping(world_pos, color)
 
 func _setup_dialogue_actions() -> void:
 	if not dialogue_panel: return
@@ -1149,6 +1194,12 @@ const ACH_DIM_GREY: Color = Color(0.65, 0.6, 0.55)
 const ACH_LOCK_MOD: Color = Color(0.45, 0.45, 0.45, 0.85)
 
 var achievements_panel: Panel = null
+
+# Mini-map + World-Map (Builder run 14). Lazily built in _ready(); the
+# Minimap is always visible HUD and the WorldMap toggles via N (handled
+# in Player.gd → call_group("world", "toggle_world_map")).
+var minimap: Minimap = null
+var world_map: WorldMap = null
 var ach_grid_container: GridContainer = null
 var ach_title_label: Label = null
 var ach_count_label: Label = null

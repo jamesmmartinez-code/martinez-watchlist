@@ -228,6 +228,10 @@ func _input(event: InputEvent) -> void:
 		elif k == KEY_Q:
 			# Quaff health potion (the first hp_potion_s/l in bag)
 			_quick_use_potion()
+		elif k == KEY_N:
+			# Builder run 14 — World Map (full parchment scroll). N for "Navigation".
+			# Mini-map is always-on in the top-right HUD; this opens the big map.
+			get_tree().call_group("world", "toggle_world_map")
 		elif k == KEY_M:
 			# Mount/dismount toggle
 			get_tree().call_group("world", "toggle_mount")
