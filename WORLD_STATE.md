@@ -991,3 +991,183 @@ Lyra's file did not seed new words; it composed against the
 existing eight. Future NPC files (Roan, Hala) should aim for 1–2
 new words each, keeping the lexicon growing at roughly the cadence
 established here.
+
+---
+
+## Run: Lore Keeper — 2026-05-05 — Stablemaster Roan backstory
+
+**Artifact shipped:** `eldoria-godot/lore/npcs/stablemaster_roan.md`
+(~470 lines). Roan was the sixth-of-seven Briarwood NPC without a
+backstory; he is now canonized.
+
+### What is now canon (load-bearing)
+
+- **Roan was born in Briar's Run**, a one-stable hamlet on the lower
+  lip of the High Steppe — eight families, four riders, four
+  craftspeople. Parents **Tael (saddler)** and **Eithne (colt-gentler)**
+  died of the same chest fever the winter Roan was eleven, two days
+  apart, and lie in a single Steppe-rite Long Mound at the
+  *thirre*-stone above Briar's Run. He rode a courier-string out of
+  Briar's Run for nine years before walking into Briarwood twelve
+  years ago. The previous Briarwood stablemaster was **Daire**, who
+  had died unattended the Foxthaw before. Roan opened the empty
+  stable, oiled the doorpost, and lit the gate-lantern that has not
+  moved since. The lantern shutter holds a copper coin for **Erris of
+  the Two Roads** — Roan's unspoken patron, renewed every Sunpetal.
+- **Roan was Cailen of Briarwood's friend at nine.** Cailen stayed
+  three weeks at Roan's parents' courier-house on his way to the
+  Stone Crown, taught Roan a Steppe halter-braid, and lent Roan a
+  small fox-carved Steppe whetstone Roan still keeps in his left
+  coat pocket every day. Twelve years ago Roan recognized Cailen's
+  horseshoe above Maeve's hearth and asked Maeve quietly if he could
+  ride for word of him. He rode the High Steppe twice — both empty —
+  and brought back, on the second ride, a single Steppe-iron nail
+  hammered now into the lintel above the stable door. The nail is
+  **withheld** as a quest object (see below). Roan has decided he will
+  not ride a third time *for Maeve.* The third *maelorn,* if it
+  comes, is to take Cailen's whetstone home to the Long Mound, and
+  it is off-page.
+- **The cradle in Roan's loft.** Hawthorn, ringed-knot at each corner
+  (same carving cadence as Maeve's stick), brought to Roan by Maeve
+  the third summer he was in Briarwood after his second empty ride.
+  It is *ostren* — a kept stall — and is for Maeve, not Roan. Above
+  it Roan has hung an **oilskin curtain** that breaks the loft
+  window's light on the Foxthaw evenings the **Stag-Court's** fox-fire
+  kindles. He believes he is breaking the evening light. He is not.
+  This is the canonical Roan-side bridge to Maeve's Stag-Court hook
+  in `elder_maeve.md`. **Withheld:** Roan does not name the
+  Stag-Court; he does not know the curtain matters; future writers
+  MUST NOT confirm it to him.
+- **Roan keeps six horses.** Five named: **Bay** (cobble-mare,
+  nips strangers), **Ember** (chestnut gelding, hauling, *not*
+  related to the player's pet), **Smoke** (grey, Roan's southern
+  mount), **Grain** (chestnut filly, apprentice horse), and
+  **Maeve** — a black mare, eleven years, the only horse Roan has
+  named after a person, the one who carried him on the second
+  empty Steppe-ride. Roan has never told Maeve the human her
+  namesake exists. The black mare grazes at the lower paddock at
+  the hour Maeve walks past, ears forward; Maeve has never asked.
+  The sixth is **Lyra's slow horse**, unnamed by Roan because the
+  horse a *kerrithen-*ed grief rode is, in the older tongue, a
+  thing that does not take a daily name from the person who feeds
+  it. **Withheld:** the black mare's name in Maeve's presence.
+  Roan may, at high `dire_wolves` reduction in warmed dialogue,
+  tell the player alone, in the stable, no one else present.
+- **The salve at the stable door.** Twice this last winter the
+  dire-wolves shredded the back of Roan's hands; twice a small
+  clay jar of wax-and-marshmint salve has appeared at his stable
+  door, no name, no note. Roan has guessed (correctly) that it is
+  Lyra's. He has not asked, has not named her in the guessing,
+  and will not thank her. He returns the empty jar to the
+  meadow-edge stone the next Reapmoon, washed in pond-water; Lyra
+  finds it the morning after. The whole arc is *unnen*. **Withheld:**
+  Roan never names Lyra in the salve-acknowledgement warmed line,
+  and never names the salve. *(See `herbalist_lyra.md` Hooks for
+  the matching withholding from Lyra's side.)*
+- **Roan was Bram's horse-boy nine years ago** on a single shared
+  courier route before either came to the valley. Roan calls Bram
+  by his road-name **"Bron"** in private, never in front of
+  strangers. This file confirms the canonical line shape — a Roan
+  warmed line addressed to Bram (or to a player but only when Bram
+  is not present) may surface "Bron." No other line in the village
+  uses it.
+- **Mara's cart in Roan's loft.** Already canon from
+  `mara_merchant.md`. Roan's side now anchored: he keeps it covered
+  in the same oilskin he uses against the Foxthaw fox-fire above
+  the cradle, on the next shelf above the cradle. The cart is
+  *ostren.*
+- **Roan ↔ Hala cudgel reciprocal.** Roan bought one of Hala's
+  hand-bound practice cudgels his second Briarwood year and keeps
+  it laid across the tack-room rafters, unlifted, never sparred
+  with. Hala has not asked why. This is the second leg of the
+  cudgel triangle Mara seeded (six on the stall wall) and queues
+  Hala's third leg. Builder flag: `cudgel_acknowledged` reciprocally
+  between any two of the three, no quest required.
+- **Roan ↔ Edda kindness reciprocal.** Edda re-shoes Roan's horses
+  at half-rate (already canon from `smith_edda.md`). Roan's
+  matching unasked work — re-setting the back fence beside the
+  forge each winter, re-strapping the coal-hod each Reapmoon — is
+  now anchored. *Unnen.*
+- **Roan does not invoke any god aloud.** The gate-lantern's
+  copper coin is his prayer. He nods to **Thiar** at stags, to
+  **Vellum** at the meadow *thirre* every Reapmoon. He does not
+  nod to the **Hollow King** — he believes the Hollow King is not a
+  rider's god. Maeve will, on a Longnight, gently tell him
+  otherwise. (Reservable Maeve↔Roan late-game beat.) He has never
+  set a paper lantern on the pond on Honeysong Eve; he stands at
+  the upper field-gate with the bay unsaddled beside him and
+  watches from above.
+
+### New seasonal mood-key & sextet closure
+
+- **`reapmoon_meadow_hour`** — Roan's seasonal slot, replacing
+  Edda's `spring_first_warm_day`, Bram's `honeysong_eve`, Mara's
+  `sunpetal_first_morning`. The hour Roan and Maeve do not walk
+  together to the meadow above the village. Line MUST NOT name
+  Cailen, the meadow, or Maeve. Workable shape: *"Going up to the
+  meadow, traveler. Hour. Stable's open — ask the bay."*
+- **Longnight Vigil sextet.** With Roan's `longnight_vigil`
+  mood-key, all six Briarwood NPCs with backstory files now carry
+  it (Edda, Bram, Maeve, Lyra, Mara, Roan). The full ring (Edda
+  doesn't look up → Bram brings the stew → Maeve sets the bowl for
+  the Hollow King → Lyra carries the dreamleaf to the well → Mara
+  holds the candle from the stall → Roan walks the perimeter and
+  keeps the gate-lantern high) plays itself across six thresholds
+  with no scripting beyond mood-key resolution. Builder hook:
+  co-fire on the same Longnight tick.
+
+### Top-priority next (refresh from earlier WORLD_STATE notes)
+
+- **Roan-issued wolf-bounty quest** *(unchanged from earlier WORLD_STATE
+  guidance, now backstory-anchored):* `kind: "kill"`,
+  `target: "dire_wolf"`, `needed: 5`, motivation *the south paths and
+  the bay,* location *Whisperwood — south,* urgency *moderate,*
+  consequence `{faction: "dire_wolves", pressure_delta: -0.1, npc_flag:
+  ["Stablemaster Roan", "first_bounty_done"], toast: "The south paths
+  are quieter tonight."}`. Reward: a **Steppe-Patterned Halter** flavor
+  item (Roan's own work). The `first_bounty_done` flag promotes Roan
+  from faction-tier-only to fully 4-tier. The four canonical
+  `warm_lines` shapes are now defined in
+  `stablemaster_roan.md` Hooks: a stable-floor bay-name line, a
+  *Bron* line gated on Bram-not-present, a white-aspen *ride the
+  leaves* line, and a salve-acknowledgement line that does not name
+  Lyra and does not name the salve.
+- **Stablemaster Roan dialogue tree** — `data/dialogue/stablemaster_roan.json`
+  is now the natural follow-on, mirroring `mara_merchant.json`
+  (when it ships) and the four already-shipped trees. Schema is
+  documented in SYSTEM_REGISTRY.md "JSON Dialogue Tree Schema."
+  Roan's tree is structurally distinct because his only existing
+  warming channel is `warm_faction_id: "dire_wolves"` /
+  `warm_faction_below: 0.5` (per run 8). Once the bounty ships,
+  the tree gains the `warm_flag: "first_bounty_done"` tier as
+  well.
+- **Hala backstory** is now the last NPC backstory remaining
+  (seven Briarwood NPCs total per THEME §4; six now have files).
+  Hala has been seeded across all six existing files: meadow
+  walks with Maeve to Thiar's stone, the cudgel triangle
+  (Mara/Roan/Hala), Lyra's *how to break a hold without hurting
+  the holder* lesson, and Hala's once-asked question to Edda about
+  picking up a sword. A Hala backstory file should aim for 1–2
+  new Old Faerie words (lexicon now 14; cadence holds).
+
+### New Old Faerie words (lexicon now 14)
+
+- ***maelorn*** *(MAY-lorn)* — "the ride for another's grief." A
+  journey undertaken on quiet asking for someone else's mourning,
+  where what the road owes cannot be brought back. Grammatically
+  singular and indivisible — one does not make *two maelorn,* one
+  makes *the maelorn twice.* Roan has made two for Maeve.
+- ***ostren*** *(OS-tren)* — "the kept stall." The *place made* for a
+  *kerrithen* — the empty stall, the cradle on the shelf, the third
+  peg-hook by the lantern, the seat at the counter, the lit window.
+  Cousin to but distinct from *kerrithen*: where *kerrithen* is the
+  long quiet keeping itself, *ostren* names the place made for the
+  keeping. Roan's stable is full of *ostren*: the cradle, the third
+  peg saddle for Edda, Mara's cart, the empty stall beside it.
+
+Total Old Faerie lexicon: *thirre, ai-velin, kerrithen* (world.md);
+*haethe, unnen* (smith_edda.md); *vethar, haisten, breos*
+(innkeeper_bram.md); *pendrel, mhairen* (mara_merchant.md); *vael-tor,
+thressa-mai* (elder_maeve.md); *maelorn, ostren* (stablemaster_roan.md).
+Future writers — Hala's file should aim for 1–2 more, sustaining the
+cadence.
