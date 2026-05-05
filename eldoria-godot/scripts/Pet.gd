@@ -4,8 +4,8 @@ class_name Pet
 # A companion fox that follows the player, gives a small XP buff (passive)
 # and barks at nearby enemies (visual only — no damage).
 
-# REFINE: character — tighter sit-stay so Ember feels attentive (Alden's companion affinity).
-@export var follow_distance: float = 2.2
+# REFINE: character — follow_distance 2.2 → 2.0. Compounds on the existing stickier-stop (vel × 0.80 in the else-branch): Ember now settles a half-pace closer, reading as "tucked next to player" instead of "loitering near." Directly serves Alden's Companions affinity (PLAYER_MODEL.md — "Pets and companions that follow and emote") and THEME §12 (Pet Ember micro-behaviors: sit when idle).
+@export var follow_distance: float = 2.0
 # REFINE: character — tiny speed bump so Ember keeps up on Owen's sprint without teleport-snap.
 @export var max_speed: float = 8.5
 # REFINE: character — wider bark perimeter so Ember warns *before* the goblin reaches the player.
@@ -53,7 +53,8 @@ func _ready() -> void:
 	# REFINE: character — slightly hotter ember tone so Ember's nameplate reads as fire-fox in dusk.
 	_label.modulate = Color(1.0, 0.55, 0.18)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_label.position = Vector3(0, 1.2, 0)
+	# REFINE: character — nameplate Y 1.2 → 1.10. Ember's fox is normalized to 0.7m tall (`_normalize_to_height(_model, 0.7)` above), so a label at world-relative Y=1.2 floats roughly 0.5m above the fox's head — disconnected. 1.10m sits the label ~0.40m above a 0.7m-tall back, reading as "tucked above the ear" instead of "hovering halo." Direct THEME §13 ground-contact framing (extended to nameplates: a label that floats off the model breaks ground-contact silhouette read at a distance).
+	_label.position = Vector3(0, 1.10, 0)
 	add_child(_label)
 
 func _physics_process(delta: float) -> void:
@@ -73,11 +74,13 @@ func _physics_process(delta: float) -> void:
 	var dist := to_p.length()
 	if dist > follow_distance:
 		var dir := to_p.normalized()
-		var spd: float = clamp(dist * 1.4, 1.5, max_speed)
+		# REFINE: character — close-approach floor 1.5 → 1.7 m/s. The clamp's lower bound governs Ember's gait when (dist · 1.4) < floor — i.e. when Ember is just barely outside follow_distance and closing the last small gap. Old 1.5 m/s read as a hesitating shuffle at the gap-close beat; 1.7 m/s reads as a deliberate step. Still ~5× below the new max_speed 8.5, so sprint catch-up behaviour is unchanged. Pairs with the new tighter follow_distance 2.0 (the gap-close beat fires more often now that idle-distance is shorter).
+		var spd: float = clamp(dist * 1.4, 1.7, max_speed)
 		velocity.x = dir.x * spd
 		velocity.z = dir.z * spd
 		var target_basis := Basis.looking_at(dir, Vector3.UP)
-		global_transform.basis = global_transform.basis.slerp(target_basis, 8.0 * delta)
+		# REFINE: character — body-turn slerp factor 8.0 → 6.0. THEME §12 "weighted, never snap." At 60 fps the old 8.0·dt ≈ 0.133 lerp/frame is on the snappy side for a small companion fox; 6.0·dt ≈ 0.100 lerp/frame still tracks confidently but reads as a painterly head-and-shoulders weight-shift instead of a marionette swivel. Compounds on the cross-system §12 cadence rhythm authored across the recent CameraController.gd run (smooth_lerp 0.18 → 0.22) and Minimap.gd run (player pulse 3.0 → 2.5 rad/s).
+		global_transform.basis = global_transform.basis.slerp(target_basis, 6.0 * delta)
 	else:
 		# REFINE: character — stickier stop so Ember settles next to the player instead of skating past.
 		velocity.x *= 0.80
@@ -87,7 +90,8 @@ func _physics_process(delta: float) -> void:
 	_bark_t -= delta
 	if _bark_t <= 0:
 		# REFINE: character — jittered bark cadence (was a flat 2.5s metronome) so Ember sounds alive.
-		_bark_t = randf_range(1.8, 2.6)
+		# REFINE: character — cadence 1.8–2.6 → 2.0–2.7. Compounds on the recent Minimap.gd run that slowed enemy aggro flash rate 8.0 → 6.5 rad/s on the same logic ("warning is a heartbeat, not a strobe"). Ember's bark and the minimap flash are paired threat cues; their rhythms should align. Lower-bound +0.2s pulls the loudest case off the strobe edge; upper-bound +0.1s nudges the quiet rhythm slightly slower so the band doesn't squeeze. Mean cadence 2.20 → 2.35s. Alden's low-to-medium combat tolerance directly served (PLAYER_MODEL.md — Combat tolerance: low-to-medium; gets discouraged by deaths).
+		_bark_t = randf_range(2.0, 2.7)
 		for e in get_tree().get_nodes_in_group("enemies"):
 			if e.global_position.distance_to(global_position) < bark_radius:
 				_bark()
