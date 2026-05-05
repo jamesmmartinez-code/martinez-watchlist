@@ -220,7 +220,17 @@ const NPCS = [
 		"Word of the salve has reached two villages. I'll need more pelts soon.",
 		"Lanterns are lit late. The mortar is loud. Good problems, these.",
 		"Even at this hour the kettle bubbles. Try a sip, on the house.",
-	 ]},
+	 ],
+	 # COMPOUND (run 11): Lyra joins Maeve / Edda / Bram on the JSON-tree
+	 # resolver — fourth opt-in. `data/dialogue/herbalist_lyra.json` carries
+	 # default + tod x4 + low_health_player + boss_alive + boss_slain +
+	 # high_renown + warmed-tier hooks. With this flip plus the new
+	 # `World.player_renown` field landing in the same run, her `high_renown`
+	 # line ("Mara mentioned a name on her last circuit. So did Roan…")
+	 # becomes the FIRST renown-gated line to actually fire in-game. The
+	 # legacy `lines` / `warm_lines` / `warm_world_lines` arrays above stay
+	 # as the no-tree fallback so absolutely nothing regresses.
+	 "use_json_dialogue":true},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
 	 "line":"Pull up a stool. Rest your bones.",
 	 "lines":[

@@ -1888,3 +1888,101 @@ All 6 existing worker branches (`builder`, `polisher`, `character`, `art`, `lore
 6. **Lore** — Author Mara / Roan / Hala JSONs. Mara highest-leverage (only NPC who trades; `low_health_player` reads as "she comps a potion").
 7. **Character / Art / Audio** — No new gaps; continue per existing backlog.
 
+
+---
+
+## 2026-05-05 — BUILDER run 11 (player_renown system + Lyra JSON opt-in)
+
+### What I'm building
+**`World.player_renown: int` + `gain_renown()` + HUD RenownLabel** —
+the single missing link in the dialogue-predicate chain. DialogueDB has
+been reading `"player_renown" in world_node` since run 9 with a
+fail-soft fallback; the field landed today. Compounded with the Lyra
+JSON opt-in flip the integrator has been begging for since run 9, so
+the `high_renown` predicate now resolves against authored lines on
+all four opted-in NPCs (Maeve, Edda, Bram, Lyra).
+
+### THEME compliance
+- **§3 palette** — RenownLabel uses `Color(1, 0.78, 0.32)`, a slightly
+  cooler burnt-gold than GoldLabel's `Color(1, 0.85, 0.40)`. Both inside
+  the §3 primary palette range. Outline matches the existing HUD grammar.
+- **§12 MOTION & LIFE** — the renown HUD label scale-pulses
+  1.0 → 1.18 → 1.0 over 0.45s on every gain. Same back-then-sine grammar
+  as DamageNumber.gd. No static "should-pulse" element.
+- **§14 PUSH DISCIPLINE** — pushing to `auto/builder` only. Not main.
+
+### Files changed
+1. `eldoria-godot/scripts/World.gd`
+   - `+@onready var renown_label: Label = $UI/HUD/RenownLabel` (line 20)
+   - `+var player_renown: int = 0` with full schema docblock (after `current_title`)
+   - `+func gain_renown(amount: int, source: String) -> void` — public mutator,
+     clamps min 0, toasts positive delta, scale-pulses HUD label, re-evaluates
+     achievements at the end (matches every other state mutator).
+   - `+func _recompute_renown_from_achievements() -> void` — idempotent rebuild
+     from `unlocked_achievements`. Save-safe for future persistence work.
+   - `_check_achievements()`: each newly-unlocked achievement now schedules a
+     `gain_renown(title_priority, "<icon> <name>")` 0.6s after its toast so
+     kids parse the achievement first, then see the number rise.
+   - `_refresh_hud()`: writes RenownLabel text alongside GoldLabel.
+2. `eldoria-godot/scenes/Main.tscn`
+   - `+[node name="RenownLabel" type="Label" parent="UI/HUD"]` directly below
+     GoldLabel (offset_top 158 vs Gold's 130, same x range, same font size 18).
+3. `eldoria-godot/scripts/WorldBuilder.gd`
+   - Lyra NPCS entry: `+"use_json_dialogue":true` (compound run-9-and-10 gap
+     the integrator has flagged in two consecutive reports). Counter
+     `grep -c "use_json_dialogue.*true" WorldBuilder.gd` = 4 (was 3).
+4. `SYSTEM_REGISTRY.md` — Renown Schema section (API, ladder, authoring rules, HUD readout).
+5. `WORLD_STATE.md` — note the renown integer is now a strict function of `unlocked_achievements`.
+6. `CHANGES.md` — this entry.
+
+### 5-output check (Builder rule)
+- (i) **integration** — `gain_renown` is callable from `apply_consequence`
+  payload extension (future), `_check_achievements` is the wired source
+  today, `DialogueDB.choose_line` reads via the existing fail-soft path.
+- (ii) **schema** — SYSTEM_REGISTRY Renown section names the public API,
+  the renown ladder (10/30/40/50/100 = title_priority), authoring rules,
+  HUD readout. `_recompute_renown_from_achievements` is the save-safe
+  idempotent rebuild.
+- (iii) **feedback** — toast (`✨ +N Renown — 🐺 Pack Thinner`), HUD label
+  (gold palette, sub-Gold position), scale-pulse 1.0→1.18→1.0 (THEME §12),
+  achievement-toast staggered 0.6s before renown-toast for kid-readability.
+- (iv) **eval** — `_recompute_renown_from_achievements()` is pure; can be
+  called any time without drift. `gain_renown` calls `_check_achievements()`
+  at the end so future renown-gated achievements unlock on the same tick
+  the threshold is crossed (same idempotent contract as every other state
+  mutator — `_check_achievements` diffs against `unlocked_achievements`,
+  no double-grant).
+- (v) **2+ hooks** — (1) DialogueDB `high_renown` predicate (lights up four
+  authored JSON lines instantly), (2) HUD RenownLabel readout, (3)
+  `_check_achievements` automatic credit chain (achievement unlock →
+  renown gain → optional future achievement-on-renown unlock), (4) Lyra's
+  newly-opted-in JSON tree (5th hook — direct compound from same run).
+
+### Player-reachable JSON dialogue lines this run
+- **Before run 11:** `grep -c "use_json_dialogue.*true" WorldBuilder.gd` = 3
+  (Maeve, Edda, Bram). `high_renown` predicate fail-soft on missing field —
+  zero authored renown lines reached players.
+- **After run 11:** counter = 4 (Lyra opted in). `player_renown` field exists,
+  `high_renown` predicate resolves. **Four** authored renown lines
+  (elder_maeve, smith_edda, innkeeper_bram, herbalist_lyra) become reachable
+  the moment the player crosses 100 renown — which the Warden tier achievement
+  alone trips (priority 100 → +100 renown on unlock).
+
+### What next run picks up
+1. **Builder/UI (carried, MED):** `assets/ui/eldoria_theme.tres` from the 8 shipped
+   parchment/wood UI panels — three integrator runs flagging.
+2. **Builder/Material (carried, MED):** Roughness-texture wire-in across
+   bark/rock/snow/thatch/wood/stone WorldBuilder materials — three integrator
+   runs flagging.
+3. **Builder/UI (carried, MED):** Inventory icon read path (`load(item_data.icon_path)`
+   → Texture2D → slot icon). Four integrator runs flagging.
+4. **Builder (NEW, LOW):** Renown-gated achievement (e.g. "Renowned" at 100,
+   "Legend of Eldoria" at 250) — exercises the `_check_achievements()` call
+   inside `gain_renown` that's wired but unproven this run.
+5. **Lore:** Author Mara / Roan / Hala JSONs with `high_renown` keys to fill
+   out the renown-line corpus from 4 to 7. Mara highest-leverage (only NPC
+   who trades — `high_renown` reads as "she comps a potion").
+6. **Crystal Caves dungeon** (backlog #1) — still untouched. Highest-leverage
+   NEW system in the queue once the integration debt clears.
+
+### Branch pushed: `auto/builder`

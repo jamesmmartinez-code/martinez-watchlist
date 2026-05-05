@@ -17,6 +17,7 @@ class_name World
 @onready var xp_bar: ProgressBar = $UI/HUD/XPBar
 @onready var level_label: Label = $UI/HUD/LevelLabel
 @onready var gold_label: Label = $UI/HUD/GoldLabel
+@onready var renown_label: Label = $UI/HUD/RenownLabel
 @onready var quest_panel: Panel = $UI/QuestPanel
 @onready var quest_label: Label = $UI/QuestPanel/QuestLabel
 @onready var death_overlay: ColorRect = $UI/DeathOverlay
@@ -63,6 +64,32 @@ var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 #       player's head as a Label3D. "" means no title (default).
 var unlocked_achievements: Dictionary = {}
 var current_title: String = ""
+
+# Player renown — first-class integer that DialogueDB.choose_line() reads via
+# the `high_renown` predicate (defaults to threshold 100). Granted by
+# `gain_renown(amount, source)` and automatically credited from
+# `_check_achievements()` (each newly-unlocked achievement awards renown
+# equal to its `title_priority` so tier-1 achievements grant 10, tier-3
+# Wolf-Friend grants 30, Goblin-Bane 40, Trusted 50, Warden 100 — the tier
+# ladder doubles as the renown ladder, no new tuning surface).
+#
+# READS:
+#   * DialogueDB.gd via `"player_renown" in world_node` (was fail-soft until
+#     this field landed; now lights up `high_renown` keys in
+#     elder_maeve.json, smith_edda.json, innkeeper_bram.json, herbalist_lyra.json)
+#   * HUD `RenownLabel` (visible feedback in the same gold palette as Gold)
+#
+# WRITES:
+#   * `gain_renown(amount, source)` — only PUBLIC mutator. Toasts on positive
+#     gains so Owen + Alden see the number rising.
+#   * `_check_achievements()` — internal call into gain_renown when a new
+#     achievement unlocks. Source string is "<icon> <name>".
+#
+# By making renown achievement-derived rather than quest-derived, the renown
+# integer is the FIRST value in this class that's a pure FUNCTION of
+# `unlocked_achievements`. That keeps it idempotent under any future save/load
+# pass — `_recompute_renown_from_achievements()` rebuilds it from scratch.
+var player_renown: int = 0
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -264,6 +291,21 @@ func _check_achievements() -> void:
 			# Defer subsequent toasts so they do not stomp each other.
 			get_tree().create_timer(stagger).timeout.connect(_show_toast.bind(msg))
 		stagger += 0.6
+		# Renown award — title_priority doubles as the renown grant. Tier-1
+		# starter quest = 10, Wolf-Friend = 30, Goblin-Bane = 40, Trusted = 50,
+		# Warden of Eldoria = 100. Reaching Warden tips the player past the
+		# default `high_renown` threshold (100) on the same tick the title
+		# equips, lighting up four authored JSON lines (Maeve, Edda, Bram,
+		# Lyra) the next time those NPCs are spoken to. Pure compound on the
+		# achievement chain — no new tuning surface.
+		var grant: int = int(entry.get("title_priority", 0))
+		if grant > 0:
+			# Defer slightly so the renown toast lands AFTER the achievement
+			# toast (kid-readability — they parse the achievement first, then
+			# see the number rise).
+			var src_label: String = "%s %s" % [icon, aname]
+			get_tree().create_timer(stagger).timeout.connect(
+				gain_renown.bind(grant, src_label))
 	# Auto-equip the highest-priority unlocked title. Stable across runs.
 	var new_title: String = Achievements.best_title(unlocked_achievements.keys())
 	if new_title != current_title:
@@ -288,6 +330,63 @@ func _apply_title_to_player(t: String) -> void:
 	var player := get_node_or_null("Player")
 	if player and player.has_method("set_title"):
 		player.set_title(t)
+
+# ────────────────────────────────────────────────────────────────────────
+# Renown — public mutator. Adds `amount` to `player_renown`, refreshes the
+# HUD, and toasts the gain so Owen + Alden see the number rising. `source`
+# names the contributing event ("🐺 Pack Thinner") so the toast reads
+# "✨ +30 Renown — 🐺 Pack Thinner". Negative grants are clamped to 0
+# (renown never goes below zero — there is no infamy track in this realm).
+#
+# Called from:
+#   * `_check_achievements()` — automatic credit on each unlock (deferred
+#     so the achievement toast paints first).
+#   * Future quest hooks — any `apply_consequence(...)` payload could add a
+#     `"renown": int` field that calls this. Not wired yet (achievements
+#     are the only renown source today), but the API is shaped for it so
+#     QUEST_GRAMMAR can extend without touching this class.
+#
+# THEME §12 motion-and-life: the renown HUD label briefly pulses scale on
+# every gain (1.0 → 1.18 → 1.0 over 0.45s) so the eye catches it without
+# needing to read text. Same scale-punch grammar as damage numbers, in the
+# same burnt-gold palette as Gold (§3) and the title nameplate.
+func gain_renown(amount: int, source: String) -> void:
+	if amount == 0:
+		return
+	var before: int = player_renown
+	player_renown = max(0, player_renown + amount)
+	var delta: int = player_renown - before
+	if delta == 0:
+		return
+	if renown_label:
+		renown_label.text = "Renown: %d" % player_renown
+		# Brief scale-punch — same grammar as damage numbers (DamageNumber.gd).
+		# Pivot center so the label grows symmetrically.
+		renown_label.pivot_offset = renown_label.size * 0.5
+		var pulse: Tween = create_tween()
+		pulse.tween_property(renown_label, "scale", Vector2(1.18, 1.18), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		pulse.tween_property(renown_label, "scale", Vector2(1.0, 1.0), 0.30).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if delta > 0:
+		_show_toast("✨ +%d Renown — %s" % [delta, source])
+	# Re-evaluate achievements — future renown-gated achievements (e.g.
+	# "Renowned" at 100, "Legend of Eldoria" at 250) would unlock the moment
+	# the threshold is crossed without needing a separate tick. Today's
+	# Achievements.gd has no renown predicate but the call is cheap and the
+	# pattern matches every other state mutator in this class.
+	_check_achievements()
+
+# Pure recomputation from achievement state — idempotent. Used at boot once
+# `unlocked_achievements` is populated (today always empty on fresh boot;
+# future save/load fills it pre-_ready). Keeps the renown integer a strict
+# function of the achievement set so there's no drift between runs.
+func _recompute_renown_from_achievements() -> void:
+	var total: int = 0
+	for id in unlocked_achievements.keys():
+		var entry: Dictionary = Achievements.ACHIEVEMENTS.get(id, {})
+		total += int(entry.get("title_priority", 0))
+	player_renown = total
+	if renown_label:
+		renown_label.text = "Renown: %d" % player_renown
 
 func _ready() -> void:
 	add_to_group("world")
@@ -472,6 +571,8 @@ func _refresh_hud() -> void:
 		level_label.text = "Lv " + str(player.level)
 	if gold_label:
 		gold_label.text = "Gold: %d" % player.gold
+	if renown_label:
+		renown_label.text = "Renown: %d" % player_renown
 	_update_quest_label()
 
 # ════════════════════════════════════════════════════════════════════════

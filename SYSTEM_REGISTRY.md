@@ -646,3 +646,62 @@ consequence steps. Do not order tier-4 achievements assuming an extra
 quest beyond their last input — the unlock fires on the same frame as
 the last input quest's toast. Stagger of 0.6s in the toast queue is the
 only thing keeping the unlock toast from being clobbered.
+
+## Renown Schema (run 11 — Builder)
+
+`World.player_renown: int` is a first-class scalar that DialogueDB.gd has
+been reading via `"player_renown" in world_node` since the JSON-tree
+resolver shipped (run 9). The field landed in run 11 — until then the
+predicate was fail-soft (no field, no fire). Authored `high_renown` lines
+on Maeve, Edda, Bram, and Lyra now actually reach players.
+
+### Public API (World.gd)
+
+| Method                                         | Notes                                                           |
+|------------------------------------------------|-----------------------------------------------------------------|
+| `gain_renown(amount: int, source: String)`     | Sole public mutator. Clamps min 0. Toasts on positive delta.    |
+| `_recompute_renown_from_achievements()`        | Idempotent rebuild from `unlocked_achievements`. Save-safe.     |
+
+### Renown ladder (today)
+
+Renown is a strict function of `unlocked_achievements`. Each newly-unlocked
+achievement awards renown equal to its `title_priority`:
+
+| Achievement              | Title              | Priority / Renown |
+|--------------------------|--------------------|------------------:|
+| First Steps              | the Apprentice     |                10 |
+| Pack Thinner             | Wolf-Friend        |                30 |
+| Bane of the Whisperwood  | Goblin-Bane        |                40 |
+| Trusted by Three         | the Trusted        |                50 |
+| Warden of the Realm      | Warden of Eldoria  |               100 |
+
+Crossing the default `high_renown` threshold (100, set in DialogueDB) takes
+**all five** of the current achievements OR the Warden tier alone. By the
+time the player has earned the Warden title, the high-renown JSON line is
+exactly two ticks behind the title equip — readable and earned.
+
+### Authoring rules
+
+1. **Renown is read-only outside `World.gd`.** All mutation goes through
+   `gain_renown(...)`. Future quests can extend by adding a `"renown": int`
+   field to consequence payloads — `apply_consequence` is the natural
+   forwarding site (not wired this run; achievements are the sole source).
+2. **Never grant negative renown.** The clamp to 0 is defensive; this
+   realm has no infamy mechanic and adding one would split the schema.
+3. **`title_priority` doubles as the renown grant.** Adding a new
+   achievement at priority 25 grants 25 renown. Keep priorities unique
+   per the existing rule (auto-equipper picks the highest title); the
+   renown side benefits for free.
+4. **`high_renown` predicate fires lazily.** It only resolves on the next
+   `DialogueDB.choose_line(...)` call (= next time the player talks to
+   that NPC). No background loop. Same fail-soft contract as every other
+   tree key — missing data, no fire, no crash.
+
+### HUD readout
+
+`UI/HUD/RenownLabel` (Main.tscn, added run 11) sits directly below the
+GoldLabel at the same x-offset and font size, in a slightly cooler gold
+(`Color(1, 0.78, 0.32)` vs Gold's `Color(1, 0.85, 0.40)`) so they read as
+a related pair without competing for attention. THEME §12 motion-and-life:
+the label scale-pulses 1.0 → 1.18 → 1.0 over 0.45s on every gain (same
+back-then-sine grammar as damage numbers).

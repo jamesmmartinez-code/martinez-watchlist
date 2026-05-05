@@ -778,3 +778,23 @@ Three new words enter canon, joining *thirre*, *ai-velin*, *kerrithen*
   Maeve sets it for the Hollow King, Lyra carries the dreamleaf to
   the well. No additional scripting required beyond mood-key
   resolution.
+
+## Renown — first-class scalar (run 11)
+
+`World.player_renown: int` is now a first-class field. It is a strict
+function of `unlocked_achievements`: each achievement awards renown equal
+to its `title_priority` (10 / 30 / 40 / 50 / 100). The Warden of Eldoria
+unlock alone trips the default `high_renown` threshold (100) and lights
+up four authored JSON lines (Maeve, Edda, Bram, Lyra) in the same
+session. HUD RenownLabel sits below GoldLabel, scale-pulses 0.45s on every
+gain (THEME §12). `gain_renown(amount, source)` is the only public
+mutator; it clamps min 0, toasts positive deltas, and re-evaluates
+achievements at the end. `_recompute_renown_from_achievements()` is the
+idempotent rebuild path for any future save/load work — no drift between
+sessions because the integer is derived, not stored independently.
+
+Lyra's `data/dialogue/herbalist_lyra.json` was simultaneously opted into
+the JSON-tree resolver in run 11 (`use_json_dialogue:true` flip in
+WorldBuilder.gd NPCS). She is now the fourth opted-in NPC and the FIRST
+to have her `high_renown` line ("Mara mentioned a name on her last
+circuit. So did Roan…") become reachable on the renown side.
