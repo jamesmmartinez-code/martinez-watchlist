@@ -58,10 +58,21 @@ const ITEMS = {
 	# ── Consumables ───────────────────────────────────────────────────────
 	"hp_potion_s":   {"name":"Lesser Health Potion","type":"consumable","slot":"","rarity":"common",
 	                  "icon":"🧪", "icon_path":"res://assets/icons/hp_potion_s.png","color":Color(0.95,0.30,0.25),"heal":40, "stack":true,"value":12},
+	# REFINE: balance — Greater Health Potion heal 120 → 130 (+8.3%). Mid-tier
+	# consumable was untouched in run-2 while max_hp grew per-level (run-2 +18/lvl).
+	# At level 5 (max_hp ≈ 210) a single greater pot now heals ~62% of bar instead
+	# of ~57% — restores the "this is the BIG potion" feel Owen's boss-prep stockpile
+	# leans on. value held at 40 (Mara's economy unchanged).
 	"hp_potion_l":   {"name":"Greater Health Potion","type":"consumable","slot":"","rarity":"uncommon",
-	                  "icon":"🧪", "icon_path":"res://assets/icons/hp_potion_l.png","color":Color(0.95,0.30,0.25),"heal":120,"stack":true,"value":40},
+	                  "icon":"🧪", "icon_path":"res://assets/icons/hp_potion_l.png","color":Color(0.95,0.30,0.25),"heal":130,"stack":true,"value":40},
+	# REFINE: balance — Mana Draught mana 40 → 45 (+12.5%). Per-level max_mp grew
+	# +10 in run-2 (was +8) so the flat 40 mana pot was eroding into a smaller
+	# fraction of total bar. 45 keeps it at ~45% of bar at level 5 (mp ≈ 100),
+	# which is the "useful caster top-up" target. Pairs with the crystal_elemental
+	# table tilt above (more mp_potions to find means each one needs to feel worth
+	# the bag slot).
 	"mp_potion":     {"name":"Mana Draught", "type":"consumable","slot":"","rarity":"common",
-	                  "icon":"🍶", "icon_path":"res://assets/icons/mp_potion.png","color":Color(0.30,0.55,1.00),"mana":40, "stack":true,"value":15},
+	                  "icon":"🍶", "icon_path":"res://assets/icons/mp_potion.png","color":Color(0.30,0.55,1.00),"mana":45, "stack":true,"value":15},
 
 	# ── Materials (drop from enemies, used in fetch quests) ───────────────
 	"wolf_pelt":     {"name":"Wolf Pelt",       "type":"material","slot":"","rarity":"common",
@@ -109,19 +120,39 @@ const DROP_TABLE = {
 		{"id":"dragonscale",   "weight":2,  "qty":[1,1]},
 	],
 	"skeleton": [
+		# REFINE: balance — bring skeletons up to par with the run-2 goblin/wolf
+		# treatment. Crystal-cave undead should feel like the next gear tier above
+		# Whisperwood goblins: trim rusty_sword junk (15 → 12), lift steel_blade
+		# (3 → 5) so a 30-kill cave grind reliably rolls one real upgrade. Nudge
+		# mp_potion (12 → 14) since skeletons live near mana-themed bosses and a
+		# small draught stockpile preps the player for elemental fights. Lift
+		# iron_sword (10 → 11) — same "less duplicate junk at pickup, the player
+		# is past iron_sword by cave-time" reasoning that drove run-2 goblin tuning.
+		# chainmail trimmed (8 → 6) so it reads as the OCCASIONAL upgrade, not
+		# the default skeleton drop. Total weight preserved at 96.
 		{"id":"hp_potion_s",  "weight":30, "qty":[1,1]},
 		{"id":"crystal_shard","weight":18, "qty":[1,1]},
-		{"id":"rusty_sword",  "weight":15, "qty":[1,1]},
-		{"id":"iron_sword",   "weight":10, "qty":[1,1]},
-		{"id":"chainmail",    "weight":8,  "qty":[1,1]},
-		{"id":"steel_blade",  "weight":3,  "qty":[1,1]},
-		{"id":"mp_potion",    "weight":12, "qty":[1,1]},
+		{"id":"rusty_sword",  "weight":12, "qty":[1,1]},
+		{"id":"iron_sword",   "weight":11, "qty":[1,1]},
+		{"id":"chainmail",    "weight":6,  "qty":[1,1]},
+		{"id":"steel_blade",  "weight":5,  "qty":[1,1]},
+		{"id":"mp_potion",    "weight":14, "qty":[1,1]},
 	],
 	"crystal_elemental": [
-		{"id":"crystal_shard","weight":60, "qty":[1,2]},
-		{"id":"mp_potion",    "weight":20, "qty":[1,2]},
-		{"id":"hp_potion_l",  "weight":12, "qty":[1,1]},
-		{"id":"ring_focus",   "weight":8,  "qty":[1,1]},
+		# REFINE: balance — crystal elementals are the mana-themed mid-boss enemy,
+		# so the table tilts further toward MP economy + caster trinkets. mp_potion
+		# (20 → 22) and ring_focus (8 → 10) lift in tandem — Owen's "I notice the
+		# mana bar dropping less between fights" mastery beat. crystal_shard pulled
+		# slightly (60 → 58) to make room without breaking the dominant material drop.
+		# hp_potion_l up (12 → 13) — caves are long, Alden's HP economy needs the
+		# extra greater-pot every ~7 elementals. frost_saber preserved at 3 (legendary
+		# rarity tease intact). Total weight 103 → 106 (~3% inflation, acceptable
+		# since these are the dedicated mp-economy enemy and players need the draught
+		# stockpile to engage caster builds at all).
+		{"id":"crystal_shard","weight":58, "qty":[1,2]},
+		{"id":"mp_potion",    "weight":22, "qty":[1,2]},
+		{"id":"hp_potion_l",  "weight":13, "qty":[1,1]},
+		{"id":"ring_focus",   "weight":10, "qty":[1,1]},
 		{"id":"frost_saber",  "weight":3,  "qty":[1,1]},
 	],
 	"crystal_guardian": [
@@ -135,25 +166,45 @@ const DROP_TABLE = {
 		{"id":"dragonscale",   "weight":2,  "qty":[1,1]},
 	],
 	"chest_common": [
-		{"id":"hp_potion_s", "weight":35, "qty":[2,4]},
+		# REFINE: balance — chest_common is Alden's "ooh shiny" tier (Collection
+		# affinity, PLAYER_MODEL §Players). Bumped hp_potion_s qty ceiling (2,4 →
+		# 2,5) so a lucky chest stockpiles a real stash, not just a top-up. iron_sword
+		# pulled (10 → 8) — like goblin run-2, the player spawns equipped with one;
+		# real upgrade chance shifts to chainmail (6 → 8) and steel_blade (4 → 5).
+		# Trinket band lifted (ring_focus 3 → 4, talisman_oak 3 → 4) so first-hour
+		# chests have a meaningful chance of producing a HP/MP-boost trinket — the
+		# "I found a magic ring!" beat Alden's collection ladder rewards. Total
+		# weight 101 → 104 (~3% inflation, acceptable since common chests respawn).
+		{"id":"hp_potion_s", "weight":35, "qty":[2,5]},
 		{"id":"hp_potion_l", "weight":15, "qty":[1,2]},
 		{"id":"mp_potion",   "weight":15, "qty":[1,2]},
-		{"id":"iron_sword",  "weight":10, "qty":[1,1]},
+		{"id":"iron_sword",  "weight":8,  "qty":[1,1]},
 		{"id":"leather",     "weight":10, "qty":[1,1]},
-		{"id":"chainmail",   "weight":6,  "qty":[1,1]},
-		{"id":"steel_blade", "weight":4,  "qty":[1,1]},
-		{"id":"ring_focus",  "weight":3,  "qty":[1,1]},
-		{"id":"talisman_oak","weight":3,  "qty":[1,1]},
+		{"id":"chainmail",   "weight":8,  "qty":[1,1]},
+		{"id":"steel_blade", "weight":5,  "qty":[1,1]},
+		{"id":"ring_focus",  "weight":4,  "qty":[1,1]},
+		{"id":"talisman_oak","weight":4,  "qty":[1,1]},
 	],
 	"chest_rare": [
+		# REFINE: balance — chest_rare is Owen's mastery loot tier (Challenge +
+		# Mastery affinity, PLAYER_MODEL §Players). The rare/epic gear band lifts
+		# uniformly so finding one of the 2 rare chests on the map produces a
+		# memorable "this changes my build" moment, not just a sidegrade. frost_saber
+		# 8 → 10 and ember_axe 8 → 10 (Owen's two preferred hard-fight weapons,
+		# Crit and Damage flavors). shadow_dagger 5 → 6 (epic crit-stacker stays
+		# rare-feeling). emberforge 4 → 5 (epic armor with hp_bonus — chunky beat).
+		# steel_blade pulled 15 → 13 since by the time Owen unlocks rare chests he's
+		# already past steel; the freed weight band moves up a tier. Total weight
+		# 84 → 88 (~5% inflation, but rare chests don't respawn so absolute drops
+		# stay bounded).
 		{"id":"hp_potion_l", "weight":25, "qty":[2,3]},
-		{"id":"steel_blade", "weight":15, "qty":[1,1]},
+		{"id":"steel_blade", "weight":13, "qty":[1,1]},
 		{"id":"steel_plate", "weight":12, "qty":[1,1]},
-		{"id":"frost_saber", "weight":8,  "qty":[1,1]},
-		{"id":"ember_axe",   "weight":8,  "qty":[1,1]},
-		{"id":"shadow_dagger","weight":5, "qty":[1,1]},
+		{"id":"frost_saber", "weight":10, "qty":[1,1]},
+		{"id":"ember_axe",   "weight":10, "qty":[1,1]},
+		{"id":"shadow_dagger","weight":6, "qty":[1,1]},
 		{"id":"crit_amulet", "weight":7,  "qty":[1,1]},
-		{"id":"emberforge",  "weight":4,  "qty":[1,1]},
+		{"id":"emberforge",  "weight":5,  "qty":[1,1]},
 	],
 }
 
@@ -234,13 +285,20 @@ static func generate_affix_item(base_id: String, rng: RandomNumberGenerator) -> 
 	var base = ITEMS.get(base_id, {})
 	if base.is_empty() or not base.has("slot") or base.slot == "":
 		return {}
-	# 60% just prefix, 25% just suffix, 15% both
+	# REFINE: balance — odds tilted toward "both prefix+suffix" for chunkier
+	# Owen-mastery moments. 60/25/15 → 56/24/20: a +5pp bump on the most exciting
+	# affix outcome (e.g. "Sharpened Steel Blade of the Bear") and -4pp on the
+	# plainer prefix-only tier. Solo-prefix is still the modal outcome so the
+	# rarity pyramid reads correctly; the rare "both" rolls now hit ~1-in-5
+	# instead of ~1-in-7, which is about one extra "wow" item per Owen's typical
+	# 25-item chest haul. Suffix-only band held flat — it's the silhouette that
+	# carries icon overlays (❄ 🔥 🐻) which Alden notices in the bag grid.
 	var roll := rng.randf()
 	var prefix_name := ""
 	var suffix_name := ""
-	if roll < 0.60:
+	if roll < 0.56:
 		prefix_name = _pick_weighted(AFFIX_PREFIXES, rng)
-	elif roll < 0.85:
+	elif roll < 0.80:
 		suffix_name = _pick_weighted(AFFIX_SUFFIXES, rng)
 	else:
 		prefix_name = _pick_weighted(AFFIX_PREFIXES, rng)
@@ -275,8 +333,12 @@ static func generate_affix_item(base_id: String, rng: RandomNumberGenerator) -> 
 	var slug := (prefix_name + "_" + suffix_name).replace(" ", "_").replace("of_the_", "").replace("of_", "")
 	item["base_id"] = base_id
 	item["runtime_id"] = "@%s#%s_%s" % [base_id, slug, stamp]
-	# Boost value: better gear is worth more gold
-	item["value"] = int(item.get("value", 1) * 2.5)
+	# REFINE: balance — affix value mult 2.5 → 2.75. Affixed gear is the SHAPE of
+	# Owen's mastery loop (he notices "the Sharpened version sells for triple")
+	# and a slightly fatter sell value tightens that mastery beat. 10% bump is
+	# small enough Alden's casual-sell economy isn't disrupted (his typical sale
+	# is a goblin_ear at 3g, not an affix steel_blade at 150+g).
+	item["value"] = int(item.get("value", 1) * 2.75)
 	return item
 
 # Roll loot from a chest pool, with chance to upgrade equipment to affix variants.
@@ -286,8 +348,12 @@ static func roll_chest_loot(pool: String, rng: RandomNumberGenerator, count: int
 		var rolls = roll_loot(pool, rng)
 		for r in rolls:
 			var base = get_item(r.id)
-			# 55% chance equipment becomes an affix variant
-			if base.has("slot") and base.slot != "" and rng.randf() < 0.55:
+			# REFINE: balance — chest affix upgrade chance 0.55 → 0.58. Marginal +3pp
+			# bump in "the chest dropped a magic-named item" beat. Compounds with
+			# the affix-odds tilt above (more "both" affixes when an upgrade does fire).
+			# Stays well under 0.60 so plain base items still appear regularly — keeps
+			# the rarity pyramid legible to Alden ("the gold-named ones are special").
+			if base.has("slot") and base.slot != "" and rng.randf() < 0.58:
 				var affix = generate_affix_item(r.id, rng)
 				if not affix.is_empty():
 					results.append({"id": affix.runtime_id, "qty": 1, "registry": affix})
