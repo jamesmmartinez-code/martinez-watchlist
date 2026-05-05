@@ -1,3 +1,139 @@
+## 2026-05-05 — BUILDER run 13 (Whisperwood asset wire-up — tree + boulder GLBs)
+
+### I'm building
+The Sketchfab CC-BY tree GLBs (`oak_tree`, `pine_tree`, `bush`, `dead_tree`)
+and the boulder GLB at `assets/models/props/boulder.glb` were sitting unused
+while `WorldBuilder._make_tree` was still building lumpy procedural sphere-
+stack trees and `_scatter_rocks` was still spawning sphere primitives. The
+task brief flagged this as the highest-impact backlog item: "If existing
+scripts are still building procedural primitives instead of instancing these,
+**rewrite them to use the GLBs**." This run does exactly that — with a
+null-safe fallback to the procedural primitives when a GLB can't load, so
+the world build is never empty.
+
+### THEME §X cited
+- **§1 Core identity** — painterly hand-crafted GLBs replacing procedural
+  blob-stack trees. Forest now has the silhouette diversity §1 demands.
+- **§11 Aspirational reference works** — adds the silhouette variety the
+  WoW Classic / BotW / Hobbit illustration references all share. A row of
+  identical procedural cone-stack trees doesn't read as Whisperwood; a mix
+  of oak / pine / dead / bush does.
+- **§12 MOTION & LIFE** — every spawned tree joins group `"trees"` so the
+  existing `_process` wind-sway loop (rotating `tree.rotation.z` by a sin
+  curve) animates the new GLBs with zero extra wiring.
+- **§13 GROUND CONTACT** — every spawned wrapper queues a deferred
+  `_settle_to_ground(node)` call that measures global AABB after the model
+  is in the tree, then lifts or drops the wrapper so the visible base sits
+  at y=0. No half-buried trunks, no floating roots.
+
+### Mood board panel
+N/A (no mood-boards/ directory exists in repo). Cited THEME.md §11 as the
+visual brief — Hobbit illustrations / WoW Classic / BotW painterly forests.
+
+---
+
+### Files changed this run
+- `eldoria-godot/scripts/WorldBuilder.gd`
+  - **Top-of-file constants:** `TREE_VARIANTS: Array` (4 GLB variants with
+    weights, scale ranges, and kind tags) and `BOULDER_GLB_PATH: String`
+  - **`_make_tree(pos, rng)` prelude:** GLB-first attempt, falls through to
+    legacy procedural primitive on null-load
+  - **`_scatter_rocks(count)` prelude:** GLB-first attempt per spawn, falls
+    through to legacy sphere primitive on null-load
+  - **5 NEW helpers** (~140 LOC, inserted just before `_measure_aabb`):
+    `_load_glb_safe`, `_pick_tree_variant`, `_settle_to_ground`,
+    `_make_glb_tree`, `_make_glb_boulder`
+- `CHANGES.md` (this entry, prepended)
+- `SYSTEM_REGISTRY.md` (Whisperwood Asset Wire-Up section appended)
+- `WORLD_STATE.md` (Whisperwood Asset Wire-Up subsection appended)
+
+### 5-output check
+- (i) **integration** — All entry points are existing call sites:
+  `_ready()` already calls `_scatter_trees(140)` and `_scatter_rocks(36)`,
+  which in turn call `_make_tree` and the now-rewritten `_scatter_rocks`
+  body. No Main.tscn change. No new exports. The wind-sway loop in
+  `_process` already iterates `get_tree().get_nodes_in_group("trees")` —
+  adding `holder.add_to_group("trees")` in `_make_glb_tree` is enough to
+  wire motion. No save state change.
+- (ii) **schema** — TREE_VARIANTS is the single new schema primitive
+  (Array of {path, weight, scale_min, scale_max, kind}). Adding a new tree
+  variant in the future = one row append. BOULDER_GLB_PATH is a flat const.
+  Both are `const` (not `@export`) because variants are world canon, not
+  designer-tweakable per scene. The "kind" tag (`oak/pine/bush/dead`) is
+  the hook future scripts can read via `holder.get_meta("tree_kind")`.
+- (iii) **feedback** — Three layers fire on world load:
+  (1) **visual** — forest now has 4 distinct silhouettes per scatter (oak
+  broad-canopy, pine tall-thin, bush low, dead-tree skeletal) instead of
+  140 identical lumpy spheres; boulders read as stone, not as the previous
+  squashed sphere meshes. (2) **scale** — TREE_VARIANTS ranges are tuned
+  so even small bushes (0.55x to 0.95x) and large oaks (1.20x to 1.85x)
+  coexist; the per-spawn random scale prevents uniform rows. (3) **collision**
+  — each kind gets a capsule sized to its silhouette so the player physically
+  feels the difference (bushes pass-through, pines thin-and-tall, oaks
+  robust). Boulders gain a real box collider where the legacy sphere had
+  a nominal one.
+- (iv) **eval** — `_load_glb_safe` is null-safe (returns null if
+  `ResourceLoader.exists(path)` is false) so it can be called any time, no
+  side effects. `_pick_tree_variant(rng)` is pure given the same RNG state.
+  `_settle_to_ground(node)` is idempotent — running it twice is a no-op
+  because the second call sees an AABB already touching y=0 and returns
+  immediately. The GLB-first / procedural-fallback contract means a partial
+  asset bundle still ships a full-density forest.
+- (v) **2+ hooks** — (1) `holder.add_to_group("trees")` consumed by the
+  existing `_process` wind-sway loop — every new GLB tree sways with no
+  extra code, satisfying THEME §12 motion. (2) `holder.set_meta("tree_kind",
+  kind)` is a NEW future-reader hook for biome / quest / lore scripts that
+  want to filter trees by species. (3) `holder.add_to_group("boulders")`
+  is a NEW group future scripts (path-finding, hide-spots for goblin
+  ambushes, the Crystal Caves entrance NW corner per backlog item #1) can
+  iterate. (4) `_settle_to_ground(node)` is a generic ground-contact helper
+  that any future spawner (NPCs, enemies, props) can call; it's not
+  GLB-specific. (5) `_load_glb_safe(path)` is the start of a unified
+  "GLB-first, primitive-fallback" pattern that future runs can apply to
+  props, market stalls, enemies, etc.
+
+### Player-reachable state this run
+- **Whisperwood now has silhouette diversity.** Before run 13: 140
+  procedural blob-stack trees, all the same lumpy shape, indistinguishable
+  at any range. After: ~63 oaks (45%), ~42 pines (30%), ~28 bushes (20%),
+  ~7 dead trees (5%) — each at a randomized scale within its variant band.
+  The forest now reads as a forest, not as a polka-dot blob field.
+- **Boulders have stone presence.** Before: 36 squashed-sphere "rocks"
+  with uniform stone texture, no real silhouette. After: 36 hand-crafted
+  boulder meshes with non-uniform y/z scaling for variation. Players can
+  hide behind them; future ambush-cover spawn logic can target group
+  `"boulders"`.
+- **Ground contact is enforced.** Sketchfab GLBs frequently pivot at the
+  model center rather than the feet; the deferred `_settle_to_ground` call
+  fixes this universally for every newly spawned tree and boulder. THEME
+  §13 compliance is now systematic, not per-asset hand-tuned.
+
+### What next run picks up
+1. **Builder/Asset (NEW, HIGH):** Apply the same GLB-first pattern to
+   lanterns, banners, market stalls. `assets/models/props/` has
+   `lantern.glb`, `wooden_barrel.glb`, `windmill.glb`, `stone_well.glb`,
+   `treasure_chest.glb`, `campfire.glb`, `mushroom_red.glb`, `fern.glb` —
+   every one has a procedural counterpart in WorldBuilder that could be
+   replaced.
+2. **Builder/UI (carried, MED):** `assets/ui/eldoria_theme.tres` from the
+   8 shipped parchment/wood UI panels.
+3. **Builder/Material (carried, MED):** Roughness-texture wire-in across
+   bark/rock/snow/thatch/wood/stone WorldBuilder materials.
+4. **Builder/UI (carried, MED):** Inventory icon read path
+   (`load(item_data.icon_path)` → Texture2D → slot icon).
+5. **Builder (carried, NEW):** Renown-gated achievement at 100/250.
+6. **Builder/Forge polish:** Inventory paperdoll + bag tooltip should show
+   "+N" on forged weapons (run-12 carry).
+7. **NPC schedules** (backlog #3) — runtime walker exists per run-11; lore
+   has not yet shipped Trainer Hala JSON dialogue.
+8. **Better enemy variety — Skeleton, Bandit GLBs** (backlog #4).
+9. **NPC / enemy portrait wire-up** (carried, MED) — 22 portrait PNGs
+   sit in `assets/portraits/` consumed by zero scripts.
+
+### Branch pushed: `auto/builder`
+
+---
+
 ## 2026-05-05 (integrator run 4) — 4 branches merged, 2 carried gaps
 
 ### Branches merged into main

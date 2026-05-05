@@ -888,3 +888,83 @@ PRODUCES (new readers can write against):
 - `Inventory.weapon_display_name()` — HUD readout (Player paperdoll text
   could substitute the forged display name in future polish)
 - `Inventory.forge_tiers` Dict — save/load surface (future persistence)
+
+---
+
+## Whisperwood asset wire-up (run 13)
+
+### Schema additions
+
+`WorldBuilder.gd`:
+
+| Member                               | Notes                                                       |
+|--------------------------------------|-------------------------------------------------------------|
+| `TREE_VARIANTS: Array`               | 4 dicts: `{path, weight, scale_min, scale_max, kind}`       |
+| `BOULDER_GLB_PATH: String`           | `res://assets/models/props/boulder.glb`                     |
+
+### Helper API
+
+| Method                                                  | Returns       | Notes                                                       |
+|---------------------------------------------------------|---------------|-------------------------------------------------------------|
+| `_load_glb_safe(path)`                                  | `PackedScene` | `null` if path doesn't exist or doesn't resolve to a scene  |
+| `_pick_tree_variant(rng)`                               | `Dictionary`  | Weighted pick over `TREE_VARIANTS`; pure given RNG state    |
+| `_settle_to_ground(node)`                               | `void`        | Deferred AABB-driven y-offset fix; idempotent on re-run     |
+| `_make_glb_tree(pos, rng)`                              | `bool`        | True on success; false → caller falls back to procedural    |
+| `_make_glb_boulder(pos, rng)`                           | `bool`        | True on success; false → caller falls back to sphere        |
+
+### TREE_VARIANTS today
+
+| Path                                          | Weight | Scale band   | Kind   |
+|-----------------------------------------------|-------:|--------------|--------|
+| `res://assets/models/trees/oak_tree.glb`      |  0.45  | 1.20 → 1.85  | `oak`  |
+| `res://assets/models/trees/pine_tree.glb`     |  0.30  | 1.40 → 2.10  | `pine` |
+| `res://assets/models/trees/bush.glb`          |  0.20  | 0.55 → 0.95  | `bush` |
+| `res://assets/models/trees/dead_tree.glb`     |  0.05  | 1.10 → 1.55  | `dead` |
+
+### Spawned-node groups produced this run
+
+- `"trees"` — already existed, the `_process` wind-sway loop iterates it.
+  Now includes GLB-instanced trees in addition to the legacy procedural
+  ones. New per-tree metadata: `tree.get_meta("tree_kind")` returns the
+  TREE_VARIANTS `kind` tag. Future readers can filter (e.g. cursed-grove
+  biome could prefer kind=="dead", quest spawns near kind=="oak").
+- `"boulders"` — NEW group. Currently consumed by no readers, but is a
+  natural anchor for: cover-aware enemy AI, hide-spot quest triggers,
+  Crystal Caves entrance dressing (backlog #1, NW Vector3(-50, 0, -40)).
+
+### Authoring rules
+
+1. **GLB-first, procedural-fallback.** Every spawner using a Sketchfab
+   asset MUST go through `_load_glb_safe(path)` and check for null. If
+   null, fall through to the legacy primitive code path. The world build
+   never goes empty.
+2. **Ground contact via deferred AABB.** Any wrapper Node3D that holds an
+   instanced GLB SHOULD call `call_deferred("_settle_to_ground", holder)`.
+   The function is idempotent so it's safe even if the asset already sits
+   correctly.
+3. **Group membership is the motion contract.** Adding a tree to group
+   `"trees"` is sufficient to wire it into the existing wind-sway loop.
+   No per-spawner motion code needed. Future motion groups (e.g.
+   `"banners"`, `"flames"`) follow the same pattern.
+4. **`kind` metadata is a future-quest hook.** Don't grep tree positions
+   to identify species — read `tree.get_meta("tree_kind")`.
+
+### Hooks consumed / produced this run
+
+CONSUMES:
+- `_process` wind-sway loop (existing) — auto-applies to every group
+  `"trees"` member, including the new GLB instances.
+- `_measure_aabb(node)` (existing) — used by `_settle_to_ground` to find
+  the visible bottom of any model.
+- `ResourceLoader.exists(path)` (Godot built-in) — guards every GLB load
+  so missing assets degrade gracefully.
+
+PRODUCES:
+- `tree.get_meta("tree_kind")` — biome / quest / lore filter surface.
+- `get_tree().get_nodes_in_group("boulders")` — cover-aware AI / quest
+  triggers / Crystal Caves dressing.
+- `_load_glb_safe(path)` — reusable for any future GLB wire-up (props,
+  enemies, market stalls, etc.).
+- `_settle_to_ground(node)` — generic ground-contact helper, not
+  GLB-specific; can be called after any deferred-spawn flow that needs
+  THEME §13 compliance.
