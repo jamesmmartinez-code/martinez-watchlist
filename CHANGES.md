@@ -1633,3 +1633,40 @@ proves the schema with five distinct character voices). After that, the
 next compounding move is a `World.player_renown: int` (single field) which
 LIGHTS UP every `high_renown` line in every JSON tree at once.
 
+
+---
+
+## 2026-05-05 — INTEGRATOR run
+
+### Branches merged (in stable order)
+- `auto/builder` (1 commit) — JSON dialogue loader: DialogueDB.gd + NPC.gd integration; Maeve & Edda opted in
+- `auto/polisher` (1 commit) — Player swing feel polish (range/arc/crit/timing/flash)
+- `auto/character` (1 commit) — wolf.glb wired into Enemy.gd; §13 ground-contact lift
+- `auto/art` (1 commit) — 5 PBR roughness maps (bark/rock/snow/roof/shingle)
+
+`auto/lore` and `auto/qa` were 0 ahead — nothing to merge. `auto/environment` and `auto/audio` branches don't exist yet.
+
+### Conflicts resolved
+- `CHANGES.md` had two overlapping additions (HEAD's run-8 Roan + integrator notes vs. branch's run-9 JSON loader entry). Resolved by keeping BOTH chronologically — both runs happened, both deserve their entries. SYSTEM_REGISTRY.md and WORLD_STATE.md auto-merged cleanly. WorldBuilder.gd auto-merged cleanly.
+
+### Integration gaps spotted
+
+[INTEGRATOR-NOTE] **JSON dialogue loader gap CLOSED.** Builder's run 9 added `DialogueDB.gd` and wired `NPC.gd` to call `DialogueDB.choose_line(npc_name, ctx)` for opted-in NPCs. Two integrator runs in a row had flagged this gap; it's now resolved. `data/dialogue/` ships 3 JSONs (Maeve, Edda, Bram). Maeve and Edda are opted in via `use_json_dialogue: true` in WorldBuilder NPCS.
+
+[INTEGRATOR-GAP] **Bram JSON is shipped but Bram is NOT opted into the loader.** Only 2 of the 3 dialogue JSONs are reaching players (`grep -c "use_json_dialogue.*true" WorldBuilder.gd` = 2). `innkeeper_bram.json` sits dormant despite the loader now existing. Single-line fix in WorldBuilder NPCS — flip Bram's entry to add `"use_json_dialogue": true`. **Recommended for next builder run.**
+
+[INTEGRATOR-GAP] **PBR roughness textures are unconsumed.** Art shipped 5 .jpg roughness maps to `assets/textures/{bark,rock,snow,thatch}/` with `.import` files, but **zero .gd or .tscn references them** (`grep -r "bark_rough|rock_rough|snow_rough|roof_rough|shingle_rough" --include='*.gd' --include='*.tscn'` is empty). The textures are loaded by Godot's importer but no `StandardMaterial3D.roughness_texture` or shader uniform reads them. **Recommended for next builder run:** wire each rough map into the matching surface material in WorldBuilder where the bark/rock/snow/thatch albedo is set.
+
+[INTEGRATOR-NOTE] **wolf.glb wiring landed cleanly.** Character agent's work is fully reachable — `Enemy.gd` preloads `res://assets/models/enemies/wolf.glb` in the model dict and skips the auto-rescale sweep for it (real quadruped, not the giant-head capsule fallback). No gap.
+
+[INTEGRATOR-GAP] **`icon_path` STILL unconsumed (third integrator run flagging).** Items.gd carries `icon_path` for every weapon/armor entry pointing to real PNGs in `assets/icons/`, but no UI code reads either `icon` or `icon_path` outside of Items.gd itself. Single-line fix once inventory texture rendering ships.
+
+### Branch reset
+All 6 existing worker branches (`builder`, `polisher`, `character`, `art`, `lore`, `qa`) fast-forwarded to the new `main` head (9ea78ef). Next agent runs start from a clean slate.
+
+### Next run TODO
+1. **Builder (LOW, single-line):** Add `"use_json_dialogue": true` to Bram's entry in `WorldBuilder.gd` NPCS so his shipped JSON tree actually reaches players. Closes a brand-new gap with one keystroke.
+2. **Builder or Art (MED):** Wire the 5 PBR roughness maps into surface materials in `WorldBuilder.gd` so the textures Art shipped this run are visible in-game. Today they're loaded by Godot but never referenced.
+3. **Builder (per WORLD_STATE top-priority):** Roan-issued wolf-bounty quest (-0.1 dire_wolves reducer). Compounds with run-8 Roan dialogue, run-6 spawn density, run-7+8 adaptive cooldown — one quest, four readable world changes.
+4. **Builder (MED):** Surface `icon_path` in inventory UI. Three integrator runs have flagged this. Single line once inventory texture rendering exists.
+5. **Lore (MED):** Author Bram's faction-tier dialogue (`whisperwood_goblins < 0.4`) so his backstory and JSON tree start reaching game lines via WorldBuilder NPCS — second proof of the no-`warm_flag` pattern Roan established in run 8.
