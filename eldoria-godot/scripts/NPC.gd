@@ -66,8 +66,10 @@ class_name NPC
 # on every tick — even if an anchor is authored with a nonzero y, the
 # NPC's xz-walk preserves the spawn-time y.
 @export var schedule_anchors: Array = []
-@export var schedule_speed: float = 0.8
-@export var schedule_arrival_radius: float = 0.5
+# REFINE: character — schedule_speed 0.8 → 0.55 m/s. 0.8 read as 'rushing to anchor'; 0.55 reads as a dignified, lived-in walk per THEME §1 ('lived-in') and §12 (motion that doesn't feel like skating). Compounds on run 11 schedule anchors.
+@export var schedule_speed: float = 0.55
+# REFINE: character — schedule_arrival_radius 0.5 → 0.35 m. The 0.5m slop produced a visible 'almost-there hover' before the snap; 0.35m tightens the arrival beat without inducing jitter (well above the per-frame step at speed 0.55 × 1/60s ≈ 0.009m).
+@export var schedule_arrival_radius: float = 0.35
 
 # Cached state for the schedule walker. `_last_bucket` is reserved for
 # future bucket-change hooks (e.g. trigger a one-shot anim on transition);
