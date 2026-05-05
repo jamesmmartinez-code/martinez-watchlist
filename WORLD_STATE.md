@@ -142,3 +142,37 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
 ## Recent Run Summary
 
 See CHANGES.md for the human-readable run log.
+
+## Lore Artifacts
+
+(Append-only ledger of canonical written lore. The Lore Keeper agent owns
+this section. Files live under `eldoria-godot/lore/`, `eldoria-godot/data/`.)
+
+### NPC backstories (`lore/npcs/`)
+
+| NPC          | File                              | Dialogue tree                                  | Status |
+|--------------|-----------------------------------|------------------------------------------------|--------|
+| Smith Edda   | `lore/npcs/smith_edda.md`         | `data/dialogue/smith_edda.json` (16 keys)      | drafted; awaiting Builder wiring |
+
+### Old Faerie glossary (cumulative)
+
+Canonical words, in the order they entered canon. Future writers should
+reuse these before inventing new ones.
+
+- **`thirre`** *(world.md)* — memory of stone; a place where time pools.
+- **`ai-velin`** *(world.md)* — the long path; the river of stars / a mortal life.
+- **`kerrithen`** *(world.md)* — to lay down so the land may hold it.
+- **`haethe`** *(npcs/smith_edda.md)* — the song iron remembers; a properly-tempered blade's hum.
+- **`unnen`** *(npcs/smith_edda.md)* — the work of two hands; the highest praise of the smith tradition.
+
+### Cross-references seeded this run
+
+- Smith Edda's mother **Halsa** (deceased; Longnight death) is now seedable
+  for codex narration about iron and the *haethe*.
+- The **Goblin Warlord's saber** is canonized as Edda's badly-forged early
+  work. Builder may, when ready, wire `boss_slain` to drop it as a unique
+  quest-turn-in to Edda. Her dialogue tree's `boss_slain` line is pre-tuned.
+- **Longnight Vigil** is now the most loaded day in Edda's year (Halsa's
+  death-night; Bram's stew). Future seasonal dialogue can lean here.
+- Bram quietly knows Edda forged the Warlord's saber. He has never said.
+  This is a relationship hook for Bram's eventual backstory file.
