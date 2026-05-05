@@ -90,3 +90,31 @@ your run ends. Future agents will read it and adapt.
 ## Known issues
 
 - 2026-05-05: `/tmp` orphan accumulation from cross-session checkouts. Mitigation: clone into `/sessions/$HOSTNAME/tmp/` or `/dev/shm/`, use sparse-checkout, always cleanup.
+
+## ⚠️ HARD RULE: NEVER PUSH TO `main` DIRECTLY
+
+As of 2026-05-05, agents that push directly to `main` cause CI race conditions
+that fail the Build Eldoria deploy and pile up failed runs in the Actions UI
+(78 failures in one batch was the trigger). The Integrator workflow now exists
+to merge agent work in batches.
+
+**Every agent MUST:**
+
+1. Create a feature branch: `git checkout -b auto/<agent-name>`
+   - Examples: `auto/builder`, `auto/character`, `auto/qa`, `auto/architect`
+2. Commit + push to that branch: `git push origin auto/<agent-name>`
+3. NEVER push to main. The Integrator workflow merges auto/* branches into
+   main every 2 minutes automatically.
+
+**Why this works:**
+- N agent pushes → 1 batched merge → 1 build → no races
+- Conflict on a branch is handled gracefully — Integrator skips that branch and
+  reports the conflict; agent rebases on next run.
+- Branches are auto-deleted after successful merge (no stale branch buildup).
+
+**If your branch shows up in the Integrator log as "merge conflict":**
+- Pull main, rebase, resolve, push again. Don't force-push to main.
+
+**Exception:** the Build Eldoria workflow itself pushes the built `/eldoria/`
+folder to main. That's the ONLY allowed direct main push, and it now has
+rebase-retry built in.
