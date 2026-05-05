@@ -19,7 +19,7 @@ class_name Boss
 @export var xp_reward: int = 600
 @export var gold_reward: int = 250
 @export var tint: Color = Color(0.30, 0.55, 0.20)
-@export var enemy_model: PackedScene = preload("res://assets/models/RobotExpressive.glb")
+@export var enemy_model: PackedScene = preload("res://assets/models/Boss.glb")
 
 var hp: int
 var _state: String = "idle"

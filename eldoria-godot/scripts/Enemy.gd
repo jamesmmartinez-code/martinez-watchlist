@@ -26,7 +26,7 @@ class_name Enemy
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
 # (the model carries its own hand-painted textures — tinting muddies them).
 const KIND_MODELS := {
-	"goblin": preload("res://assets/models/enemies/goblin_scout.glb"),
+	"goblin": preload("res://assets/models/enemies/goblin.glb"),
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.

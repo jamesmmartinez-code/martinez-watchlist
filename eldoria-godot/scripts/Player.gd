@@ -65,11 +65,14 @@ func _ready() -> void:
 		var root := get_tree().current_scene
 		if root:
 			camera_pivot = root.get_node_or_null("CameraPivot")
-	# Auto-wire animation_player to the imported Soldier model's AnimationPlayer
+	# Auto-wire animation_player — search any child for an AnimationPlayer.
+	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
-		var soldier := get_node_or_null("Soldier")
-		if soldier:
-			animation_player = soldier.get_node_or_null("AnimationPlayer")
+		animation_player = _find_animation_player(self)
+	# Auto-play idle on first frame so character doesn't stand T-pose
+	if animation_player:
+		await get_tree().process_frame
+		_play_anim("idle")
 	# Inventory
 	inventory = Node.new()
 	inventory.set_script(INVENTORY_SCRIPT)
@@ -533,3 +536,14 @@ func _quick_use_potion() -> void:
 			pop.position = global_position + Vector3(0, 2.6, 0)
 			get_tree().current_scene.add_child(pop)
 			return
+
+
+# Recursive: walk all descendants until we find an AnimationPlayer.
+func _find_animation_player(node: Node) -> AnimationPlayer:
+	if node is AnimationPlayer:
+		return node
+	for c in node.get_children():
+		var found := _find_animation_player(c)
+		if found:
+			return found
+	return null
