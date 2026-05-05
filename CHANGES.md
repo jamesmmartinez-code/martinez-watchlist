@@ -1845,3 +1845,46 @@ All 6 existing worker branches (`auto/builder`, `auto/polisher`, `auto/character
 3. **Builder/Art (MED, carried):** Wire the 5 PBR roughness maps into surface materials in WorldBuilder so the textures Art shipped two runs ago become visible.
 4. **Builder (per WORLD_STATE top-priority, carried):** Roan-issued wolf-bounty quest as the first `-0.1` dire_wolves reducer. Lyra's pelt quest is *also* a `-0.1` reducer (already wired) — Roan would compound it.
 5. **Lore (MED, carried):** Bram faction-tier dialogue (`whisperwood_goblins < 0.4`) — second proof of the no-warm-flag predicate pattern.
+
+---
+
+## 2026-05-05 (integrator run 3) — Builder + Polisher merged; 4 carried gaps
+
+### Branches merged this run
+- `auto/builder` (1 commit) — `728a217` Boss world-flag wire (`seen_warlord` on intro, `warlord_dead` on death) + Bram opted into JSON dialogue. New `World.set_world_flag(name, value=true)` public API. +289 / −1 across 6 files (CHANGES.md, SYSTEM_REGISTRY.md, WORLD_STATE.md, Boss.gd, World.gd, WorldBuilder.gd).
+- `auto/polisher` (1 commit) — `ddc423e` Drop-table balance pass (skeleton, crystal_elemental, chest_common, chest_rare) + affix odds 60/25/15 → 56/24/20 + affix value 2.5 → 2.75 + chest affix chance 0.55 → 0.58 + hp_potion_l 120 → 130 + mp_potion 40 → 45. +122 / −29 across 2 files (PLAYER_MODEL.md, Items.gd).
+
+### Branches unchanged (0 ahead of main)
+- `auto/character` — pinned at last integration
+- `auto/art` — pinned at last integration
+- `auto/lore` — pinned at last integration
+- `auto/qa` — pinned at last integration
+
+### Branches missing (do not exist on remote)
+- `auto/environment` — no branch exists (per registry; no env worker has run yet)
+- `auto/audio` — no branch exists (per registry; no audio worker has run yet)
+
+### No conflicts. Linear merge order: builder → polisher. Both fast-forwarded clean off `5ba54e7`.
+
+### Branch reset
+All 6 existing worker branches (`builder`, `polisher`, `character`, `art`, `lore`, `qa`) fast-forwarded back to `main` HEAD (`5ba54e7`). Next agent runs start clean.
+
+### Integration status this run
+- ✅ **Boss → DialogueDB loop is now CLOSED.** Builder's run-10 wire writes `seen_warlord` / `warlord_dead`; the existing JSON-tree loader (DialogueDB.gd from run 9) already reads them via `boss_alive` / `boss_slain` predicates. Three opted-in NPCs (Maeve, Edda, Bram) now speak distinct boss-state lines on the same tick the player crosses 30m of the Warlord and on the tick the Warlord dies. **No gap.**
+- ✅ **Bram JSON opt-in landed cleanly.** Last run's flagged gap is closed — `WorldBuilder.gd` now has `"use_json_dialogue":true` on Maeve, Edda, **and Bram**. Counter `grep -c "use_json_dialogue.*true" WorldBuilder.gd` = 3.
+
+### Carried-over gaps (still open, no work this run)
+- [INTEGRATOR-GAP] **Herbalist Lyra dialogue JSON is shipped but Lyra is NOT opted-in.** `data/dialogue/herbalist_lyra.json` has been on disk for two runs. WorldBuilder.gd NPCS entry for Lyra (line 199) lacks `"use_json_dialogue":true`. The other three NPCs with JSONs are all opted in. **Single-line fix** — add `"use_json_dialogue":true` to her entry. Builder lane next run.
+- [INTEGRATOR-GAP] **Items.gd `icon_path` STILL unconsumed (4th run flagging).** Every weapon/armor entry in `Items.gd ITEMS = {...}` carries `icon_path` pointing to real PNGs in `assets/icons/` (chainmail.png, frost_saber.png, dragonfang.png, etc.). `grep "icon_path" eldoria-godot/scripts/*.gd` returns ONLY Items.gd itself; no UI consumer. Inventory UI swap-in is one line per slot once it lands.
+- [INTEGRATOR-GAP] **PBR roughness textures STILL unconsumed (3rd run flagging).** 5 .jpg roughness maps under `assets/textures/{bark,rock,snow,thatch,wood,stone}/*_rough.jpg` with .import siblings. `grep -rE "bark_rough|rock_rough|snow_rough|roof_rough|shingle_rough|stone_rough|wood_rough" eldoria-godot/scripts/ eldoria-godot/scenes/` is empty. No `StandardMaterial3D.roughness_texture` assignment, no shader uniform read. Builder lane: wire each rough map into the matching surface material in WorldBuilder where the bark/rock/snow/thatch/wood/stone albedo is set.
+- [INTEGRATOR-GAP] **8 UI panel PNGs STILL unreferenced (2nd run flagging).** `assets/ui/{parchment_panel,parchment_panel_small,wood_panel,scroll_banner,divider_ornate,button_normal,button_hover,button_pressed}.png` exist with ATTRIBUTION.md. Zero references in `*.gd / *.tscn / *.tres`. No `eldoria_theme.tres` exists. Builder/UI lane: create `assets/ui/eldoria_theme.tres` with StyleBoxTexture-backed panels, assign as project default theme in `project.godot` or apply to existing CanvasLayer/Control roots.
+
+### Next-run TODO (priority order for worker agents)
+1. **Builder** — Lyra `use_json_dialogue` flip (1 line). Lights up `data/dialogue/herbalist_lyra.json`'s mood-keyed tree (default/morning/midday/evening/night/low_health_player/boss_alive/boss_slain plus warmed-tier hooks). Highest-leverage single-line fix in the queue.
+2. **Builder** — `World.player_renown: int` (or alias `unlocked_achievements.size()` as read-only computed). DialogueDB's `high_renown` predicate is wired but the field is missing — fail-soft today, would light up another 4–6 dormant authored lines across the three opted-in NPCs.
+3. **Builder/UI** — `eldoria_theme.tres` with StyleBoxTexture from the 8 shipped UI panels, then apply to the project default theme.
+4. **Builder/Material** — Roughness-texture wire-in across bark/rock/snow/thatch/wood/stone WorldBuilder materials.
+5. **Builder/UI** — Inventory icon read path: `load(item_data.icon_path)` → `Texture2D` → slot icon. Single-line per slot once Inventory.gd renders textures instead of glyphs.
+6. **Lore** — Author Mara / Roan / Hala JSONs. Mara highest-leverage (only NPC who trades; `low_health_player` reads as "she comps a potion").
+7. **Character / Art / Audio** — No new gaps; continue per existing backlog.
+
