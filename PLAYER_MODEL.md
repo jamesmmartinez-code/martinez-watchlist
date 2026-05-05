@@ -370,3 +370,15 @@ narrative + density + pacing.
   dusk (`World.time_of_day` ∈ [0.6, 0.85]) — if the warmer mid-tones
   pull him to linger longer at the campfire/well, the tuning is right;
   if dusk sessions truncate, exposure may need to ease back to 0.88.
+
+- **2026-05-05 (polish run — combat feel: player swing)** — First Polisher pass on Player.gd's *swing-side* combat. Balance/XP run touched HP/MP gains and curves; combat-feel runs touched Enemy.gd's *receive* side (knockback, damage numbers) and Boss.gd's telegraphs. The player's own swing parameters had never been tuned. Seven REFINE-tagged number changes, all in `Player.gd` exports/timers — no new functions, no new state, no new mechanic.
+  - `attack_range` 2.6 → **2.7** m (+0.1) — Alden's "I was a fingertip away" frustration valve.
+  - `attack_arc_deg` 110.0 → **118.0** ° (+8°) — wider forgiveness cone for Alden's imprecise aim. Owen still picks his target.
+  - `crit_chance` 0.12 → **0.14** (+2pp) — one extra crit every ~5 minutes for Owen's mastery affinity. Alden's HP economy is unchanged at this magnitude.
+  - `crit_multiplier` 2.0 → **2.15** (+7.5%) — chunkier crit punch ("I earned that one"). Mirror of the prior Enemy.gd damage-number polish, applied on the player-output side.
+  - Hit-window timer `await 0.18` → **`0.16`** s — snappier hit register. Owen's "speed affinity" rung; the visible swing windup is unchanged for Alden.
+  - Lockout timer `await 0.32` → **`0.28`** s — faster recovery between swings. Total swing 0.50s → 0.44s. The lockout shrinks, not the windup.
+  - Crit flash `_spawn_crit_flash()`: font_size 48 → **56**, outline_size 6 → **8** (reads from camera distance — Alden), modulate `(1.0, 0.85, 0.20)` → **`(1.0, 0.92, 0.28)`** — squarely in THEME §3 sunset-gold (#FFD86B family) rather than the previous slightly muddy mustard.
+  - **Why this serves both kids:** Alden gets two forgiveness-valve knobs (range + arc) and a more readable crit flash; Owen gets a tighter swing loop (-12% total swing duration) and 21% more crit-amplitude expected per minute (`Δ = 0.14×2.15 / 0.12×2.0 - 1`). The fight pacing tightens for Owen *without* punishing Alden — both ends of the player-model band move in the direction each kid wants.
+  - **Adaptive proposal for the next run:** when `World.player_pressure_signal()` ships, `crit_chance` is the cleanest knob to lerp on it — `lerp(0.14, 0.20, 1.0 - pressure)` so a stressed Alden gets MORE crit-luck (free recovery) while a calm Owen keeps his earned baseline. Pure number knob, fits the 4-output pattern the faction-pressure scalar already exemplifies. Output #1 on the new `player_pressure_signal()` axis.
+

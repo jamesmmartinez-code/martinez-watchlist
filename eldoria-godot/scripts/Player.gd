@@ -30,11 +30,15 @@ var level: int = 1
 var gold: int = 50
 
 # Combat parameters
-@export var attack_range: float = 2.6
-@export var attack_arc_deg: float = 110.0
+# REFINE: combat-feel — attack_range 2.6 → 2.7 (+0.1m). Alden's "I was a fingertip away" frustration valve. Still well under a typical 3.0m sword reach so Owen's positioning still matters.
+@export var attack_range: float = 2.7
+# REFINE: combat-feel — attack_arc_deg 110.0 → 118.0 (+8°). Slightly wider forgiveness cone for Alden's imprecise aim. Owen still picks his target; this only saves wide-angle near-miss frames.
+@export var attack_arc_deg: float = 118.0
 @export var attack_damage_base: int = 14
-@export var crit_chance: float = 0.12
-@export var crit_multiplier: float = 2.0
+# REFINE: combat-feel — crit_chance 0.12 → 0.14 (+2pp). One extra crit every ~5 minutes for Owen's mastery affinity; small enough Alden's HP economy is unchanged. THEME §3 sunset-gold accent already paints the CRIT! flash.
+@export var crit_chance: float = 0.14
+# REFINE: combat-feel — crit_multiplier 2.0 → 2.15 (+7.5%). Chunkier crit punch reads as "I earned that one" without breaking the kid-friendly damage band. Mirror of the Enemy.gd damage-number polish on the player-output side.
+@export var crit_multiplier: float = 2.15
 
 # Inventory + equipment (managed by Inventory child node)
 var inventory: Node = null
@@ -246,7 +250,8 @@ func _attack() -> void:
 	get_tree().call_group("world", "play_sfx", "sword_swing")
 
 	# Hit window — small delay to match the swing
-	await get_tree().create_timer(0.18).timeout
+	# REFINE: combat-feel — hit-window 0.18 → 0.16. Snappier register, closer to swing-peak. Owen's "speed affinity" rung; Alden still has the visible windup.
+	await get_tree().create_timer(0.16).timeout
 
 	# Find enemies in front of player within range + arc
 	var arc_rad := deg_to_rad(attack_arc_deg) * 0.5
@@ -280,7 +285,8 @@ func _attack() -> void:
 	# Whiff feedback if nothing hit (nothing to do, just a flat swing)
 
 	# Lockout window for the rest of the swing
-	await get_tree().create_timer(0.32).timeout
+	# REFINE: combat-feel — lockout 0.32 → 0.28. Total swing 0.50s → 0.44s. Faster recovery between swings (Owen). Telegraph + register still readable for Alden — the LOCKOUT shrinks, not the WINDUP.
+	await get_tree().create_timer(0.28).timeout
 	is_attacking = false
 
 func _roll_damage() -> Dictionary:
@@ -303,10 +309,11 @@ func _spawn_crit_flash() -> void:
 	var crit := Label3D.new()
 	crit.set_script(DAMAGE_NUMBER_SCRIPT)
 	crit.text = "CRIT!"
-	crit.font_size = 48
-	crit.outline_size = 6
+	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.85,0.20) → (1.0,0.92,0.28) sits squarely in THEME §3 sunset-gold (#FFD86B family) instead of the slightly muddy mustard.
+	crit.font_size = 56
+	crit.outline_size = 8
 	crit.outline_modulate = Color(0, 0, 0)
-	crit.modulate = Color(1.0, 0.85, 0.20)
+	crit.modulate = Color(1.0, 0.92, 0.28)
 	crit.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	crit.no_depth_test = true
 	crit.position = global_position + Vector3(0, 2.6, 0)
