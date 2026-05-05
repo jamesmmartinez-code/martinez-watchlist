@@ -82,8 +82,15 @@ func _ready() -> void:
 	inventory.inventory_changed.connect(_on_inventory_changed)
 	# Build initial visible weapon
 	call_deferred("_rebuild_weapon_visual")
+	# Load save on first frame (after inventory wires up)
+	call_deferred("load_game")
 
 func _physics_process(delta: float) -> void:
+	# Autosave every N seconds
+	_save_timer += delta
+	if _save_timer >= _save_interval:
+		_save_timer = 0.0
+		save_game()
 	if is_dead:
 		return
 
@@ -260,6 +267,7 @@ func take_damage(amount: int) -> void:
 func _die() -> void:
 	is_dead = true
 	_play_anim("die")
+	call_deferred("save_game")  # save just before respawn
 	get_tree().call_group("world", "play_sfx", "player_death")
 	# Death overlay
 	get_tree().call_group("world", "show_death_overlay")
@@ -299,6 +307,7 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
+	call_deferred("save_game")  # save immediately on level-up
 		# REFINE: balance — chunkier per-level HP gain (14 → 18) so Alden has more
 		# survivability headroom across a 30-kill session, and Owen's "I just leveled"
 		# beat reads as a meaningful step rather than a sliver.
@@ -370,6 +379,7 @@ func complete_quest_if_done() -> bool:
 		inventory.add_item(active_quest.reward_item, active_quest.get("reward_item_qty", 1))
 	active_quest = {}
 	stats_changed.emit()
+	call_deferred("save_game")  # save on quest completion
 	return true
 
 # ────────────────────────────────────────────────────────────────────────
@@ -547,3 +557,94 @@ func _find_animation_player(node: Node) -> AnimationPlayer:
 		if found:
 			return found
 	return null
+
+
+# ════════════════════════════════════════════════════════════════════════
+# SAVE / LOAD — persists to user://eldoria_save.json which Godot Web maps
+# to browser localStorage. Survives refresh, tab close, browser restart.
+# Saves on: level-up, quest complete, gold/inventory change, every 30s
+# Loads on: _ready before any other init
+# ════════════════════════════════════════════════════════════════════════
+
+const SAVE_PATH := "user://eldoria_save.json"
+var _save_timer: float = 0.0
+var _save_interval: float = 30.0  # autosave every 30 seconds
+var _loaded_save: bool = false
+
+func _gather_save_data() -> Dictionary:
+	var data := {
+		"version": 1,
+		"saved_at": Time.get_unix_time_from_system(),
+		"level": level,
+		"xp": xp,
+		"hp": hp,
+		"max_hp": max_hp,
+		"mp": mp,
+		"max_mp": max_mp,
+		"gold": gold,
+		"position": [global_position.x, global_position.y, global_position.z],
+		"kills_by_kind": kills_by_kind,
+		"active_quest": active_quest,
+		"is_dead": is_dead,
+	}
+	# Inventory state
+	if inventory:
+		data["inventory_bag"] = inventory.bag.duplicate(true)
+		data["inventory_equipped"] = inventory.equipped.duplicate(true)
+	return data
+
+func _apply_save_data(data: Dictionary) -> void:
+	level = data.get("level", 1)
+	xp = data.get("xp", 0)
+	max_hp = data.get("max_hp", 120)
+	hp = clamp(data.get("hp", max_hp), 1, max_hp)  # can't load dead
+	max_mp = data.get("max_mp", 30)
+	mp = clamp(data.get("mp", max_mp), 0, max_mp)
+	gold = data.get("gold", 50)
+	var pos = data.get("position", [0, 1, 0])
+	if pos is Array and pos.size() >= 3:
+		global_position = Vector3(pos[0], pos[1], pos[2])
+	kills_by_kind = data.get("kills_by_kind", {})
+	active_quest = data.get("active_quest", {})
+	# Inventory
+	if inventory:
+		var bag = data.get("inventory_bag", [])
+		var equipped = data.get("inventory_equipped", {})
+		if bag is Array:
+			inventory.bag = bag.duplicate(true)
+		if equipped is Dictionary:
+			inventory.equipped = equipped.duplicate(true)
+		inventory.inventory_changed.emit()
+		inventory.equipment_changed.emit()
+	is_dead = false  # never load dead — auto-revive on respawn
+	stats_changed.emit()
+	_loaded_save = true
+
+func save_game() -> bool:
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if not f:
+		push_warning("[Save] could not open " + SAVE_PATH + " for write")
+		return false
+	f.store_string(JSON.stringify(_gather_save_data(), "	"))
+	f.close()
+	return true
+
+func load_game() -> bool:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return false  # first run, no save yet
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if not f:
+		return false
+	var raw := f.get_as_text()
+	f.close()
+	var data = JSON.parse_string(raw)
+	if not (data is Dictionary):
+		push_warning("[Load] save file corrupted, starting fresh")
+		return false
+	_apply_save_data(data)
+	return true
+
+func reset_save() -> void:
+	# For "New Game" button later
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(SAVE_PATH)
