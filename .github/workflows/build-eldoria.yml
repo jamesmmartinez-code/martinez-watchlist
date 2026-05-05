@@ -51,10 +51,36 @@ jobs:
           cp -R /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.6.2.stable/
           rm -rf /tmp/templates templates.tpz godot.zip
 
+      - name: Hash asset folder (cache key for .godot/)
+        id: asset-hash
+        run: |
+          # Hash all source assets so cache invalidates only when assets actually change.
+          HASH=$(find eldoria-godot/assets eldoria-godot/scenes eldoria-godot/scripts -type f \
+            \( -name "*.glb" -o -name "*.gltf" -o -name "*.png" -o -name "*.jpg" \
+               -o -name "*.tres" -o -name "*.tscn" -o -name "*.gd" -o -name "*.import" \) \
+            -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -c1-16)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "Asset hash: $HASH"
+
+      - name: Cache .godot/ import folder (skip reimport when assets unchanged)
+        id: cache-godot-import
+        uses: actions/cache@v4
+        with:
+          path: eldoria-godot/.godot
+          key: godot-import-${{ steps.asset-hash.outputs.hash }}
+          restore-keys: |
+            godot-import-
+
       - name: Import all assets (generates .import files)
         run: |
           cd eldoria-godot
-          ~/godot/godot --headless --path . --import 2>&1 | tail -50 || true
+          if [ -d .godot ] && [ "${{ steps.cache-godot-import.outputs.cache-hit }}" = "true" ]; then
+            echo "✅ .godot/ cache hit — skipping full reimport"
+            ~/godot/godot --headless --path . --import 2>&1 | tail -10 || true
+          else
+            echo "⚠️  cache miss — full asset import"
+            ~/godot/godot --headless --path . --import 2>&1 | tail -50 || true
+          fi
 
       - name: Export Web build
         run: |
