@@ -1467,3 +1467,28 @@ Roan dialogue (faction), goblin pressure (irrelevant for wolf bounty),
 wolf spawn density, enemy cooldown, achievement evaluator, and (after
 the panel UI ships) achievement panel state. Single quest, seven
 visible world changes.
+
+---
+
+### Integrator run — 2026-05-05 (merge batch)
+
+Merged 3 worker branches into `main`:
+- `auto/builder` (2 commits) → Achievements + Title system (new `Achievements.gd`, wired into `World.gd` evaluator + Label3D float-text in `Player.gd`) AND Roan dire_wolves faction-tier dialogue retry. **Resolved 3-way conflict on CHANGES.md / WORLD_STATE.md / WorldBuilder.gd**: kept HEAD on WORLD_STATE + WorldBuilder (HEAD already had the prior integrator's run-8 narrative + adaptive chase_speed extension and the FIVE-consumers framing — builder's variant was a parallel re-author of work already merged); kept BOTH on CHANGES.md (changelog is append-only — builder's run-8 entry is genuinely new content). Builder's Achievements.gd diff applied cleanly.
+- `auto/polisher` (1 commit) → Main.tscn env tuned to THEME §1/§3 sunset canon (run 9) + PLAYER_MODEL.md notes. Clean merge.
+- `auto/lore` (1 commit) → Innkeeper Bram backstory `.md` (250 lines) + `innkeeper_bram.json` dialogue tree + WORLD_STATE.md lore appendix. Clean merge.
+
+Branches not present this run: `auto/character`, `auto/environment`, `auto/audio` (no work landed). `auto/art` and `auto/qa` are 0 ahead — nothing to merge.
+
+[INTEGRATOR-GAP] **Lore dialogue JSONs are STILL not loaded by NPC.gd.** Now THREE JSONs sit dormant: `elder_maeve.json`, `smith_edda.json`, `innkeeper_bram.json` (added this run). NPC.gd only reads exported PackedStringArrays populated by WorldBuilder; no `JSON.parse_string` or `FileAccess` of these files anywhere in `scripts/` (the only JSON loader in the codebase is Player.gd's save-state I/O on `user://eldoria_save.json`). The Bram JSON adds rich mood-keyed dialogue trees (default/morning/evening/etc.) plus voice_rules — all content-only, not in-game. **Same gap flagged in the 2026-05-04 integrator run; still no loader has shipped.** Forward-looking: builder or lore should add a JSON-driven dialogue path to NPC.gd, or have WorldBuilder ingest the JSONs at `_ready` and merge them into the existing `*_dialogue_variants` arrays.
+
+[INTEGRATOR-GAP] **Items.gd `icon_path` fields are STILL unconsumed.** Every Items.gd entry carries `icon_path` pointing to real PNGs in `assets/icons/`, but no UI code reads either `icon` or `icon_path` (grep across `scripts/` is empty for both keys outside of Items.gd itself). Inventory rendering today uses neither. **Same gap flagged in the 2026-05-04 integrator run.** When inventory UI lands, the data is ready to wire — single line per item slot to swap text-glyph for `Texture2D` from `load(icon_path)`.
+
+[INTEGRATOR-NEW] **Bram lore .md (250 lines) is canon-only.** Same shape as `elder_maeve.md`: rich narrative backstory living alongside its JSON sibling, neither consumed by the runtime today. The lore corpus is now 3 NPCs deep — these files are valuable as context for future authoring runs (worker agents read them before writing new lines), but they don't reach the player.
+
+[INTEGRATOR-NOTE] **Achievements + Title system landed cleanly.** `Achievements.gd` is properly wired — `class_name Achievements`, called from `World.gd` (`Achievements.evaluate(self)`, `Achievements.best_title(...)`), unlocks toast in Player.gd, Label3D title floats above player. FIFTH reader of `faction_pressure()` plus first multi-NPC `npc_flags` reader. No integration gap here — builder's Achievements work is a self-contained, fully-wired feature on landing.
+
+Next run TODO:
+1. **Builder or Lore (HIGH):** Add JSON dialogue loader to NPC.gd (or WorldBuilder ingest at `_ready`). Without it, three lore-keeper JSONs sit dormant and the lore agent's authoring work isn't reaching players. Two integrator runs in a row have flagged this.
+2. **Builder (MED):** Surface `icon_path` in inventory UI. Two integrator runs have flagged this. Single line change once inventory texture rendering is added.
+3. **Builder (per WORLD_STATE top-priority):** Roan-issued wolf-bounty quest (-0.1 dire_wolves reducer). Compounds with Roan's run-8 dialogue, run-6 spawn density, run-7+8 adaptive cooldown/chase — one quest, four readable world changes.
+4. **Lore (MED):** Author Bram's faction-tier dialogue (e.g. `whisperwood_goblins < 0.4`) so his .md backstory and JSON tree start to flow into game lines via WorldBuilder NPCS — this would be a second proof of the no-`warm_flag` pattern Roan established in run 8, on a low-threshold "the wood is almost ours" moment.
