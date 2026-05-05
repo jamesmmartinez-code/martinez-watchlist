@@ -41,6 +41,7 @@ func _ready() -> void:
 
 	# Visual model
 	_model = pet_model.instantiate()
+	call_deferred("_normalize_to_height", _model, 0.7)  # foxes are short
 	_model.scale = Vector3(0.018, 0.018, 0.018)
 	add_child(_model)
 
@@ -109,3 +110,23 @@ func _bark() -> void:
 	pop.no_depth_test = true
 	pop.position = global_position + Vector3(0, 1.5, 0)
 	get_tree().current_scene.add_child(pop)
+
+# Normalize 3D model scale so it ends up ~target_height tall.
+# Prevents giants from Sketchfab GLBs with mixed units.
+func _normalize_to_height(model: Node, target_height: float) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in model.find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
+	model.scale = Vector3(s, s, s)

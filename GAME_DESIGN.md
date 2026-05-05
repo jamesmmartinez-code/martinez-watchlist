@@ -17,7 +17,7 @@ Each region they bring back is a chapter. Each chapter unlocks new NPCs, profess
 
 ## 2. The two protagonists
 
-Designed for **Alden (9, frog 🐸)** and **Owen (11, race car 🏎️)**, brothers who play together.
+Designed for **Alden (9, GIRL, frog 🐸)** and **Owen (11, race car 🏎️)**, brothers who play together.
 
 ### Alden — **Pathfinder**
 Patient, exploration-leaning, loves animals. Subclass tree:
@@ -201,3 +201,133 @@ This is the unique core. Worth its own section.
 ---
 
 *This document is the north star for all 10 agents. Read this BEFORE THEME.md, BEFORE CHANGES.md. Updated 2026-05-05.*
+
+
+## 10. Character selection (start of game)
+
+When the game launches, each player picks who they want to be from a roster of pre-built CHARACTERS. They are NOT locked to gender — Alden can pick a male hero, Owen can pick a female hero, etc. The class is locked to the role (Pathfinder vs Vanguard) but the model is freely chosen.
+
+Roster (sourced from Sketchfab CC-BY in `assets/models/heroes/`):
+- **Hero1.glb** — current default, blue-cloaked mage (works for either)
+- **Hero2.glb** — armored knight (warrior look)
+- **Hero3.glb** — hooded ranger (archer look)
+- **Hero4.glb** — robed druid (nature magic look)
+- **Hero5.glb** — short adventurer (good for younger Alden's preferred scale)
+- **Hero6.glb** — tall adventurer (good for Owen's preferred scale)
+
+Selection screen: 6 portrait cards on a parchment scroll. Click to preview model in 3D. Click "Confirm" to lock. Choice saved to `PLAYER_MODEL.md` per player.
+
+Players can re-select at the Astronomer's Tower (post-Crystal-Caves) for a one-time gold cost.
+
+## 11. The realm map (multi-realm progression with scaling difficulty)
+
+Eldoria is one realm. Beyond Eldoria are 5 more realms, each successively harder. After restoring Eldoria (the first realm), portals open to the next.
+
+```
+WORLD MAP — six realms, level-gated:
+
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║  REALM 1: ELDORIA          Lv 1-50    starter realm             ║
+║  • Briarwood, Whisperwood, Crystal Caves, Sunken Harbor,         ║
+║    Iron Crown, Frostmarch, the Veil                              ║
+║  • 7 dungeons (one per region + 1 secret)                        ║
+║  • ~80 hours of content                                          ║
+║                                                                  ║
+║  ▼  RESTORATION COMPLETE — portal to Realm 2 opens               ║
+║                                                                  ║
+║  REALM 2: ASHENMERE        Lv 50-100  fire-and-ash war zone     ║
+║  • Cinder Wastes, Magma Hold, the Forge of the Ember Court       ║
+║  • 8 dungeons + 1 raid (Ember Council)                           ║
+║  • Mounts: phoenix-style flying mount unlocked here              ║
+║                                                                  ║
+║  ▼                                                                ║
+║                                                                  ║
+║  REALM 3: TIDESONG         Lv 100-150 ocean + sky-isle realm    ║
+║  • Coral Cathedral, Sky Atolls, Drowned Library                  ║
+║  • 8 dungeons + 1 raid (Leviathan)                               ║
+║  • Mounts: sea drake, sky manta                                  ║
+║                                                                  ║
+║  ▼                                                                ║
+║                                                                  ║
+║  REALM 4: SHADEWOOD        Lv 150-200 fey/shadow + intrigue     ║
+║  • Twilight Court, Mirror Lake, the Moonwell                     ║
+║  • 8 dungeons + 1 raid (the Mirror Queen)                        ║
+║                                                                  ║
+║  ▼                                                                ║
+║                                                                  ║
+║  REALM 5: SKYREAVE         Lv 200-250 storm + dragon realm      ║
+║  • Stormspire, Dragonfall, the Eye                               ║
+║  • 8 dungeons + 1 raid (the Pale Wyrm reborn)                    ║
+║                                                                  ║
+║  ▼                                                                ║
+║                                                                  ║
+║  REALM 6: THE HOLLOW       Lv 250-300 endgame + permanent       ║
+║  • The Threshold, the Sundered Throne, the Memory Garden         ║
+║  • 10 dungeons + 2 raids + permanent endgame                     ║
+║  • The choice (§6) is made here                                  ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+Each realm beyond Eldoria adds:
+- Higher base enemy stats (×2 HP/damage per realm)
+- New enemy archetypes (fire elementals, sky pirates, fey trickers, dragons)
+- New status effects (burn, drown, charm, lightning)
+- New gear tiers (each realm has its own legendary set)
+- New crafting blocks (+10-15 building blocks per realm — Realm 6 ends with ~100 total)
+- New mounts (phoenix, sea drake, sky manta, fey stag, storm wyvern)
+- New professions or profession upgrades
+
+## 12. Dungeon + loot count
+
+Total dungeons across all realms: **49**. Plus **6 raids** (group-content boss arenas).
+
+| Realm | Lv | Dungeons | Raid | Total bosses |
+|-------|----|----------|------|--------------|
+| Eldoria | 1-50 | 7 | 1 (Veil) | 8 |
+| Ashenmere | 50-100 | 8 | 1 (Ember Council) | 9 |
+| Tidesong | 100-150 | 8 | 1 (Leviathan) | 9 |
+| Shadewood | 150-200 | 8 | 1 (Mirror Queen) | 9 |
+| Skyreave | 200-250 | 8 | 1 (Pale Wyrm) | 9 |
+| The Hollow | 250-300 | 10 | 2 (Sundered Throne, Memory) | 12 |
+| **TOTAL** | | **49** | **7** | **56** |
+
+### Loot per dungeon (Pillar 1 + Pillar 5)
+
+Every dungeon must drop:
+- **3-5 unique green-tier items** (zone-themed; e.g. Whisperwood drops "Mossbark Bow")
+- **1-2 unique blue-tier items**
+- **1 unique purple-tier item** (boss drop, ~10% rate)
+- **1 unique orange-legendary** (boss drop, ~1% rate, one-time per char)
+- **Crafting materials** unique to that dungeon (Crystal Shards, Phoenix Feathers, Tidesilk, Moonglass, Stormiron, Hollow-essence)
+- **Cosmetic transmog drops** (~3 per dungeon — appearance-only gear that doesn't affect stats)
+- **Pet/mount tameables** (~1 dungeon in 3 has a tameable creature drop)
+- **Recipe drops** for Pillar 5 professions (cooking recipes, alchemy formulas, smithing patterns)
+- **Codex pages** for Pillar 4 (lore drops)
+- **Building block recipes** for Pillar 3 (every 3rd dungeon unlocks a new block tier)
+
+So per dungeon, expected loot = 12-18 unique items + 1 boss legendary + ~50-100 currency (gold + materials). Across 49 dungeons that's ~700+ unique items in the game.
+
+Raids drop higher-tier:
+- **6 unique purple items**
+- **2-3 unique orange-legendary** (1 guaranteed, others ~5%)
+- **1 unique mount** (raid-exclusive — phoenix, sea drake, etc.)
+- **1 unique title** for completing the raid
+
+## 13. Difficulty scaling per realm
+
+| Realm | HP scaling | Damage scaling | Enemy count per zone | Boss mechanics |
+|-------|------------|----------------|----------------------|----------------|
+| Eldoria | 1× | 1× | 20-40 | 3 attack patterns |
+| Ashenmere | 2× | 1.8× | 30-50 | 4 patterns |
+| Tidesong | 4× | 3× | 40-60 | 5 patterns + add waves |
+| Shadewood | 8× | 5× | 30-50 | 6 patterns + illusions |
+| Skyreave | 16× | 8× | 40-60 | 7 patterns + airborne phases |
+| The Hollow | 32× | 12× | 60-100 | 8+ patterns + transformations |
+
+Player progression keeps pace via gear (each realm has its own gear tier ~2× previous), level (200 → 250 etc.), talent points, and Pillar-3 building bonuses (a fully-built infirmary in Briarwood gives +20% HP regen).
+
+Adaptive difficulty per kid (PLAYER_MODEL.md):
+- Alden (girl, 9) leans toward longer telegraph windups + more healing potions in chests
+- Owen (boy, 11) leans toward tighter timing + tougher elite mobs

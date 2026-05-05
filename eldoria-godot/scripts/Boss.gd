@@ -54,6 +54,7 @@ func _ready() -> void:
 
 	# Visual model — bigger, glowing
 	_model = enemy_model.instantiate()
+	call_deferred("_normalize_to_height", _model, 3.0)  # boss ~3m, imposing
 	_model.scale = Vector3(1.6, 1.6, 1.6)
 	add_child(_model)
 	_model.call_deferred("propagate_call", "set", ["modulate", Color(0.5, 0.85, 0.30)])
@@ -362,3 +363,23 @@ func _die(source: Node) -> void:
 	# Quest hook
 	get_tree().call_group("quest_listeners", "on_enemy_killed", "goblin_warlord")
 	get_tree().call_group("quest_listeners", "on_enemy_killed", "goblin")  # also counts as a goblin for the basic quest
+
+# Normalize 3D model scale so it ends up ~target_height tall.
+# Prevents giants from Sketchfab GLBs with mixed units.
+func _normalize_to_height(model: Node, target_height: float) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in model.find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
+	model.scale = Vector3(s, s, s)

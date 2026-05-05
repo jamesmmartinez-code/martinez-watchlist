@@ -132,6 +132,7 @@ func _spawn_model() -> void:
 	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
 	var uses_real_model: bool = src != enemy_model
 	_model = src.instantiate()
+	call_deferred("_normalize_to_height", _model, 1.5)  # enemies ~1.5m
 	# Scale by kind
 	match enemy_kind:
 		"goblin":
@@ -444,3 +445,23 @@ func _resolve_adaptive_cooldown() -> void:
 	if resolved < AGITATED_COOLDOWN_THRESHOLD:
 		enemy_name = "⚡ " + enemy_name
 
+
+# Normalize 3D model scale so it ends up ~target_height tall.
+# Prevents giants from Sketchfab GLBs with mixed units.
+func _normalize_to_height(model: Node, target_height: float) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in model.find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
+	model.scale = Vector3(s, s, s)
