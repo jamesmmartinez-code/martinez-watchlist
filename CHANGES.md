@@ -1,3 +1,162 @@
+## 2026-05-05 — BUILDER run 14 (Briarwood Prop GLB Wire-Up — campfire / lantern / windmill / well / barrel / fern / mushroom)
+
+### I'm building
+The Sketchfab CC-BY prop GLBs at `assets/models/props/{campfire, lantern,
+windmill, stone_well, wooden_barrel, fern, mushroom_red}.glb` were sitting
+unused while four village builders (`_build_windmill`, `_make_lantern`,
+`_build_well`, `_build_campfire`) still composed lumpy procedural primitives
+out of cylinders + boxes + spheres. The brief flagged this as the highest-
+impact backlog item — exactly the same pattern run 13 used to convert trees
+and boulders. This run wires the seven remaining unused prop GLBs (the
+`treasure_chest.glb` is left for a later Polisher pass — Chest.gd's lid-
+tween + collision contract is too coupled to the procedural box-build to
+swap blindly without risking regressing the loot interaction). Two NEW
+scatters add visual layers Whisperwood didn't have at all (ferns underfoot,
+toadstool clusters), and a fixed barrel set-dressing pass props the village
+walls so the timber buildings read as inhabited rather than abandoned.
+
+### THEME §X cited
+- **§1 Core identity** — painterly hand-crafted GLBs replace the procedural
+  cylinder-stack windmill, the box-and-cylinder lantern, the cylinder-ring
+  well, and the sphere-ring campfire. Briarwood gains the silhouette
+  diversity §1 demands: stone-and-timber well, iron-banded barrel, real
+  fairy-ring mushrooms.
+- **§8 Architecture & environment** — "lit windows at dusk… banner poles,
+  market stalls with red awnings. Lanterns flicker." The new lantern.glb
+  body finally matches the painterly stone+iron lantern §8 calls out
+  (the previous procedural box+cylinder read as "modern fence post").
+  Barrels propped against inn / smith / stable walls give Briarwood the
+  "hand-cut wooden beams… stone foundations… thatched roofs" lived-in
+  density §8 specifies.
+- **§11 Aspirational reference works** — The fairy-ring mushroom clusters
+  + scattered ferns are the BotW painterly understory the §11 reference
+  works (BotW, Studio Ghibli, Hobbit illustrations) all share. Whisperwood
+  was previously trees-on-bare-ground; now it has a forest floor.
+- **§12 MOTION & LIFE** — The flicker contract (lantern OmniLight,
+  windmill blade rotation, FireLight on campfire) is ATTACHED
+  UNCONDITIONALLY in every modified builder, regardless of which body
+  (GLB or procedural fallback) rendered. The existing `_process` loops on
+  groups `"lanterns"`, `"windmill_blades"`, `"campfires"` continue
+  driving §12 motion with zero wiring change.
+- **§13 GROUND CONTACT** — Every prop attach goes through
+  `_try_attach_prop_glb`, which queues a deferred `_settle_to_ground(holder)`
+  call (same idempotent helper run 13 introduced for trees + boulders). No
+  half-buried barrels, no floating mushrooms.
+- **§14 PUSH DISCIPLINE** — Pushing to `auto/builder` only; the Integrator
+  merges into main on its 10-min cycle.
+
+### Mood board panel
+N/A (no `mood-boards/` directory exists in repo). Cited THEME.md §8 + §11
+as the visual brief — Hobbit illustrations / WoW Classic / BotW painterly
+village + forest understory.
+
+---
+
+### Files changed this run
+- `eldoria-godot/scripts/WorldBuilder.gd`
+  - **Top-of-file constants:** `PROP_GLB_PATHS: Dictionary` (7 keys → res://
+    paths) and `PROP_GLB_SCALES: Dictionary` (per-key canonical Vector3 scale).
+    Both `const`, not `@export` — these are world canon, not designer-tweaks.
+  - **`_build_windmill`:** GLB-first attempt via `_try_attach_prop_glb(mill,
+    "windmill")`; on success the procedural stone-base + wood-tower + cone-
+    roof are skipped. The rotating Blades node (group `"windmill_blades"`,
+    driven by the §12 _process loop) is built UNCONDITIONALLY so the
+    visible blades always spin.
+  - **`_make_lantern`:** GLB-first attempt; on fallback the procedural post +
+    box + emissive glass build runs. The OmniLight is attached UNCONDITIONALLY
+    so the lantern flicker (group `"lanterns"`, _process loop) lights either
+    body. Comment notes that the procedural-only "Glow" mesh node may not
+    exist after a GLB attach — callers should use `get_node_or_null("Glow")`.
+  - **`_build_well`:** GLB-first attempt; water plane attached
+    UNCONDITIONALLY at the canonical y=0.85 (same well-mouth height in both
+    body variants). New group `"wells"` for future SFX hooks.
+  - **`_build_campfire`:** GLB-first attempt for the stone-ring + log-pile
+    body; fire particles, smoke particles, and FireLight stay attached
+    UNCONDITIONALLY (the §12 motion contract is the flicker, not the wood).
+  - **5 NEW helpers** (~180 LOC, inserted just before `_measure_aabb`):
+    `_try_attach_prop_glb` (the integration seam — every prop call site in
+    this run goes through it), `_scatter_ferns` (Whisperwood understory),
+    `_scatter_mushroom_clusters` (toadstool fairy rings), `_scatter_barrels`
+    (fixed-position village set-dressing).
+  - **`_ready` orchestrator:** Three new calls inserted between
+    `_build_campfire()` and `_build_enemies()` —
+    `_scatter_ferns(70)`, `_scatter_mushroom_clusters(14)`,
+    `_scatter_barrels()`. Order is intentional: ferns + mushrooms run AFTER
+    `_scatter_trees(140)` so they sit under the canopy; barrels run AFTER
+    `_build_village()` + `_build_market_stalls()` so they prop existing walls.
+- `CHANGES.md` (this entry, prepended)
+- `WORLD_STATE.md` (Briarwood Prop Wire-Up subsection appended)
+- `SYSTEM_REGISTRY.md` (Prop GLB Schema section appended)
+
+### 5-output check
+- (i) **integration** — Every entry point is an existing call site:
+  `_build_windmill / _build_lanterns / _build_well / _build_campfire` are
+  already invoked by `_ready()`, and the three new scatters slot into the
+  same `_ready()` orchestrator. No Main.tscn change. No new exports. No
+  signal renames. The wind-flicker / blade-spin / fire-flicker `_process`
+  loops in WorldBuilder iterate groups `"lanterns" / "windmill_blades" /
+  "campfires"` — those groups are still added in every modified builder, so
+  motion is preserved automatically. No save state change. No NPC / Enemy /
+  Player script touched.
+- (ii) **schema** — `PROP_GLB_PATHS` and `PROP_GLB_SCALES` are the two new
+  schema primitives — flat Dictionaries keyed by stable string IDs. Adding
+  a new prop in the future = one row append to each dict + one
+  `_try_attach_prop_glb(holder, "key")` call somewhere. The `prop_glb_key`
+  meta tag set on every successfully-attached holder lets future Polisher
+  / QA passes identify which wrappers are GLB-backed at runtime via
+  `holder.get_meta("prop_glb_key")`. New groups `"wells"`,
+  `"fern_scatter"`, `"mushroom_clusters"`, `"barrel_scatter"` give future
+  runs typed group hooks (splash particles, harvestable nodes, breakable-
+  barrel loot, etc.).
+- (iii) **feedback** — Three layers fire on world load:
+  (1) **village density** — barrels stacked against inn + smith + stable
+  walls turn the previously-empty between-building gaps into a propped,
+  inhabited hamlet. The eye reads "people live here, supplies stack up";
+  before this run the village read as buildings on bare grass.
+  (2) **forest understory** — 70 ferns + ~14 toadstool fairy rings
+  (3-6 mushrooms each) populate the previously-bare ground between trees in
+  Whisperwood. Now reads as a real wood, not a tree-row diagram.
+  (3) **prop fidelity** — The four village landmarks (windmill, well,
+  lantern, campfire) gain hand-painted GLB silhouettes where each was
+  previously a stack of cylinders + boxes. Most visible at distance —
+  the windmill silhouette against the skyline now reads as a windmill
+  rather than a cone-on-a-cylinder.
+- (iv) **eval** — `_try_attach_prop_glb(parent, key)` is null-safe: returns
+  false (without mutating anything beyond the parent's child list, which
+  the caller holds) on missing GLB, missing key, or instantiate-returns-null.
+  Pure additive — the procedural-fallback body still runs in the caller's
+  `if not glb_attached:` branch. `_settle_to_ground` is the same idempotent
+  helper run 13 introduced — running it twice is a no-op. The three
+  scatters all bail-and-don't-spin on first GLB load failure (avoids the
+  infinite-attempts loop that would otherwise fire if the asset were
+  permanently missing).
+- (v) **2+ hooks** — Each new group is a fresh hook surface:
+  - `"wells"` — Audio: rope-creak SFX; Polisher: bucket bob particles
+  - `"fern_scatter"` — Audio: rustle SFX as player passes; Lore:
+    foragable herb nodes
+  - `"mushroom_clusters"` — Lore: harvestable nodes (Lyra's herb-pouch
+    economy); Polisher: cap-bob micro-animation per §12
+  - `"barrel_scatter"` — Builder: breakable-barrel loot (Diablo-style);
+    Audio: crack-and-spill SFX
+  Plus the universal `prop_glb_key` meta on every holder lets future
+  passes do `for n in get_tree().get_nodes_in_group("barrel_scatter"):
+  if n.get_meta("prop_glb_key", "") == "wooden_barrel": ...`
+  to address each prop kind specifically.
+
+### Branch pushed
+`auto/builder` (force-with-lease). Integrator's 10-min cycle merges into main.
+
+### What next run picks up
+- `treasure_chest.glb` is the last unwired prop GLB. A future Polisher
+  run can re-rig Chest.gd to drive the GLB lid via AnimationPlayer
+  (preserving the existing 0.50s open tween + glow burst contract).
+- Backlog items 7 (mini-map / world map), 8 (NPC memory), 9 (faction
+  state — bandit boldness scales with road defense), 11 (adaptive
+  difficulty per player) all remain untouched and are good single-run
+  scopes for the next Builder pass.
+
+---
+
 ## 2026-05-05 — BUILDER run 13 (Whisperwood asset wire-up — tree + boulder GLBs)
 
 ### I'm building
