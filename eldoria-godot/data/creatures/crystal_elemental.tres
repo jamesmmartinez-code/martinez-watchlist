@@ -1,0 +1,70 @@
+[gd_resource type="Resource" script_class="CreatureDef" load_steps=2 format=3 uid="uid://eldoria_creature_crystal_elemental"]
+
+[ext_resource type="Script" path="res://data/creatures/_creature_def.gd" id="1_creature_def"]
+
+[resource]
+script = ExtResource("1_creature_def")
+id = &"crystal_elemental"
+display_name = "Shardborne Elemental"
+family = &"elemental"
+tier = 2
+level = 7
+
+hp = 320
+armor = 0.30
+dmg_min = 18
+dmg_max = 24
+attack_speed = 0.65
+attack_cooldown = 1.55
+move_speed = 2.0
+chase_speed = 3.4
+aggro_range = 10.0
+attack_range = 2.2
+
+behavior_tags = PackedStringArray([
+	"crystal_cave_resident",
+	"caster_kiter",
+	"prefers_ranged_attack",
+	"enrager",
+	"fearless",
+	"summons_minor_shards_below_50pct",
+])
+
+tells = [
+	{
+		"id": "shard_lance",
+		"vfx_id": "fey_cyan_beam_charge",
+		"audio_id": "crystal_chime_rising",
+		"wind_up_ms": 950,
+		"damage_mult": 1.8,
+		"range_m": 9.0,
+	},
+	{
+		"id": "resonance_pulse",
+		"vfx_id": "cyan_ring_expand",
+		"audio_id": "crystal_pulse_low",
+		"wind_up_ms": 1100,
+		"damage_mult": 1.2,
+		"radius_m": 4.0,
+	},
+]
+
+resistances = {
+	"physical": 0.20,
+	"frost": 0.60,
+	"poison": 1.00,
+}
+weaknesses = {
+	"blunt": 1.40,
+	"fire": 1.20,
+}
+
+xp_value = 70
+gold_min = 6
+gold_max = 14
+loot_table_id = &"crystal_elemental"
+
+mesh_path = "res://assets/models/npcs/warrior.glb"
+nominal_height_m = 2.10
+
+regions = PackedStringArray(["crystal_caves"])
