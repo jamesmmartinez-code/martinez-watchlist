@@ -97,6 +97,33 @@ run easier — what's the *next* thing that compounds?)
   leg landed: a single -0.1 quest (`pelt_for_lyra`) changes the world
   on four readable axes — who he sees, how many he sees, how fast they
   hit, and what the stablemaster says about it.
+- ✅ **Resolved 2026-05-04 (run 9):** Achievements + Title system shipped.
+  `Achievements.gd` (NEW) is a pure read of `factions` / `world_flags` /
+  `npc_flags` — no new world primitive. `World.unlocked_achievements:
+  Dictionary` and `World.current_title: String` are runtime state mutated
+  ONLY by `_check_achievements()`, which fires at the end of every
+  `apply_consequence(...)` and once at `_ready()` (deferred). Five
+  achievements ship at run 9: `first_steps` (any starter quest, title
+  *the Apprentice*), `pack_thinner` (`dire_wolves` < 0.5, title
+  *Wolf-Friend*), `goblin_bane` (`whisperwood_goblins` < 0.7, title
+  *Goblin-Bane*), `trusted_three` (Maeve + Lyra + Mara warm-flags, title
+  *the Trusted*), and `realm_warden` (BOTH factions humbled AND three
+  trusts, title *Warden of Eldoria*, priority 100). `Player.set_title(s)`
+  drives a Label3D anchored at y=2.4 above feet, billboarded, gold-leaf
+  modulate, 8px black outline, looping Y-bob (THEME §12). The auto-
+  equipper picks the highest `title_priority` unlocked title — Owen never
+  has to fiddle. After run 8 `World.faction_pressure()` had three
+  consumers; run 9 adds a FOURTH for `dire_wolves` (achievement
+  predicates) and broadens the picture to SIX total consumer-edges across
+  all factions: NPC.gd dialogue tier 3, goblin spawn density, wolf spawn
+  density, enemy attack cooldown, Roan dialogue, achievement predicates.
+  `world_flags` gains its first multi-flag reader (the `any_of` predicate
+  of `first_steps` reads three world flags in a single eval). `npc_flags`
+  gains its first cross-NPC reader (`all_npc_flags` checks Maeve, Lyra,
+  AND Mara in one predicate — previously each NPC only read its own
+  flags via NPC.gd Tier 1). Mastery threshold for Rule 1 ("compound,
+  don't sprawl") demonstrated AGAIN: an entire reward layer added by
+  reading what the world already writes.
 - 🔥 **Top-priority next:** Roan-issued wolf-bounty quest (-0.1 reducer
   for `dire_wolves`). Mirrors `ears_for_mara` as the second goblin
   reducer. Trips the second wolf-spawn threshold (0.4 → 0.3, 3 → 2
@@ -186,6 +213,17 @@ Read with `World.has_world_flag(name)`. Convention: flag names are
   against its faction pressure at spawn (run 7). Visible ⚡ prefix on the
   floating name when cooldown < 1.30 — the third *visible* axis on the
   consequence loop after dialogue (run 4) and spawn density (runs 5–6).
+- Achievements unlocked (per session): tracked in
+  `World.unlocked_achievements`. Toast on each new unlock; auto-equipped
+  title floats above the player's head. Five-deep ladder ends at
+  *Warden of Eldoria* (run 9). Each unlock is a *visible* reward for
+  the cooperative work the kids have already done — no extra grinding,
+  the achievements simply NAME compositions of state that quests already
+  produce. Composes with run 4 dialogue (Maeve speaks the goblin
+  state), run 5/6 spawn density (forests visibly empty), run 7 cooldown
+  (⚡ pacing on survivors), run 8 Roan (wolf-tier dialogue) — the
+  achievements layer is the first system that ALL prior runs feed into
+  without modification.
 - Roads defended: not modeled.
 - Buildings damaged: not modeled.
 

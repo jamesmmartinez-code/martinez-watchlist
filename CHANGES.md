@@ -1185,3 +1185,131 @@ the threshold is `< 0.5`. Single quest, three readable world changes.
 Authoring is just a Quest entry in QuestRegistry plus a ConsequenceMap
 row; no new schemas. After that, Bram or Hala faction-tier lines are
 the next-cheapest second proof of the no-`warm_flag` pattern.
+
+---
+
+## Run 9 — Builder — 2026-05-04 — Achievements + Title system
+
+**Theme citation:** §1 (warm + lived-in) + §3 (palette: burnt-gold modulate
+on title Label3D, black outline) + §12 (motion-and-life: title bobs, never
+static). Mood-board panel: N/A (no mood-boards/ directory committed yet).
+
+**I'm building:** Achievements + Title system off backlog item #6 ("build
+together"). Five achievements ship at run 9, with auto-equipped titles
+above the player's head. ZERO new world primitives — every predicate reads
+existing `factions` / `world_flags` / `npc_flags` state.
+
+### Build
+- `eldoria-godot/scripts/Achievements.gd` (NEW, 207 lines): const
+  `ACHIEVEMENTS: Dictionary` + composable predicate language
+  (`world_flag`, `faction_below`, `faction_above`, `all_npc_flags`,
+  `all_of`, `any_of`) + pure `evaluate(world) -> Array` + stable
+  `best_title(unlocked_ids) -> String`. Same fail-soft duck-type contract
+  as the spawn-density helpers — missing world / missing accessors → empty
+  array, never crashes.
+- `eldoria-godot/scripts/World.gd` (+88 / -2):
+  - `unlocked_achievements: Dictionary` + `current_title: String` runtime
+    state, declared right under `npc_flags`.
+  - `_check_achievements()` invoked at the END of `apply_consequence(...)`
+    and once at `_ready()` (deferred so Player exists). Diffs against
+    `unlocked_achievements`; toasts each newly-unlocked achievement
+    (`🏆 <icon> <name> — <desc>`); 0.6s stagger if multiple unlock at
+    once so kids can READ each one.
+  - Auto-equipper: `Achievements.best_title()` picks the highest-priority
+    unlocked title; on change, toast `✨ Title equipped: <title>` 0.3s
+    after the unlock toast and pushes the title down via
+    `_apply_title_to_player()`.
+  - Public read accessor `has_achievement(id) -> bool` for future panels.
+- `eldoria-godot/scripts/Player.gd` (+30 / -0):
+  - `title_label: Label3D` declared near `weapon_visual` (palette §3
+    burnt gold, black outline 8px).
+  - `_ready()` builds the Label3D, hidden until World assigns one.
+    Anchored at `position = Vector3(0, 2.4, 0)` above feet; billboarded;
+    `pixel_size = 0.0035`. THEME §12 looping `create_tween()` bobs
+    `position:y` between 2.40 and 2.46 every 1.5s so the label breathes.
+  - Public `set_title(t: String) -> void` setter; empty string hides.
+- `SYSTEM_REGISTRY.md` (+78 lines): new "Achievement & Title Schema"
+  section between "World Flag Conventions" and EOF. Field table,
+  predicate-language table, authoring rules, title-priority ladder,
+  and the run-9 authoring trap (predicate evaluation runs AFTER all
+  consequence steps — tier-4 unlocks fire on the same frame as their
+  last input quest's toast; the 0.6s stagger is what protects them).
+- `WORLD_STATE.md` (+27 lines): run-9 ✅ Resolved entry under Active
+  Hooks; new Player Impact Ledger row for "Achievements unlocked".
+  Wolf-bounty + Roan warm_flag still 🔥-flagged as next, just demoted
+  one slot.
+- `CHANGES.md`: this entry.
+
+### Rule-2 outputs delivered (i–v)
+- (i)   World state: ZERO new writes; new READ of three primitive
+        accessors (`faction_pressure`, `has_world_flag`, `npc_has_flag`).
+        `World.unlocked_achievements` and `World.current_title` are NEW
+        runtime state but mutated only by the achievement evaluator
+        itself — they don't expand the world-state surface area for
+        downstream systems.
+- (ii)  Queryable schema: `Achievements.evaluate(world) -> Array` and
+        `Achievements.best_title(unlocked_ids) -> String` documented
+        in SYSTEM_REGISTRY.md with the predicate-language table. Five
+        achievements documented with their predicate shapes; the
+        title-priority ladder (10 / 30 / 40 / 50 / 100) is published
+        so future runs can slot new titles between existing tiers
+        without reshuffling.
+- (iii) Player-facing feedback: 🏆 toast on unlock with icon + name +
+        desc; 0.6s stagger if multiple unlock simultaneously; 0.3s
+        delayed ✨ "Title equipped" toast on title change; floating
+        gold Label3D above the player's head, billboarded so it reads
+        from any orbit angle, with a §12 Y-bob so it breathes.
+- (iv)  Evaluation: parens / brackets / braces balance check passes
+        on Achievements.gd (clean), World.gd (420/420, 59/59, 29/29),
+        Player.gd (347/347, 20/20, 11/11). All new `var` declarations
+        carry explicit type annotations
+        (`var unlocked_now: Array`, `var newly_unlocked: Array[String]`,
+        `var stagger: float`, `var entry: Dictionary`,
+        `var icon: String`, `var aname: String`, `var adesc: String`,
+        `var msg: String`, `var new_title: String`, plus all locals
+        in `_eval_predicate`'s `match` arms). Same fail-soft duck-type
+        guard pattern as `_goblin_camp_size` — `Achievements.evaluate`
+        no-ops on a malformed world rather than crashing.
+- (v)   Future hooks (≥ 2):
+        1. **Achievements panel UI** — keybind (e.g. `J`) opens a panel
+           listing all `ACHIEVEMENTS` with locked/unlocked state, a
+           "current title" header, and (future) a manual title-equip
+           button. `World.has_achievement(id)` already in place. Polisher
+           or Builder lane.
+        2. **Save/load achievements + title** — currently per-session.
+           When persistence ships for `factions` / `world_flags` /
+           `npc_flags`, `unlocked_achievements` should ride along on
+           the same blob. The `_check_achievements()` call from
+           `_ready()` already covers re-derivation if the predicates
+           are in a satisfied state at load time.
+        3. **Combat-derived achievements** — once `Player.kills_by_kind`
+           is exposed via a `World.kill_count(kind: String) -> int`
+           accessor, add `kill_count_at_least` predicate and unlock
+           IDs like `goblin_slayer_25` or `wolf_hunter_10`. NEW reader
+           of an existing primitive — same compound pattern.
+        4. **Title-locked dialogue** — NPC.gd Tier 0 (above warm_flag)
+           reads `World.current_title` and prefers a `title_dialogue`
+           variant. E.g. "Warden of Eldoria, the road is yours." Ships
+           on top of the existing 4-tier dialogue stack with one new
+           field per NPC dict.
+        5. **Roan + wolf-bounty quest** — still the immediate-next from
+           run 8. With `pack_thinner` already wired against
+           `dire_wolves < 0.5`, a Roan-issued -0.1 reducer would BOTH
+           trip the second wolf-spawn cliff AND keep `pack_thinner`
+           unlocked, with no special-case logic.
+
+### Phase reached
+Builder — feature shipped, 5/5 ledgers updated (Achievements.gd,
+World.gd, Player.gd, SYSTEM_REGISTRY.md, WORLD_STATE.md, CHANGES.md),
+ready to commit.
+
+### Next run should pick up
+**Roan-issued wolf-bounty quest** (still adjacent-next from run 8 —
+trips `pack_thinner` → keeps `pack_thinner` AND drops a second wolf
+spawn cliff AND drops surviving-wolf cooldown one more step). The
+achievement-as-reward layer means the bounty quest now compounds with
+SEVEN downstream consumers of its consequence: Roan dialogue (warm),
+Roan dialogue (faction), goblin pressure (irrelevant for wolf bounty),
+wolf spawn density, enemy cooldown, achievement evaluator, and (after
+the panel UI ships) achievement panel state. Single quest, seven
+visible world changes.
