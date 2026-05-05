@@ -29,16 +29,19 @@ extends RefCounted
 # ═════════════════════════════════════════════════════════════════════════
 
 # Primary (70%)
-const GOLD: Color           = Color(1.00, 0.85, 0.40)   # #FFD86B-ish, burnt gold
+# REFINE: visual — palette §3 conformance: GOLD (1.00,0.85,0.40)→(1.00,0.85,0.42); exact #FFD86B per THEME §3 (was 0.40, low by ~5%; matches the chest glow_color (1.00,0.86,0.42) shipped in the prior Chest.gd polish run).
+const GOLD: Color           = Color(1.00, 0.85, 0.42)   # #FFD86B exact, burnt gold
 const SUNSET_ORANGE: Color  = Color(1.00, 0.50, 0.00)   # #FF8000
 const CRIMSON: Color        = Color(0.55, 0.13, 0.13)   # #8C2020 wine
 const MOSS_GREEN: Color     = Color(0.29, 0.44, 0.22)   # #4A7038
 const PARCHMENT: Color      = Color(0.85, 0.79, 0.61)   # #D9C99B aged paper
-const PARCHMENT_CREAM: Color= Color(0.92, 0.85, 0.65)   # warmer cream tier
+# REFINE: visual — palette §3 conformance: PARCHMENT_CREAM (0.92,0.85,0.65)→(0.94,0.86,0.62); +0.02 R, +0.01 G, −0.03 B pulls the cream toward the §3 sunset-gold family (matches the NPC nameplate modulate (1.0,0.86,0.46) and Chest.gd glow_color (1.0,0.86,0.42) the recent polish runs converged on). Reads warmer against the new sunset HDRI sky-band.
+const PARCHMENT_CREAM: Color= Color(0.94, 0.86, 0.62)   # warmer cream tier, §3 sunset-family
 const INK_BLACK: Color      = Color(0.05, 0.04, 0.05)   # #0E0A0E
 
 # Secondary (20%)
-const BRASS: Color          = Color(0.69, 0.46, 0.16)   # #B0742A hammered bronze
+# REFINE: visual — palette §3 conformance: BRASS (0.69,0.46,0.16)→(0.69,0.45,0.16); exact #B0742A (#B0=0.690, #74=0.455, #2A=0.165). The 0.46 G channel was ~+0.005 hot — small drift but cumulative across micro-hint labels stacked on every panel.
+const BRASS: Color          = Color(0.69, 0.45, 0.16)   # #B0742A exact, hammered bronze
 const STAG_BLOOD: Color     = Color(0.63, 0.13, 0.13)   # #A02020
 const STONE_BLUE: Color     = Color(0.48, 0.53, 0.58)   # #7B8693
 
@@ -49,8 +52,10 @@ const FROST_SILVER: Color   = Color(0.78, 0.88, 0.90)   # #C8E0E5
 
 # Dim helpers
 const DIM_GREY: Color       = Color(0.65, 0.60, 0.55)
-const LOCK_DIM: Color       = Color(0.45, 0.45, 0.45, 0.85)
-const HINT_DIM: Color       = Color(1.00, 1.00, 1.00, 0.65)
+# REFINE: visual — THEME §3 violation fix: LOCK_DIM was pure desaturated grey (banned by §3 "pure desaturated grey UI palettes"). Replaced with weathered iron tone (0.32,0.27,0.22) — same darkness, with §3 brass-adjacent warm cast. The 🔒 overlay now reads as forged iron, not motherboard plastic.
+const LOCK_DIM: Color       = Color(0.32, 0.27, 0.22, 0.88)
+# REFINE: visual — THEME §3 violation fix: HINT_DIM was pure white (banned by §3). Replaced with parchment-cream tier at 0.78 alpha — preserves the "dim hint" feel without the §3-banned pure-white channel. Reads warmer against the new sky-band; matches the §3 "we are not making a productivity app" rule.
+const HINT_DIM: Color       = Color(0.92, 0.85, 0.65, 0.78)
 
 # ═════════════════════════════════════════════════════════════════════════
 # Font sizes — THEME §5 hierarchy
@@ -62,16 +67,22 @@ const FS_HEADER: int   = 22   # secondary header
 const FS_SUBTITLE: int = 16   # column header ("— Equipped —", "— Bag —")
 const FS_BODY_LG: int  = 14   # button face
 const FS_BODY: int     = 13   # main body text, RichTextLabel default
-const FS_BODY_SM: int  = 12   # hint, footer, desc
-const FS_TINY: int     = 11   # title-hint micro text
+# REFINE: visual — readability lift for kid players: FS_BODY_SM 12→13. Card descriptions and footer hints were the smallest layout-bearing tier; lifting to 13pt matches FS_BODY exactly so multi-line desc blocks read at the same rhythm as body text. THEME §5 typography hierarchy preserved (still smaller than FS_BODY_LG 14 button face).
+const FS_BODY_SM: int  = 13   # hint, footer, desc
+# REFINE: visual — readability lift for kid players: FS_TINY 11→12. THEME §4 silhouette-distinct rule extends to UI: Alden (9yo) loses sub-12pt text at default camera distance after the 2026-05-05 camera pass widened the rest frame. +1pt micro-hint with no layout reflow risk (same panel slots, single-line hints).
+const FS_TINY: int     = 12   # title-hint micro text
 const FS_LOCK: int     = 36   # 🔒 overlay glyph
 const FS_BAG_GLYPH: int= 22   # bag-slot item glyph
 
 # Outline sizes
-const OL_TITLE: int  = 4
-const OL_NAME: int   = 3
-const OL_TOAST: int  = 6
-const OL_LOCK: int   = 4
+# REFINE: visual — outline lift for new HDRI/post-process era: OL_TITLE 4→5. The 2026-05-05 post-processing pass (glow_threshold 0.66→0.58, glow_intensity 0.42→0.55) raised background luminance against panel titles. +1px outline holds contrast without thickening the visible weight at FS_TITLE 24pt. Mirrors the run-12 NPC nameplate outline_size 6→7 lift on the same reasoning.
+const OL_TITLE: int  = 5
+# REFINE: visual — outline lift for new HDRI/post-process era: OL_NAME 3→4 (same reasoning as OL_TITLE). Card name labels (achievement entries, item names) sit on parchment AND show through to the brighter sunset background at panel edges; +1px holds the §3 "lived-in, weathered" line.
+const OL_NAME: int   = 4
+# REFINE: visual — outline lift for new HDRI/post-process era: OL_TOAST 6→7. Toasts spawn at anchor_top 0.3 — squarely in the bright sky-band region of the new HDRI panorama where the 2026-05-04 ambient/fog warm pass and the 2026-05-05 post-processing pass both lifted luminance. +1px restores readability against the warmer background. Same delta the run-12 NPC nameplate outline took.
+const OL_TOAST: int  = 7
+# REFINE: visual — outline lift for new HDRI/post-process era: OL_LOCK 4→5. The 🔒 glyph at FS_LOCK 36pt sits over crest art — the cream outline (PARCHMENT_CREAM-ish) was losing contrast against the brighter sunset bloom. +1px restores the locked-iron read without making the lock cartoonishly heavy.
+const OL_LOCK: int   = 5
 
 # ═════════════════════════════════════════════════════════════════════════
 # Asset paths (THEME §3 hand-painted parchment + iron + wood)
@@ -143,16 +154,18 @@ static func style_micro_hint_label(lbl: Label) -> void:
 static func style_lock_label(lbl: Label) -> void:
 	# 36pt dim w/ cream outline — 🔒 overlay over locked crests
 	lbl.add_theme_font_size_override("font_size", FS_LOCK)
-	lbl.add_theme_color_override("font_color", Color(0.15, 0.15, 0.15, 0.95))
-	lbl.add_theme_color_override("font_outline_color", Color(0.95, 0.85, 0.60, 0.80))
+	# REFINE: visual — THEME §3 violation fix on lock-label colors. font_color was pure greyscale Color(0.15,0.15,0.15) (banned by §3 "pure desaturated grey UI palettes"). Replaced with weathered-iron tone (0.20,0.16,0.13) — same low luminance, §3-conformant warm cast. font_outline_color: (0.95,0.85,0.60) was off-palette mustard; tightened to (0.94,0.86,0.62) matching the new PARCHMENT_CREAM exactly.
+	lbl.add_theme_color_override("font_color", Color(0.20, 0.16, 0.13, 0.95))
+	lbl.add_theme_color_override("font_outline_color", Color(0.94, 0.86, 0.62, 0.82))
 	lbl.add_theme_constant_override("outline_size", OL_LOCK)
 
 static func style_tooltip_label(lbl: Label) -> void:
 	# 13pt white w/ ink outline — bag-slot tooltip
 	lbl.add_theme_font_size_override("font_size", FS_BODY)
-	lbl.add_theme_color_override("font_color", Color(1, 1, 1))
+	# REFINE: visual — THEME §3 violation fix + outline lift: tooltip font_color was pure white Color(1,1,1) (banned by §3). Replaced with PARCHMENT_CREAM-ish (0.96,0.92,0.78) — still high-luminance/legible but warm-cast per §3 sunset palette. Outline 3→4 same reasoning as OL_NAME (post-process bloom era).
+	lbl.add_theme_color_override("font_color", Color(0.96, 0.92, 0.78))
 	lbl.add_theme_color_override("font_outline_color", INK_BLACK)
-	lbl.add_theme_constant_override("outline_size", 3)
+	lbl.add_theme_constant_override("outline_size", 4)
 
 static func style_richtext(rt: RichTextLabel) -> void:
 	# 13pt RichTextLabel for stats blocks
@@ -258,10 +271,11 @@ static func _make_button_stylebox(path: String) -> StyleBoxTexture:
 	sb.texture_margin_top = PATCH_BTN
 	sb.texture_margin_right = PATCH_BTN
 	sb.texture_margin_bottom = PATCH_BTN
-	sb.content_margin_left = 8
-	sb.content_margin_top = 4
-	sb.content_margin_right = 8
-	sb.content_margin_bottom = 4
+	# REFINE: visual — content margins lift (8/4 → 10/5). The wood-and-iron 9-slice frame reads as a carved button only when the label has breathing room inside the bevel; cramped 8/4 margins made FS_BODY_LG 14pt labels touch the iron banding on hover. +2px horizontal / +1px vertical gives the carved look its full painterly read per THEME §1 painterly + §10 rule 9 "weathered/hand-made".
+	sb.content_margin_left = 10
+	sb.content_margin_top = 5
+	sb.content_margin_right = 10
+	sb.content_margin_bottom = 5
 	return sb
 
 static func style_iron_button(btn: Button) -> void:
@@ -271,7 +285,8 @@ static func style_iron_button(btn: Button) -> void:
 	btn.add_theme_color_override("font_hover_color", GOLD)
 	btn.add_theme_color_override("font_pressed_color", BRASS)
 	btn.add_theme_color_override("font_outline_color", INK_BLACK)
-	btn.add_theme_constant_override("outline_size", 2)
+	# REFINE: visual — iron-button outline lift 2→3 for new HDRI/post-process era. The button face sits on wood-and-iron texture which already reads dark, but the FONT outline against PARCHMENT_CREAM hover/normal needed +1px to survive the brighter rim-bloom on button edges in close-camera UI shots.
+	btn.add_theme_constant_override("outline_size", 3)
 	btn.add_theme_font_size_override("font_size", FS_BODY_LG)
 	btn.add_theme_stylebox_override("normal",  _make_button_stylebox(ASSET_BTN_NORMAL))
 	btn.add_theme_stylebox_override("hover",   _make_button_stylebox(ASSET_BTN_HOVER))
