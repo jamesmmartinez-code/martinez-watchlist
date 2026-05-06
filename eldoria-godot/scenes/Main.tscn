@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://b0j4kdyg3stf2" path="res://assets/models/Hero.glb" id="8_hero"]
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
 [ext_resource type="Texture2D" uid="uid://75hg5h11bt7u" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="9_sky_panorama"]
+[ext_resource type="Script" path="res://scripts/HoverInspector.gd" id="20_hover"]
 
 [sub_resource type="PanoramaSkyMaterial" id="Sky_panorama"]
 panorama = ExtResource("9_sky_panorama")
@@ -336,3 +337,7 @@ fit_content = true
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Close"
+
+[node name="HoverInspector" type="CanvasLayer" parent="."]
+script = ExtResource("20_hover")
+
