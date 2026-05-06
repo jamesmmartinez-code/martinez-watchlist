@@ -1771,3 +1771,31 @@ func _emergency_hide_all_gear() -> void:
 	for n in find_children("*", "BoneAttachment3D", true):
 		if n is Node3D:
 			(n as Node3D).visible = false
+
+
+# 2026-05-06 DEBUG: log actual Hero scale + AABB every 2 seconds so we can
+# finally see what's happening at runtime. Strip after diagnosis.
+var __dbg_t: float = 0.0
+func _process(delta: float) -> void:
+	__dbg_t += delta
+	if __dbg_t < 2.0: return
+	__dbg_t = 0.0
+	var hero: Node = get_node_or_null("Hero")
+	if hero == null:
+		print("[SIZE-DEBUG] Hero node NOT FOUND")
+		return
+	if not (hero is Node3D):
+		print("[SIZE-DEBUG] Hero is not Node3D")
+		return
+	var h3 := hero as Node3D
+	var aabb := AABB(); var has := false
+	for v in h3.find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if vi == null: continue
+		var a := vi.global_transform * vi.get_aabb()
+		if not has: aabb = a; has = true
+		else: aabb = aabb.merge(a)
+	var aabb_size := aabb.size if has else Vector3.ZERO
+	print("[SIZE-DEBUG] Hero.scale=%s  global_pos=%s  AABB=%s (%.2fm tall)" % [
+		h3.scale, h3.global_position, aabb_size, aabb_size.y
+	])

@@ -758,7 +758,6 @@ func _make_building(pos: Vector3) -> void:
 # Trees — bark-textured trunk + multi-tier stylized foliage with rim lighting
 # ============================================================================
 func _scatter_trees(count: int) -> void:
-	return  # NUCLEAR-DISABLED _scatter_trees 2026-05-06: foreground noise blocking gameplay
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in count:
@@ -783,7 +782,6 @@ func _make_tree(pos: Vector3, rng: RandomNumberGenerator) -> void:
 # Rocks — stone-textured with random rotation
 # ============================================================================
 func _scatter_rocks(count: int) -> void:
-	return  # NUCLEAR-DISABLED _scatter_rocks 2026-05-06: foreground noise blocking gameplay
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in count:
@@ -812,7 +810,6 @@ func _scatter_rocks(count: int) -> void:
 # Mountain ring with rock texture + snow caps (snow texture)
 # ============================================================================
 func _build_mountain_ring() -> void:
-	return  # NUCLEAR-DISABLED _build_mountain_ring 2026-05-06: foreground noise blocking gameplay
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	# Inner ring
@@ -881,7 +878,6 @@ func _build_mountain_ring() -> void:
 # Market stalls
 # ============================================================================
 func _build_market_stalls() -> void:
-	return  # NUCLEAR-DISABLED _build_market_stalls 2026-05-06: foreground noise blocking gameplay
 	var spots = [Vector3(2.5, 0, 0), Vector3(-2.5, 0, 0)]
 	for spot in spots:
 		_make_stall(spot)
@@ -1119,7 +1115,6 @@ func _hide_baked_blades(root: Node) -> void:
 # Lanterns
 # ============================================================================
 func _build_lanterns() -> void:
-	return  # NUCLEAR-DISABLED _build_lanterns 2026-05-06: visual noise blocking gameplay
 	var positions = [Vector3(8, 0, 8), Vector3(-8, 0, 8), Vector3(8, 0, -8), Vector3(-8, 0, -8),
 					 Vector3(12, 0, 0), Vector3(-12, 0, 0), Vector3(0, 0, 12), Vector3(0, 0, -12)]
 	for p in positions:
@@ -1266,7 +1261,6 @@ func _build_banners() -> void:
 # Stone well
 # ============================================================================
 func _build_well() -> void:
-	return  # NUCLEAR-DISABLED _build_well 2026-05-06: foreground noise blocking gameplay
 	var well := Node3D.new()
 	well.position = Vector3(0, 0, 6)
 	add_child(well)
@@ -1356,7 +1350,6 @@ func _build_well() -> void:
 # Pond — small reflective water plane
 # ============================================================================
 func _build_pond() -> void:
-	return  # NUCLEAR-DISABLED _build_pond 2026-05-06: foreground noise blocking gameplay
 	var pond := Node3D.new()
 	pond.position = Vector3(-18, 0, 14)
 	add_child(pond)
@@ -1405,8 +1398,6 @@ func _build_pond() -> void:
 # Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
-	return  # NUCLEAR-DISABLED _build_firefly_particles 2026-05-06: visual noise blocking gameplay
-	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	var spots = [Vector3(0, 0, 0), Vector3(15, 0, 12), Vector3(-15, 0, -12), Vector3(0, 0, 18)]
 	for s in spots:
@@ -1471,8 +1462,6 @@ const LEAF_PALETTE: Array = [
 ]
 
 func _build_falling_leaves() -> void:
-	return  # NUCLEAR-DISABLED _build_falling_leaves 2026-05-06: visual noise blocking gameplay
-	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for i in FALLING_LEAF_SPOTS.size():
 		var spot: Vector3 = FALLING_LEAF_SPOTS[i]
@@ -1521,7 +1510,6 @@ func _build_falling_leaves() -> void:
 		add_child(p)
 
 func _build_smoke_chimneys() -> void:
-	return  # NUCLEAR-DISABLED _build_smoke_chimneys 2026-05-06: visual noise blocking gameplay
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
@@ -1673,7 +1661,6 @@ func _make_npc(data: Dictionary) -> void:
 # Grass tufts — plane cards (cull_mode disabled, lit)
 # ============================================================================
 func _build_grass_tufts(count: int) -> void:
-	return  # NUCLEAR-DISABLED _build_grass_tufts 2026-05-06: foreground noise blocking gameplay
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 	var grass_mat := StandardMaterial3D.new()
 	grass_mat.albedo_color = Color(0.42, 0.62, 0.22)
@@ -2057,7 +2044,6 @@ func _find_horse_animation_player(n: Node) -> AnimationPlayer:
 	return null
 
 func _build_loot_chests() -> void:
-	return  # NUCLEAR-DISABLED _build_loot_chests 2026-05-06: visual noise blocking gameplay
 	# Common chests scattered around the wilds, plus a rare chest deeper in
 	var spots = [
 		{"pos": Vector3( 22, 0,  10), "pool":"chest_common", "items":2},
@@ -2283,7 +2269,6 @@ func _make_bandit_camp(center: Vector3) -> void:
 # Campfire — stone ring, charred logs, fire particles, warm point light
 # ============================================================================
 func _build_campfire() -> void:
-	return  # NUCLEAR-DISABLED _build_campfire 2026-05-06: visual noise blocking gameplay
 	var fire := Node3D.new()
 	fire.position = Vector3(0, 0, -2)
 	fire.add_to_group("campfires")
@@ -3018,7 +3003,6 @@ func _clamp_max_height(node: Node, max_h: float) -> void:
 # Every spawn gets a deferred _settle_to_ground call so nothing floats or
 # sinks (THEME §13). All paths fail silently if the GLB isn't loadable.
 func _scatter_ferns(count: int) -> void:
-	return  # NUCLEAR-DISABLED _scatter_ferns 2026-05-06: foreground noise blocking gameplay
 	var packed: PackedScene = _load_glb_safe(FERN_GLB_PATH)
 	if packed == null:
 		return
@@ -3043,7 +3027,6 @@ func _scatter_ferns(count: int) -> void:
 		call_deferred("_settle_to_ground", holder)
 
 func _scatter_mushrooms(count: int) -> void:
-	return  # NUCLEAR-DISABLED _scatter_mushrooms 2026-05-06: foreground noise blocking gameplay
 	var packed: PackedScene = _load_glb_safe(MUSHROOM_GLB_PATH)
 	if packed == null:
 		return
@@ -3074,7 +3057,6 @@ func _scatter_mushrooms(count: int) -> void:
 			call_deferred("_settle_to_ground", holder)
 
 func _build_village_barrels() -> void:
-	return  # NUCLEAR-DISABLED _build_village_barrels 2026-05-06: foreground noise blocking gameplay
 	var packed: PackedScene = _load_glb_safe(BARREL_GLB_PATH)
 	if packed == null:
 		return
