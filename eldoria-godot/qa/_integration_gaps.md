@@ -1,41 +1,40 @@
-# Integration Gaps Report
+# Integration Gaps Log
 
-generated_at: 2026-05-06T15:39Z
-generator: integrator (auto)
+last_run: 2026-05-06T13:55:51Z
+canon_qa_status_at_run: PASS_WITH_DEBT
+merged_this_cycle: auto/art (1 commit), auto/lore (2 commits)
+skipped_this_cycle: auto/scale (merge conflict — needs manual resolution)
+nothing_to_merge: auto/builder, auto/polisher, auto/qa, auto/scale-floorfix
 
-## Summary
+## Gaps surfaced this run
 
-Cross-agent gap audit run after merging `auto/art` (1 commit) into main.
-Canon QA gate status: **PASS_WITH_DEBT** (cycle 2, 2026-05-06). S2/S3 issues from Canon QA are tracked separately in `_blocking_status.md`; this file surfaces only the additional integrator-detected gaps.
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/the_sundering.png
+  PNG present (auto/art @ 074b835) but no codex .md frontmatter has `icon_glyph: the_sundering`.
+  Owner: @lorekeeper. Renderer falls back to legacy emoji, so non-blocking.
 
-## [GAP: orphan asset]
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/oath_of_thorns.png
+  PNG present, no codex .md references it via `icon_glyph: oath_of_thorns`. Owner: @lorekeeper.
 
-`.glb` files present under `assets/` with no spawn / preload / reference in `scripts/**.gd` or `scenes/**.tscn`:
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/wyrmsong_winds.png
+  PNG present, no codex .md references it via `icon_glyph: wyrmsong_winds`. Owner: @lorekeeper.
 
-- `eldoria-godot/assets/models/props/treasure_chest.glb` — no `treasure_chest` reference in `Chest.gd`, `World.gd`, `WorldBuilder.gd`, or any `.tscn`. Owner: @builder. Likely fix: `Chest.gd` should preload this model or `WorldBuilder.gd` should spawn it for chest placements.
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/sunken_chord.png
+  PNG present, no codex .md references it via `icon_glyph: sunken_chord`. Owner: @lorekeeper.
 
-## [GAP: orphan quest]
+[GAP: skipped merge] auto/scale (1 commit ahead, 73 behind) — merge conflict
+  Tip: 76bb428 "Scale: extend sweep to windmills/boulders/campfires/banner_poles/chests"
+  Action: scale-engineer to rebase auto/scale onto main and re-push.
 
-`data/quests/*.tres` with no NPC dialogue mention:
+## Carry-over (from canon-qa _blocking_status.md)
 
-- `eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres` — quest resource exists but not referenced in any of the 7 NPC dialogue JSONs (elder_maeve, herbalist_lyra, innkeeper_bram, mara_merchant, smith_edda, stablemaster_roan, trainer_hala) nor in any `.gd` script. Owner: @quest-writer. Likely fix: add quest hook to `mara_merchant.json` (`crystal_caves` arc) or wire into `DialogueDB.gd` quest table.
+PASS_WITH_DEBT: 7 S2 issues logged in eldoria-godot/qa/_blocking_status.md
+(items_flavor entries, ITEMS dict drift, mossbound recipe, tree collision parity, AnimationLibrary batch).
+These are owner-tracked S2 debt and do not block merge.
 
-## [GAP: orphan animation]
+## Notes
 
-No `AnimationLibrary` `.tres` files exist under `assets/animations/**` yet. Canon QA already tracks this as **CQ-S2-07** (435 source FBX, 0 `.tres` shipped — first batch not yet built). Not double-logging.
-
-## [GAP: orphan material]
-
-`StandardMaterial3D` `.tres` under `assets/materials/arch/` and `assets/materials/tidesong/` with no `.tscn` consumer:
-
-- `assets/materials/arch/` (17 files): `bronze_metal`, `building_door`, `chimney_smoke`, `courtyard_floor`, `curtain_wall_stone`, `gate_tower_main`, `gold_trim`, `hot_forge_metal`, `house_foundation`, `iron_metal`, `mossy_brick_wall`, `overgrown_brick`, `roof_moss_tiles`, `temple_floor`, `whitewashed_plaster`, `wood_beam`, `wood_flooring`. Owner: @architect. Awaiting `.tscn` curtain-wall / gate-tower / hut prefabs that consume these materials. Canon QA Check 8 confirms no curtain-wall / gate-tower in main scene tree yet (N/A) — these materials are pre-staged for upcoming arch work.
-- `assets/materials/tidesong/` (8 files): `barnacle_rock`, `driftwood`, `fine_sand_beach`, `island_cliff`, `mossy_island_cliff`, `ocean_spray_planks`, `sand_pebble_beach`, `seaweed`. Owner: @environment. Tidesong realm not yet scaffolded in scenes; materials staged for future biome.
-
-These are **pre-staged**, not stale — both batches map to scoped future work. Not promoted to S1.
-
-## Cycle metadata
-
-- Branches merged this cycle: `auto/art` (1 commit, sha 84bed6bcd9)
-- Branches skipped this cycle (manual review): `auto/scale` (diverged 1 ahead / 113 behind, GitHub merges API returned "Merge conflict") `[INTEGRATOR-MANUAL]`
-- Branches reset to main this cycle: `auto/art`, `auto/builder`, `auto/polisher`, `auto/character`, `auto/lore`, `auto/qa`, `auto/scale-floorfix`
-- Branches NOT reset (held for owner): `auto/scale` (preserves the 1 conflicting commit so a worker / engineer can rebase or re-author)
+- auto/art commit explicitly noted the codex frontmatter linkage is the Lore agent's
+  responsibility on the next run; the four orphan-asset entries above are expected
+  to clear when @lorekeeper ships icon_glyph: <name> frontmatter for matching codex
+  fragments. They are logged here per integrator policy regardless of the planned
+  follow-up.
