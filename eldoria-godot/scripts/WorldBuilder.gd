@@ -977,7 +977,19 @@ func _make_stall(pos: Vector3) -> void:
 		post.material_override = MAT_DARK_WOOD(0.5)
 		post.position = Vector3(dx, 1.2, -0.3)
 		stall.add_child(post)
-	# Awning (red striped cloth)
+	# Awning (red striped cloth) — THEME §12: cloth must FLAP.
+	# Env: 2026-05-06 — was a static angled box. Wrap in a pivot Node3D at
+	# the back-post line and join group "stall_awnings" so _process() can
+	# pitch the cloth around X (front lip lifting/falling in wind) plus a
+	# small Z-sway. Per-stall phase metadata keeps adjacent stalls from
+	# flapping in unison. Base pitch (0.4 rad) preserved as set_meta so the
+	# canopy keeps its painted-stylized downward slope between flaps.
+	var awn_pivot := Node3D.new()
+	awn_pivot.position = Vector3(0, 1.95, -0.3)  # top of back posts
+	awn_pivot.set_meta("phase", randf() * TAU)
+	awn_pivot.set_meta("base_pitch", 0.4)
+	awn_pivot.add_to_group("stall_awnings")
+	stall.add_child(awn_pivot)
 	var awn_mat := StandardMaterial3D.new()
 	awn_mat.albedo_color = Color(0.78, 0.22, 0.18)
 	awn_mat.roughness = 0.7
@@ -987,9 +999,10 @@ func _make_stall(pos: Vector3) -> void:
 	am.size = Vector3(2.2, 0.05, 1.2)
 	awn.mesh = am
 	awn.material_override = awn_mat
-	awn.position = Vector3(0, 2.0, -0.1)
-	awn.rotation.x = 0.4
-	stall.add_child(awn)
+	# Cloth offset forward of the pivot — pivot lives at the back edge so
+	# rotation.x reads as the front lip lifting in the breeze.
+	awn.position = Vector3(0, 0.05, 0.4)
+	awn_pivot.add_child(awn)
 	# Wares (potions)
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 	var ware_colors = [Color(0.95, 0.3, 0.25), Color(0.95, 0.85, 0.3), Color(0.3, 0.75, 0.4), Color(0.65, 0.3, 0.85)]
@@ -2585,6 +2598,22 @@ func _process(delta: float) -> void:
 		var billow: float = sin(_t * 2.3 + phase) * 0.08
 		pivot.rotation.y = wind
 		pivot.rotation.z = billow
+	# Env: 2026-05-06 — market stall awning flap (THEME §12). Cloth pitches
+	# around the back-post pivot so the front lip rises/falls like wind
+	# catching the canopy. Smaller amplitude than banners (0.06 vs 0.25) so
+	# the slope shape stays readable, and a slow Z-sway adds side-to-side
+	# motion without making the canopy feel unmoored. Per-stall phase keeps
+	# adjacent stalls out of lockstep.
+	for awn_pivot in get_tree().get_nodes_in_group("stall_awnings"):
+		var ap3d: Node3D = awn_pivot as Node3D
+		if ap3d == null:
+			continue
+		var aphase: float = float(ap3d.get_meta("phase", 0.0))
+		var abase: float = float(ap3d.get_meta("base_pitch", 0.4))
+		var flap: float = sin(_t * 1.4 + aphase) * 0.06 + sin(_t * 2.7 + aphase * 1.7) * 0.03
+		var sway: float = sin(_t * 0.9 + aphase) * 0.04
+		ap3d.rotation.x = abase + flap
+		ap3d.rotation.z = sway
 	# THEME §12 — water ripple. Subtle Y-bob on each water plane plus a slow
 	# emission breathe so the surface reads as catching changing light.
 	for wp in get_tree().get_nodes_in_group("water_planes"):
