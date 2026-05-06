@@ -891,7 +891,7 @@ func _build_mountain_ring() -> void:
 	# Inner ring
 	for i in 36:
 		var ang := (float(i) / 36.0) * TAU + rng.randf_range(-0.05, 0.05)
-		var r := 90.0 + rng.randf_range(-8, 8)
+		var r := 220.0 + rng.randf_range(-15, 15)  # 2026-05-06 [CANON-APPROVED: SIZE_STANDARDS.md §6 — was 90m, mountain ring must be 200m+]
 		var pos := Vector3(cos(ang) * r, 0, sin(ang) * r)
 		var h := rng.randf_range(20, 40)
 		var base_r := rng.randf_range(8, 14)
@@ -922,7 +922,7 @@ func _build_mountain_ring() -> void:
 	# Outer ring (taller, further)
 	for i in 28:
 		var ang := (float(i) / 28.0) * TAU + rng.randf_range(-0.1, 0.1)
-		var r := 160.0 + rng.randf_range(-15, 15)
+		var r := 320.0 + rng.randf_range(-25, 25)  # 2026-05-06 [CANON-APPROVED: outer ring pushed back from 160m to 320m so it reads as horizon]
 		var pos := Vector3(cos(ang) * r, 0, sin(ang) * r)
 		var h := rng.randf_range(45, 80)
 		var base_r := rng.randf_range(15, 25)
