@@ -2152,34 +2152,70 @@ func _normalize_npc_scale(model: Node) -> void:
 # ════════════════════════════════════════════════════════════════════════
 
 func _global_scale_sweep() -> void:
-	# Run forever — every 0.6s rescan the world and normalize anything that's
-	# drifted out of bounds. New nodes (loaded async, instanced by quest, etc.)
-	# get caught the next tick. THIS IS A KIDS GAME — nothing should ever look
-	# Frankenstein-sized.
+	# Realm-of-Eldoria size discipline — runs every 0.5s, no exemptions for
+	# trees / buildings / mountains / scenery. The Scale Engineer agent owns
+	# this loop. Canon (SIZE_STANDARDS_FULL): player/NPC ≤2.4m, enemy ≤1.8m,
+	# boss ≤4.0m, pet ≤1.0m, tree ≤14m, building ≤7m, mountain ≤80m.
+	# Anything outside band gets uniformly scaled to the target on the next tick.
 	while is_inside_tree():
-		await get_tree().create_timer(0.6).timeout
+		await get_tree().create_timer(0.5).timeout
 		var root := get_tree().current_scene
 		if not root:
 			continue
-		# Hard catch-all — anything claiming to be a character body or static
-		# body gets measured. Anything visibly bigger than 12m within those
-		# groups is a SIZE BUG and gets clamped down. Trees/mountains live
-		# under separate "scenery" group and skip this clamp.
+		# Character bodies (player + enemies + NPCs) — strict canon.
 		for body in root.find_children("*", "CharacterBody3D", true):
 			_check_and_normalize(body, _expected_height_for(body))
+		# Static bodies — clamp by group:
 		for body in root.find_children("*", "StaticBody3D", true):
-			# Skip terrain + mountain/scenery bodies — they're meant to be huge
-			if body.is_in_group("terrain") or body.is_in_group("scenery") 			   or body.is_in_group("mountain") or body.is_in_group("building"):
+			if body.is_in_group("terrain"):
+				continue   # ground plane is allowed to be huge
+			if body.is_in_group("mountain"):
+				_clamp_max_height(body, 80.0)
+				continue
+			if body.is_in_group("trees"):
+				_clamp_max_height(body, 14.0)
+				continue
+			if body.is_in_group("buildings"):
+				_clamp_max_height(body, 7.0)
 				continue
 			_check_and_normalize(body, _expected_height_for(body))
-		# Hard upper-bound enforcement: ANY node3D in player/npc/enemy/boss/pet
-		# group whose visible AABB exceeds 12m gets emergency-shrunk regardless.
+		# Hard upper-bound enforcement on ANY Node3D claiming to be a character.
+		# Threshold lowered from 12m → 2.5m so a 4-5m hero (the Meshy bug) gets
+		# caught instead of slipping under the old 12m bar.
 		for body in root.find_children("*", "Node3D", true):
-			if not (body.is_in_group("player") or body.is_in_group("npcs") 				or body.is_in_group("enemies") or body.is_in_group("bosses") 				or body.is_in_group("pets")):
+			var in_char_group := (body.is_in_group("player") or body.is_in_group("npcs") \
+					or body.is_in_group("enemies") or body.is_in_group("pets"))
+			var in_boss_group := body.is_in_group("bosses")
+			if not (in_char_group or in_boss_group):
 				continue
 			var aabb := _measure_aabb(body)
-			if aabb.size.y > 12.0:
+			var cap: float = 4.0 if in_boss_group else 2.5
+			if aabb.size.y > cap:
 				_emergency_shrink(body, aabb, _expected_height_for(body))
+		# Tree group sweep — group "trees" can be on any Node3D not just StaticBody.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("trees"):
+				continue
+			_clamp_max_height(body, 14.0)
+		# Building group sweep — same idea for stuff in group "buildings".
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("buildings"):
+				continue
+			_clamp_max_height(body, 7.0)
+
+
+# Helper used by the sweep — uniformly shrink a Node3D so its world-space
+# visual AABB y-extent ≤ max_h. No-op if already within bounds. Cheap and
+# called every 0.5s on every flagged node.
+func _clamp_max_height(node: Node, max_h: float) -> void:
+	if not (node is Node3D):
+		return
+	var n3d: Node3D = node as Node3D
+	var aabb := _measure_aabb(node)
+	if aabb.size.y <= max_h or aabb.size.y <= 0.001:
+		return
+	var s: float = clamp(max_h / aabb.size.y, 0.05, 1.0)
+	n3d.scale = n3d.scale * s
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -2293,8 +2329,26 @@ func _make_glb_tree(pos: Vector3, rng: RandomNumberGenerator) -> bool:
 		col.position.y = cap.height * 0.5
 		body.add_child(col)
 		holder.add_child(body)
+	# Spawn-time height clamp — Meshy/Sketchfab tree GLBs frequently export at
+	# 8-30m default, which dwarfs the 1.8m player. Clamp to ≤14m at spawn so we
+	# don't flash a giant tree for the 0.5s before the global sweep catches it.
+	call_deferred("_clamp_tree_at_spawn", holder, inst)
 	call_deferred("_settle_to_ground", holder)
 	return true
+
+# Spawn-time clamp called via call_deferred from _make_glb_tree. Measures the
+# instantiated tree's visual AABB and uniformly scales it down to ≤14m if it
+# came in as a giant. No-op if already in spec.
+func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
+	if not is_instance_valid(holder):
+		return
+	var aabb := _measure_aabb(holder)
+	if aabb.size.y <= 14.0 or aabb.size.y <= 0.001:
+		return
+	if inst is Node3D:
+		var n3d: Node3D = inst as Node3D
+		var shrink: float = clamp(14.0 / aabb.size.y, 0.05, 1.0)
+		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
 # box collider. Joins group "boulders". Returns true on success; false means

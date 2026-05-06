@@ -96,6 +96,11 @@ func _ready() -> void:
 	# y=0. Mirrors the Enemy.gd / Boss.gd pattern. No-op if the model is
 	# already in the right range.
 	call_deferred("_normalize_player_model", 1.8)
+	# Repeat at 0.5/1.5/3s — Meshy biped finishes loading skinning data over multiple frames,
+	# so a single deferred call sometimes catches the model before the AABB stabilizes.
+	_schedule_normalize_retry(0.5)
+	_schedule_normalize_retry(1.5)
+	_schedule_normalize_retry(3.0)
 	# Auto-play idle on first frame so character doesn't stand T-pose
 	if animation_player:
 		await get_tree().process_frame
@@ -168,6 +173,11 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	move_and_slide()
+	# Belt-and-suspenders ground snap — runs every 4th frame to keep cost low.
+	# Only snaps when the body is >0.6m above terrain (i.e. visibly floating).
+	_input_log_t += delta
+	if int(_input_log_t * 60.0) % 8 == 0:
+		_snap_to_ground(6.0)
 	if Input.is_key_pressed(KEY_BRACKETRIGHT) or Input.is_key_pressed(KEY_BACKSPACE):
 		global_position = Vector3(15, 3, 15)
 		velocity = Vector3.ZERO
@@ -931,6 +941,37 @@ func reset_save() -> void:
 # (2) lift to plant the feet.
 # Skip if the AABB is already within ±20% of target (the model was authored
 # at a sane height — most likely a hand-tuned KayKit/Quaternius hero).
+
+# Schedule a deferred re-run of _normalize_player_model after `delay` seconds.
+# Multiple re-runs are CHEAP — the function is a no-op when AABB is already in
+# tolerance — and they catch the case where Meshy biped GLBs finish loading
+# their skin/anim data over several frames after instantiate.
+func _schedule_normalize_retry(delay: float) -> void:
+	await get_tree().create_timer(delay).timeout
+	if is_instance_valid(self):
+		_normalize_player_model(1.8)
+
+# Ground-snap raycast — fired every physics tick. If the visual character is
+# floating above the collider (which happens after a Meshy GLB rescale lifts
+# the mesh by `lift` to put feet at y=0), snap the body down so it sits on
+# the floor instead of hovering. Belt-and-suspenders for the "I walk through
+# terrain" report — the actual collision is what move_and_slide enforces;
+# this is just a visual safety net.
+func _snap_to_ground(max_drop: float = 4.0) -> void:
+	var space := get_world_3d().direct_space_state
+	var from_v := global_position + Vector3(0, 0.5, 0)
+	var to_v := global_position - Vector3(0, max_drop, 0)
+	var query := PhysicsRayQueryParameters3D.create(from_v, to_v)
+	query.collide_with_areas = false
+	query.collide_with_bodies = true
+	query.exclude = [self.get_rid()]
+	var hit := space.intersect_ray(query)
+	if hit.is_empty():
+		return
+	var floor_y: float = float(hit.get("position", Vector3.ZERO).y)
+	if global_position.y - floor_y > 0.6:
+		global_position.y = floor_y + 0.05  # rest just above the floor
+
 func _normalize_player_model(target_height: float) -> void:
 	await get_tree().process_frame
 	# Find the visible Hero node (any Node3D child of self with mesh content).
@@ -959,7 +1000,7 @@ func _normalize_player_model(target_height: float) -> void:
 		return
 	# Skip the rescale if already in tolerance band — preserves authored-correct
 	# models from being subtly resized.
-	if aabb.size.y >= target_height * 0.80 and aabb.size.y <= target_height * 1.20:
+	if aabb.size.y >= target_height * 0.90 and aabb.size.y <= target_height * 1.10:
 		# Still run pass 2 to fix ground contact even if size is fine.
 		pass
 	else:
