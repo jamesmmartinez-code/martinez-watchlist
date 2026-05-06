@@ -96,6 +96,19 @@ FACTIONS = {
         "sigil": "flame",
         "tagline": "desert oasis",
     },
+    "bandits": {
+        # Outlaw road-pressure faction (wired Builder run-21). Visual cue:
+        # stag-blood crimson + ink charcoal — the colors road bandits would
+        # daub on a stolen tabard. Sigil = crossed daggers over a hooded
+        # silhouette ring, the "blade-and-cowl" mark a Roan-style ranger
+        # would carve on a milestone to warn travelers.
+        "primary": STAG_BLOOD,
+        "secondary": INK,
+        "field": (60, 25, 25),
+        "trim": (90, 60, 30),
+        "sigil": "bandit_blades",
+        "tagline": "outlaw road-pressure faction",
+    },
     "frostpeak": {
         "primary": (200, 230, 240),
         "secondary": (140, 160, 180),
@@ -427,6 +440,104 @@ def draw_snowflake(im, rng, primary, secondary):
     d.ellipse([cx - 5, cy - 6, cx - 1, cy - 2], fill=(255, 255, 255, 220))
 
 
+
+def draw_bandit_blades(im, rng, primary, secondary):
+    """Bandits' mark — two crossed daggers over a hooded silhouette ring,
+    daubed in stag-blood crimson with ink shadows. Per THEME §3 stag-blood
+    accent (10% magic/accent palette band — used here for the outlaw
+    faction since they sit *outside* the legitimate town palette). Per
+    THEME §4 silhouette-distinct: blade tip + hilt-pommel reads at 30m
+    against any backdrop.
+    """
+    d = ImageDraw.Draw(im, "RGBA")
+    cx = im.width / 2
+    cy = im.height / 2 + 4
+    blood = vary(primary, rng, 10) + (255,)
+    blood_dark = (max(0, primary[0] - 50), max(0, primary[1] - 30),
+                  max(0, primary[2] - 30), 255)
+    iron = (140, 140, 145, 255)
+    iron_dark = (75, 70, 75, 255)
+    grip = (50, 35, 25, 255)
+    pommel = vary((180, 130, 50), rng, 12) + (255,)
+
+    # Hooded-silhouette ring behind the daggers — a soft round head + cowl
+    # peak suggesting a hooded outlaw, not a full portrait.
+    hood_r = 46
+    d.ellipse([cx - hood_r, cy - hood_r - 8, cx + hood_r, cy + hood_r - 8],
+              outline=blood_dark, width=4)
+    # Cowl peak — small triangular notch over the head ring.
+    d.polygon(
+        [(cx - 14, cy - hood_r - 14),
+         (cx + 14, cy - hood_r - 14),
+         (cx, cy - hood_r - 36)],
+        fill=blood_dark,
+    )
+
+    # Crossed daggers — one tilted +28°, one -28°. Drawn as polygons so
+    # blade + hilt + pommel all read at icon scale.
+    def _dagger(ang_deg, blade_color, blade_shadow):
+        ang = math.radians(ang_deg)
+        c, s = math.cos(ang), math.sin(ang)
+
+        # Blade — long thin triangle, point AWAY from the cross center.
+        blade_len = 80
+        blade_w = 7
+        # Center of cross is at (cx, cy). Blade extends from origin
+        # along (c, s) outward, hilt extends opposite direction.
+        # Blade polygon (triangle + slight back base).
+        tip = (cx + c * blade_len, cy + s * blade_len)
+        base_a = (cx + c * 6 + s * blade_w, cy + s * 6 - c * blade_w)
+        base_b = (cx + c * 6 - s * blade_w, cy + s * 6 + c * blade_w)
+        d.polygon([tip, base_a, base_b], fill=blade_color, outline=INK)
+        # Specular highlight along blade — a thin offset line.
+        hi_a = (cx + c * 12 + s * 1, cy + s * 12 - c * 1)
+        hi_b = (cx + c * (blade_len - 8) + s * 1,
+                cy + s * (blade_len - 8) - c * 1)
+        d.line([hi_a, hi_b], fill=(245, 245, 250, 200), width=1)
+
+        # Crossguard — a short bar perpendicular to blade.
+        guard_half = 14
+        guard_a = (cx + s * guard_half, cy - c * guard_half)
+        guard_b = (cx - s * guard_half, cy + c * guard_half)
+        # Thicken into a 4px-tall bar.
+        gx = c * 3
+        gy = s * 3
+        d.polygon([
+            (guard_a[0] - gx, guard_a[1] - gy),
+            (guard_b[0] - gx, guard_b[1] - gy),
+            (guard_b[0] + gx, guard_b[1] + gy),
+            (guard_a[0] + gx, guard_a[1] + gy),
+        ], fill=blade_shadow, outline=INK)
+
+        # Hilt grip — short shaft going BACKWARD from cross, leather wrap.
+        hilt_len = 22
+        hilt_w = 4
+        hilt_back = (cx - c * hilt_len, cy - s * hilt_len)
+        ga = (cx - c * 3 + s * hilt_w, cy - s * 3 - c * hilt_w)
+        gb = (cx - c * 3 - s * hilt_w, cy - s * 3 + c * hilt_w)
+        ha = (hilt_back[0] + s * hilt_w, hilt_back[1] - c * hilt_w)
+        hb = (hilt_back[0] - s * hilt_w, hilt_back[1] + c * hilt_w)
+        d.polygon([ga, gb, hb, ha], fill=grip, outline=INK)
+
+        # Pommel — small disc at the very back of the hilt.
+        pomx, pomy = cx - c * (hilt_len + 5), cy - s * (hilt_len + 5)
+        d.ellipse([pomx - 5, pomy - 5, pomx + 5, pomy + 5],
+                  fill=pommel, outline=INK)
+
+    _dagger(-28, iron, iron_dark)
+    _dagger(28, iron, iron_dark)   # second dagger — perpendicular for X cross
+
+    # Stag-blood drip flick at the cross center — a small wash + 2 droplet
+    # streaks. THEME §1 lived-in / weathered (this is an outlaw mark).
+    drip = (blood[0], blood[1], blood[2], 180)
+    d.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=drip)
+    for off in (-9, 9):
+        d.line([(cx + off, cy + 4), (cx + off + rng.randint(-2, 2),
+                cy + 18 + rng.randint(-3, 3))],
+               fill=drip, width=2)
+        d.ellipse([cx + off - 2, cy + 18, cx + off + 2, cy + 22],
+                  fill=drip)
+
 SIGIL_DRAWERS = {
     "oak_axe": draw_oak_axe,
     "crown": draw_crown,
@@ -435,6 +546,7 @@ SIGIL_DRAWERS = {
     "anchor": draw_anchor,
     "flame": draw_flame,
     "snowflake": draw_snowflake,
+    "bandit_blades": draw_bandit_blades,
 }
 
 
@@ -498,12 +610,26 @@ def render_crest(name, faction, seed):
     return canvas
 
 
+# Per-faction stable seeds — keyed by name so inserting a new faction
+# in FACTIONS doesn't shift seeds for the others (run-23 lesson: positional
+# index seed = 13130 + i*17 churned every crest after every insert).
+SIGIL_SEEDS = {
+    "briarwood":  13130,
+    "goldhaven":  13147,
+    "ironhold":   13164,
+    "silverleaf": 13181,
+    "stormwatch": 13198,
+    "embergrove": 13215,
+    "frostpeak":  13232,   # locked at original (run pre-bandits) seed
+    "bandits":    14001,   # new run-23 — fresh seed range, no collision
+}
+
+
 def main():
     out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("eldoria-godot/assets/banners/sigils")
     out_dir.mkdir(parents=True, exist_ok=True)
-    seed_base = 13130
-    for i, (name, faction) in enumerate(FACTIONS.items()):
-        seed = seed_base + i * 17
+    for name, faction in FACTIONS.items():
+        seed = SIGIL_SEEDS.get(name, hash(name) & 0x7FFFFFFF)
         im = render_crest(name, faction, seed)
         out = out_dir / f"{name}_crest.png"
         im.save(out, "PNG", optimize=True)
