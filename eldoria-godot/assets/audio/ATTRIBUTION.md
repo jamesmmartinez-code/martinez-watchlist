@@ -15,7 +15,7 @@ master copy of this list lives in the repo's top-level `CREDITS.md` under the
 
 | File | Source | Artist | Page |
 |------|--------|--------|------|
-| `village_theme.ogg`     | OpenGameArt CC0 | alexandr-zhelanov | https://opengameart.org/content/celtic-loop |
+| `village_theme.ogg`     | OpenGameArt CC0 | RandomMind — *Medieval: The Bard's Tale* | https://opengameart.org/content/medieval-the-bards-tale |
 | `whisperwood_theme.ogg` | OpenGameArt CC0 | macro13           | https://opengameart.org/content/dark-forest-theme |
 | `battle_theme.ogg`      | OpenGameArt CC0 | Komiku — *It's time for adventure vol. 2* | https://opengameart.org/content/battle-theme-3 |
 
@@ -169,3 +169,29 @@ UIDs are deterministic — `sha1(res://path)[:8]` reduced to Godot's
 diffs. Loop behaviour is set at runtime by `Audio.gd` (music + ambient
 streams toggle `stream.loop = true` after load), so all sidecars import
 with `loop=false`.
+
+---
+
+## 2026-05-06 audio engineering pass — auto/audio
+
+**Upgraded `music/village_theme.ogg`:**
+
+Replaced previous 43 s `village_theme.ogg` with RandomMind's *Medieval: The
+Bard's Tale* (CC0, https://opengameart.org/content/medieval-the-bards-tale).
+The new track is **2 min 38 s** of acoustic medieval lute + flute melody —
+on-theme for §6 (Celtic / chamber / folk; lutes, harps, flutes, low strings)
+and meets the 2–3 min loop-length target in the audio brief. Tagged on the
+source page: *medieval, lute, flute, village, tavern, peaceful, folk*.
+
+- Source download: `The_Bards_Tale.mp3` (3.8 MB, 192 kbps stereo MP3)
+- Transcoded to OGG Vorbis q=2 stereo 44.1 kHz (1.6 MB) to match the bundle's
+  music encoding profile (`Encoding: stereo 44.1 kHz OGG Vorbis, q=2`).
+- `.import` sidecar UID retained — Godot regenerates the imported cache from
+  the new source file on first editor open; UIDs are path-derived not
+  content-derived, so no diff there.
+- Bundle still well under budget: ~6.3 MB / 50 MB.
+
+THEME §6 compliance: track is fully acoustic (lute, flute, soft percussion),
+no synth, no Hollywood swell, no AI-trailer tropes — fits the "quiet over
+loud, rewards 100+ plays" criterion.
+
