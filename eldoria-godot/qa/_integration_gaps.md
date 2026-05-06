@@ -1,29 +1,44 @@
 # Integration Gaps Log
 
-last_run: 2026-05-06T16:10Z
+last_run: 2026-05-06T16:28Z
 canon_qa_status_at_run: PASS_WITH_DEBT
-merged_this_cycle: auto/environment (1), auto/art (1), auto/lore (1)
-skipped_this_cycle: auto/scale (CHANGES.md text conflict — needs manual resolution)
-nothing_to_merge: auto/builder, auto/polisher, auto/qa, auto/scale-floorfix
+merged_this_cycle: auto/scale (1)
+skipped_this_cycle: (none)
+nothing_to_merge: auto/builder, auto/polisher, auto/qa, auto/scale-floorfix, auto/environment, auto/art, auto/lore
 
 ## Gaps surfaced this run
 
-No orphan assets / quests / animations / materials added this cycle.
+[GAP: orphan quest] eldoria-godot/data/quests/crystal_caves/bones_in_the_choirstone.tres
+  — quest file exists in _index.tres and quest_grammar.md but no NPC dialogue
+    JSON references it. Owner: @quest-writer or @lorekeeper — needs a hook in
+    one of the crystal-caves-adjacent NPCs (Mara is the obvious candidate).
 
-Files added/changed: 5
-- eldoria-godot/lore/factions/whisperwood_goblins.md
-- eldoria-godot/scripts/WorldBuilder.gd
-- mood-boards/README.md
-- mood-boards/_gen_biome_palette_reference.py
-- mood-boards/biome_palette_reference.png
+[GAP: orphan quest-dialogue link] eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres
+  — quest is in _index.tres and qa cross_ref_graph but no dialogue JSON
+    mentions it by name. Owner: @lorekeeper — Mara dialogue (data/dialogue/
+    mara_merchant.json) needs the shards-for-mara hook node.
 
-## Skipped merges
+[GAP: orphan material] eldoria-godot/assets/materials/tidesong/* (8 .tres files:
+  seaweed, sand_pebble_beach, ocean_spray_planks, mossy_island_cliff, island_cliff,
+  fine_sand_beach, driftwood, barnacle_rock) — biome materials authored but no
+  scene or script references them. Tidesong realm may not be in scene tree yet.
+  Owner: @environment or @architect.
 
-[INTEGRATOR-MANUAL] auto/scale (76bb428) — CHANGES.md parallel-append conflict between
-main (post-lore merge) and auto/scale. WorldBuilder.gd 3-way text-merged cleanly;
-CHANGES.md needs manual resolution. Owner: @scale-engineer — please rebase auto/scale
-onto main and re-push.
+[GAP: orphan material] eldoria-godot/assets/materials/arch/* (wood_flooring.tres,
+  wood_beam.tres) — architectural material set authored but unreferenced by any
+  MeshInstance3D in scenes/ or scripts/. Owner: @architect.
+
+## This cycle merged
+
+- auto/scale (1 commit, 76bb428): _global_scale_sweep extended to clamp
+  windmills, boulders, campfires, banner_poles, chests. CHANGES.md
+  conflict resolved by combining the parallel-append sections (HEAD's
+  ARCHITECT-NOTE block kept ahead of scale-eng's "missing canon" notes).
+  WorldBuilder.gd auto-merged cleanly. Applied via cherry-pick because
+  auto/scale was 131 commits behind main and a --no-ff merge would
+  have wiped 130 commits of main work.
 
 ## Carry-over (from canon-qa _blocking_status.md)
 
 PASS_WITH_DEBT: 7 S2 issues logged in eldoria-godot/qa/_blocking_status.md
+(integrator does not block on these; owners listed in the status file).
