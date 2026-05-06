@@ -1,3 +1,51 @@
+## 2026-05-06 — QA: deleted Owen.glb (resolves §15 violation, asset retired)
+
+**Run @ ~03:30 UTC** (eldoria-qa-triage scheduled task).
+Build green. Pages deployed. Asset budget audit found 2 files >20 MiB
+under `eldoria-godot/assets/`:
+
+- `Owen.glb` — 29.4 MiB (was load-bearing; not anymore)
+- `Hero.glb` — 29.4 MiB (owner-tier override, see below)
+
+### Action: deleted Owen.glb + Owen.glb.import
+
+Architect's 03:00 UTC audit flagged Owen as resolved by the `cbe88d1`
+Player.gd swap to Hero.glb. Verified: Player.gd no longer loads
+Owen.glb (only mentions it in 3 explanatory comments about bone
+naming / size discipline); Main.tscn loads `Hero.glb` (id
+`8_hero`); Owen.glb's only other reference was its own `.import`
+sidecar. Asset is genuinely unreferenced — safe to delete per
+Priority B of the QA triage rules.
+
+- `f79d020` — drop Owen.glb (29 MiB)
+- `9703ac4` — drop Owen.glb.import sidecar
+- `94037d1` — update QA_OVERSIZED_ASSETS.md (resolve Owen entry,
+  document Hero.glb under new "Owner-override" section)
+
+### Hero.glb NOT touched (owner-tier override)
+
+Architect's audit (CHANGES.md L48–58) explicitly declined to flag
+Hero.glb as a §15 violation: owner pushed `23cfbd7` choosing
+personalization-for-kid (Meshy 11-yr-old "actual kid character per
+user request") over the web-perf budget. QA respects that override
+and does not log it as tech debt. Documented under the new
+"Owner-override" section of QA_OVERSIZED_ASSETS.md so the next
+triage run doesn't re-flag it. Suggested non-blocking follow-up
+(echoing Architect): Char to decimate to ~5–8k tris with LOD0/LOD1
+swap, no deploy block.
+
+### State after this run
+
+- Source assets > 20 MiB: 1 (Hero.glb, owner-override, not flagged)
+- Source assets > 25 MiB hard cap: 1 (Hero.glb, owner-override)
+- Open §15 tech-debt entries: 0
+
+### Verification
+- Both deletes succeeded via Contents API DELETE.
+- Watching next Build Eldoria run for the post-delete commits;
+  scenes/scripts unaffected because the only Owen.glb consumers
+  were comments + the sidecar.
+
 ## 2026-05-06T03:00Z — ARCHITECT audit (1h survey @ 03:00 UTC)
 
 **Job picked:** Job 3 — Detect drift in 5 ledger files.
@@ -4504,3 +4552,4 @@ non-palette panels.
 exist prior to this run).
 
 ### Branch pushed: `auto/art`
+
