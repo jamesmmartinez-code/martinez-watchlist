@@ -1,0 +1,30 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Forge Studded Buckler
+; Tier-2 — small forearm buckler reinforced with wolf-pelt under-pad and iron studs.
+; Whisperwood material: wolf_pelt (uncured, used directly as backing pad).
+; Sits between mossbound_buckler (tier-1 craft) and steel_plate (tier-3 chest).
+; # NEEDS:item:studded_buckler (output — tier-2 armor_metal small shield)
+; INPUT exists: wolf_pelt
+; # NEEDS:item:iron_ingot, iron_buckle, charcoal (already flagged elsewhere)
+
+[resource]
+resource_name = "Forge Studded Buckler"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "forge_studded_buckler"
+metadata/name = "Forge Studded Buckler"
+metadata/station_required = "edda_forge"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "iron_ingot", "qty": 2},
+    {"item_id": "wolf_pelt", "qty": 1},
+    {"item_id": "iron_buckle", "qty": 2},
+    {"item_id": "charcoal", "qty": 2}
+]
+metadata/output = {"item_id": "studded_buckler", "qty": 1}
+metadata/time_seconds = 16
+metadata/fuel_cost = 2
+metadata/unlock_condition = "auto"
+metadata/failure_behavior = "none"
+metadata/category = "armor_metal"
+metadata/teach_voice = "Edda: 'Wide enough for a face, narrow enough to swing past. Pad the back. The arm thanks you later.'"

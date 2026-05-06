@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe Book — "Edda's Warband Pattern"
+; A single sheet of vellum with charcoal-rubbed axe-head outlines, taken from
+; warband heads recovered on the Whisperwood road. Edda hands it over after the player
+; brings her one intact axe-head plus an honest day's hammer-work at the forge.
+; In-world look: charred edge, ash-smudged finger-marks, a single ink note in Edda's hand.
+
+[resource]
+resource_name = "Edda's Warband Pattern"
+metadata/schema = "recipe_books/_schema_v1"
+metadata/id = "eddas_warband_pattern"
+metadata/name = "Edda's Warband Pattern"
+metadata/teaches_recipes = ["forge_warband_axe"]
+metadata/discover_method = "given_by_npc"
+metadata/discover_npc = "smith_edda"
+metadata/discover_trigger = "deliver_warband_axe_head_intact"
+metadata/visual_palette = "charcoal_smudge_on_vellum"
+metadata/lore_excerpt = "I copied the head off one we picked up clean. Whoever hammered it took an honest swing. So will you. — E."
