@@ -767,92 +767,16 @@ func _scatter_trees(count: int) -> void:
 		_make_tree(pos, rng)
 
 func _make_tree(pos: Vector3, rng: RandomNumberGenerator) -> void:
-	# THEME §1, §11 — try a Sketchfab CC-BY tree GLB first (oak / pine / bush /
-	# dead). Fall through to the procedural primitive blob tree below if the
-	# asset isn't loadable, so the world never goes empty.
+	# THEME §1, §11, §12 — every tree is now a real CC-BY GLB instance from
+	# `assets/models/trees/{oak,pine,bush,dead}.glb`. The procedural sphere-stack
+	# fallback that used to live here has been REMOVED per the environment-spec
+	# brief ("NO procedural cone-stack trees"). All four GLBs are committed in
+	# the repo, so `_make_glb_tree` should never return false at runtime; if it
+	# ever does (asset import broken), we log via `_dlog` and skip the spawn so
+	# we don't fall back to ugly primitives.
 	if _make_glb_tree(pos, rng):
 		return
-	# ─── Procedural fallback (legacy primitive path) ─────────────────────────
-	var tree := Node3D.new()
-	tree.position = pos
-	tree.rotation.y = rng.randf() * TAU
-	tree.add_to_group("trees")
-	add_child(tree)
-	var h := rng.randf_range(0.85, 1.7)
-
-	# Trunk with bark texture
-	var trunk := MeshInstance3D.new()
-	var tm := CylinderMesh.new()
-	tm.top_radius = 0.28; tm.bottom_radius = 0.46
-	tm.height = 1.8 * h
-	trunk.mesh = tm
-	trunk.material_override = MAT_BARK(2.0)
-	trunk.position.y = (1.8 * h) / 2
-	tree.add_child(trunk)
-
-	# Tree collision
-	var body := StaticBody3D.new()
-	var col := CollisionShape3D.new()
-	var cyl := CylinderShape3D.new()
-	cyl.radius = 0.55; cyl.height = 1.8 * h
-	col.shape = cyl
-	col.position.y = (1.8 * h) / 2
-	body.add_child(col)
-	tree.add_child(body)
-
-	# Foliage — irregular cluster of jittered spheres around a central crown.
-	# This avoids the obvious cone-stack look. Each tree gets 12-18 small leaf
-	# blobs at random positions inside an oblate ellipsoid centered on the crown.
-	var base_h: float = rng.randf_range(0.30, 0.46)
-	var leaf_palette = [
-		Color(base_h - 0.08, 0.38 + rng.randf() * 0.10, 0.14),
-		Color(base_h - 0.02, 0.48 + rng.randf() * 0.10, 0.18),
-		Color(base_h + 0.02, 0.42 + rng.randf() * 0.10, 0.20),
-		Color(base_h + 0.06, 0.32 + rng.randf() * 0.10, 0.12),
-	]
-	var crown_y: float = 1.8 * h + 1.4 * h
-	var crown_radius_x: float = 1.6 * h
-	var crown_radius_y: float = 1.2 * h
-	var blob_count: int = rng.randi_range(14, 20)
-	for bi in blob_count:
-		# Random point inside an oblate ellipsoid (wider than tall)
-		var u: float = rng.randf() * TAU
-		var v: float = acos(2.0 * rng.randf() - 1.0)
-		# Random radius bias toward outer shell for crown shape
-		var rad_norm: float = pow(rng.randf(), 0.7)
-		var bx: float = sin(v) * cos(u) * crown_radius_x * rad_norm
-		var bz: float = sin(v) * sin(u) * crown_radius_x * rad_norm
-		var by: float = cos(v) * crown_radius_y * rad_norm
-		var blob := MeshInstance3D.new()
-		var sm := SphereMesh.new()
-		var br: float = rng.randf_range(0.45, 0.85) * h
-		sm.radius = br
-		sm.height = br * rng.randf_range(1.4, 1.9)
-		sm.radial_segments = 8
-		sm.rings = 5
-		blob.mesh = sm
-		blob.material_override = MAT_LEAF(leaf_palette[bi % 4])
-		blob.position = Vector3(bx, crown_y + by, bz)
-		blob.scale = Vector3(rng.randf_range(0.85, 1.15), rng.randf_range(0.85, 1.15), rng.randf_range(0.85, 1.15))
-		blob.rotation = Vector3(rng.randf() * 0.6, rng.randf() * TAU, rng.randf() * 0.6)
-		tree.add_child(blob)
-	# Add a few drooping low branches with leaf clusters at trunk mid-height
-	var branch_count: int = rng.randi_range(2, 4)
-	for bri in branch_count:
-		var ang2: float = rng.randf() * TAU
-		var off_r: float = rng.randf_range(0.7, 1.1) * h
-		var by2: float = 1.8 * h * rng.randf_range(0.55, 0.85)
-		var blob := MeshInstance3D.new()
-		var sm := SphereMesh.new()
-		var br: float = rng.randf_range(0.40, 0.65) * h
-		sm.radius = br
-		sm.height = br * 1.5
-		sm.radial_segments = 6
-		sm.rings = 4
-		blob.mesh = sm
-		blob.material_override = MAT_LEAF(leaf_palette[bri % 4])
-		blob.position = Vector3(cos(ang2) * off_r, by2, sin(ang2) * off_r)
-		tree.add_child(blob)
+	_dlog("Env: _make_tree skipped — _make_glb_tree returned false at " + str(pos))
 
 # ============================================================================
 # Rocks — stone-textured with random rotation
