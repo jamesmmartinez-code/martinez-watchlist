@@ -1627,3 +1627,40 @@ func _merge_humanoid_library(ap: AnimationPlayer) -> void:
 		ap.remove_animation_library("humanoid")
 	ap.add_animation_library("humanoid", lib)
 
+# === SCALE GUARD 2026-05-06 (self-contained, defensive) ===
+# Walks the player tree, finds any MeshInstance3D whose world-space height
+# exceeds 1.5m, and shrinks its parent uniformly to fit. Catches the giant
+# boot/helmet/cape bug where Equipment Visualizer attached gear at the
+# natural-GLB scale while the body was normalized to 1.1m.
+#
+# Idempotent + self-contained: walk logic is inlined so partial overwrites
+# by other agents can't break it. Safe to call repeatedly. Skips meshes
+# with names starting with "Body" or "Hero" so we never shrink the player
+# body itself.
+func _clamp_all_attachments_scale() -> void:
+	var MAX_GEAR_M := 1.5
+	var stack: Array = [self]
+	var visited := 0
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		visited += 1
+		if visited > 500: break  # safety cap
+		for child in n.get_children():
+			stack.push_back(child)
+			if not (child is MeshInstance3D): continue
+			var mi: MeshInstance3D = child
+			if mi.mesh == null: continue
+			# Skip the player body itself
+			var nm := str(mi.name).to_lower()
+			if nm.begins_with("body") or nm.begins_with("hero") or nm.begins_with("alpha"):
+				continue
+			var aabb: AABB = mi.global_transform * mi.get_aabb()
+			var h := aabb.size.y
+			if h <= MAX_GEAR_M: continue
+			# Shrink the parent (BoneAttachment3D or holder) uniformly
+			var parent_node: Node = mi.get_parent()
+			if parent_node is Node3D:
+				var p3: Node3D = parent_node
+				var shrink := MAX_GEAR_M / max(h, 0.001)
+				p3.scale = p3.scale * shrink
+
