@@ -1,0 +1,27 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Rework the Rusty Sword
+; Lore-anchored: items_flavor.json rusty_sword "found half-buried at the edge of a barley field… Most things mean well, in their first work."
+; Edda's first lesson recipe — turns the field-find into something honest.
+; All input items already exist except: # NEEDS:item:charcoal
+
+[resource]
+resource_name = "Rework the Rusty Sword"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "forge_rusty_to_iron"
+metadata/name = "Rework the Rusty Sword"
+metadata/station_required = "edda_forge"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "rusty_sword", "qty": 1},
+    {"item_id": "charcoal", "qty": 2}
+]
+metadata/output = {"item_id": "iron_sword", "qty": 1}
+metadata/time_seconds = 10
+metadata/fuel_cost = 2
+metadata/unlock_condition = "npc_taught"
+metadata/unlock_npc = "smith_edda"
+metadata/unlock_hint = "Bring the rusty sword to Edda. She will teach you in one breath."
+metadata/failure_behavior = "none"
+metadata/category = "weapon_blade"
+metadata/teach_voice = "Edda: 'It still cuts. We'll just give it back its song.'"

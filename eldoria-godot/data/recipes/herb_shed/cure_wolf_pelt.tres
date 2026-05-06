@@ -1,0 +1,28 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Cure Wolf Pelt (Bark-Tannin)
+; Lore: items_flavor.json wolf_pelt — "Lyra cures these with bark-tannin and lays them flat under a board for a fortnight"
+; In-game time compressed to 30s; flavor preserved.
+; # NEEDS:item:bark_tannin_oak, leather_strip (output)
+; INPUT exists: wolf_pelt
+
+[resource]
+resource_name = "Cure Wolf Pelt"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_cure_wolf_pelt"
+metadata/name = "Cure Wolf Pelt"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "wolf_pelt", "qty": 1},
+    {"item_id": "bark_tannin_oak", "qty": 2}
+]
+metadata/output = {"item_id": "leather_strip", "qty": 4}
+metadata/time_seconds = 30
+metadata/fuel_cost = 1
+metadata/unlock_condition = "npc_taught"
+metadata/unlock_npc = "herbalist_lyra"
+metadata/unlock_hint = "Bring Lyra a wolf pelt with the apology said aloud."
+metadata/failure_behavior = "none"
+metadata/category = "cured_hide"
+metadata/teach_voice = "Lyra, kneeling: 'The land trusted us. Say so. Then we lay the boards.'"
