@@ -76,3 +76,62 @@ references in `data/codex/stag_courts_courtesy.md` and
 locked to THEME §3 (moss + bronze for the Briarwood scribe; stone-blue +
 frost-silver for the Steppe-rider). CC0 / agent-generated; no external assets.
 See `eldoria-godot/assets/icons/codex/ATTRIBUTION.md` for full notes.
+
+## Audio — OpenGameArt CC0 (batch pull 2026-05-05)
+
+Replaced placeholder WAVs with real CC0 fantasy music + SFX from OpenGameArt.org.
+All tracks/effects below are released under **CC0 / Public Domain** — no attribution
+legally required, but the original artists are credited here as a courtesy.
+
+### Music — `eldoria-godot/assets/audio/music/`
+- `village_theme.ogg` — "Celtic Loop" by alexandr-zhelanov (CC0).
+  https://opengameart.org/content/celtic-loop
+- `whisperwood_theme.ogg` — "Dark Forest Theme" by macro13 (CC0).
+  https://opengameart.org/content/dark-forest-theme
+- `battle_theme.ogg` — "Battle Theme" from "It's time for adventure vol. 2" by Komiku (CC0).
+  https://opengameart.org/content/battle-theme-3
+
+### Ambient — `eldoria-godot/assets/audio/ambient/`
+- `crickets_night.ogg` — "Crickets Ambient Noise (loopable)" by Ted Kerr (CC0).
+  https://opengameart.org/content/crickets-ambient-noise-loopable
+- `wind_outdoor.ogg` — "wind1" by Iwan Gabovitch / qubodup (CC0).
+  https://opengameart.org/content/wind1
+- `dungeon_drips.ogg` — "Loopable Dungeon Ambience" by yd (CC0).
+  https://opengameart.org/content/loopable-dungeon-ambience
+- `forest_cathedral.ogg` — "Cathedral in the Forest (Ambient Loop)" (CC0).
+  https://opengameart.org/content/cathedral-in-the-forest-ambient-loop
+
+### SFX — `eldoria-godot/assets/audio/sfx/`
+- `sword_swing.ogg`, `sword_swing_2.ogg`, `sword_swing_3.ogg`,
+  `sword_unsheathe.ogg`, `coin_pickup.ogg`, `chest_open.ogg`,
+  `damage_taken.ogg`, `quest_accept.ogg`, `loot_pickup.ogg`,
+  `level_up.ogg`, `door_open.ogg`, `enemy_death.ogg`, `player_death.ogg`
+  — from "RPG Sound Pack" by artisticdude (CC0).
+  https://opengameart.org/content/rpg-sound-pack
+  (`enemy_death.ogg` and `player_death.ogg` are derivative — reversed/low-passed
+  variants of the source files; still CC0.)
+- `sword_hit.ogg`, `sword_hit_2.ogg`, `sword_hit_3.ogg` — from
+  "20 Sword Sound Effects (Attacks and Clashes)" by StarNinjas (CC0).
+  https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes
+
+### Footsteps — `eldoria-godot/assets/audio/footsteps/`
+- `grass.ogg`, `grass_2.ogg`, `stone.ogg`, `wood.ogg`, `wood_2.ogg`,
+  `wood_3.ogg`, `gravel.ogg`, `mud.ogg` — from "Different Steps on Wood,
+  Stone, Leaves, Gravel and Mud" by kddekadenz (CC0).
+  https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud
+
+### Encoding
+All assets transcoded to **OGG Vorbis** to keep the audio bundle small:
+- Music: stereo 44.1 kHz, q=2 (~85 kbps)
+- Ambient: mono 22.05 kHz, q=0–1 (~30–60 kbps)
+- SFX / footsteps: mono 22.05 kHz, q=2
+
+Total audio bundle: **~4.9 MB** (well under the 50 MB budget).
+
+### Compliance with THEME §6
+- Music is acoustic / Celtic / chamber — no electronic synth pads, no Hollywood
+  bombast, no chiptune, no AI "epic trailer" tropes. The Komiku battle track is
+  acoustic-orchestral with drums + horns (drum + brass urgency that §6 calls for),
+  not synth-driven.
+- SFX are real-instrument metallic clangs (RPG Sound Pack) and real-recorded
+  sword swings (StarNinjas), plus real-recorded surface footfalls.
