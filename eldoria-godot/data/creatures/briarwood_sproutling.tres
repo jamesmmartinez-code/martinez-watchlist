@@ -1,0 +1,51 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_sproutling",
+  "name": "Briarwood Sproutling",
+  "family": "fey",
+  "tier": "trash",
+  "level": 5,
+  "hp": 30,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4.0,
+  "behavior_tags": [
+    "plant_like",
+    "sun_worshiper"
+  ],
+  "tells": [
+    {
+      "name": "photosynthesize",
+      "wind_up_ms": 1000,
+      "vfx_id": "glow"
+    }
+  ],
+  "weaknesses": {
+    "fire": 1.2
+  },
+  "resistances": {
+    "poison": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "petal",
+      "weight": 0.3
+    },
+    {
+      "item_id": "seed",
+      "weight": 0.2
+    },
+    {
+      "item_id": "dew",
+      "weight": 0.5
+    }
+  ],
+  "flavor": "A small, delicate fey creature with leaves for hair and skin like the petals of a flower. It basks in the warm sunlight, using its photosynthetic abilities to heal and grow."
+}
+"""
