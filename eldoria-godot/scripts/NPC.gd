@@ -232,6 +232,11 @@ func _on_body_exited(body: Node) -> void:
 func _on_interact() -> void:
 	if not player_in_range:
 		return
+	# Voice line 2026-05-05: play the NPC's greeting MP3 (Workers AI Aura-2 TTS).
+	# Looks for assets/audio/voices/{npc_name_lower}_greeting.mp3 — if absent,
+	# silently skip. Per-NPC variants (e.g. maeve_quest, maeve_thanks) can be
+	# triggered later from quest hooks.
+	_play_voice_line(npc_name.to_lower() + "_greeting")
 	# REFINE: choose a mood-dependent line by time-of-day when variants exist;
 	# otherwise emit the single fallback `dialogue` line as before.
 	# INTEGRATE (pattern A): if a `warmed_flag` is set and the World records
@@ -414,3 +419,24 @@ func _bucket_for_tod(tod: float) -> int:
 	if tod >= 17.0 and tod < 21.0:
 		return 2   # evening
 	return 3       # night
+
+
+# Plays an NPC voice line MP3 from assets/audio/voices/. No-op if the file
+# doesn't exist or AudioStreamPlayer3D can't load it. Each NPC instance
+# manages its own player so two NPCs talking won't talk over each other.
+func _play_voice_line(line_id: String) -> void:
+	var path := "res://assets/audio/voices/" + line_id + ".mp3"
+	if not ResourceLoader.exists(path):
+		return
+	var stream: AudioStream = load(path) as AudioStream
+	if stream == null:
+		return
+	var player: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
+	player.stream = stream
+	player.unit_size = 12.0
+	player.max_distance = 25.0
+	player.bus = "Master"
+	player.autoplay = true
+	player.position = Vector3(0, 1.7, 0)
+	add_child(player)
+	player.finished.connect(player.queue_free)
