@@ -1603,9 +1603,16 @@ func _normalize_player_model(target_height: float) -> void:
 			local_has = true
 		else:
 			local_min_y = min(local_min_y, a2.position.y)
-	if local_has and local_min_y < -0.05:
-		var lift: float = clamp(-local_min_y, 0.0, 2.0)
-		hero.position.y = lift
+	# scale-eng 2026-05-05: SYMMETRIC ground-snap. Was only LIFTING when model
+	# bottom sat below pivot (local_min_y < -0.05). The current Hero.glb (run
+	# d408a39, Meshy merge) has feet AT y=+4 in body-local frame — pivot at
+	# crotch instead of feet — so the old branch never fired and the camera
+	# (at body+1.6m) sat looking UP into the boots. Now: snap feet to body-local
+	# y=0 in EITHER direction. Cap downward shift to -10m so a pathological
+	# measurement can't yeet the model into the floor.
+	if local_has and abs(local_min_y) > 0.05:
+		var shift: float = clamp(-local_min_y, -10.0, 2.0)
+		hero.position.y = hero.position.y + shift
 
 # ────────────────────────────────────────────────────────────────────────
 # Animation library merge — RIGGING_STANDARD §Required animations
