@@ -140,6 +140,46 @@ func _ready() -> void:
 	call_deferred("load_game")
 
 func _physics_process(delta: float) -> void:
+	var __forced_dir := Vector3.ZERO
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    __forced_dir.z -= 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  __forced_dir.z += 1.0
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):  __forced_dir.x -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): __forced_dir.x += 1.0
+	if __forced_dir.length() > 0.05:
+		var basis := global_transform.basis
+		if camera_pivot and is_instance_valid(camera_pivot):
+			basis = camera_pivot.global_transform.basis
+		var fwd := -basis.z; fwd.y = 0; fwd = fwd.normalized()
+		var rgt := basis.x;  rgt.y = 0; rgt = rgt.normalized()
+		var move_dir := (rgt * __forced_dir.x + fwd * __forced_dir.z).normalized()
+		var spd: float = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
+		velocity.x = move_dir.x * spd
+		velocity.z = move_dir.z * spd
+		if move_dir.length_squared() > 0.0001:
+			var yaw := atan2(move_dir.x, move_dir.z)
+			rotation.y = lerp_angle(rotation.y, yaw, clamp(rotation_speed * delta, 0.0, 1.0))
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+	elif Input.is_key_pressed(KEY_SPACE):
+		velocity.y = jump_velocity
+	else:
+		velocity.y = 0.0
+	move_and_slide()
+	if Input.is_key_pressed(KEY_BRACKETRIGHT) or Input.is_key_pressed(KEY_BACKSPACE):
+		global_position = Vector3(0, 3, 10)
+		velocity = Vector3.ZERO
+		is_dead = false
+		is_attacking = false
+		if hp <= 0: hp = max_hp
+		return
+	if global_position.y < -50.0 or global_position.y > 500.0:
+		global_position = Vector3(0, 3, 10)
+		velocity = Vector3.ZERO
+		return
+	return  # FORCED-MOVE: bypass legacy state machine below
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
