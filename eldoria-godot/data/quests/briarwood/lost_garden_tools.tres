@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_region = "briarwood"
+metadata/_data = """
+{
+  "id": "lost_garden_tools",
+  "title": "The Missing Garden Tools",
+  "region": "briarwood",
+  "act": 2,
+  "level_band": [
+    1,
+    3
+  ],
+  "hook": "Gardeners are in a pickle! Tools have gone missing.",
+  "stages": [
+    {
+      "objective": "Find the missing tools",
+      "location": "Briarwood Garden",
+      "completion_trigger": "collect:item_id:gardening_rake"
+    },
+    {
+      "objective": "Ask the local animals for clues",
+      "location": "Briarwood Garden",
+      "completion_trigger": "talk_to_npc:slug:sally_slug"
+    },
+    {
+      "objective": "Return the tools to the gardeners",
+      "location": "Briarwood Garden",
+      "completion_trigger": "talk_to_npc:gardener:briar_gardener"
+    }
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": [
+      "seed_bomb"
+    ],
+    "faction_rep": {
+      "briarwood": 5
+    }
+  },
+  "repeatable": false,
+  "flavor": "In the heart of Briarwood, a lush garden flourishes, but without its tools, the gardeners are in distress. The sun shines bright, and the flowers bloom, but the garden's beauty is marred by the absence of its caretakers' trusty tools."
+}
+"""
