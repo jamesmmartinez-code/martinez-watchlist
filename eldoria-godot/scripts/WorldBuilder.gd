@@ -1461,6 +1461,7 @@ func _build_pond() -> void:
 # Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
+	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
 	var spots = [Vector3(0, 0, 0), Vector3(15, 0, 12), Vector3(-15, 0, -12), Vector3(0, 0, 18)]
 	for s in spots:
 		var p := GPUParticles3D.new()
@@ -1523,6 +1524,7 @@ const LEAF_PALETTE: Array = [
 ]
 
 func _build_falling_leaves() -> void:
+	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
 	for i in FALLING_LEAF_SPOTS.size():
 		var spot: Vector3 = FALLING_LEAF_SPOTS[i]
 		var leaf_color: Color = LEAF_PALETTE[i % LEAF_PALETTE.size()]
@@ -1569,6 +1571,7 @@ func _build_falling_leaves() -> void:
 		add_child(p)
 
 func _build_smoke_chimneys() -> void:
+	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
 	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
 		if not chim: continue
