@@ -1,422 +1,1049 @@
 {
   "_meta": {
-    "generated_by": "auto/canon-qa",
-    "generated_on": "2026-05-05",
-    "scope": "lore/, data/, qa/ — read-only audit",
-    "schema_version": 1
-  },
-  "npcs": {
-    "Elder Maeve": {
-      "id": "elder_maeve",
-      "bio": "eldoria-godot/lore/npcs/elder_maeve.md",
-      "dialogue": "eldoria-godot/data/dialogue/elder_maeve.json"
-    },
-    "Smith Edda": {
-      "id": "smith_edda",
-      "bio": "eldoria-godot/lore/npcs/smith_edda.md",
-      "dialogue": "eldoria-godot/data/dialogue/smith_edda.json"
-    },
-    "Mara the Merchant": {
-      "id": "mara_merchant",
-      "bio": "eldoria-godot/lore/npcs/mara_merchant.md",
-      "dialogue": "eldoria-godot/data/dialogue/mara_merchant.json"
-    },
-    "Herbalist Lyra": {
-      "id": "herbalist_lyra",
-      "bio": "eldoria-godot/lore/npcs/herbalist_lyra.md",
-      "dialogue": "eldoria-godot/data/dialogue/herbalist_lyra.json"
-    },
-    "Innkeeper Bram": {
-      "id": "innkeeper_bram",
-      "bio": "eldoria-godot/lore/npcs/innkeeper_bram.md",
-      "dialogue": "eldoria-godot/data/dialogue/innkeeper_bram.json"
-    },
-    "Stablemaster Roan": {
-      "id": "stablemaster_roan",
-      "bio": "eldoria-godot/lore/npcs/stablemaster_roan.md",
-      "dialogue": "eldoria-godot/data/dialogue/stablemaster_roan.json"
-    },
-    "Trainer Hala": {
-      "id": "trainer_hala",
-      "bio": "eldoria-godot/lore/npcs/trainer_hala.md",
-      "dialogue": "eldoria-godot/data/dialogue/trainer_hala.json"
+    "schema_version": 2,
+    "generated": "2026-05-06T11:55:00Z",
+    "cycle": 2,
+    "scope": "story+visual canon (12 checks)",
+    "orphans": {
+      "items_needs_flavor_missing": [
+        "briar_shortbow",
+        "mossbound_buckler",
+        "roan_woodbow",
+        "wolf_heart"
+      ],
+      "items_in_tres_only_not_in_runtime": [
+        "briar_shortbow",
+        "mossbound_buckler",
+        "roan_woodbow"
+      ],
+      "items_in_runtime_only_not_in_tres": [
+        "captain_seal",
+        "crown_eldoria",
+        "dragonscale_cape",
+        "iron_helm",
+        "iron_shield",
+        "kite_shield",
+        "mage_cape",
+        "ranger_cape",
+        "ranger_hood",
+        "royal_cloak",
+        "runed_shield",
+        "silver_helm",
+        "steel_helm",
+        "traveller_cape",
+        "wooden_shield"
+      ],
+      "recipe_inputs_not_in_catalog": [
+        "bark_tannin_oak",
+        "beeswax_dab",
+        "charcoal",
+        "clay_flask_empty",
+        "hemp_cord",
+        "herb_dogwort",
+        "herb_hearts_ease",
+        "herb_marshmint",
+        "herb_starveil",
+        "iron_ingot",
+        "iron_ore",
+        "leather_strip",
+        "well_water_clear",
+        "whisperwood_oak_disc"
+      ],
+      "recipe_outputs_not_in_catalog": [
+        "iron_buckle",
+        "iron_ingot",
+        "leather_strip",
+        "marshmint_dye"
+      ],
+      "craft_items_without_recipe": [
+        "mossbound_buckler"
+      ]
     }
   },
-  "items": {
-    "rusty_sword": {
-      "name": "Rusty Sword",
-      "attribution": "narrator",
-      "origin": "Briarwood field-find, maker unknown"
+  "npcs": {
+    "elder_maeve": {
+      "bio_file": "eldoria-godot/lore/npcs/elder_maeve.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/elder_maeve.json"
     },
-    "iron_sword": {
-      "name": "Iron Sword",
-      "attribution": "Smith Edda",
-      "origin": "Briarwood forge, Edda-made"
+    "herbalist_lyra": {
+      "bio_file": "eldoria-godot/lore/npcs/herbalist_lyra.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/herbalist_lyra.json"
     },
-    "steel_blade": {
-      "name": "Steel Blade",
-      "attribution": "Smith Edda",
-      "origin": "Briarwood forge, Edda-made; the first blade that rang true after Halsa"
+    "innkeeper_bram": {
+      "bio_file": "eldoria-godot/lore/npcs/innkeeper_bram.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/innkeeper_bram.json"
     },
-    "frost_saber": {
-      "name": "Frost Saber",
-      "attribution": "Smith Edda",
-      "origin": "Briarwood forge, wyrm-touched ore; rare"
+    "mara_merchant": {
+      "bio_file": "eldoria-godot/lore/npcs/mara_merchant.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/mara_merchant.json"
     },
-    "ember_axe": {
-      "name": "Ember Axe",
-      "attribution": "narrator",
-      "origin": "Briarwood forge, hot-side work; Brigid-marked"
+    "smith_edda": {
+      "bio_file": "eldoria-godot/lore/npcs/smith_edda.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/smith_edda.json"
     },
-    "shadow_dagger": {
-      "name": "Shadow Dagger",
-      "attribution": "narrator",
-      "origin": "Erris-blessed; smith uncertain"
+    "stablemaster_roan": {
+      "bio_file": "eldoria-godot/lore/npcs/stablemaster_roan.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/stablemaster_roan.json"
+    },
+    "trainer_hala": {
+      "bio_file": "eldoria-godot/lore/npcs/trainer_hala.md",
+      "dialogue_file": "eldoria-godot/data/dialogue/trainer_hala.json"
+    }
+  },
+  "items_catalog": {
+    "briar_shortbow": {
+      "name": "Briar Shortbow",
+      "category": "weapon",
+      "rarity": "uncommon",
+      "tier": 2,
+      "value_gold": 65,
+      "acquired_via": "quest",
+      "needs_flavor": true,
+      "tres_file": "eldoria-godot/data/items/weapons/briar_shortbow.tres",
+      "has_flavor": false
     },
     "dragonfang": {
       "name": "Dragonfang",
-      "attribution": "narrator",
-      "origin": "Pre-Sundering relic; Pale Wyrm-touched"
+      "category": "weapon",
+      "rarity": "legendary",
+      "tier": 7,
+      "value_gold": 1500,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/dragonfang.tres",
+      "has_flavor": true
     },
-    "cloth": {
-      "name": "Cloth Tunic",
-      "attribution": "narrator",
-      "origin": "Briarwood village hand-me-down"
+    "ember_axe": {
+      "name": "Ember Axe",
+      "category": "weapon",
+      "rarity": "rare",
+      "tier": 4,
+      "value_gold": 260,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/ember_axe.tres",
+      "has_flavor": true
     },
-    "leather": {
-      "name": "Leather Vest",
-      "attribution": "Stablemaster Roan",
-      "origin": "Briarwood stable, saddler-cut"
+    "frost_saber": {
+      "name": "Frost Saber",
+      "category": "weapon",
+      "rarity": "rare",
+      "tier": 4,
+      "value_gold": 210,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/frost_saber.tres",
+      "has_flavor": true
+    },
+    "iron_sword": {
+      "name": "Iron Sword",
+      "category": "weapon",
+      "rarity": "common",
+      "tier": 2,
+      "value_gold": 18,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/iron_sword.tres",
+      "has_flavor": true
+    },
+    "roan_woodbow": {
+      "name": "Roan Woodbow",
+      "category": "weapon",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 10,
+      "acquired_via": "vendor",
+      "needs_flavor": true,
+      "tres_file": "eldoria-godot/data/items/weapons/roan_woodbow.tres",
+      "has_flavor": false
+    },
+    "rusty_sword": {
+      "name": "Rusty Sword",
+      "category": "weapon",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 4,
+      "acquired_via": "chest",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/rusty_sword.tres",
+      "has_flavor": true
+    },
+    "shadow_dagger": {
+      "name": "Shadow Dagger",
+      "category": "weapon",
+      "rarity": "epic",
+      "tier": 5,
+      "value_gold": 420,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/shadow_dagger.tres",
+      "has_flavor": true
+    },
+    "steel_blade": {
+      "name": "Steel Blade",
+      "category": "weapon",
+      "rarity": "uncommon",
+      "tier": 3,
+      "value_gold": 55,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/weapons/steel_blade.tres",
+      "has_flavor": true
     },
     "chainmail": {
       "name": "Chainmail",
-      "attribution": "narrator",
-      "origin": "Iron Crown make; Briarwood-mended"
+      "category": "armor",
+      "rarity": "uncommon",
+      "tier": 3,
+      "value_gold": 80,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/chainmail.tres",
+      "has_flavor": true
     },
-    "steel_plate": {
-      "name": "Steel Plate",
-      "attribution": "narrator",
-      "origin": "Iron Crown make; Edda-marked at the seam"
-    },
-    "emberforge": {
-      "name": "Emberforge Plate",
-      "attribution": "narrator",
-      "origin": "Briarwood forge, Edda-made; Brigid-touched"
+    "cloth": {
+      "name": "Cloth Tunic",
+      "category": "armor",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 6,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/cloth.tres",
+      "has_flavor": true
     },
     "dragonscale": {
       "name": "Dragonscale",
-      "attribution": "narrator",
-      "origin": "Pre-Sundering; Pale Wyrm-shed; Crystal Caves verge"
+      "category": "armor",
+      "rarity": "legendary",
+      "tier": 7,
+      "value_gold": 2200,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/dragonscale.tres",
+      "has_flavor": true
     },
-    "ring_focus": {
-      "name": "Ring of Focus",
-      "attribution": "Mara the Merchant",
-      "origin": "Mara-traded; Edda-hammered; Crystal Caves shard"
+    "emberforge": {
+      "name": "Emberforge Plate",
+      "category": "armor",
+      "rarity": "epic",
+      "tier": 5,
+      "value_gold": 620,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/emberforge.tres",
+      "has_flavor": true
     },
-    "talisman_oak": {
-      "name": "Oak Talisman",
-      "attribution": "Herbalist Lyra",
-      "origin": "Whisperwood-fallen oak; Lyra-harvested"
+    "leather": {
+      "name": "Leather Vest",
+      "category": "armor",
+      "rarity": "common",
+      "tier": 2,
+      "value_gold": 24,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/leather.tres",
+      "has_flavor": true
+    },
+    "mossbound_buckler": {
+      "name": "Mossbound Buckler",
+      "category": "armor",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 18,
+      "acquired_via": "craft",
+      "needs_flavor": true,
+      "tres_file": "eldoria-godot/data/items/armor/mossbound_buckler.tres",
+      "has_flavor": false
+    },
+    "steel_plate": {
+      "name": "Steel Plate",
+      "category": "armor",
+      "rarity": "rare",
+      "tier": 4,
+      "value_gold": 280,
+      "acquired_via": "chest",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/armor/steel_plate.tres",
+      "has_flavor": true
     },
     "crit_amulet": {
       "name": "Hawk's Amulet",
-      "attribution": "Stablemaster Roan",
-      "origin": "High Steppe; Stone Crown rider-make"
+      "category": "relic",
+      "rarity": "rare",
+      "tier": 3,
+      "value_gold": 190,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/relics/crit_amulet.tres",
+      "has_flavor": true
     },
     "guardian_core": {
       "name": "Guardian's Core",
-      "attribution": "Elder Maeve",
-      "origin": "Crystal Caves; pre-Sundering; thirre-borne"
+      "category": "relic",
+      "rarity": "legendary",
+      "tier": 6,
+      "value_gold": 1800,
+      "acquired_via": "quest",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/relics/guardian_core.tres",
+      "has_flavor": true
     },
-    "hp_potion_s": {
-      "name": "Lesser Health Potion",
-      "attribution": "Herbalist Lyra",
-      "origin": "Briarwood herb-shed; Lyra-pressed"
+    "ring_focus": {
+      "name": "Ring of Focus",
+      "category": "relic",
+      "rarity": "uncommon",
+      "tier": 2,
+      "value_gold": 85,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/relics/ring_focus.tres",
+      "has_flavor": true
+    },
+    "talisman_oak": {
+      "name": "Oak Talisman",
+      "category": "relic",
+      "rarity": "uncommon",
+      "tier": 2,
+      "value_gold": 75,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/relics/talisman_oak.tres",
+      "has_flavor": true
     },
     "hp_potion_l": {
       "name": "Greater Health Potion",
-      "attribution": "Herbalist Lyra",
-      "origin": "Briarwood herb-shed; Lyra-pressed; Wennet's coat-pocket recipe"
+      "category": "consumable",
+      "rarity": "uncommon",
+      "tier": 2,
+      "value_gold": 40,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/consumables/hp_potion_l.tres",
+      "has_flavor": true
+    },
+    "hp_potion_s": {
+      "name": "Lesser Health Potion",
+      "category": "consumable",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 12,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/consumables/hp_potion_s.tres",
+      "has_flavor": true
     },
     "mp_potion": {
       "name": "Mana Draught",
-      "attribution": "Herbalist Lyra",
-      "origin": "Briarwood herb-shed; Honeysong-stilled"
-    },
-    "wolf_pelt": {
-      "name": "Wolf Pelt",
-      "attribution": "Herbalist Lyra",
-      "origin": "Whisperwood; dire-wolf"
-    },
-    "wolf_fang": {
-      "name": "Wolf Fang",
-      "attribution": "Stablemaster Roan",
-      "origin": "Whisperwood; dire-wolf"
-    },
-    "goblin_ear": {
-      "name": "Goblin Ear",
-      "attribution": "Mara the Merchant",
-      "origin": "Whisperwood; goblin"
+      "category": "consumable",
+      "rarity": "common",
+      "tier": 2,
+      "value_gold": 15,
+      "acquired_via": "vendor",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/consumables/mp_potion.tres",
+      "has_flavor": true
     },
     "crystal_shard": {
       "name": "Crystal Shard",
-      "attribution": "Smith Edda",
-      "origin": "Crystal Caves; Sundering-wound"
+      "category": "material",
+      "rarity": "uncommon",
+      "tier": 2,
+      "value_gold": 35,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/materials/crystal_shard.tres",
+      "has_flavor": true
+    },
+    "goblin_ear": {
+      "name": "Goblin Ear",
+      "category": "material",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 3,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/materials/goblin_ear.tres",
+      "has_flavor": true
     },
     "warlord_horn": {
       "name": "Warlord's Horn",
-      "attribution": "Elder Maeve",
-      "origin": "Whisperwood; Goblin Warlord trophy"
+      "category": "material",
+      "rarity": "epic",
+      "tier": 5,
+      "value_gold": 250,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/materials/warlord_horn.tres",
+      "has_flavor": true
+    },
+    "wolf_fang": {
+      "name": "Wolf Fang",
+      "category": "material",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 6,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/materials/wolf_fang.tres",
+      "has_flavor": true
+    },
+    "wolf_heart": {
+      "name": "Wolf Heart",
+      "category": "material",
+      "rarity": "rare",
+      "tier": 2,
+      "value_gold": 32,
+      "acquired_via": "drop",
+      "needs_flavor": true,
+      "tres_file": "eldoria-godot/data/items/materials/wolf_heart.tres",
+      "has_flavor": false
+    },
+    "wolf_pelt": {
+      "name": "Wolf Pelt",
+      "category": "material",
+      "rarity": "common",
+      "tier": 1,
+      "value_gold": 8,
+      "acquired_via": "drop",
+      "needs_flavor": false,
+      "tres_file": "eldoria-godot/data/items/materials/wolf_pelt.tres",
+      "has_flavor": true
     }
   },
-  "codex": {
-    "steppe_riders_refusal": {
-      "file": "eldoria-godot/data/codex/steppe_riders_refusal.md",
-      "region": "crystal_caves",
-      "prerequisite_codex": "stag_courts_courtesy"
-    },
-    "stag_courts_courtesy": {
-      "file": "eldoria-godot/data/codex/stag_courts_courtesy.md",
-      "region": "crystal_caves",
-      "prerequisite_codex": null
-    }
-  },
-  "gods": {
-    "Brigid the Forge-Mother": {
-      "defined_in": "lore/world.md"
-    },
-    "Thiar the Stag": {
-      "defined_in": "lore/world.md"
-    },
-    "Vellum the Patient Stone": {
-      "defined_in": "lore/world.md"
-    },
-    "The Hollow King": {
-      "defined_in": "lore/world.md"
-    },
-    "Erris of the Two Roads": {
-      "defined_in": "lore/world.md"
-    }
-  },
-  "places": {
-    "Briarwood": {},
-    "Whisperwood": {},
-    "Crystal Caves": {},
-    "Mountain Ring": {},
-    "High Steppe": {},
-    "Briar's Run": {},
-    "Cinder Reach": {},
-    "Aurel": {},
-    "Long Lantern": {},
-    "Walker House": {}
-  },
-  "crowns": {
-    "The Iron Crown": {
-      "defined_in": "lore/world.md"
-    },
-    "The Antler Crown": {
-      "defined_in": "lore/world.md"
-    },
-    "The Stone Crown": {
-      "defined_in": "lore/world.md"
-    }
-  },
-  "moons": [
-    "Dawnmoot",
-    "Lambmoon",
-    "Greenshield",
-    "Sunpetal",
-    "Honeysong",
-    "Thornripe",
-    "Reapmoon",
-    "Emberfall",
-    "Smokerise",
-    "Wolfwake",
-    "Longnight",
-    "Foxthaw"
+  "items_runtime": [
+    "captain_seal",
+    "chainmail",
+    "cloth",
+    "crit_amulet",
+    "crown_eldoria",
+    "crystal_shard",
+    "dragonfang",
+    "dragonscale",
+    "dragonscale_cape",
+    "ember_axe",
+    "emberforge",
+    "frost_saber",
+    "goblin_ear",
+    "guardian_core",
+    "hp_potion_l",
+    "hp_potion_s",
+    "iron_helm",
+    "iron_shield",
+    "iron_sword",
+    "kite_shield",
+    "leather",
+    "mage_cape",
+    "mp_potion",
+    "ranger_cape",
+    "ranger_hood",
+    "ring_focus",
+    "royal_cloak",
+    "runed_shield",
+    "rusty_sword",
+    "shadow_dagger",
+    "silver_helm",
+    "steel_blade",
+    "steel_helm",
+    "steel_plate",
+    "talisman_oak",
+    "traveller_cape",
+    "warlord_horn",
+    "wolf_fang",
+    "wolf_heart",
+    "wolf_pelt",
+    "wooden_shield"
   ],
-  "lexicon_old_faerie": {
-    "torrest": {
-      "pron": "TOR-est",
-      "sense": "the held edge.",
-      "source": "eldoria-godot/lore/npcs/trainer_hala.md"
+  "recipes": [
+    {
+      "id": "herbshed_cure_wolf_pelt",
+      "file": "eldoria-godot/data/recipes/cure_wolf_pelt.tres",
+      "inputs": [
+        "wolf_pelt",
+        "bark_tannin_oak",
+        "leather_strip"
+      ],
+      "output": "leather_strip",
+      "station": "lyra_herb_shed"
     },
-    "vethran": {
-      "pron": "VETH-run",
-      "sense": "the lesson taught against the\n  hand.",
-      "source": "eldoria-godot/lore/npcs/trainer_hala.md"
+    {
+      "id": "forge_chainmail_mend",
+      "file": "eldoria-godot/data/recipes/forge_chainmail.tres",
+      "inputs": [
+        "iron_ingot",
+        "leather_strip",
+        "charcoal",
+        "chainmail"
+      ],
+      "output": "chainmail",
+      "station": "edda_forge"
     },
-    "maelorn": {
-      "pron": "MAY-lorn",
-      "sense": "the ride for another's grief.",
-      "source": "eldoria-godot/lore/npcs/stablemaster_roan.md"
+    {
+      "id": "forge_iron_sword",
+      "file": "eldoria-godot/data/recipes/forge_iron_sword.tres",
+      "inputs": [
+        "iron_ingot",
+        "charcoal",
+        "leather_strip",
+        "iron_sword"
+      ],
+      "output": "iron_sword",
+      "station": "edda_forge"
     },
-    "ostren": {
-      "pron": "OS-tren",
-      "sense": "the kept stall.",
-      "source": "eldoria-godot/lore/npcs/stablemaster_roan.md"
+    {
+      "id": "forge_iron_buckle",
+      "file": "eldoria-godot/data/recipes/iron_buckle.tres",
+      "inputs": [
+        "iron_ingot",
+        "charcoal",
+        "iron_buckle"
+      ],
+      "output": "iron_buckle",
+      "station": "edda_forge"
     },
-    "haethe": {
-      "pron": "HEY-thuh",
-      "sense": "the song iron remembers.",
-      "source": "eldoria-godot/lore/npcs/smith_edda.md"
+    {
+      "id": "forge_iron_ingot",
+      "file": "eldoria-godot/data/recipes/iron_ingot.tres",
+      "inputs": [
+        "iron_ore",
+        "charcoal",
+        "iron_ingot"
+      ],
+      "output": "iron_ingot",
+      "station": "edda_forge"
     },
-    "unnen": {
-      "pron": "UH-nun",
-      "sense": "the work of two hands.",
-      "source": "eldoria-godot/lore/npcs/smith_edda.md"
+    {
+      "id": "herbshed_hp_potion_s",
+      "file": "eldoria-godot/data/recipes/lesser_health_potion.tres",
+      "inputs": [
+        "herb_hearts_ease",
+        "herb_dogwort",
+        "herb_marshmint",
+        "beeswax_dab",
+        "clay_flask_empty",
+        "hp_potion_s"
+      ],
+      "output": "hp_potion_s",
+      "station": "lyra_herb_shed"
     },
-    "pendrel": {
-      "pron": "PEN-druhl",
-      "sense": "the third coin in the till that does not\n  belong to the day's count.",
-      "source": "eldoria-godot/lore/npcs/mara_merchant.md"
+    {
+      "id": "herbshed_mp_draught",
+      "file": "eldoria-godot/data/recipes/mana_draught.tres",
+      "inputs": [
+        "herb_starveil",
+        "herb_marshmint",
+        "well_water_clear",
+        "clay_flask_empty",
+        "mp_potion"
+      ],
+      "output": "mp_potion",
+      "station": "lyra_herb_shed"
     },
-    "mhairen": {
-      "pron": "MAR-en",
-      "sense": "what the satchel carries that is not for\n  sale.",
-      "source": "eldoria-godot/lore/npcs/mara_merchant.md"
+    {
+      "id": "herbshed_marshmint_dye",
+      "file": "eldoria-godot/data/recipes/marshmint_dye.tres",
+      "inputs": [
+        "herb_marshmint",
+        "well_water_clear",
+        "marshmint_dye"
+      ],
+      "output": "marshmint_dye",
+      "station": "lyra_herb_shed"
     },
-    "vethar": {
-      "pron": "VEH-thar",
-      "sense": "the candle in the window.",
-      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
+    {
+      "id": "herbshed_oak_talisman",
+      "file": "eldoria-godot/data/recipes/oak_talisman.tres",
+      "inputs": [
+        "whisperwood_oak_disc",
+        "herb_marshmint",
+        "hemp_cord",
+        "talisman_oak"
+      ],
+      "output": "talisman_oak",
+      "station": "lyra_herb_shed"
     },
-    "haisten": {
-      "pron": "HAY-stuhn",
-      "sense": "the song with no last verse.",
-      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
-    },
-    "breos": {
-      "pron": "BREE-oss",
-      "sense": "what the bowl remembers.",
-      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
-    },
-    "mossaen": {
-      "pron": "MOSS-ain",
-      "sense": "the listening you do with both hands in\n  the dirt.",
-      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
-    },
-    "thalen-ai": {
-      "pron": "THAH-len AYE",
-      "sense": "the herb that grows where it is\n  needed.",
-      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
-    },
-    "wennen": {
-      "pron": "WEN-uhn",
-      "sense": "to leave something growing for someone\n  else to find.",
-      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
-    },
-    "vael-tor": {
-      "pron": "VAY-l tor",
-      "sense": "the gathered hearth.",
-      "source": "eldoria-godot/lore/npcs/elder_maeve.md"
-    },
-    "thressa-mai": {
-      "pron": "THRESS-uh MY",
-      "sense": "the unanswered letter.",
-      "source": "eldoria-godot/lore/npcs/elder_maeve.md"
-    },
-    "thrunn": {
-      "pron": "THRUHN",
-      "sense": "the Stone-oath kept in writing.",
-      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
-    },
-    "korr": {
-      "pron": "KOR",
-      "sense": "what you owe to weather.",
-      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
-    },
-    "drevenn-i-haern": {
-      "pron": "DREV-en ee HAYRN",
-      "sense": "the watching-stones already\n  hold her.",
-      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
-    },
-    "vael-i-thirren": {
-      "pron": "VAY-l ee THEER-en",
-      "sense": "we are remembering you.",
-      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
-    },
-    "ai-mhorren": {
-      "pron": "eye MOR-en",
-      "sense": "the gift that is the asking.",
-      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
-    },
-    "velhain-tor": {
-      "pron": "VEL-hayn tor",
-      "sense": "go warmly.",
-      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
-    },
-    "thirre": {
-      "pron": "THEER-uh",
-      "sense": "memory of stone.",
-      "source": "eldoria-godot/lore/world.md"
-    },
-    "ai-velin": {
-      "pron": "eye-VEL-in",
-      "sense": "the long path.",
-      "source": "eldoria-godot/lore/world.md"
-    },
-    "kerrithen": {
-      "pron": "KAIR-ih-thun",
-      "sense": "to lay something down so the land\n  may hold it.",
-      "source": "eldoria-godot/lore/world.md"
+    {
+      "id": "forge_rusty_to_iron",
+      "file": "eldoria-godot/data/recipes/rusty_to_iron.tres",
+      "inputs": [
+        "rusty_sword",
+        "charcoal",
+        "iron_sword"
+      ],
+      "output": "iron_sword",
+      "station": "edda_forge"
     }
-  },
-  "lexicon_stone_tongue": {
-    "korthain": {
-      "pron": "KOR-thayn",
-      "sense": "I refuse, but warmly.",
-      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
+  ],
+  "quests": [
+    {
+      "id": "whisperwood_cleansing",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Elder Maeve",
+      "fetch_item": null,
+      "reward_item": null,
+      "xp_reward": 80,
+      "gold_reward": 60
+    },
+    {
+      "id": "pelt_for_lyra",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Herbalist Lyra",
+      "fetch_item": "wolf_pelt",
+      "reward_item": "hp_potion_l",
+      "xp_reward": 70,
+      "gold_reward": 45
+    },
+    {
+      "id": "ears_for_mara",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Mara the Merchant",
+      "fetch_item": "goblin_ear",
+      "reward_item": null,
+      "xp_reward": 60,
+      "gold_reward": 90
+    },
+    {
+      "id": "wolf_fang_for_roan",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Stablemaster Roan",
+      "fetch_item": "wolf_fang",
+      "reward_item": null,
+      "xp_reward": 65,
+      "gold_reward": 50
+    },
+    {
+      "id": "wolf_form_with_hala",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Trainer Hala",
+      "fetch_item": null,
+      "reward_item": null,
+      "xp_reward": 90,
+      "gold_reward": 35
+    },
+    {
+      "id": "wolf_heart_for_bram",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Innkeeper Bram",
+      "fetch_item": "wolf_heart",
+      "reward_item": null,
+      "xp_reward": 70,
+      "gold_reward": 55
+    },
+    {
+      "id": "bandit_road_for_roan",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Stablemaster Roan",
+      "fetch_item": null,
+      "reward_item": null,
+      "xp_reward": 80,
+      "gold_reward": 75
+    },
+    {
+      "id": "captain_seal_for_maeve",
+      "source": "World.gd::QUEST_CATALOG",
+      "giver": "Elder Maeve",
+      "fetch_item": "captain_seal",
+      "reward_item": null,
+      "xp_reward": 90,
+      "gold_reward": 50
+    },
+    {
+      "id": "shards_for_mara",
+      "source": ".tres",
+      "file": "eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres",
+      "region": "crystal_caves",
+      "act": 2,
+      "level_band": "6-8",
+      "giver": "Mara the Merchant",
+      "fetch_item": "crystal_shard"
     }
-  },
-  "references": [
+  ],
+  "creatures": [
     {
-      "from": "smith_edda.md",
-      "to": "innkeeper_bram.md",
-      "type": "longnight_stew",
-      "note": "Bram brings Edda stew every Longnight"
+      "id": "crystal_elemental",
+      "file": "eldoria-godot/data/creatures/crystal_elemental.tres",
+      "loot_file": "eldoria-godot/data/creatures/_loot/crystal_elemental.tres"
     },
     {
-      "from": "innkeeper_bram.md",
-      "to": "elder_maeve.md",
-      "type": "longnight_round",
-      "note": "Bram brings Maeve stew after Edda"
+      "id": "skeleton",
+      "file": "eldoria-godot/data/creatures/skeleton.tres",
+      "loot_file": "eldoria-godot/data/creatures/_loot/skeleton.tres"
+    }
+  ],
+  "codex": [
+    "stag_courts_courtesy",
+    "steppe_riders_refusal"
+  ],
+  "factions": [
+    "three_crowns",
+    "wardens_of_the_mark"
+  ],
+  "regions": [
+    "briarwood",
+    "whisperwood",
+    "crystal_caves",
+    "high_steppe",
+    "smoke_cities",
+    "stag_court"
+  ],
+  "scenes": [
+    "eldoria-godot/scenes/Main.tscn",
+    "eldoria-godot/scenes/CharacterSelect.tscn",
+    "eldoria-godot/scenes/realms/eldoria_terrain.tscn"
+  ],
+  "scripts": [
+    "Achievements",
+    "Audio",
+    "Boss",
+    "CameraController",
+    "CharacterSelect",
+    "Chest",
+    "DamageNumber",
+    "DialogueDB",
+    "Enemy",
+    "Inventory",
+    "Items",
+    "Minimap",
+    "NPC",
+    "Pet",
+    "Player",
+    "UITheme",
+    "World",
+    "WorldBuilder",
+    "WorldMap",
+    "dev/build_anim_library",
+    "terrain/eldoria_heightmap"
+  ],
+  "world_flags": [
+    "bram_nights_quiet",
+    "hala_wolf_form_done",
+    "lyra_potion_brew",
+    "maeve_seal_kept",
+    "mara_bounty_paid",
+    "roan_bandit_road_clear",
+    "roan_bounty_paid",
+    "whisperwood_safer"
+  ],
+  "edges": [
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Elder Maeve",
+      "quest": "whisperwood_cleansing"
     },
     {
-      "from": "innkeeper_bram.md",
-      "to": "stablemaster_roan.md",
-      "type": "longnight_round",
-      "note": "Bram brings Roan stew at the third hour"
+      "kind": "npc_gives_quest",
+      "npc": "Herbalist Lyra",
+      "quest": "pelt_for_lyra"
     },
     {
-      "from": "trainer_hala.md",
-      "to": "innkeeper_bram.md",
-      "type": "longnight_stew",
-      "note": "Bram brings Hala stew on Longnight"
+      "kind": "quest_needs_item",
+      "quest": "pelt_for_lyra",
+      "item": "wolf_pelt"
     },
     {
-      "from": "items_flavor.json#frost_saber",
-      "to": "smith_edda.md",
-      "type": "attribution",
-      "note": "Edda credited as forger; bio asserts she has never named a blade Frost — CONTRADICTION"
+      "kind": "quest_rewards_item",
+      "quest": "pelt_for_lyra",
+      "item": "hp_potion_l"
     },
     {
-      "from": "items_flavor.json#frost_saber",
-      "to": "trainer_hala.md",
-      "type": "implicit_origin",
-      "note": "Frost saber laid on cairn — Hala canon attributes this to Tarric's southern saber, not Edda's forge"
+      "kind": "npc_gives_quest",
+      "npc": "Mara the Merchant",
+      "quest": "ears_for_mara"
     },
     {
-      "from": "trainer_hala.json#after_first_quest_complete",
-      "to": "items_flavor.json",
-      "type": "missing_item",
-      "note": "hand-bound practice cudgel referenced as reward; no entry in items catalog"
+      "kind": "quest_needs_item",
+      "quest": "ears_for_mara",
+      "item": "goblin_ear"
     },
     {
-      "from": "stablemaster_roan.json#after_first_quest_complete",
-      "to": "items_flavor.json",
-      "type": "missing_item",
-      "note": "Steppe-Patterned Halter referenced; no entry in items catalog"
+      "kind": "npc_gives_quest",
+      "npc": "Stablemaster Roan",
+      "quest": "wolf_fang_for_roan"
+    },
+    {
+      "kind": "quest_needs_item",
+      "quest": "wolf_fang_for_roan",
+      "item": "wolf_fang"
+    },
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Trainer Hala",
+      "quest": "wolf_form_with_hala"
+    },
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Innkeeper Bram",
+      "quest": "wolf_heart_for_bram"
+    },
+    {
+      "kind": "quest_needs_item",
+      "quest": "wolf_heart_for_bram",
+      "item": "wolf_heart"
+    },
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Stablemaster Roan",
+      "quest": "bandit_road_for_roan"
+    },
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Elder Maeve",
+      "quest": "captain_seal_for_maeve"
+    },
+    {
+      "kind": "quest_needs_item",
+      "quest": "captain_seal_for_maeve",
+      "item": "captain_seal"
+    },
+    {
+      "kind": "npc_gives_quest",
+      "npc": "Mara the Merchant",
+      "quest": "shards_for_mara"
+    },
+    {
+      "kind": "quest_needs_item",
+      "quest": "shards_for_mara",
+      "item": "crystal_shard"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_cure_wolf_pelt",
+      "item": "wolf_pelt"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_cure_wolf_pelt",
+      "item": "bark_tannin_oak"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_cure_wolf_pelt",
+      "item": "leather_strip"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "herbshed_cure_wolf_pelt",
+      "item": "leather_strip"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_chainmail_mend",
+      "item": "iron_ingot"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_chainmail_mend",
+      "item": "leather_strip"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_chainmail_mend",
+      "item": "charcoal"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_chainmail_mend",
+      "item": "chainmail"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "forge_chainmail_mend",
+      "item": "chainmail"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_sword",
+      "item": "iron_ingot"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_sword",
+      "item": "charcoal"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_sword",
+      "item": "leather_strip"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_sword",
+      "item": "iron_sword"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "forge_iron_sword",
+      "item": "iron_sword"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_buckle",
+      "item": "iron_ingot"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_buckle",
+      "item": "charcoal"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_buckle",
+      "item": "iron_buckle"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "forge_iron_buckle",
+      "item": "iron_buckle"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_ingot",
+      "item": "iron_ore"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_ingot",
+      "item": "charcoal"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_iron_ingot",
+      "item": "iron_ingot"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "forge_iron_ingot",
+      "item": "iron_ingot"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "herb_hearts_ease"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "herb_dogwort"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "herb_marshmint"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "beeswax_dab"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "clay_flask_empty"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "hp_potion_s"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "herbshed_hp_potion_s",
+      "item": "hp_potion_s"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_mp_draught",
+      "item": "herb_starveil"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_mp_draught",
+      "item": "herb_marshmint"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_mp_draught",
+      "item": "well_water_clear"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_mp_draught",
+      "item": "clay_flask_empty"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_mp_draught",
+      "item": "mp_potion"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "herbshed_mp_draught",
+      "item": "mp_potion"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_marshmint_dye",
+      "item": "herb_marshmint"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_marshmint_dye",
+      "item": "well_water_clear"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_marshmint_dye",
+      "item": "marshmint_dye"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "herbshed_marshmint_dye",
+      "item": "marshmint_dye"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_oak_talisman",
+      "item": "whisperwood_oak_disc"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_oak_talisman",
+      "item": "herb_marshmint"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_oak_talisman",
+      "item": "hemp_cord"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "herbshed_oak_talisman",
+      "item": "talisman_oak"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "herbshed_oak_talisman",
+      "item": "talisman_oak"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_rusty_to_iron",
+      "item": "rusty_sword"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_rusty_to_iron",
+      "item": "charcoal"
+    },
+    {
+      "kind": "recipe_input",
+      "recipe": "forge_rusty_to_iron",
+      "item": "iron_sword"
+    },
+    {
+      "kind": "recipe_output",
+      "recipe": "forge_rusty_to_iron",
+      "item": "iron_sword"
     }
   ]
 }
