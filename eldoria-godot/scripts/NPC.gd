@@ -113,8 +113,8 @@ var _breathe_phase: float = 0.0
 # as a stiff first-frame snap) and waste the playback queue.
 var _is_walking_schedule: bool = false
 
-@onready var label_3d: Label3D = $Label3D
-@onready var interact_area: Area3D = $InteractArea
+@onready var label_3d: Label3D = get_node_or_null("Label3D") as Label3D
+@onready var interact_area: Area3D = get_node_or_null("InteractArea") as Area3D
 # RIGGING_STANDARD §Required animations — shared humanoid library so NPCs
 # can play wave / yes / no / idle / walk regardless of source-GLB.
 const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
