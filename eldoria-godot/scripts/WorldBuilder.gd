@@ -1490,7 +1490,7 @@ func _build_firefly_particles() -> void:
 		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		dm.albedo_texture = _make_soft_particle_texture()
-	qm.material = dm
+		qm.material = dm
 		p.draw_pass_1 = qm
 		add_child(p)
 
@@ -1567,7 +1567,7 @@ func _build_falling_leaves() -> void:
 		dm.cull_mode = BaseMaterial3D.CULL_DISABLED
 		dm.vertex_color_use_as_albedo = true
 		dm.albedo_texture = _make_soft_particle_texture()
-	qm.material = dm
+		qm.material = dm
 		p.draw_pass_1 = qm
 		p.add_to_group("falling_leaves")
 		add_child(p)
@@ -1600,7 +1600,7 @@ func _build_smoke_chimneys() -> void:
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		dm.no_depth_test = false
 		dm.albedo_texture = _make_soft_particle_texture()
-	qm.material = dm
+		qm.material = dm
 		smoke.draw_pass_1 = qm
 		b.add_child(smoke)
 
