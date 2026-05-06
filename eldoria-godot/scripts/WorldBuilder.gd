@@ -1898,6 +1898,8 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 	# A cluster of 3–6 elongated emissive shards radiating from a base point.
 	var cluster := Node3D.new()
 	cluster.position = pos
+	# scale-eng 2026-05-05: enable runtime cap-sweep (canon crystal cluster cap 4.0m).
+	cluster.add_to_group("crystals")
 	parent.add_child(cluster)
 	var shard_count: int = rng.randi_range(3, 6)
 	for i in shard_count:
@@ -1936,15 +1938,19 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: bool = false) -> void:
 	var sm := MeshInstance3D.new()
 	var pm := PrismMesh.new()
-	pm.size = Vector3(0.7, height, 0.7)
+	# scale-eng 2026-05-05: clamp to canon stalagmite cap 6m at spawn so a
+	# rogue caller can't pass height=20 without runtime-sweep correction.
+	pm.size = Vector3(0.7, clamp(height, 0.5, 6.0), 0.7)
 	sm.mesh = pm
 	sm.material_override = MAT_ROCK(1.0)
 	sm.position = pos
+	sm.add_to_group("stalagmites")  # scale-eng 2026-05-05: enable runtime sweep
+	var h_eff: float = pm.size.y  # scale-eng 2026-05-05: use clamped height for offset
 	if point_down:
-		sm.position.y = pos.y - height * 0.5
+		sm.position.y = pos.y - h_eff * 0.5
 		sm.rotation.x = PI
 	else:
-		sm.position.y = pos.y + height * 0.5
+		sm.position.y = pos.y + h_eff * 0.5
 	sm.rotation.y = randf() * TAU
 	parent.add_child(sm)
 
@@ -2212,6 +2218,33 @@ func _global_scale_sweep() -> void:
 			if not body.is_in_group("buildings"):
 				continue
 			_clamp_max_height(body, 7.0)
+		# scale-eng 2026-05-05: mountain meshes spawn as bare MeshInstance3D
+		# (not StaticBody3D), so the static-body branch above with the "mountain"
+		# group check never fires. Walk Node3D too. Canon mountain cap 80m.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("mountain"):
+				continue
+			_clamp_max_height(body, 80.0)
+		# scale-eng 2026-05-05: decorative crystal clusters — canon cap 4.0m.
+		# _make_crystal_cluster now joins "crystals" so the cluster wrapper
+		# stays under cap even if a future caller passes a wild base_scale.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("crystals"):
+				continue
+			_clamp_max_height(body, 4.0)
+		# scale-eng 2026-05-05: stalagmites — canon cap 6.0m (treat as scenery
+		# pillar; spawned by _make_stalagmite which now joins "stalagmites").
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("stalagmites"):
+				continue
+			_clamp_max_height(body, 6.0)
+		# scale-eng 2026-05-05: lanterns — canon cap 2.5m. _make_lantern joins
+		# "lanterns" already; the source fix in commit 9b7d288 made these in-spec
+		# at spawn, but a runtime sweep is cheap insurance.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("lanterns"):
+				continue
+			_clamp_max_height(body, 2.5)
 
 
 # Helper used by the sweep — uniformly shrink a Node3D so its world-space
