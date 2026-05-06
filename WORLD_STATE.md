@@ -2588,3 +2588,59 @@ captain_seal is not yet a visible mantle-prop (Builder territory).
   intentional.
 
 ### Branch pushed: `auto/lore`
+- ✅ **Resolved 2026-05-06 (run 24 — Lore Keeper):** Roan's `road_warden`
+  warm_lines shipped as the third warm tier in
+  `eldoria-godot/data/dialogue/stablemaster_roan.json`
+  (`warm_lines.warm_promoted_after_road_warden`). Four lines, mirror shape
+  of `warm_promoted_after_first_bounty_done`, authored AFTER the
+  `first_bounty_done` tier so the Tier-2 NPC.gd `warm_flag` resolver picks
+  `road_warden` FIRST when the player carries both flags (LIFO append, as
+  flagged by the run-23 hook). Lines:
+  *(a) warm_a_first_runner_back* — a stable-floor line where the runner-line
+  speaks again, Pippin's ears up before Roan's;
+  *(b) warm_b_captain_weighed_unnamed* — the captain in the sodden cloak,
+  weighed once and held unnamed (the run-23 / run-24 captain-naming hook is
+  not closed by this run; warm_b is rewritten in a single line if/when a
+  later Lore Keeper names him);
+  *(c) warm_c_between_two_stones_surfaces* — first canonical surfacing of
+  the *between two stones* idiom in any of Roan's lines, the road owes the
+  captain nothing / the road owes the runners; idiom now SURFACED, moved
+  from `lore_notes.lexicon_held_in_reserve` to `lexicon_used`; per the
+  voice rules its appearance MUST stay rare (~3x a year, max once per
+  in-game month);
+  *(d) warm_d_pippin_south_paddock* — warmest of the four, parenthetical
+  dropped per the *closeness has earned the quieter bodily presence* rule
+  in `lore/npcs/stablemaster_roan.md` → Author note. The faction-tier
+  (`warm_dire_wolves_below_0.5`) and the gated solo reveal
+  (`gated_solo_lines.warm_e_black_mare_named_alone_solo`) are independently
+  routed and stay live. All five Withholding-Ledger constraints from
+  `lore/npcs/stablemaster_roan.md` honored — Cailen unnamed, Stag-Court
+  unnamed, the Steppe-iron nail unreferenced, Lyra unnamed in the salve
+  shape, the black mare's name reserved to the gated solo tier, and Roan's
+  third *maelorn* off-page. The bandit captain naming hook stays open as
+  the run-25+ pickup; warm_b is the only line that needs rewriting when
+  the name lands. Pure data, zero code touched.
+- **Top-priority next (run 25+):** Bandit Captain name-beat. Same hook as
+  run-23 — name the captain via per-spawn name dict in
+  `WorldBuilder._build_enemies` mirroring the *Pippin*-the-horse pattern,
+  then rewrite ONLY `warm_lines.warm_promoted_after_road_warden.warm_b_captain_weighed_unnamed`
+  in `eldoria-godot/data/dialogue/stablemaster_roan.json` and the
+  *captain in a sodden cloak* line in
+  `eldoria-godot/data/quest_text/bandit_road_for_roan.md` (pitch only —
+  Roan would not name a man twice). All other surfaces stay unnamed. Pure
+  data and one `warm_b` rewrite.
+- **Top-priority next (run 25+):** Maeve `roan_bandit_road_clear` cross-NPC
+  warm tier. Maeve's open `warm_world_flag` slot still pending — wire
+  `warm_world_flag: "roan_bandit_road_clear"` + 4 lines in
+  `WorldBuilder.NPCS` (Builder territory) and a matching
+  `warm_world_flag_*` block in `eldoria-godot/data/dialogue/elder_maeve.json`
+  (Lore Keeper). Builder authors the schema; Lore Keeper authors the
+  voice. Composes with the run-24 Roan tier above and the existing
+  Mara/Lyra/Bram cross-NPC flag-recognition pattern.
+- **Top-priority next (run 25+):** TOLL rune decal on the leaning plank in
+  `_make_bandit_camp` (WorldBuilder). Once the rune-texture pipeline lands,
+  paint the un-painted `MAT_DARK_WOOD` plank with a TOLL rune. Lore Keeper
+  may seed the rune word in a small codex page once the texture lands —
+  *toll* in Old Faerie compound (working name *thrian-toll*, "the long
+  listening's toll"; final word to be set when the codex run begins, must
+  rhyme tonally with *thrian-mor* in `lore/factions/three_crowns.md`).
