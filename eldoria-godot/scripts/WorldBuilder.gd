@@ -512,6 +512,7 @@ func _ready() -> void:
 	_build_well()
 	_build_pond()
 	_build_firefly_particles()
+	_build_falling_leaves()
 	_build_smoke_chimneys()
 	_build_campfire()
 	_build_enemies()
@@ -1337,6 +1338,79 @@ func _build_firefly_particles() -> void:
 # ============================================================================
 # Chimney smoke from each building
 # ============================================================================
+# ============================================================================
+# Falling leaves — drifting autumn leaves through the Whisperwood canopy
+# THEME §1 painterly fantasy aesthetic, §11 Studio Ghibli watercolor reference,
+# §12 motion mandate (no static "should-move" props), §3 warm sunset palette.
+# Five GPUParticles3D emitters at canopy height (~7m) push small leaf-quads
+# downward with tangential tumble + horizontal sway. Each emitter takes a
+# different palette color so the meadow ripples with golds, oranges, russets,
+# and the occasional moss-green. Leaves fade out via color_ramp before the
+# ground plane (THEME §13 ground contact — no leaves clipping below y=0).
+# Emission boxes are wide (16x16) so the effect catches dense canopy regions
+# without needing exact tree positions.
+# ============================================================================
+const FALLING_LEAF_SPOTS: Array = [
+	Vector3( 22.0, 7.0, -18.0),
+	Vector3(-26.0, 7.0, -10.0),
+	Vector3(-12.0, 7.0,  28.0),
+	Vector3( 30.0, 7.0,  14.0),
+	Vector3( -4.0, 7.0, -34.0),
+]
+const LEAF_PALETTE: Array = [
+	Color(1.00, 0.85, 0.42),  # sunset gold (THEME §3 primary)
+	Color(1.00, 0.50, 0.20),  # burnt orange
+	Color(0.55, 0.27, 0.10),  # autumn russet
+	Color(0.29, 0.44, 0.22),  # forest moss
+	Color(0.85, 0.55, 0.18),  # hammered bronze accent (THEME §3 secondary)
+]
+
+func _build_falling_leaves() -> void:
+	for i in FALLING_LEAF_SPOTS.size():
+		var spot: Vector3 = FALLING_LEAF_SPOTS[i]
+		var leaf_color: Color = LEAF_PALETTE[i % LEAF_PALETTE.size()]
+		var p := GPUParticles3D.new()
+		p.position = spot
+		p.amount = 28
+		p.lifetime = 6.5
+		p.preprocess = 4.0
+		p.visibility_aabb = AABB(Vector3(-10, -8, -10), Vector3(20, 16, 20))
+		var pm := ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pm.emission_box_extents = Vector3(8.0, 0.5, 8.0)
+		pm.direction = Vector3(0, -1, 0)
+		pm.spread = 35.0
+		pm.gravity = Vector3(0, -0.55, 0)
+		pm.initial_velocity_min = 0.15
+		pm.initial_velocity_max = 0.45
+		pm.angular_velocity_min = -90.0
+		pm.angular_velocity_max =  90.0
+		pm.tangential_accel_min = 0.4
+		pm.tangential_accel_max = 1.1
+		pm.scale_min = 0.55
+		pm.scale_max = 1.30
+		pm.color = leaf_color
+		# Fade alpha over lifetime so leaves don't pop at ground (§13 contact)
+		var ramp := Gradient.new()
+		ramp.set_color(0, Color(1, 1, 1, 1))
+		ramp.set_color(1, Color(1, 1, 1, 0))
+		var ramp_tex := GradientTexture1D.new()
+		ramp_tex.gradient = ramp
+		pm.color_ramp = ramp_tex
+		p.process_material = pm
+		var qm := QuadMesh.new()
+		qm.size = Vector2(0.18, 0.10)
+		var dm := StandardMaterial3D.new()
+		dm.albedo_color = leaf_color
+		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		dm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		dm.vertex_color_use_as_albedo = true
+		qm.material = dm
+		p.draw_pass_1 = qm
+		p.add_to_group("falling_leaves")
+		add_child(p)
+
 func _build_smoke_chimneys() -> void:
 	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
