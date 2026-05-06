@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "briar_shortbow"
+name = "Briar Shortbow"
+category = "weapon"
+rarity = "uncommon"
+tier = 2
+stats = {"damage": 8, "crit_bonus": 0.04}
+flavor = "# NEEDS:flavor"
+acquired_via = "quest"
+value_gold = 65
+set_id = ""
+damage_type = "pierce"
+attack_speed = 1.0
+range_m = 14.0
+crit_mult = 1.6

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "chainmail"
+name = "Chainmail"
+category = "armor"
+rarity = "uncommon"
+tier = 3
+stats = {"armor": 12}
+flavor = "Ring-shirt of southern make — Iron Crown work, three years on the road before it ever reached this valley. The little kink at the left shoulder is where a courier was unhorsed and lived to tell. Edda has retempered the rivets; Roan has restitched the under-tunic; it is, by careful arithmetic, more Briarwood than Iron Crown now."
+acquired_via = "vendor"
+value_gold = 80
+set_id = ""
+slot = "body"
+armor_class = 12
+move_penalty = -0.05

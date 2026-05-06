@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "guardian_core"
+name = "Guardian's Core"
+category = "relic"
+rarity = "legendary"
+tier = 6
+stats = {"hp_bonus": 60, "mp_bonus": 40, "crit_bonus": 0.08}
+flavor = "A Crystal-Cave heart-stone, taken only from a guardian whose vigil had ended. It hums at the same low pitch as Vellum the Patient Stone is said to hum on the deepest Longnight nights. Edda will not work it. Lyra will not crush it. Maeve would set it at the back of the Vigil shelf and let it hum quietly through any winter that needed it."
+acquired_via = "quest"
+value_gold = 1800
+set_id = ""
+passive_effect = "+60 HP, +40 mana, +8% crit; faintly hums near the gravecairns"
+attunement_cost = 3
