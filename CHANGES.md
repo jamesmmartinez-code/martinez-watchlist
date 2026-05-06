@@ -1,3 +1,68 @@
+## 2026-05-06T12:08Z — QA: trim hero_lange.glb (orphaned old hero) + Pages diagnostic
+
+**QA watchdog 3-min run. Build green; legacy Pages errored on commits
+6e9b35a + f2338fa.**
+
+### Trim action
+
+Deleted `eldoria-godot/assets/models/hero_lange.glb` (12.2 MB) and its
+`.import` sidecar. Verified unreferenced before deletion:
+
+- `Main.tscn` `id="8_hero"` ext_resource → `res://assets/models/Hero.glb`
+  (the current 29 MiB Meshy biped, owner-overridden per
+  `QA_OVERSIZED_ASSETS.md`). hero_lange.glb is the prior CC-BY
+  Sketchfab "Lange — Half-Elf Knight" placeholder, swapped out when the
+  current Hero.glb landed.
+- 0 `.tscn` / `.tres` / `.cfg` / `.gdshader` / `.json` references.
+- 1 `.gd` reference (`Player.gd:133`) — comment-only mention, no load
+  path. Left in place; can be cleaned up by next Player-touching agent.
+- CREDITS.md / CHANGES.md mentions are historical text, not runtime
+  loads. Left as-is.
+
+Two commits via Contents API: `56b0e0e` (.glb) + `cbc223c` (.import).
+
+### Pages diagnostic — likely NOT a size issue
+
+Total source content is 605 MB across 1267 blobs (354 MB under
+`eldoria-godot/assets/`); largest single file is Hero.glb at 29 MB.
+Both numbers are well under the 1 GB / 100 MB Pages legacy limits.
+Yet `/pages/builds` reports `errored / "Page build failed"` with no
+specific error message on the last two commits, while the
+`pages build and deployment` Actions workflow concl=success — suggesting
+the legacy Jekyll pipeline (build_type=legacy, source=branch:main path:/)
+is choking on the regenerated Godot HTML5 export under `eldoria/`, not
+on size.
+
+**Repo has no `.nojekyll`** — legacy Pages tries to run Jekyll on the
+whole repo, including the Godot Web export's JS. That's the most likely
+root cause. Trimming hero_lange this run is a no-cost win regardless,
+but the actually-effective fix is one of:
+
+  a) Add `.nojekyll` at repo root (cheapest, safe; turns off Jekyll for
+     legacy Pages and lets the Actions workflow be the source of truth).
+  b) Switch Pages source from `legacy` → `workflow` in repo settings
+     (cleaner long-term; the Actions workflow `pages build and deployment`
+     is already configured and succeeding).
+
+Either change requires repo-settings or root-file authority outside the
+QA Priority A trim-assets prescription. **Flagging for owner / next
+human-driven OPS run.**
+
+### §15 status
+
+1 asset > 20 MiB: `Hero.glb` (29 MiB) — already on owner-override per
+`QA_OVERSIZED_ASSETS.md`, no action. No new violations this run.
+
+### Next QA run
+
+If Pages still errors and no .nojekyll has appeared, this run will see
+the same condition and trim the next-largest unreferenced asset. The
+trim cascade is bounded by genuine reference checks — it will stop when
+unreferenced candidates run out, and won't touch owner-overridden or
+referenced assets.
+
+---
+
 ## 2026-05-06T05:35Z — Integrator: merge run
 
 Merged into `main` this run:
