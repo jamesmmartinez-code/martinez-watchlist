@@ -360,7 +360,8 @@ func _spawn_model() -> void:
 	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
 	var uses_real_model: bool = src != enemy_model
 	_model = src.instantiate()
-	call_deferred("_normalize_to_height", _model, 1.5)  # enemies ~1.5m
+	# char-spec 2026-05-06: 1.5 → 1.55 medium-enemy default per SIZE_STANDARDS.md §2.
+	call_deferred("_normalize_to_height", _model, 1.55)  # enemies ~1.55m (medium)
 	# Scale by kind
 	match enemy_kind:
 		"goblin":

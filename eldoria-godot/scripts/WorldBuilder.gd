@@ -2883,7 +2883,8 @@ func _normalize_npc_scale(model: Node) -> void:
 			aabb = aabb.merge(a)
 	if not has or aabb.size.y <= 0.001:
 		return
-	var target_height := 1.8
+	# char-spec 2026-05-06: 1.8 (adult) → 1.65 per SIZE_STANDARDS.md §1.
+	var target_height := 1.65
 	var s := target_height / aabb.size.y
 	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
 	s = clamp(s, 0.1, 3.0)
@@ -3324,12 +3325,20 @@ func _emergency_shrink(body: Node, aabb: AABB, target_h: float) -> void:
 
 # SIZE_STANDARDS — see eldoria-godot/SIZE_STANDARDS.md (single source of truth).
 # Tuple = (target_height_m, tolerance_fraction).  Outside band → snap to target.
+# char-spec 2026-05-06: aligned with eldoria-godot/SIZE_STANDARDS.md §1-§2.
+# Previously diverged: player 1.80 (adult) → 1.10 (kid Alden 9 / Owen 11),
+# npcs 1.80 → 1.65 (adult NPC canon), pets 0.70 → 0.55 (below kid's knee),
+# enemies 1.40 → 1.55 (medium-enemy band; per-kind matches override),
+# bosses 3.20 → 2.80 (boss-standard; gargantuan bosses handled per-kind).
+# The previous dict was constantly fighting Player.gd's _normalize_player_model(1.1)
+# lock — the global sweep would keep trying to stretch the kid back to 1.80m.
 const SIZE_STANDARDS := {
-	"player":  [1.80, 0.10],
-	"npcs":    [1.80, 0.15],
-	"pets":    [0.70, 0.20],
-	"enemies": [1.40, 0.20],   # default to small-enemy band
-	"bosses":  [3.20, 0.20],
+	"player":  [1.10, 0.18],   # kid-sized; tol widened 0.10→0.18 so the body's
+	                           #   capsule doesn't oscillate against the panic-key cap.
+	"npcs":    [1.65, 0.15],   # adult NPC; band [1.40, 1.90]
+	"pets":    [0.55, 0.25],   # fox/squirrel/owl; band [0.41, 0.69]
+	"enemies": [1.55, 0.25],   # medium default; small/elite per-kind below
+	"bosses":  [2.80, 0.20],   # standard boss; gargantuan via per-kind opt-in
 	# scale-eng 2026-05-05: wolf canon target 1.0m cap 1.4m floor 0.7m. Was
 	# matching "enemies" target 1.40 ±0.20 → band [1.12, 1.68], over canon cap.
 	"wolves":  [1.00, 0.30],
@@ -3343,7 +3352,8 @@ func _expected_height_for(body: Node) -> float:
 	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][0]
 	if body.is_in_group("wolves"):  return SIZE_STANDARDS["wolves"][0]
 	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][0]
-	return 1.8
+	# char-spec 2026-05-06: default fall-through 1.8 → 1.65 per SIZE_STANDARDS.md §1.
+	return 1.65
 
 func _tolerance_for(body: Node) -> float:
 	if body.is_in_group("bosses"):  return SIZE_STANDARDS["bosses"][1]
