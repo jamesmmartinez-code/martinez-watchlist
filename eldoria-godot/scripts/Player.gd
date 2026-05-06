@@ -220,6 +220,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	move_and_slide()
+	# 2026-05-06: HAMMER — every frame, ensure Hero subtree height ≤ 1.4m
+	_force_hero_height_cap()
 	# Belt-and-suspenders ground snap — runs every 4th frame to keep cost low.
 	# Only snaps when the body is >0.6m above terrain (i.e. visibly floating).
 	_input_log_t += delta
@@ -1722,3 +1724,29 @@ func _collect_bone_attachments(root: Node, out: Array) -> void:
 			out.append(child)
 		_collect_bone_attachments(child, out)
 
+
+
+# === HEAVY-HAMMER 2026-05-06: force Hero subtree to a known good size ===
+# Keeps getting overridden by agents and Equipment Visualizer. This runs
+# every physics frame and clamps the visible Hero subtree to ≤ 1.4m world
+# height. Brute force, but reliable.
+var __force_cap_skip := 0
+func _force_hero_height_cap() -> void:
+	__force_cap_skip += 1
+	if __force_cap_skip < 10: return  # only every ~10 frames
+	__force_cap_skip = 0
+	var hero: Node = get_node_or_null("Hero")
+	if hero == null or not (hero is Node3D): return
+	var hero3: Node3D = hero
+	var aabb := AABB()
+	var has := false
+	for v in hero3.find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if vi == null: continue
+		var a := vi.global_transform * vi.get_aabb()
+		if not has: aabb = a; has = true
+		else: aabb = aabb.merge(a)
+	if not has or aabb.size.y < 0.001: return
+	if aabb.size.y > 1.4:
+		var shrink: float = 1.4 / aabb.size.y
+		hero3.scale = hero3.scale * shrink
