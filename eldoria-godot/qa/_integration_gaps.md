@@ -1,21 +1,18 @@
 # Integration Gaps Log
 
-last_run: 2026-05-06T17:38Z
+last_run: 2026-05-06T18:04Z
 canon_qa_status_at_run: PASS_WITH_DEBT (s1=0, s2=7, s3=3 — see eldoria-godot/qa/_blocking_status.md)
-merged_this_cycle: auto/character (1), auto/lore (1), auto/audio (1), auto/environment (1)
+merged_this_cycle: auto/environment (1), auto/art (1), auto/lore (1)
 skipped_this_cycle: (none)
-push_result: cf303a2
+push_result: 1d8d8ca
 
 ## This cycle merged
 
-- auto/lore — Codex entry "Vellum's Spine" (mason's leaf, 3 new Old Faerie words). Adds eldoria-godot/data/codex/vellums_spine.md and updates WORLD_STATE.md.
-- auto/character — Aligned character normalize targets with SIZE_STANDARDS.md canon. Modified scripts/Enemy.gd, scripts/Pet.gd, scripts/WorldBuilder.gd.
-- auto/audio — Replaced boss_intro.wav placeholder with a CC0 OGG stinger (eldoria-godot/assets/audio/sfx/boss_intro.ogg + .import; deleted .wav pair; updated audio/ATTRIBUTION.md).
-- auto/environment — Market stall awning flap motion (THEME §12). WorldBuilder.gd-only change.
+- auto/environment — 1 commit ahead. Server-side merge.
+- auto/art — Two hero portrait PNGs (alden_pathfinder, owen_vanguard), HEROES_ATTRIBUTION.md, plus scripts/art/gen_hero_portraits.py generator.
+- auto/lore — New codex entry data/codex/brigids_ribbon.md.
 
-Other auto/* branches (auto/art, auto/builder, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix) were behind main with 0 commits ahead — fast-forwarded only via Step 3 reset.
-
-Note: auto/audio and auto/environment pushed new commits mid-cycle and were caught by a second discovery pass before the run closed.
+Other auto/* branches (auto/builder, auto/polisher, auto/scale, auto/character, auto/audio, auto/qa, auto/scale-floorfix) were behind main with 0 commits ahead — fast-forwarded only via Step 3 reset for the three merged branches.
 
 ## Canon QA S2 carry-over (logged for owners)
 
@@ -33,22 +30,23 @@ From eldoria-godot/qa/_blocking_status.md (cycle 2 audit, 2026-05-06):
 
 ### Cycle delta
 
-New files added by this cycle (across all four merged branches):
+Files added by this cycle (3 merged branches):
 
-- `eldoria-godot/data/codex/vellums_spine.md` (codex .md, from auto/lore) — joins seven existing codex docs under data/codex/, follows the same convention; no loader registration needed.
-- `eldoria-godot/assets/audio/sfx/boss_intro.ogg` + `.import` (from auto/audio) — direct format swap of the existing boss_intro reference; ATTRIBUTION.md updated. Replaces the deleted boss_intro.wav pair.
+- `eldoria-godot/assets/portraits/alden_pathfinder.png` (from auto/art) — UI portrait companion to existing hero GLB.
+- `eldoria-godot/assets/portraits/owen_vanguard.png` (from auto/art) — UI portrait companion to existing hero GLB.
+- `eldoria-godot/assets/portraits/HEROES_ATTRIBUTION.md` (from auto/art) — attribution metadata.
+- `eldoria-godot/data/codex/brigids_ribbon.md` (from auto/lore) — joins existing codex docs under data/codex/, follows same convention; no loader registration needed.
+- `scripts/art/gen_hero_portraits.py` (from auto/art) — generator script, build-time only.
 
-No new `.glb` in assets/, no `data/quests/*.tres`, no AnimationLibrary `.tres`, and no StandardMaterial3D `.tres` were added this cycle, so the four orphan-asset rules produce zero new entries.
+No new `.glb` in `assets/`, no `data/quests/*.tres`, no AnimationLibrary `.tres`, and no StandardMaterial3D `.tres` were added this cycle, so the four orphan-asset rules produce zero new entries.
 
-auto/character and auto/environment only modified existing scripts.
-
-### [GAP: orphan asset] — character/enemy GLBs lacking spawn references in WorldBuilder.gd (carry-over)
+### [GAP: orphan asset] — hero/enemy GLBs lacking spawn references in WorldBuilder.gd (carry-over)
 
 - eldoria-godot/assets/models/Fox.glb — no spawn reference (likely glTF sample, false positive)
 - eldoria-godot/assets/models/Hero.glb — no spawn reference (likely glTF sample, false positive)
 - eldoria-godot/assets/models/enemies/goblin_scout.glb — no spawn reference [@character / @builder]
-- eldoria-godot/assets/models/heroes/alden_pathfinder.glb — no spawn reference [@character / @builder]
-- eldoria-godot/assets/models/heroes/owen_vanguard.glb — no spawn reference [@character / @builder]
+- eldoria-godot/assets/models/heroes/alden_pathfinder.glb — no spawn reference [@character / @builder]  *(portrait now shipped by auto/art this cycle — visual side advancing, spawn side still pending)*
+- eldoria-godot/assets/models/heroes/owen_vanguard.glb — no spawn reference [@character / @builder]  *(portrait now shipped by auto/art this cycle — visual side advancing, spawn side still pending)*
 
 ### [GAP: orphan codex icon] — codex PNG icons not yet referenced via icon_glyph (carry-over)
 
