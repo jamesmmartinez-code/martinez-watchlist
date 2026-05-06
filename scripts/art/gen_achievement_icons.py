@@ -24,6 +24,8 @@ Slugs (mirror Achievements.ACHIEVEMENTS keys):
   - realm_warden     Warden of Eldoria    — keep tower with banner
   - first_forge      the Forged           — anvil + crossed hammer with sparks
   - wolf_tamer       the Wolf-Tamer       — wolf head profile under three stars
+  - road_warden      Road-Warden          — heraldic shield over winding south road, sun rising
+  - seal_keeper      Seal-Keeper          — captain's iron seal hung from leather thong, vigil candle behind
 
 License: CC0 — generated procedurally with Pillow, no external assets.
 
@@ -555,6 +557,296 @@ def _paint_wolf_profile_three_stars(draw, seed):
 
 
 
+def _paint_road_warden(draw, seed):
+	"""Heraldic shield with a winding road across its lower half, a small
+	watchtower silhouette on the road's horizon, and a low sunrise behind.
+
+	For `road_warden` ("Warden of the South Road") — bandit-clear beat. Visually
+	distinct from `realm_warden` (whole keep + banner): this is a SHIELD with
+	a road on it, not a building. THEME §3 palette: stone-blue shield body,
+	brass rim, sunset-gold sun, parchment road.
+	"""
+	r = _rand(seed)
+	cx, cy = W // 2, W // 2
+
+	# Shield silhouette — heater-shape, narrow at top, pointed at bottom.
+	st = int(W * 0.34)  # half-width at top
+	sb = int(W * 0.04)  # half-width at point
+	top_y = cy - int(W * 0.30)
+	mid_y = cy + int(W * 0.05)
+	bot_y = cy + int(W * 0.30)
+	shield_pts = [
+		(cx - st, top_y),
+		(cx + st, top_y),
+		(cx + st, mid_y - int(W * 0.04)),
+		(cx + int(st * 0.85), mid_y + int(W * 0.04)),
+		(cx + int(W * 0.20), mid_y + int(W * 0.16)),
+		(cx + sb, bot_y),
+		(cx - sb, bot_y),
+		(cx - int(W * 0.20), mid_y + int(W * 0.16)),
+		(cx - int(st * 0.85), mid_y + int(W * 0.04)),
+		(cx - st, mid_y - int(W * 0.04)),
+	]
+	# Shield body — stone-blue base
+	col = (STONE_BLUE[0], STONE_BLUE[1], STONE_BLUE[2], 248)
+	draw.polygon(shield_pts, fill=col)
+
+	# Painted-rim brass border around shield
+	for k in range(0, len(shield_pts)):
+		x0, y0 = shield_pts[k]
+		x1, y1 = shield_pts[(k + 1) % len(shield_pts)]
+		segs = 14
+		for i in range(segs):
+			t0 = i / segs
+			t1 = (i + 1) / segs
+			ax = int(x0 + (x1 - x0) * t0)
+			ay = int(y0 + (y1 - y0) * t0)
+			bx = int(x0 + (x1 - x0) * t1)
+			by = int(y0 + (y1 - y0) * t1)
+			col = (BRASS[0], BRASS[1], BRASS[2], r.randint(190, 240))
+			draw.line((ax, ay, bx, by), fill=col, width=r.randint(5, 7))
+
+	# Horizontal divider / fess line splitting upper "sky" half from lower "road" half
+	fess_y = cy - int(W * 0.02)
+	col = (BRASS[0], BRASS[1], BRASS[2], 220)
+	draw.line((cx - int(st * 0.92), fess_y, cx + int(st * 0.92), fess_y), fill=col, width=4)
+
+	# Upper half: a low sunrise — sunset-gold sun on a wine-deep dawn band
+	# Dawn band stripe (thin)
+	col = (CRIMSON[0], CRIMSON[1], CRIMSON[2], 100)
+	draw.rectangle(
+		(cx - int(st * 0.85), fess_y - int(W * 0.07),
+		 cx + int(st * 0.85), fess_y - int(W * 0.01)),
+		fill=col,
+	)
+	# Sun disc — half-emerged behind the fess line
+	sun_y = fess_y - int(W * 0.03)
+	for k in range(8, 0, -1):
+		col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], int(55 * k / 8))
+		rr = int(W * 0.10) + 3 * k
+		draw.ellipse((cx - rr, sun_y - rr, cx + rr, sun_y + rr), fill=col)
+	col = (255, 230, 160, 240)
+	draw.ellipse(
+		(cx - int(W * 0.09), sun_y - int(W * 0.09),
+		 cx + int(W * 0.09), sun_y + int(W * 0.09)),
+		fill=col,
+	)
+	# Sun rays — short stubs above the fess
+	for ang_deg in (-50, -30, -10, 10, 30, 50):
+		ang = math.radians(ang_deg - 90)
+		x0 = cx + int(math.cos(ang) * W * 0.10)
+		y0 = sun_y + int(math.sin(ang) * W * 0.10)
+		x1 = cx + int(math.cos(ang) * W * 0.16)
+		y1 = sun_y + int(math.sin(ang) * W * 0.16)
+		col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], 220)
+		draw.line((x0, y0, x1, y1), fill=col, width=4)
+
+	# Lower half: a winding parchment-coloured road from bottom-left to right
+	# Road as a series of broad blob brushstrokes for a hand-painted feel
+	road_pts = [
+		(cx - int(st * 0.78), bot_y - int(W * 0.05)),
+		(cx - int(st * 0.40), bot_y - int(W * 0.08)),
+		(cx - int(st * 0.10), bot_y - int(W * 0.14)),
+		(cx + int(st * 0.20), bot_y - int(W * 0.18)),
+		(cx + int(st * 0.55), bot_y - int(W * 0.22)),
+	]
+	prev = road_pts[0]
+	for p in road_pts[1:]:
+		segs = 18
+		for i in range(segs):
+			t = i / segs
+			x = int(prev[0] + (p[0] - prev[0]) * t)
+			y = int(prev[1] + (p[1] - prev[1]) * t)
+			# Cross-section width tapers with t
+			w_t = 16 - int(2 * math.sin(t * math.pi))
+			col = (PARCHMENT[0], PARCHMENT[1], PARCHMENT[2], 230)
+			draw.ellipse((x - w_t, y - 6, x + w_t, y + 6), fill=col)
+			# Earthy edge wash
+			col = (BEAR_BROWN[0], BEAR_BROWN[1], BEAR_BROWN[2], 110)
+			draw.ellipse((x - w_t - 3, y - 8, x + w_t + 3, y + 9), fill=col)
+		prev = p
+
+	# Watchtower silhouette on the road's far horizon (right side, near the sun)
+	tw_x = cx + int(st * 0.45)
+	tw_base_y = bot_y - int(W * 0.20)
+	tw_top_y = tw_base_y - int(W * 0.12)
+	# Tower body (narrow rectangle)
+	col = (40, 36, 32, 235)
+	draw.rectangle(
+		(tw_x - int(W * 0.025), tw_top_y, tw_x + int(W * 0.025), tw_base_y),
+		fill=col,
+	)
+	# Crenellations
+	for i in (-1, 0, 1):
+		bx = tw_x + i * int(W * 0.025)
+		col = (40, 36, 32, 235)
+		draw.rectangle((bx - 2, tw_top_y - int(W * 0.025), bx + 2, tw_top_y), fill=col)
+	# Tiny pole + pennant
+	col = (BRASS[0], BRASS[1], BRASS[2], 230)
+	draw.line((tw_x, tw_top_y - int(W * 0.025), tw_x, tw_top_y - int(W * 0.07)), fill=col, width=2)
+	pen_pts = [
+		(tw_x, tw_top_y - int(W * 0.07)),
+		(tw_x + int(W * 0.04), tw_top_y - int(W * 0.05)),
+		(tw_x, tw_top_y - int(W * 0.04)),
+	]
+	col = (CRIMSON[0], CRIMSON[1], CRIMSON[2], 235)
+	draw.polygon(pen_pts, fill=col)
+
+	# Painterly weathering dabs across the shield body
+	for _ in range(50):
+		x = cx + r.randint(-st + 4, st - 4)
+		y = top_y + r.randint(8, bot_y - top_y - 8)
+		col = (50, 60, 75, r.randint(40, 95))
+		draw.ellipse((x - 4, y - 4, x + 4, y + 4), fill=col)
+
+
+def _paint_seal_keeper(draw, seed):
+	"""Captain's iron seal-stamp hung from a leather thong, with a vigil
+	candle-flame glowing behind it.
+
+	For `seal_keeper` ("Keeper of the Captain's Seal") — Maeve's-mantle beat.
+	Visually distinct from `road_warden` (heraldic shield + road): this is a
+	hand-held keepsake / vigil. Iron-grey seal disc with a brass collar and
+	a small heraldic mark stamped on the face; sunset-gold candle-flame
+	halo behind the disc anchors the "vigil candle" emoji legacy fallback.
+	"""
+	r = _rand(seed)
+	cx, cy = W // 2, W // 2
+
+	# Vigil flame halo behind the seal — soft sunset-gold glow that reads
+	# as candlelight even at 32px. Painted FIRST so the seal disc sits over it.
+	flame_x, flame_y = cx, cy - int(W * 0.02)
+	for k in range(14, 0, -1):
+		col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], int(35 * k / 14))
+		rr = int(W * 0.06) + 4 * k
+		draw.ellipse(
+			(flame_x - rr, flame_y - int(rr * 1.15),
+			 flame_x + rr, flame_y + int(rr * 0.85)),
+			fill=col,
+		)
+	# Bright flame core (visible above the seal)
+	flame_top_y = cy - int(W * 0.30)
+	flame_pts = [
+		(cx, flame_top_y),
+		(cx + int(W * 0.05), flame_top_y + int(W * 0.10)),
+		(cx + int(W * 0.03), flame_top_y + int(W * 0.18)),
+		(cx, flame_top_y + int(W * 0.20)),
+		(cx - int(W * 0.03), flame_top_y + int(W * 0.18)),
+		(cx - int(W * 0.05), flame_top_y + int(W * 0.10)),
+	]
+	col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], 220)
+	draw.polygon(flame_pts, fill=col)
+	# Flame inner-bright
+	inner_pts = [
+		(cx, flame_top_y + int(W * 0.02)),
+		(cx + int(W * 0.025), flame_top_y + int(W * 0.10)),
+		(cx, flame_top_y + int(W * 0.16)),
+		(cx - int(W * 0.025), flame_top_y + int(W * 0.10)),
+	]
+	col = (255, 240, 200, 245)
+	draw.polygon(inner_pts, fill=col)
+	# Flame brightest tip — single dab
+	col = (255, 250, 230, 250)
+	draw.ellipse(
+		(cx - 5, flame_top_y + int(W * 0.06) - 5,
+		 cx + 5, flame_top_y + int(W * 0.06) + 5),
+		fill=col,
+	)
+
+	# Leather thong — two angled lines that hang from the top of the disc
+	# meeting at a small loop near the upper rim of the crest.
+	loop_x, loop_y = cx, cy - int(W * 0.34)
+	# Left thong
+	col = (BEAR_BROWN[0], BEAR_BROWN[1], BEAR_BROWN[2], 230)
+	draw.line(
+		(loop_x - int(W * 0.04), loop_y + 4, cx - int(W * 0.10), cy - int(W * 0.10)),
+		fill=col,
+		width=5,
+	)
+	# Right thong
+	draw.line(
+		(loop_x + int(W * 0.04), loop_y + 4, cx + int(W * 0.10), cy - int(W * 0.10)),
+		fill=col,
+		width=5,
+	)
+	# Small thong loop
+	col = (40, 26, 18, 220)
+	draw.ellipse(
+		(loop_x - int(W * 0.04), loop_y - int(W * 0.04),
+		 loop_x + int(W * 0.04), loop_y + int(W * 0.02)),
+		fill=col,
+	)
+
+	# Iron seal disc — sits in lower 60% of the crest
+	disc_x, disc_y = cx, cy + int(W * 0.10)
+	disc_r = int(W * 0.20)
+	# Outer brass collar (slightly larger ring behind the iron disc)
+	for k in range(5, 0, -1):
+		col = (BRASS[0], BRASS[1], BRASS[2], int(60 + 35 * k / 5))
+		rr = disc_r + 4 + k
+		draw.ellipse(
+			(disc_x - rr, disc_y - rr, disc_x + rr, disc_y + rr),
+			fill=col,
+		)
+	# Iron disc body (dark cast iron)
+	for k in range(disc_r, 0, -2):
+		t = k / disc_r
+		# Slightly lighter at the top-left to suggest light from the candle
+		col = (
+			int(54 + 40 * (1 - t)),
+			int(58 + 40 * (1 - t)),
+			int(66 + 40 * (1 - t)),
+			248,
+		)
+		draw.ellipse(
+			(disc_x - k, disc_y - k, disc_x + k, disc_y + k),
+			fill=col,
+		)
+	# Hammered-metal pock-marks on the seal face
+	for _ in range(40):
+		ang = r.uniform(0, math.tau)
+		rr = int(disc_r * r.uniform(0.10, 0.85))
+		x = disc_x + int(math.cos(ang) * rr)
+		y = disc_y + int(math.sin(ang) * rr)
+		col = (90, 96, 104, r.randint(70, 140))
+		draw.ellipse((x - 3, y - 3, x + 3, y + 3), fill=col)
+
+	# Heraldic mark stamped into the seal: a six-pointed sigil-star with
+	# a small dot in the centre, the southroad-watch emblem.
+	cx2, cy2 = disc_x, disc_y
+	mark_r = int(disc_r * 0.50)
+	star_pts = []
+	for i in range(12):
+		ang = -math.pi / 2 + i * math.pi / 6
+		rr = mark_r if i % 2 == 0 else int(mark_r * 0.45)
+		star_pts.append((cx2 + int(math.cos(ang) * rr), cy2 + int(math.sin(ang) * rr)))
+	col = (BRASS_LT[0], BRASS_LT[1], BRASS_LT[2], 240)
+	draw.polygon(star_pts, fill=col)
+	# Inner shadow stamp
+	col = (60, 50, 30, 180)
+	for i in range(12):
+		ang = -math.pi / 2 + i * math.pi / 6
+		rr = mark_r if i % 2 == 0 else int(mark_r * 0.45)
+		x = cx2 + int(math.cos(ang) * rr)
+		y = cy2 + int(math.sin(ang) * rr)
+		draw.ellipse((x - 2, y - 2, x + 2, y + 2), fill=col)
+	# Center mark — small sunset-gold dot (the "kept" point)
+	col = (SUNSET_GOLD[0], SUNSET_GOLD[1], SUNSET_GOLD[2], 245)
+	draw.ellipse((cx2 - 4, cy2 - 4, cx2 + 4, cy2 + 4), fill=col)
+	col = (255, 230, 160, 250)
+	draw.ellipse((cx2 - 2, cy2 - 2, cx2 + 2, cy2 + 2), fill=col)
+
+	# Subtle highlight crescent on the disc — light from the candle above
+	for k in range(8, 0, -1):
+		col = (SILVER[0], SILVER[1], SILVER[2], int(28 * k / 8))
+		hx = disc_x - int(disc_r * 0.30)
+		hy = disc_y - int(disc_r * 0.55)
+		rr = 5 + k
+		draw.ellipse((hx - rr, hy - rr, hx + rr, hy + rr), fill=col)
+
+
+
+
 CRESTS = {
 	"first_steps":   {"seed": 9101, "base_dark": (60, 90, 45, 255),  "base_light": MOSS_LT,              "rim": BRASS,             "painter": _paint_sprout},
 	"pack_thinner":  {"seed": 9102, "base_dark": (50, 60, 70, 255),  "base_light": (130, 145, 160, 255), "rim": SILVER,            "painter": _paint_wolf_head},
@@ -563,6 +855,11 @@ CRESTS = {
 	"realm_warden":  {"seed": 9105, "base_dark": SUNSET_DK,           "base_light": SUNSET_GOLD,         "rim": (110, 60, 20, 255),"painter": _paint_keep},
 	"first_forge":   {"seed": 9106, "base_dark": (90, 40, 18, 255),  "base_light": (200, 110, 50, 255), "rim": BRASS,            "painter": _paint_anvil_hammer},
 	"wolf_tamer":    {"seed": 9107, "base_dark": MOSS_DK,             "base_light": MOSS_LT,             "rim": BRASS,            "painter": _paint_wolf_profile_three_stars},
+	# Run 25+ — Roan / Maeve south-road sequence crests.
+	# road_warden disc: stone-blue base, brass rim — duty / road-watch tones.
+	# seal_keeper disc: parchment base, dark wine rim — Maeve's mantle / kept-vigil.
+	"road_warden":   {"seed": 9108, "base_dark": (60, 70, 88, 255),  "base_light": STONE_BLUE,          "rim": BRASS,            "painter": _paint_road_warden},
+	"seal_keeper":   {"seed": 9109, "base_dark": PARCHMENT_DK,        "base_light": PARCHMENT,           "rim": (110, 50, 40, 255),"painter": _paint_seal_keeper},
 }
 
 
