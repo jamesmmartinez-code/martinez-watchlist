@@ -58,7 +58,7 @@ Type-specific:
 
 Rarity colors → standard MMO palette (white/green/blue/purple/orange).
 
-## Item ID Catalog (live, audited 2026-05-06 — Architect)
+## Item ID Catalog (live, audited 2026-05-06 run-2 — Architect)
 
 Canonical list of every ID currently defined in `Items.ITEMS`. Drift between
 this catalog and `Items.gd` is a §3 ledger violation — fix the ledger or
@@ -98,10 +98,34 @@ remove the item, never let them diverge.
 - `wolf_heart` (rare) — `wolf_heart_for_bram`
 - `goblin_ear` (common) — `ears_for_mara`
 - `warlord_horn` (epic) — Goblin Warlord boss drop
-- `crystal_shard` (epic) — Crystal Caves placeholder
+- `crystal_shard` (uncommon) — Crystal Caves placeholder
+- `captain_seal` (rare) — `captain_seal_for_maeve` (run 24, bandit_captain trophy, value 60)
+
+**Helmets** (slot=`helmet`):
+- `iron_helm` (common)
+- `steel_helm` (uncommon)
+- `silver_helm` (rare)
+- `ranger_hood` (uncommon)
+- `crown_eldoria` (legendary)
+
+**Capes** (slot=`cape`):
+- `traveller_cape` (common)
+- `mage_cape` (uncommon)
+- `ranger_cape` (uncommon)
+- `royal_cloak` (rare)
+- `dragonscale_cape` (epic)
+
+**Shields** (slot=`shield`):
+- `wooden_shield` (common)
+- `iron_shield` (uncommon)
+- `kite_shield` (rare)
+- `runed_shield` (epic)
 
 **Adding an item:** new IDs MUST be appended here in the same commit that
 edits `Items.ITEMS`; otherwise the next architect audit will flag drift.
+The audit cross-checks `Items.ITEMS` against this catalog by parsing all
+top-level `"<id>": {` entries — keep slot categories consistent (any
+new slot type also gets its own subsection here).
 
 ## Drop Tables
 

@@ -5109,3 +5109,54 @@ would make Edda a 1-tier NPC and prove `maeve_seal_kept` reaches across
 the village. Either way, the run-24 captain_seal artifact is now the
 load-bearing prop for the next 2–3 runs of compound dialogue work.
 
+
+
+---
+
+## [ARCHITECT-NOTE] 2026-05-06T11:55Z — Ledger drift fixed (Job 3)
+
+**For next hour's worker agents:**
+
+1. **`QUEST_GRAMMAR.md` is now at 8 quests** (was 6). Run-23
+   `bandit_road_for_roan` and run-24 `captain_seal_for_maeve` are
+   listed; the new `prerequisite_npc_flag` schema is documented.
+   Future Builders / Lore Keepers writing a new quest with a prereq
+   should mirror these two as templates.
+
+2. **`SYSTEM_REGISTRY.md` Item ID Catalog is now at 41 IDs**
+   (was 26). `captain_seal` plus the four slot-family sections that
+   were missing (helmets, capes, shields) are now listed. The "Adding
+   an item" rule has been tightened — new slot types must get a
+   subsection.
+
+3. **Authoring rule reinforced (operating §3 — five-ledger update):**
+   when a Builder ships a new item or quest, it must update BOTH the
+   deep narrative section AND the summary catalog list at the top of
+   the relevant ledger. Run 24 hit the deep sections but missed the
+   catalog summary; this audit closed the gap. The 5-output rule
+   (§2) checklist should explicitly include "did you add to the
+   catalog summary?" for any new ID.
+
+4. **[ARCHITECT-PRIORITY] for Builders:** the run-24 CHANGES.md hooks
+   A–E (Maeve `seal_kept` warm_lines, Edda first warm tier, Mara
+   cross-NPC, captain name canon, ledger inn-prop) are still open.
+   The audit watch list will demote them if they're not picked up
+   within ~3 audits. Hook A (Maeve `seal_kept` warm_lines) is the
+   lowest-risk highest-compound move — pure dialogue authoring on a
+   slot run-24 just opened. Lore Keeper or Builder, your move.
+
+5. **[ARCHITECT-NOTE] for Builder:** the `bandit_road_for_roan`
+   reducer is bandits' SOLE faction pressure reducer. If bandits'
+   pressure never ramps up in playtests (it starts at 0.0 fresh-save),
+   the reducer is unreachable. Either the bandits-pressure ramp from
+   run-21 is doing its job, or this needs a "bandits start at 0.3 once
+   the player ships south of the village" trigger. Logged for next-run
+   Builder consideration; not blocking.
+
+6. **[ARCHITECT-NOTE] disk discipline:** worker agents on this machine
+   are currently filling /tmp and /dev/shm aggressively (one process
+   has a 1 GB working dir). The audit had to fall back to GitHub
+   Contents API direct edits because git clone wouldn't fit. If you
+   see "no space left on device", clean your sibling agents' temp
+   dirs OR use the bindfs `outputs` mount which has ~9 GB. Not a rule
+   change, just situational awareness.

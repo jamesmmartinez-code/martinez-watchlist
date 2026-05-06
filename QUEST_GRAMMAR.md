@@ -64,6 +64,8 @@ fit this grammar; do not invent ad-hoc shapes per quest.
 4. `wolf_fang_for_roan`    — Stablemaster Roan · fetch 5 wolf_fang · +65 XP / +50 gold
 5. `wolf_form_with_hala`   — Trainer Hala · kill 4 wolf · +90 XP / +35 gold
 6. `wolf_heart_for_bram`   — Innkeeper Bram · fetch 3 wolf_heart · +70 XP / +55 gold
+7. `bandit_road_for_roan`  — Stablemaster Roan · kill 4 bandits · +80 XP / +75 gold *(intra-NPC sequel — prereq Roan `first_bounty_done`)*
+8. `captain_seal_for_maeve` — Elder Maeve · fetch 1 captain_seal · +90 XP / +50 gold *(cross-NPC sequel — prereq Roan `road_warden`)*
 
 **Faction-pressure ladder (compound design — 4 reducers stack on `dire_wolves`):**
 - `pelt_for_lyra` -0.1, `wolf_fang_for_roan` -0.1, `wolf_form_with_hala` -0.1,
@@ -71,6 +73,33 @@ fit this grammar; do not invent ad-hoc shapes per quest.
   collapses pack size to 1; only the apex/scarred survivor remains).
 - `whisperwood_cleansing` -0.2, `ears_for_mara` -0.15 → goblin reducers
   (two reducers; further pressure-relief via faction events).
+- `bandit_road_for_roan` -0.20 → bandits' SOLE reducer (run 23). The bandit
+  pressure ramp is otherwise derived from world events (run-21).
+- `captain_seal_for_maeve` — pure flag-work, NO `consequence.faction` field;
+  `apply_consequence` skips the faction step when faction_id is empty.
+
+## Quest Sequencing — `prerequisite_npc_flag` (run 23 + 24)
+
+Run 23 introduced an OPTIONAL `prerequisite_npc_flag: [npc_name, flag_name]`
+field on a quest entry. The single-role resolver iterates QUEST_CATALOG
+in dict-insertion order and picks the FIRST quest where:
+
+- the giver's role matches the NPC's role, AND
+- the consequence's `world_flag` is NOT yet set, AND
+- if `prerequisite_npc_flag` is present, `World.npc_has_flag(npc, flag)`
+  returns `true`.
+
+This single field unlocks two sequencing patterns with no resolver changes:
+
+| Pattern         | Example (shipped)                                  | Prereq NPC      |
+|-----------------|----------------------------------------------------|-----------------|
+| Intra-NPC       | `bandit_road_for_roan` ← `wolf_fang_for_roan`      | Stablemaster Roan |
+| Cross-NPC       | `captain_seal_for_maeve` ← `bandit_road_for_roan`  | Stablemaster Roan |
+
+Authoring note: the prereq flag MUST already be set by some other quest's
+`consequence.npc_flag` (no orphan flags). For cross-NPC chains, the
+prereq NPC is NOT the giver — the resolver only requires the flag to
+exist on `World.npc_flags[npc]`, regardless of which NPC quested it in.
 
 ## Migration Notes
 
