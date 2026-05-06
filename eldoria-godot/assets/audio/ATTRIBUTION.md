@@ -30,7 +30,30 @@ Encoding: stereo 44.1 kHz OGG Vorbis, q=2 (~85–96 kbps).
 | `dungeon_drips.ogg`     | OpenGameArt CC0 | yd                          | https://opengameart.org/content/loopable-dungeon-ambience |
 | `forest_cathedral.ogg`  | OpenGameArt CC0 | (anonymous)                 | https://opengameart.org/content/cathedral-in-the-forest-ambient-loop |
 
-Encoding: mono 22.05 kHz OGG Vorbis, q=0–1 (~30–60 kbps).
+`village_chatter.ogg` — derivative ambient loop composited from existing
+sources in this bundle (boss_intro precedent). 16.6 s loopable mono track:
+
+- 5 NPC greeting voice files (Maeve, Edda, Lyra, Bram, Mara — project-owned
+  Aura-2 TTS, see `voices/` below) each independently pitched down
+  (`asetrate` factors 0.78–0.92), tempo-stretched (`atempo` 0.85–0.92),
+  hard low-passed at 900–1200 Hz to remove word intelligibility, fed
+  through `aecho 0.4–0.5 : 0.5–0.6 : 200–340|450–650 : 0.35–0.4 | 0.20–0.25`
+  for distance/reverb tail, gained to 0.26–0.32, and time-staggered with
+  `adelay` at 0 / 2.7 / 5.8 / 9.1 / 12.3 s so the murmurs overlap rather
+  than coincide.
+- Soft wind bed: `wind_outdoor.ogg` (Iwan Gabovitch / qubodup, CC0)
+  tempo-stretched to 0.85x, low-passed at 600 Hz, gain 0.18 — fills the
+  spaces between voice murmurs with breath/airflow rumble.
+- Mixed via `amix=inputs=6:normalize=0`, peak-limited at 0.92, faded in
+  over 0.6 s and out over 1.2 s for seamless looping.
+
+License: derivative of project-owned voice files + CC0 wind. Voice-file
+license follows the project's own terms (see `voices/`); the wind-bed
+component remains CC0. THEME §6 compliant — no synth, no Hollywood swell.
+
+Encoding: mono 22.05 kHz OGG Vorbis, q=1 (~25 kbps).
+
+Encoding (other ambient entries): mono 22.05 kHz OGG Vorbis, q=0–1 (~30–60 kbps).
 
 ## SFX — `sfx/`
 
@@ -73,11 +96,27 @@ Encoding (OGG entries): mono 22.05 kHz OGG Vorbis, q=2.
 
 ## Footsteps — `footsteps/`
 
-All from **"Different Steps on Wood, Stone, Leaves, Gravel and Mud"** by
-kddekadenz (CC0) —
+Source files from **"Different Steps on Wood, Stone, Leaves, Gravel and Mud"**
+by kddekadenz (CC0) —
 https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud:
 `grass.ogg`, `grass_2.ogg`, `stone.ogg`, `wood.ogg`, `wood_2.ogg`,
 `wood_3.ogg`, `gravel.ogg`, `mud.ogg`.
+
+The following are **CC0 derivatives** of the above (same precedent as
+`enemy_death.ogg` / `player_death.ogg` / `boss_intro.ogg`) — pitch-shift +
+EQ variations of the corresponding base file, generated to give
+`Audio.gd::_pick_variant()` real randomization on stone, gravel, and mud
+surfaces (which previously had only one file each):
+
+| File | Derivation |
+|------|-----------|
+| `stone_2.ogg`  | `stone.ogg`  pitched up ~+2 semitones (`asetrate=22050*1.122`), high-pass at 120 Hz, gain 0.95 — drier rock scuff. |
+| `stone_3.ogg`  | `stone.ogg`  pitched down ~-2 semitones (`asetrate=22050*0.891`), low-pass at 4.5 kHz, gain 0.90 — softer/heavier step. |
+| `gravel_2.ogg` | `gravel.ogg` pitched up ~+1.5 semitones, narrow-band cut at 800 Hz (-3 dB) — smaller-stones character. |
+| `gravel_3.ogg` | `gravel.ogg` pitched down ~-1.5 semitones, fade-out tail-clipped at 0.18 s — softer trailing scrape. |
+| `mud_2.ogg`    | `mud.ogg`    pitched up ~+2 semitones, low-pass at 2.2 kHz — brighter squelch. |
+
+All derivatives remain CC0 under the original kddekadenz license.
 
 `Audio.gd::play_footstep(surface)` falls back to `grass` when a surface lookup
 misses, so any future surface kind works on day-one without a missing-asset
@@ -110,7 +149,7 @@ is acoustic, Celtic / chamber / folk, or real-instrument SFX. Specifically:
 
 ## Bundle size
 
-Total `eldoria-godot/assets/audio/` is **~4.8 MiB** on disk —
+Total `eldoria-godot/assets/audio/` is **~5.1 MiB** on disk —
 well under the 50 MiB budget set in the audio engineering brief.
 
 ---
@@ -118,7 +157,7 @@ well under the 50 MiB budget set in the audio engineering brief.
 ## Godot import sidecars
 
 As of 2026-05-06 every `.ogg` and `.mp3` in this tree ships with a
-matching `.import` sidecar (38 files: 31 OGG + 7 MP3). Without these
+matching `.import` sidecar (45 files: 38 OGG + 7 MP3). Without these
 sidecars, the headless web export pipeline (`eldoria-godot/EXPORT_TO_WEB.md`)
 cannot resolve `res://` paths and `Audio.gd::_load_stream()` falls through
 to `push_warning("[Audio] Missing ...")` for every track. The editor
