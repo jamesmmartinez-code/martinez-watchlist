@@ -129,7 +129,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("PlayerShape")
 
 [node name="Hero" parent="Player" instance=ExtResource("8_hero")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0, 0, 0)
+transform = Transform3D(0.08, 0, 0, 0, 0.08, 0, 0, 0, 0.08, 0, 0, 0)
 ; Scale Engineer 2026-05-05 — Meshy biped Hero.glb exports at ~2.4-2.6m default.
 ; Visually the player towered over 4m houses. Pre-shrink to 0.7 so first frame
 ; reads at ~1.7m, then Player.gd::_normalize_player_model dials in to 1.8 exact

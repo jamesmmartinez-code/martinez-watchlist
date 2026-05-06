@@ -1741,9 +1741,7 @@ func _collect_bone_attachments(root: Node, out: Array) -> void:
 # height. Brute force, but reliable.
 var __force_cap_skip := 0
 func _force_hero_height_cap() -> void:
-	__force_cap_skip += 1
-	if __force_cap_skip < 10: return  # only every ~10 frames
-	__force_cap_skip = 0
+	# 2026-05-06 NUCLEAR: run EVERY frame, no skip
 	var hero: Node = get_node_or_null("Hero")
 	if hero == null or not (hero is Node3D): return
 	var hero3: Node3D = hero
@@ -1756,8 +1754,8 @@ func _force_hero_height_cap() -> void:
 		if not has: aabb = a; has = true
 		else: aabb = aabb.merge(a)
 	if not has or aabb.size.y < 0.001: return
-	if aabb.size.y > 1.4:
-		var shrink: float = 1.4 / aabb.size.y
+	if aabb.size.y > 1.0:
+		var shrink: float = 1.0 / aabb.size.y
 		hero3.scale = hero3.scale * shrink
 
 

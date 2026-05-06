@@ -1178,6 +1178,7 @@ func _hide_baked_blades(root: Node) -> void:
 # Lanterns
 # ============================================================================
 func _build_lanterns() -> void:
+	return  # NUCLEAR-DISABLED _build_lanterns 2026-05-06: visual noise blocking gameplay
 	var positions = [Vector3(8, 0, 8), Vector3(-8, 0, 8), Vector3(8, 0, -8), Vector3(-8, 0, -8),
 					 Vector3(12, 0, 0), Vector3(-12, 0, 0), Vector3(0, 0, 12), Vector3(0, 0, -12)]
 	for p in positions:
@@ -1461,6 +1462,7 @@ func _build_pond() -> void:
 # Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
+	return  # NUCLEAR-DISABLED _build_firefly_particles 2026-05-06: visual noise blocking gameplay
 	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	var spots = [Vector3(0, 0, 0), Vector3(15, 0, 12), Vector3(-15, 0, -12), Vector3(0, 0, 18)]
@@ -1526,6 +1528,7 @@ const LEAF_PALETTE: Array = [
 ]
 
 func _build_falling_leaves() -> void:
+	return  # NUCLEAR-DISABLED _build_falling_leaves 2026-05-06: visual noise blocking gameplay
 	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for i in FALLING_LEAF_SPOTS.size():
@@ -1575,6 +1578,7 @@ func _build_falling_leaves() -> void:
 		add_child(p)
 
 func _build_smoke_chimneys() -> void:
+	return  # NUCLEAR-DISABLED _build_smoke_chimneys 2026-05-06: visual noise blocking gameplay
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
@@ -2109,6 +2113,7 @@ func _find_horse_animation_player(n: Node) -> AnimationPlayer:
 	return null
 
 func _build_loot_chests() -> void:
+	return  # NUCLEAR-DISABLED _build_loot_chests 2026-05-06: visual noise blocking gameplay
 	# Common chests scattered around the wilds, plus a rare chest deeper in
 	var spots = [
 		{"pos": Vector3( 22, 0,  10), "pool":"chest_common", "items":2},
@@ -2334,6 +2339,7 @@ func _make_bandit_camp(center: Vector3) -> void:
 # Campfire — stone ring, charred logs, fire particles, warm point light
 # ============================================================================
 func _build_campfire() -> void:
+	return  # NUCLEAR-DISABLED _build_campfire 2026-05-06: visual noise blocking gameplay
 	var fire := Node3D.new()
 	fire.position = Vector3(0, 0, -2)
 	fire.add_to_group("campfires")
