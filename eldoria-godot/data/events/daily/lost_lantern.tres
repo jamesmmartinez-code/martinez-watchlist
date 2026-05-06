@@ -1,0 +1,38 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "lost_lantern",
+"name": "A Lantern at the Cave Mouth",
+"category": "daily",
+"region": "crystal_caves",
+"giver": "innkeeper_bram",
+"objective": "A village child left a small paper lantern at the lip of the under-stream cave yesterday and didn't come back for it. Bring it home before nightfall.",
+"trigger": {"kind": "random_pool", "weight": 2, "cooldown_hours": 72, "only_at_time_of_day": "afternoon"},
+"duration_hours": 6,
+"participants": ["innkeeper_bram"],
+"mechanics": [
+  {"id": "find_lantern", "kind": "minigame_id", "label": "Find the lantern at the cave mouth", "flag_for": "px_team", "note": "Visible glow pickup at the lip. No combat in scene — wolves do not approach the cave-light. Lantern is fragile (cosmetic) — if player runs more than 3s the lantern stutters and a paper square falls out."},
+  {"id": "carry_home", "kind": "minigame_id", "label": "Walk the lantern back to the inn", "flag_for": "px_team", "note": "Walk-pace return. Sprint smothers the candle (cosmetic, no fail state). If smothered, Bram laughs and says it lights again on its own — child's lantern, after all."},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "single_recorder_low", "cave_blue_glow_mult": 0.8, "lantern_carry_glow_radius_m": 4.0}
+],
+"rewards": {
+  "complete": {"renown": 2, "items": ["bram_warm_bread"], "coin": 3},
+  "miss": {"renown": 0, "morning_after_line": "lantern_came_home_anyway"}
+},
+"variant_lines": {
+  "accept": "Bram, drying mugs: \"Holt's youngest. Took her sister's paper lantern out to the cave to show off. Came home shivering, no lantern. It's still there. Bring it back before the cold sets in.\"",
+  "complete": "Bram sets the lantern on the bar. Lights it with a hearth-coal. \"Now Holt's youngest can apologize *and* eat. Bread is yours. Tell her the lantern remembered the way.\"",
+  "complete_smothered": "Bram lights it again with a single coal. Does not mention the smother. \"Lanterns are patient. Like Vellum. Like grandmothers.\"",
+  "miss": "Bram serves stew. Says nothing. The next morning the lantern is on the bar, faintly damp. Holt's youngest is not in the inn that day."
+},
+"hooks": {
+  "missed": "If unlit by player but recovered offscreen, sets npc_flag holts_youngest_quiet = true for one in-game week. Resolves naturally.",
+  "caught": "Sets player_flag returned_a_lantern += 1. At 3, the Holt family invites the player to a small dinner — borrowed Holt-house scene, no new NPCs, just dialogue variants. Lambmoon morning the player gets a new wool scarf cosmetic.",
+  "kid_specific": "If the carrying player is on the Owen slot, Bram says \"Mind the candle, oldest brother.\" If on Alden, \"Mind the candle, little knight.\" Different lines per slot. Cosmetic only."
+},
+"lore_anchor": "world.md → Honeysong Eve lanterns; rumors/briarwood.tres → \"Every seventeenth Honeysong, a lantern stays lit on the pond until dawn.\"",
+"banned": ["wolf_combat_in_scene", "cave_entry", "lantern_breakable_loss_state", "any_grim_outcome"],
+"audio_brief": "One recorder, low. Crunch of frost on path. The lantern hum is barely audible — listen for the warm glow, don't show a UI bar.",
+"px_team_notes": "The lantern as carried object is FLAGGED. Suggested: simple slot-1 cosmetic carry, glow-radius emitter, no inventory weight. Path home is auto-discovered (golden trail off if player has discovered the cave at all)."
+}

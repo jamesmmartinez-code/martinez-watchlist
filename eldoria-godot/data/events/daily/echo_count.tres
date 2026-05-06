@@ -1,0 +1,41 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "echo_count",
+"name": "Count the Cave-Echoes",
+"category": "daily",
+"region": "crystal_caves",
+"giver": "herbalist_lyra",
+"objective": "Lyra wants to know how many times the under-stream answers a single clap at the cave's lip. Go. Clap. Count. Return.",
+"trigger": {"kind": "random_pool", "weight": 2, "cooldown_hours": 96, "only_at_time_of_day": "morning_or_dusk"},
+"duration_hours": 8,
+"participants": ["herbalist_lyra"],
+"mechanics": [
+  {"id": "clap_at_lip", "kind": "minigame_id", "label": "Clap at the cave lip", "flag_for": "px_team", "note": "Single button press at marker. Cave engine plays N echoes where N = 3 + small random + (Foxthaw_modifier ? 2 : 0). Player must report the count back to Lyra within in-game day."},
+  {"id": "report_count", "kind": "minigame_id", "label": "Report the count to Lyra", "flag_for": "px_team", "note": "Dialog tree with 3-5-7 options. Correct = renown. Off-by-one = half renown + Lyra teases. Off-by-two+ = no renown but no penalty."},
+  {"id": "ambient_change", "kind": "ambient_change", "cave_echo_clarity_mult": 1.5, "wind_above_caves_silenced": false}
+],
+"rewards": {
+  "correct": {"renown": 2, "items": ["lyra_dried_mint_sprig"], "coin": 0},
+  "off_by_one": {"renown": 1, "items": ["lyra_dried_mint_sprig"]},
+  "wrong": {"renown": 0, "items": []},
+  "miss": {"renown": 0, "morning_after_line": "lyra_will_ask_someone_else"}
+},
+"variant_lines": {
+  "accept": "Lyra, hands stained green: \"The cave at the lip — clap once. Count what answers. Don't go in. Just count.\"",
+  "correct": "Lyra: \"That matches what I heard last Foxthaw. The cave is keeping its rhythm. Good.\"",
+  "off_by_one": "Lyra, smiling small: \"Off by one. The under-stream has a little stutter today. Try again next time.\"",
+  "wrong": "Lyra, gently: \"That is not what the cave said. But thank you for going. Next time, listen with your shoulders down.\"",
+  "miss": "Lyra is at the herb-bed, weeding. She does not ask."
+},
+"hooks": {
+  "missed": "No state change. The cave kept its count to itself.",
+  "caught": "Sets player_flag echoes_counted += 1. At 5 correct counts across the year, Lyra unlocks the *under-stream rhythm* codex page (lore-anchored to the Sundering scar).",
+  "kid_specific": "If both players report the same count on the same morning, Lyra: \"Brothers hear alike. That is a good sign.\" Cosmetic. Sets brothers_heard_alike = true."
+},
+"lore_anchor": "world.md → The Sundering → Crystal Caves are the wound itself, still unhealed; Lyra NPC backstory.",
+"banned": ["entering_the_cave_for_this_quest", "combat_at_the_lip", "any_explanation_of_what_the_cave_actually_is"],
+"audio_brief": "First clap dry. Echoes recede in pitch slightly each repeat. Final echo always softer than ambient — easy to miscount. The cave keeps its mystery.",
+"px_team_notes": "The echo count formula is FLAGGED. Suggested: N = 4 base, +1 on Foxthaw eve, ±1 random per session per player. Same player gets different counts on different days — that is the point. # LORE_GAP: why the count varies. Lorekeeper queued."
+}
