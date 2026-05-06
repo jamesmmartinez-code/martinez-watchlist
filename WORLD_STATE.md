@@ -24,17 +24,42 @@ and *what has happened*. Update this file whenever the world changes.
 (Future runs pick from this list. A hook is a one-liner that makes the next
 run easier — what's the *next* thing that compounds?)
 
-- **Top-priority next (run 22+):** Bandit camp spawn pattern. Run 21 wired
-  the `bandits` faction + `update_bandit_pressure()` derivation +
-  `bandits_emergent` world flag + Roan's dialogue tier 3 reader + bandit
-  drop_table — but no bandit enemy spawns on the map yet. Next Builder run
-  adds a `_bandit_camp_size(pressure)` helper to `WorldBuilder._build_enemies`
-  (mirroring `_goblin_camp_size` and `_wolf_pack_size`), one bandit camp
-  on the south road, and wires the warrior.glb model with a hood + scarf
-  silhouette via Enemy.gd's existing KIND_TINT_OVERRIDE pattern. The cooldown
-  band, chase-speed band, and ⚡ agitated prefix all light up automatically
-  the moment the spawn lands (KIND_TO_FACTION already maps "bandit" →
-  "bandits" as of this run).
+- ✅ **Resolved 2026-05-05 (run 22 — Builder):** Bandit camp spawn pattern
+  shipped. `WorldBuilder._build_enemies` now reads
+  `World.faction_pressure("bandits")` and derives camp population from a
+  new `_bandit_camp_size(pressure)` helper (INVERTED thresholds:
+  `<0.20→0`, `<0.40→1`, `<0.55→2`, `<0.70→3`, `≥0.70→4` — high pressure =
+  more bandits, opposite of goblin/wolf). One camp at `Vector3(2, 0, -55)`
+  south of the path-network terminus, with a `_make_bandit_camp` prop
+  (cold ash + leaning plank — no warm light, bandits stay hidden). Bandit
+  enemies use `warrior.glb` (KIND_MODELS) with `KIND_TINT_OVERRIDE = true`
+  and a dark-leather `Color(0.30, 0.22, 0.18)` tint for the hooded
+  silhouette. The four pre-existing readers of `faction_pressure`
+  (cooldown band, chase-speed band, NPC dialogue tier 3 — wait, NPC tier
+  is keyed off faction id, not "bandits" specifically; only Roan's
+  `bandits_emergent` warm_world_flag tier reads it) all light up the
+  moment a bandit spawns. New player toast: "Hooded figures stalk the
+  south road." fires when `bandit_count > 0`.
+- **Top-priority next (run 23+):** Roan's bandit-clear quest. Consume the
+  new pressure direction with a kill quest ("Take down 4 bandits on the
+  south road") and `consequence: pressure_delta -0.15 on bandits` —
+  inverse of the wolf-quest template (which ADDS pressure). Closes the
+  loop on Roan's tier-3 dialogue ("saddle-bell on the south road")
+  finally giving the player a verb to act on the lore. Pure data entry
+  in Roan's quest table, zero new code.
+- **Top-priority next (run 23+):** Bandit Captain boss. Once
+  `bandit_count >= 4` (i.e. extreme-tame state where both goblins and
+  wolves are deeply quieted), spawn a Captain at the camp center —
+  warrior.glb at 1.4× scale, dark-purple tint, ~130 hp / 18 dmg, drops
+  from `bandit` table tilted toward `steel_blade`/`chainmail`. Single
+  `if bandit_count >= 4: _spawn_bandit_captain(bandit_camp)` clause in
+  `_build_enemies`. Reuses Boss.gd if it generalizes; otherwise a flat
+  Enemy.gd kind with extra HP. Compounds the camp size threshold ladder.
+- **Hook for Lore Keeper:** the leaning plank in `_make_bandit_camp` is
+  un-painted `MAT_DARK_WOOD`. A Lore Keeper run can paint a "TOLL" rune
+  decal once the rune-texture pipeline lands, turning the foreshadowing
+  prop into a readable warning sign. Composes with Roan's tier-3 line
+  about "paid a 'toll' to a hooded fellow at the crossroads."
 - **Top-priority next (run 22+):** First bandit-themed quest. Roan's dialogue
   promises bandits emerging — the natural quest is "Roan asks the player
   to clear the south road" (kind: kill, item: bandit, needed: 4-5).

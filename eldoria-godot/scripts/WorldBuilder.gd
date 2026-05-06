@@ -1453,6 +1453,55 @@ func _build_enemies() -> void:
 	if wolf_count < 4 and world_node and world_node.has_method("_show_toast"):
 		world_node.call_deferred("_show_toast", "🐺 The wolf packs feel thinner.")
 
+	# REFINE: world-engine (run 22) — bandit camp on the south road. Reads
+	# World.faction_pressure("bandits") (INVERTED semantics: high = BOLD,
+	# more bandits; low = dormant, empty camp). Same fail-soft contract as
+	# goblin/wolf pressure reads: missing world / accessor → baseline
+	# (pressure 0.0, dormant — fresh-save behavior). The "bandits" faction
+	# pressure is derived by World.update_bandit_pressure() each time a
+	# consequence resolves; bandits surface AFTER the player has tamed
+	# enough goblins+wolves that the woods feel safe. See SYSTEM_REGISTRY.md
+	# "Bandit Spawn Schema" — thresholds 0.20/0.40/0.55/0.70 → 0/1/2/3/4.
+	# At fresh save (bandits pressure approx 0.05) the camp is EMPTY but the
+	# camp prop spawns anyway as foreshadowing — the cold ash log + plank
+	# tells the player "someone's been camping here."
+	var bandit_pressure: float = 0.0
+	if world_node and world_node.has_method("faction_pressure"):
+		bandit_pressure = float(world_node.faction_pressure("bandits"))
+	var bandit_pop: Dictionary = _bandit_camp_size(bandit_pressure)
+	var bandit_count: int = int(bandit_pop.get("count", 0))
+	assert(bandit_count >= 0 and bandit_count <= 4, "bandit_count out of contract")
+
+	# South road bandit camp — past the path-network terminus at z=-12, far
+	# enough south that the silhouette of the camp doesn't bleed into the
+	# village skyline. x=2 keeps it just off the central road axis so the
+	# player walks INTO the camp when traveling south, not past it. THEME
+	# §13 ground contact: y=0 for the camp prop; _spawn_enemy lifts bandits
+	# +1.0 m to keep feet on the path (same lift goblins/wolves use).
+	var bandit_camp: Vector3 = Vector3(2, 0, -55)
+	_make_bandit_camp(bandit_camp)
+	for i in bandit_count:
+		var ang: float = rng.randf() * TAU
+		var r: float = rng.randf_range(2.0, 5.5)
+		var pos: Vector3 = bandit_camp + Vector3(cos(ang) * r, 0, sin(ang) * r)
+		# Stat profile: between Goblin Scout and Goblin Brute. Bandits are
+		# armed humans with looted gear — readable as "harder than a scout,
+		# softer than a brute." HP 42, dmg 9, xp 24, gold 8.
+		# Tint: dark weathered leather (THEME §3 charcoal-leather palette,
+		# §4 hooded silhouette). Movespd matches Goblin Scout (2.6/4.6) but
+		# chase 4.8 — road-ambushers are slightly more committed once seen.
+		_spawn_enemy("bandit", pos, "Bandit Ambusher", 42, 9, 24, 8,
+			Color(0.30, 0.22, 0.18), 2.6, 4.8)
+
+	# Player-facing feedback (Rule 2 iii): one-shot toast at world build
+	# whenever the bandit camp is populated. Mirrors the goblin/wolf toast
+	# pattern with INVERTED phrasing — bandits APPEARING reads as a fresh
+	# threat, not a calmer wood. Composes with Roan's `bandits_emergent`
+	# warm_world_flag dialogue (run 21) so the village voice and the
+	# road state agree at every load. Deferred so the HUD exists.
+	if bandit_count > 0 and world_node and world_node.has_method("_show_toast"):
+		world_node.call_deferred("_show_toast", "Hooded figures stalk the south road.")
+
 	# Goblin Warlord — boss in the deepest part of the Whisperwood
 	_build_boss_arena(Vector3(60, 0, 60))
 
@@ -1499,6 +1548,37 @@ func _wolf_pack_size(pressure: float) -> Dictionary:
 		count = 2
 	if p < 0.15:
 		count = 1
+	return {"count": count}
+
+# Bandit Spawn Schema (run 22) — INVERTED-pressure derivation. Where goblin
+# and wolf factions use "high pressure = many enemies, threat unresolved",
+# the bandits faction uses "high pressure = bandits feel SAFE enough to come
+# out". Read accessor: World.faction_pressure("bandits") in [0.0, 0.80]
+# (capped by update_bandit_pressure's 0.20 buffer). Thresholds align with
+# the bandits_emergent world flag (fires at p >= 0.40, drives Roan's tier-3
+# dialogue):
+#   p < 0.20 -> 0 bandits  (camp prop is COLD ASH; foreshadowing only)
+#   p < 0.40 -> 1 bandit   (lone scout — sign before the flag fires)
+#   p < 0.55 -> 2 bandits  (camp populated; bandits_emergent ON)
+#   p < 0.70 -> 3 bandits
+#   p >= 0.70 -> 4 bandits  (only reachable in extreme-tame state where
+#                            BOTH goblins and wolves are deeply quieted)
+# At fresh save (factions: goblin 1.0 + wolf 0.5 -> bandits ~0.05) the
+# count is 0 — IDENTICAL load-time silhouette to runs 1–21 except for the
+# new bandit camp PROP, which is intentionally visible as a "what's that?"
+# breadcrumb. The empty camp prop persists across pressure changes the
+# same way empty goblin camps do (run 5 memorial pattern).
+func _bandit_camp_size(pressure: float) -> Dictionary:
+	var p: float = clamp(pressure, 0.0, 1.0)
+	var count: int = 0
+	if p >= 0.20:
+		count = 1
+	if p >= 0.40:
+		count = 2
+	if p >= 0.55:
+		count = 3
+	if p >= 0.70:
+		count = 4
 	return {"count": count}
 
 func _spawn_enemy(kind: String, pos: Vector3, ename: String, hp: int, dmg: int,
@@ -1720,6 +1800,53 @@ func _make_goblin_camp(center: Vector3) -> void:
 	lt.position.y = 0.5
 	pit.add_child(lt)
 	pit.add_to_group("goblin_fires")
+
+# Bandit camp prop (run 22) — silhouette of an outlaw lookout: cold ash
+# pit + cracked plank. Deliberately DIMMER and SMALLER than the goblin
+# fire (4 stones vs 6, no glowing ember log, no warm light) — bandits
+# don't want to be seen at night. The plank suggests a recent presence
+# ("they were here, they'll be back") even when bandit_count == 0, which
+# is the foreshadowing payload at fresh save. THEME §13: y=0 for the pit
+# itself (props rest on ground); plank pivot is at base.
+func _make_bandit_camp(center: Vector3) -> void:
+	var pit := Node3D.new()
+	pit.position = center
+	pit.add_to_group("bandit_camps")
+	add_child(pit)
+	# Stone ring (4 stones, smaller — a hurried camp, not a settled one)
+	for i in 4:
+		var ang: float = (float(i) / 4.0) * TAU
+		var stone := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.16; sm.height = 0.24
+		stone.mesh = sm
+		stone.material_override = MAT_STONE(0.5)
+		stone.position = Vector3(cos(ang) * 0.55, 0.10, sin(ang) * 0.55)
+		stone.scale = Vector3(1.0, 0.7, 1.0)
+		pit.add_child(stone)
+	# Cold ash log (charred, no emission — bandits don't keep a fire burning)
+	var log_mesh := MeshInstance3D.new()
+	var lcm := CylinderMesh.new()
+	lcm.top_radius = 0.09; lcm.bottom_radius = 0.09; lcm.height = 0.7
+	log_mesh.mesh = lcm
+	var ash := StandardMaterial3D.new()
+	ash.albedo_color = Color(0.10, 0.07, 0.06)
+	ash.roughness = 0.95
+	log_mesh.material_override = ash
+	log_mesh.rotation = Vector3(0, 0, PI / 2)
+	log_mesh.position.y = 0.16
+	pit.add_child(log_mesh)
+	# Cracked wooden plank — leaning, suggesting a hasty toll-marker. THEME
+	# §8: hand-cut wooden beam, weathered, no signage runes. Future Polisher
+	# / Lore run can paint a rune on it once we have a rune texture.
+	var plank := MeshInstance3D.new()
+	var pm := BoxMesh.new()
+	pm.size = Vector3(0.18, 1.4, 0.04)
+	plank.mesh = pm
+	plank.material_override = MAT_DARK_WOOD(0.6)
+	plank.position = Vector3(1.4, 0.7, 0.0)
+	plank.rotation.z = -0.18  # leaning, not perfectly upright
+	pit.add_child(plank)
 
 # ============================================================================
 # Campfire — stone ring, charred logs, fire particles, warm point light

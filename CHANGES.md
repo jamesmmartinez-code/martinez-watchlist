@@ -4553,3 +4553,117 @@ exist prior to this run).
 
 ### Branch pushed: `auto/art`
 
+
+## 2026-05-05 — Builder run 22 (bandit camp spawn pattern)
+
+I'm building: bandit camp on the south road — wires the `bandits` faction
+(populated by run 21) to actual enemy spawns and a visible camp prop.
+
+THEME §X cited: §1 (high-fantasy medieval), §2 (no firearms — bandits use
+looted swords / leather, no crossbow-with-scope), §4 ("Bandits — human,
+hooded, leather, scarves over face — planned"), §12 (warrior.glb idle anim
+auto-plays via `_play_model_idle_anim`), §13 (ground-contact +1.0m via
+`_spawn_enemy`, plank pivot at base), §14 (push to auto/builder).
+
+Mood board panel: `mood-boards/enemy_silhouettes.png` — 1.00× hooded
+silhouette in the rightmost slot (added by run-21 Artist). The dark-
+charcoal-leather tint passed via `_spawn_enemy(... Color(0.30, 0.22, 0.18) ...)`
+matches that panel's painted hood/cloak balance.
+
+### Pipeline used
+
+Single Builder run, pure GDScript additions:
+- `Enemy.gd` — register the kind in two existing maps.
+- `WorldBuilder.gd` — read pressure → derive count → spawn loop + prop.
+
+No new dependencies, no new resources beyond reuse of `warrior.glb` (already
+on disk and used by skeleton/crystal kinds with the same KIND_TINT_OVERRIDE
+pattern).
+
+### Files changed
+
+- `eldoria-godot/scripts/Enemy.gd` — added `"bandit"` to `KIND_MODELS`
+  (preloads `assets/models/npcs/warrior.glb`, the same humanoid silhouette
+  reused by skeleton/crystal kinds) and to `KIND_TINT_OVERRIDE` so the
+  per-spawn `tint` modulate paints the warrior model dark-leather.
+- `eldoria-godot/scripts/WorldBuilder.gd` —
+  • `_build_enemies()`: reads `World.faction_pressure("bandits")` (same
+    fail-soft contract as the goblin/wolf reads), derives camp population
+    from `_bandit_camp_size(pressure)`, places ONE camp at `Vector3(2, 0, -55)`
+    south of the path-network terminus, spawns "Bandit Ambusher" enemies
+    in a 2.0–5.5 m ring, fires a one-shot toast when populated.
+  • `_bandit_camp_size(pressure: float) -> Dictionary` — INVERTED-pressure
+    helper (high p = MORE bandits, opposite of goblin/wolf). Thresholds:
+    `<0.20 → 0`, `<0.40 → 1`, `<0.55 → 2`, `<0.70 → 3`, `≥0.70 → 4`.
+    Aligned with `bandits_emergent` world flag (fires at `p >= 0.40`).
+  • `_make_bandit_camp(center)` — small cold-ash fire pit (4 stones, no
+    emission, no warm light — bandits stay hidden) plus a leaning cracked
+    wooden plank as a foreshadowing prop. Always spawned, even when
+    `bandit_count == 0`, mirroring the goblin "memorial camp" pattern.
+- `WORLD_STATE.md` — resolved the run-21 hook, registered new hooks for
+  follow-on runs (bandit-clear quest from Roan, Bandit Captain boss).
+- `SYSTEM_REGISTRY.md` — registered "Bandit Spawn Schema" alongside the
+  existing Goblin / Wolf spawn schemas.
+- `CHANGES.md` (this entry).
+
+### 5-output check
+
+(i) **Integration** — pulls the run-21 bandit faction + drop_table +
+KIND_TO_FACTION mapping + Roan's `bandits_emergent` dialogue tier into
+a single load-time spawn pipeline. The four pre-existing readers of
+`World.faction_pressure` (Enemy.gd attack_cooldown, Enemy.gd chase_speed,
+WorldBuilder spawn density helper pattern, NPC.gd dialogue tier 3) all
+light up automatically the moment a `kind:"bandit"` enemy spawns,
+because `KIND_TO_FACTION["bandit"] = "bandits"` was wired by run 21
+and now has its first SPAWNED reader.
+
+(ii) **Schema** — `_bandit_camp_size(pressure: float) -> Dictionary`
+mirrors `_goblin_camp_size` / `_wolf_pack_size` shape (single-arg, returns
+`{"count": int}`), but inverts the comparison sense. Documented in
+`SYSTEM_REGISTRY.md` "Bandit Spawn Schema" with the same threshold-table
+format the goblin/wolf entries use, plus the explicit INVERTED note so
+future Builder runs don't accidentally model bandits like goblins.
+
+(iii) **Feedback** — three visible signals at fresh save AND at every
+load:
+  • The bandit camp PROP (cold ash + plank) at `Vector3(2, 0, -55)`
+    is visible from the south path terminus the moment the player
+    walks past z=-12 — foreshadowing even when count = 0.
+  • One-shot toast "Hooded figures stalk the south road." fires when
+    `bandit_count > 0` (i.e. once the player has tamed enough goblins
+    or wolves that pressure crosses 0.20).
+  • The agitated `⚡` prefix on the floating name (Enemy.gd run-7 logic)
+    inherits automatically — bold bandits at high pressure read
+    distinctly from dormant goblin scouts at low pressure.
+
+(iv) **Eval** — paren / bracket / brace balance verified on both edited
+files via Python `assert all(src.count(o) == src.count(c) ...)` per the
+SKILL.md contract. `_bandit_camp_size` clamps and asserts count ∈ [0, 4]
+inside `_build_enemies`. Stat profile verified between Goblin Scout
+(28 hp / 6 dmg) and Goblin Brute (56 hp / 11 dmg): bandits at 42 / 9 sit
+exactly halfway, readable as "harder than a scout, softer than a brute."
+
+(v) **2+ hooks for next run**:
+  • **Hook A — Roan's bandit-clear quest.** "Clear 4 bandits from the
+    south road" with `consequence: pressure_delta -0.15 on bandits` (the
+    inverse of the wolf-quest template that ADDS pressure). Mirrors the
+    existing fetch-quest schema, no new code, single data entry in
+    Roan's quest table — the cleanest possible compounding.
+  • **Hook B — Bandit Captain boss.** Once `bandit_count >= 4`, spawn a
+    Captain (warrior.glb at 1.4× scale, dark-purple tint, 130 hp, 18 dmg)
+    at the camp center. Reuses Boss.gd. Future Builder run wires it on
+    a single `if bandit_count >= 4: _spawn_bandit_captain(bandit_camp)`.
+  • **Hook C — Lore plank rune.** The leaning plank in `_make_bandit_camp`
+    is currently un-painted MAT_DARK_WOOD. A Lore-keeper run can paint a
+    "TOLL" rune via decal once the rune-texture pipeline lands, turning
+    the foreshadowing prop into a readable warning sign.
+
+### What next run picks up
+
+Run 23+ should pick Hook A (Roan's bandit-clear quest) — it's the lowest-
+risk highest-compounding move because it consumes the new pressure
+direction and ALSO closes the loop on Roan's dialogue (his tier-3 lines
+about "saddle-bell on the south road" finally have a verb the player can
+do). Hook B (Bandit Captain) is the next Builder-natural after that.
+
+### Branch pushed: `auto/builder`

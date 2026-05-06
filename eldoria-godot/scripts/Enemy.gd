@@ -56,6 +56,17 @@ const KIND_MODELS := {
 	"skeleton":          preload("res://assets/models/npcs/warrior.glb"),
 	"crystal_elemental": preload("res://assets/models/npcs/warrior.glb"),
 	"crystal_guardian":  preload("res://assets/models/npcs/warrior.glb"),
+	# THEME §4 (Bandits — human, hooded, leather, scarves over face).
+	# Run 22 (Builder): wires the bandit kind to warrior.glb (humanoid
+	# silhouette, Sketchfab CC-BY, embedded idle anim → satisfies §12
+	# MOTION via _play_model_idle_anim). The KIND_TINT_OVERRIDE entry
+	# below recolors the warrior model dark-leather charcoal so the
+	# silhouette reads "hooded road-ambusher" at 30m, not "warrior".
+	# The drop_table (Items.gd "bandit" key) and KIND_TO_FACTION mapping
+	# ("bandit" → "bandits") were both pre-wired by run 21 — this entry
+	# closes the loop. WorldBuilder._make_bandit_camp + _build_enemies
+	# add the south-road spawn pattern in this same run.
+	"bandit":            preload("res://assets/models/npcs/warrior.glb"),
 }
 
 # THEME §4 — kinds whose KIND_MODELS entry is a *placeholder reuse* (warrior.glb
@@ -66,6 +77,11 @@ const KIND_TINT_OVERRIDE := {
 	"skeleton":          true,
 	"crystal_elemental": true,
 	"crystal_guardian":  true,
+	# Run 22 — bandit reuses warrior.glb; the dark-leather Color passed
+	# in by WorldBuilder._spawn_enemy IS the silhouette differentiator.
+	# Without this entry the warrior model would render in its painted
+	# armor-knight palette and read as a friendly fighter, not an outlaw.
+	"bandit":            true,
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
