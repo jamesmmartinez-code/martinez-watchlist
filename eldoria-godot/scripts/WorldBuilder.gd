@@ -27,7 +27,7 @@ func _safe_load_glb(path: String) -> PackedScene:
 func _populate_npc_models() -> void:
 	NPC_MODELS = {
 		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
-		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
 		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
 		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),

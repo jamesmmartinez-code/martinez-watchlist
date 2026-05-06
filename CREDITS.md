@@ -11,7 +11,8 @@
 
 ### Reused from `Char: batch 2` (already in tree, now wired)
 - **`npcs/mushroom_merchant.glb`** — wired to Mara the Merchant (matches the bag/scarf/scroll merchant silhouette)
-- **`npcs/worker_girl.glb`** — wired to Smith Edda (working-clothes female silhouette)
+- **`npcs/worker_girl.glb`** — left in tree, no longer wired (was Smith Edda placeholder; Edda now uses `smith_edda.glb`)
+- **`npcs/smith_edda.glb`** — "Viking Framps Blacksmith" by [Reifus.Rufus / RG3D](https://sketchfab.com/Reifus.Rufus) (Sketchfab UID `34efa81e7e33402ca19cc72f69ea4af8`), CC-BY-4.0. https://sketchfab.com/3d-models/viking-framps-blacksmith-34efa81e7e33402ca19cc72f69ea4af8 — Smith Edda (Viking-style blacksmith with hammer, leather apron, braided-silhouette feel; 602-face low-poly atlas, 1 skin, 22 native anims including Blacksmith_WorkA / IdleA / Walking / WorkingA / WorkingB — fits THEME §4 stocky-smith brief and §2 Norse-undertoned medieval era; 2.52 MiB, well under §15 20 MiB cap). Replaces prior worker_girl.glb wiring (Enemy.gd L50/L63 had flagged it as "silhouette-broken at 30m").
 - **`npcs/warrior.glb`** — left in tree, no longer wired (was Hala in earlier run; Hala now uses `trainer_hala.glb`)
 - **`npcs/trainer_hala.glb`** — "Monkey Warrior" (Sketchfab UID `5f64793e99e6403a86395c92385fd950`), CC-BY. https://sketchfab.com/3d-models/5f64793e99e6403a86395c92385fd950 — Trainer Hala (chunky simian Sun-Wukong-style martial-artist creature, painterly stylized, 2 anims)
 
