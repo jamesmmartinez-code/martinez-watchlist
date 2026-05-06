@@ -154,4 +154,12 @@ Re-enable only after textures are wired and sizes audited.
 - 2026-05-06: white-blob particle effects (smoke/leaves/fireflies) blocking
   entire view — temporarily disabled until textures audited
 
+- 2026-05-06: campfire emission_energy_multiplier=6.0 + no soft texture rendered as
+  solid bright orange rectangles. Fixed in commit `e69aaca9`. Pattern: ALL
+  GPUParticles3D quads must use `_make_soft_particle_texture()` for albedo.
+- 2026-05-06: spawn Y=3 + 4m raycast couldn't find ground when player landed
+  in a terrain dip → fell forever. Bumped Y=5, raycast=50m, added Y<-2 rescue.
+- 2026-05-06: Worker cache-control was 5min for everything. Deployed
+  v1.3.0-cache: HTML 60s, JS 1h, WASM/PCK 24h+swr 7d. Repeat-load 12s→2-3s.
+
 Add a new row here whenever a scale fix lands. Helps detect recurring drift.
