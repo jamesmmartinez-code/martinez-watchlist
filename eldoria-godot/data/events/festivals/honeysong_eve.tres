@@ -1,0 +1,39 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "honeysong_eve",
+"name": "Honeysong Eve",
+"category": "festival",
+"region": "briarwood",
+"trigger": {
+  "kind": "calendar",
+  "moon": "Honeysong",
+  "day": 14,
+  "time_of_day": "dusk_to_midnight"
+},
+"duration_hours": 6,
+"repeats_yearly": true,
+"participants": ["elder_maeve", "innkeeper_bram", "herbalist_lyra", "mara_merchant", "stablemaster_roan", "smith_edda", "trainer_hala", "village_children"],
+"setup": "Briarwood pond ringed with paper lanterns. Bram brings out the long bench from the inn. Maeve stands on the bank, not the water. Children run barefoot.",
+"mechanics": [
+  {"id": "lantern_set", "kind": "minigame_id", "label": "Set a lantern on the pond", "flag_for": "px_team", "note": "Light, name, push — small input rhythm. Each lantern carries one written name (player chooses NPC or types free text)."},
+  {"id": "honey_cake_vendor", "kind": "special_vendor", "vendor": "innkeeper_bram", "stock": ["honey_cake", "elderflower_cordial", "linden_tea"], "discount_pct": 30, "only_during_event": true},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "honeysong_lutes", "sky": "long_summer_dusk", "fireflies_density_mult": 3.0, "lantern_count_pond": 60},
+  {"id": "erris_offering", "kind": "modified_drop_table", "table": "village_offering_box", "added": ["coin_silver_thin"], "note": "Coins left at the crossroads stone are not picked up by NPCs the next morning — Erris keeps them."}
+],
+"rewards": {
+  "participation": {"renown": 2, "items": ["honeysong_lantern_keepsake"]},
+  "set_three_lanterns": {"renown": 5, "items": ["lyra_braid_charm"]},
+  "miss": {"renown": 0, "morning_after_line": "you_missed_honeysong"}
+},
+"hooks": {
+  "missed": "Bram says: \"Bank was thin without you, traveler. Erris took what we sent. The pond was a long line of yellow.\" — sets npc_flag bram_remembers_missed_honeysong = true (one-line variant unlocks).",
+  "caught": "Maeve will, if approached on the bank, say nothing for a long beat then nod once. Sets npc_flag maeve_saw_you_at_honeysong = true. Foxthaw line next year unlocks the *velhain-tor* whisper variant.",
+  "kid_specific": "Owen and Alden — if both player slots set lanterns on the same evening, special co-op cutscene flag honeysong_brothers = true. Mara the next morning hands them a single linked-cord keepsake."
+},
+"lore_anchor": "world.md → Calendar → Honeysong; codex/stag_courts_courtesy.md → Erriss lanterns named alongside Vigil candles and herb beds as the three rites the village must keep.",
+"banned": ["fireworks", "modern_pop_music", "amplified_speakers", "neon_lights"],
+"audio_brief": "Two lutes and a low flute. No drums. Whispered choir layered under, only audible if player stands on the bank. Fade music when the player is within 1.5m of Maeve.",
+"px_team_notes": "Lantern minigame mechanic is FLAGGED — designer not authoring it. Suggested control: hold-to-light, drag-to-name, release-to-push. Three-second total interaction. No fail state. Lantern names persist into the next years pond as ghostly text on the water (PX may stub or skip)."
+}

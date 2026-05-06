@@ -1,0 +1,37 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "goblin_drumming",
+"name": "The Whisperwood Drums",
+"category": "world",
+"region": "whisperwood",
+"trigger": {
+  "kind": "world_state",
+  "condition": "player_renown_gte_15 AND goblin_warlord_alive AND time_since_last_whisperwood_quest_hours_gt_48",
+  "max_per_year": 6
+},
+"duration_hours": 8,
+"participants": ["whisperwood_goblins", "goblin_warlord"],
+"setup": "Distant goblin war-drums begin at sundown and last until midnight. Briarwood NPCs gather at the village entrance and look out at the forest line. No one speaks. Bram boards his shutters.",
+"mechanics": [
+  {"id": "ambient_drums", "kind": "ambient_change", "music_track": "goblin_drum_low_persistent", "drum_volume_curves_with_distance_to_forest": true, "village_lanterns_dimmed_pct": 30},
+  {"id": "modified_spawns", "kind": "modified_drop_table", "table": "whisperwood_combat_spawns", "added": ["goblin_scout_pack_3"], "added_chance_pct": 25, "note": "Scout packs creep close to the forest line. They do not enter the village."},
+  {"id": "vendor_lockout", "kind": "special_vendor", "vendor": "innkeeper_bram", "closed": true, "note": "Bram serves no one this night. Pulls the inn shutters."}
+],
+"rewards": {
+  "participation": {"renown": 0, "items": []},
+  "scout_pack_cleared": {"renown": 6, "items": ["goblin_drum_skin", "scout_dagger_crude"], "lore_unlock": "the_drumming_was_a_message"},
+  "stand_at_the_forest_line_with_hala": {"renown": 4, "lore_unlock": "halas_silent_form", "note": "Hala will, if the player stands beside her at the forest line until the drums stop, give one quiet teaching: \"You hear them. They hear you. That is half the fight.\""},
+  "miss": {"renown": 0, "morning_after_line": "you_slept_through_the_drums"}
+},
+"hooks": {
+  "missed": "Bram the next morning, restocking: \"Some nights you dont want to be brave. That was one.\"",
+  "caught": "Player who clears a scout pack during the drums has the next Whisperwood quest cycles goblin spawn rate reduced by 15% for 7 in-game days. The goblins are *quieter* — they are afraid of the player.",
+  "kid_specific": "If both Owen and Alden are at the forest line during the drums, Hala gives both a small teaching token (`halas_token_listen`). The drums are louder if youre alone, quieter if youre together. Canon-aligned with cooperative play."
+},
+"lore_anchor": "world.md → Whisperwood goblins were once *something else* before the Sundering; THEME.md §1 → cooperative play.",
+"banned": ["goblin_invasion_of_village", "permanent_npc_deaths", "scripted_loss_of_npc_during_event"],
+"audio_brief": "One low drum. Two low drums. Three. The number of drums escalates over the eight hours. Never higher than four. No melody, no chant.",
+"px_team_notes": "The ambient drum volume should curve with distance to the forest line. Inside the inn (with shutters down) the drums should be muffled but never inaudible — this is intentional. Sound design responsibility flagged."
+}

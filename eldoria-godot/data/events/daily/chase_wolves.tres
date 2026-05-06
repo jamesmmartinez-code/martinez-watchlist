@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "chase_wolves",
+"name": "Roan: Run the Pasture Boundary",
+"category": "daily",
+"region": "briarwood",
+"giver": "stablemaster_roan",
+"objective": "Walk the pasture boundary and shoo any dire wolves drifting in. (No kills required — just push them back to the forest line.)",
+"duration_hours": 12,
+"rewards": {"renown": 1, "items": ["wax_thread"], "coin": 6},
+"variant_lines": {
+  "accept": "Roan: \"They smell the lambs. They arent hungry yet. Keep them honest.\"",
+  "complete": "Roan: \"Pastures quiet. Lambs sleep. Good.\"",
+  "miss": "Roan: \"Lambs are nervous. Well mend it tomorrow.\""
+},
+"banned": ["wolf_kill_required"]
+}

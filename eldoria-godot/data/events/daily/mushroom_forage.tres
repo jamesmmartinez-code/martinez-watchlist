@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "mushroom_forage",
+"name": "Whisperwood: Forage Mushrooms",
+"category": "daily",
+"region": "whisperwood",
+"giver": "innkeeper_bram",
+"objective": "Bring 12 mushrooms — but ONLY the orange-cap and brown-cap kinds. White-caps are poison.",
+"duration_hours": 12,
+"rewards": {"renown": 2, "items": ["bram_stew_bowl"], "coin": 6},
+"variant_lines": {
+  "accept": "Bram: \"Orange-cap or brown-cap. White-cap is the one that ends your week. Maeve will tell you that twice; Ill tell you once.\"",
+  "complete": "Bram: \"Smells right. Stews on at sundown. Youre welcome at the bench.\"",
+  "miss": "Bram: \"Tomorrow. Ill thicken with barley.\""
+},
+"banned": ["white_cap_accepted_by_quest_logic"]
+}

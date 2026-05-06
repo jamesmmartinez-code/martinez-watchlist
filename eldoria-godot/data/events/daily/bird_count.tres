@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "bird_count",
+"name": "Count the Birds",
+"category": "daily",
+"region": "briarwood",
+"giver": "village_children",
+"objective": "Count all the birds in the village square at dawn. Tell the children. (Kid-quest — gentle, low stakes.)",
+"duration_hours": 1,
+"rewards": {"renown": 1, "items": ["children_pressed_feather"], "coin": 1},
+"variant_lines": {
+  "accept": "Small girl at the well: \"Mam says youre good at counting. Weve been arguing.\"",
+  "complete": "Small boy: \"I said seventeen! You said sixteen! HE says—\" *points* — pause — \"He says we both win.\"",
+  "miss": "The children tally it themselves. They get it wrong. No one minds."
+},
+"banned": ["bird_killed_for_count", "children_disappointed_stat_penalty"]
+}

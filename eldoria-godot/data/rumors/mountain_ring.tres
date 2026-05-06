@@ -1,0 +1,42 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "mountain_ring_rumors",
+"region_origin": "mountain_ring",
+"freshness_decay_days_default": 21,
+"lines": [
+  {"text": "The mountains are Vellum's spine. Some say they shrug in their sleep. Roan has felt the pasture shake on a still day.", "truthiness": "true", "decay_days": 365},
+  {"text": "The Stone Crown is no crown. It is a circlet of braided horsehair, won and lost yearly on the Long Ride.", "truthiness": "true", "decay_days": 365},
+  {"text": "On the first morning of Greenshield, the mountain horns begin. Briarwood hears them as a whisper. The Steppe hears them as a shout.", "truthiness": "true", "decay_days": 60},
+  {"text": "Roan rode the Long Ride once. He does not say so. The horseshoe over his pasture-fence post is not a decoration.", "truthiness": "partial", "decay_days": 90},
+  {"text": "A clan of the Stone Crown claims they have a son in Briarwood. They have not asked for him back. The clan does not name him.", "truthiness": "partial", "decay_days": 30},
+  {"text": "The mountain passes are closed in winter. They are also closed in summer, but more politely.", "truthiness": "true", "decay_days": 365},
+  {"text": "The Stone Crown clans answer only to weather and to each other. They do not answer to the Iron Crown. They have not noticed the Antler Crown.", "truthiness": "true", "decay_days": 365},
+  {"text": "There is a horse in the High Steppe that is older than its rider's grandfather. The horse has won the Long Ride three times. It will not run again.", "truthiness": "false", "decay_days": 14},
+  {"text": "The Steppe-grass blooms purple in late Sunpetal. Briarwood traders sometimes carry a pressed sprig home. They keep it for luck.", "truthiness": "true", "decay_days": 60},
+  {"text": "A rider of the Stone Crown once came to Briarwood to deliver a heather and a horseshoe. He stayed for one night. He left at dawn.", "truthiness": "true", "decay_days": 365},
+  {"text": "The mountains do not have wolves. The mountains have something the riders call ''the long-tooth.'' The long-tooth keeps to the high passes.", "truthiness": "partial", "decay_days": 60},
+  {"text": "If the wind comes from the north for three nights in Wolfwake, a Steppe-rider is on the road. If for seven nights, two are.", "truthiness": "partial", "decay_days": 21},
+  {"text": "The Stone-Tongue is slow speech. Each word is a small oath. Riders use it sparingly even with each other.", "truthiness": "true", "decay_days": 365},
+  {"text": "Cailen, Maeve's brother, left for the Stone Crown at nineteen and did not come back. The clan he rode with has not said his name in forty years. They have not forgotten it.", "truthiness": "partial", "decay_days": 365},
+  {"text": "The Long Ride is seven days of running. The horse decides when it ends. Riders who push past the horse's will are pulled from the saddle by the next clan.", "truthiness": "true", "decay_days": 365},
+  {"text": "There is a peak that no rider has summited. Its name in Stone-Tongue is a single word. The word translates as ''the asking.''", "truthiness": "partial", "decay_days": 90},
+  {"text": "A Steppe-clan once saw a stag in the high passes. The stag had no antlers. The clan turned back without asking why.", "truthiness": "true", "decay_days": 90},
+  {"text": "The mountain-ice does not melt the same way each spring. Riders read the patterns. The patterns name the year's winner of the Long Ride before the Ride begins.", "truthiness": "false", "decay_days": 14},
+  {"text": "Briarwood pays no tax to any of the Three Crowns. The Iron Crown has not yet decided whether the valley exists. The Stone Crown does not tax. The Antler Crown does not need to.", "truthiness": "true", "decay_days": 365},
+  {"text": "On a clear winter day from the pasture, you can see one peak that wasn't there the day before. The peak does not move; the eye does.", "truthiness": "partial", "decay_days": 60},
+  {"text": "The Stone Crown's circlet is buried with the rider who wins it last in their life. New circlets are braided every year from the same horsehair lineage.", "truthiness": "true", "decay_days": 365},
+  {"text": "A young rider once tried to win the Long Ride twice in the same year. The clans rode him out of the Steppe. He wandered south and was never named again.", "truthiness": "true", "decay_days": 365},
+  {"text": "The high passes have a wind that sounds like a flute. The riders know the note. The note has changed twice in living memory.", "truthiness": "partial", "decay_days": 90},
+  {"text": "Roan has not been north of the pasture fence in forty-one years. He has not been south of the village square in forty-one years. He has been here.", "truthiness": "true", "decay_days": 365},
+  {"text": "The Stone Crown clans sing in winter. They do not sing in summer. The summer is for riding.", "truthiness": "true", "decay_days": 365},
+  {"text": "An eagle from the high passes will sometimes circle the Briarwood pasture. The villagers do not feed it. The eagle does not need feeding.", "truthiness": "true", "decay_days": 60},
+  {"text": "There is a stone in the highest pass that has been carved by the wind into the shape of a horse. Riders salute it. They do not name it.", "truthiness": "true", "decay_days": 365},
+  {"text": "The Iron Crown sent a survey party north thirty years ago. The party did not come back. The Stone Crown does not say so; the Stone Crown does not need to.", "truthiness": "false", "decay_days": 14},
+  {"text": "On the night of *ai-velin*, the high pass winds drop to nothing. The riders sleep with their saddles unhitched. The horses do not wander.", "truthiness": "true", "decay_days": 90},
+  {"text": "The horseshoe above Maeve's hearth is from the second-to-last Long Ride Cailen ran. The last horseshoe is in the cairn the clan built for him. Maeve has not been to it.", "truthiness": "partial", "decay_days": 365},
+  {"text": "There is a clan in the Steppe that does not ride the Long Ride. They are called the Walkers. They do not lose, because they do not enter.", "truthiness": "partial", "decay_days": 60},
+  {"text": "The mountains keep what they keep. *Vellum is patient.* The riders end every oath with that line. The oath is older than the Stone-Tongue.", "truthiness": "true", "decay_days": 365}
+]
+}

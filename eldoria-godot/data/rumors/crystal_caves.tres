@@ -1,0 +1,42 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "crystal_caves_rumors",
+"region_origin": "crystal_caves",
+"freshness_decay_days_default": 21,
+"lines": [
+  {"text": "The cave-air past the second arch smells of cold iron. The air before the second arch smells of moss. The arch is the threshold.", "truthiness": "true", "decay_days": 365},
+  {"text": "There are runes on the wall by the under-stream. They are not Old Faerie. They are not Stone-Tongue. Lyra suspects they are older.", "truthiness": "true", "decay_days": 90},
+  {"text": "A stone in the third chamber rings like a bell when struck. No one has struck it twice — those who have say it doesn't ring the same way back.", "truthiness": "partial", "decay_days": 30},
+  {"text": "The Crystal Caves are a *thirre*. Time pools here. An hour spent at the lip of the under-stream is an hour the world above wears as well.", "truthiness": "true", "decay_days": 365},
+  {"text": "There's a folded leaf in a crack on the lip of the under-stream. Don't take it. Maeve knows it's there. Maeve has not asked it to come home.", "truthiness": "true", "decay_days": 90},
+  {"text": "The blue glow of the cave is not from the crystals. It is from the wound in the world. The crystals only reflect it.", "truthiness": "partial", "decay_days": 90},
+  {"text": "If you hum a song in the second chamber, the cave hums back. If you hum a song the cave does not know, the cave goes silent.", "truthiness": "partial", "decay_days": 30},
+  {"text": "The drips in the cave keep time. Lyra counts to a ninety-eight before the next one falls. The cave breathes slow.", "truthiness": "true", "decay_days": 60},
+  {"text": "There's a crystal in the cave that, when held, shows you the face of the person who carved it. The carver was a woman of fourteen. She was older when she finished.", "truthiness": "false", "decay_days": 14},
+  {"text": "A goblin scout once entered the caves and came out white-haired. The goblins do not enter the caves anymore. Hala notes this; the goblins do not.", "truthiness": "true", "decay_days": 60},
+  {"text": "The crystals in the caves grow. Slow as a glacier, but they grow. The first chamber is wider than it was a hundred years ago.", "truthiness": "true", "decay_days": 365},
+  {"text": "If you light a candle on the eleventh of Foxthaw on the lip of the under-stream, a second candle lights itself ten paces in. No one has gone to see what's lit it.", "truthiness": "partial", "decay_days": 30},
+  {"text": "The under-stream flows the wrong way. Most rivers flow downhill. This one flows away from the mountains and toward something colder.", "truthiness": "true", "decay_days": 365},
+  {"text": "There's a Sundering-mark on the floor of the third chamber. It is the size of a man's hand. It is the same size as the mark on the well rim above.", "truthiness": "true", "decay_days": 365},
+  {"text": "On a still day, you can hear a single flute note from somewhere deep in the cave. Lyra does not seek it; Lyra has heard it twice.", "truthiness": "true", "decay_days": 90},
+  {"text": "A scribe from the smoke-cities tried to copy the cave runes once. His ink froze. His pen broke. He left, and did not write of it.", "truthiness": "true", "decay_days": 90},
+  {"text": "The crystals on the eastern wall are warmer than the western. Press your hand. Don't press it long; the cave keeps temperatures it isn't owed.", "truthiness": "partial", "decay_days": 30},
+  {"text": "There is a place in the caves where two echoes return for one shout. Children learn this at twelve. Children stop shouting in the caves at thirteen.", "truthiness": "true", "decay_days": 60},
+  {"text": "A traveler once slept in the second chamber and dreamed his grandmother's life. He woke up older. Lyra met him; she will not say how much older.", "truthiness": "false", "decay_days": 14},
+  {"text": "The under-stream tastes of rain. It has not rained in the cave for as long as anyone has been counting.", "truthiness": "true", "decay_days": 365},
+  {"text": "There's a chamber past the third arch that no one has mapped. Hala has been to its mouth. Hala has not been past it.", "truthiness": "true", "decay_days": 90},
+  {"text": "If a candle burns blue in the caves, you've gone too far. Walk back. Don't run.", "truthiness": "true", "decay_days": 90},
+  {"text": "A goblin's footprint, found in the first chamber after a Foxthaw, was three times the size of a goblin's foot. The goblins do not enter the caves.", "truthiness": "partial", "decay_days": 21},
+  {"text": "The crystals sing. Not loud, not always, not for everyone. Lyra hears them on Foxthaw evenings. Bram has never heard them.", "truthiness": "partial", "decay_days": 60},
+  {"text": "The cave-air is heavier in winter. Carry a candle, not a torch — torch-fire does not behave correctly past the second arch.", "truthiness": "true", "decay_days": 60},
+  {"text": "There's a stone in the under-stream shaped like a horseshoe. It has been smoothed by the water. It is older than horses.", "truthiness": "false", "decay_days": 14},
+  {"text": "A name is written on the wall by the second arch in a hand no one alive recognizes. The ink is fresh. The wall is old.", "truthiness": "partial", "decay_days": 21},
+  {"text": "If you laugh in the caves, the cave laughs after you. Two heartbeats later. Always two. Never one. Never three.", "truthiness": "true", "decay_days": 90},
+  {"text": "Lyra goes to the caves alone, every Foxthaw. The village does not know she goes. She does not say she goes. *Velhain-tor.*", "truthiness": "true", "decay_days": 365},
+  {"text": "The wound in the world is not closing. Vellum is patient. Vellum is also old. Both can be true at once.", "truthiness": "true", "decay_days": 365},
+  {"text": "There's a faint scratch on the wall of the third chamber that, traced by candlelight, makes the shape of an antler. Or maybe a hand. The light decides.", "truthiness": "partial", "decay_days": 60},
+  {"text": "A herbalist before Lyra walked deeper than the third arch. She came back with one phrase she would not translate. The phrase was *vael-i-thirren*.", "truthiness": "true", "decay_days": 365}
+]
+}

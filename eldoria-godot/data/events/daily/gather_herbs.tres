@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "gather_herbs",
+"name": "Lyra Needs Herbs",
+"category": "daily",
+"region": "whisperwood",
+"giver": "herbalist_lyra",
+"objective": "Bring 5 of any combination: heartleaf, mosswort, thrice-fold mint, river-vetch.",
+"duration_hours": 24,
+"rewards": {"renown": 1, "items": ["lyra_tincture_minor"], "coin": 8},
+"variant_lines": {
+  "accept": "Lyra: \"Heartleaf is best at the bend in the stream. Mind the goblin tracks.\"",
+  "complete": "Lyra: \"*Thressa-mai*, traveler. The garden remembers.\"",
+  "miss": "Lyra: \"Its alright. The herbs will grow tomorrow.\""
+},
+"banned": ["herb_picking_inside_village_pond_area"]
+}
