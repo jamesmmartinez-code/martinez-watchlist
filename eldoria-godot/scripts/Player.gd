@@ -1557,7 +1557,7 @@ func _apply_character_choice() -> void:
 		return
 	var choice: String = str(Engine.get_meta("char_choice", "")).to_lower().strip_edges()
 	var hero_paths := {
-		"alden":  "res://assets/models/Hero.glb",                       # default Meshy biped (5 anims)
+		"alden":  "res://assets/models/heroes/alden_pathfinder.glb",     # Sketchfab "Adventurer Boy" by monosapiens, CC-BY-4.0 (2.0 MiB, 1 anim, mixamorig:* rig)
 		"owen":   "res://assets/models/heroes/owen_vanguard.glb",       # Sketchfab "Crimson Guardian" CC-BY (0.43 MiB, 5 anims)
 	}
 	var new_path: String = hero_paths.get(choice, "")
