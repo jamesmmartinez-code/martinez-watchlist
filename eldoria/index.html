@@ -95,7 +95,7 @@ body {
 
 	</head>
 	<body>
-		<canvas id="canvas" tabindex="1" style="outline:none;">
+		<canvas id="canvas" tabindex="0" autofocus tabindex="1" style="outline:none;">
 			Your browser does not support the canvas tag.
 		</canvas>
 
@@ -290,6 +290,25 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 }());
 		</script>
-	</body>
+	
+<script>
+// Auto-grab keyboard focus on the game canvas (was the kid's "I can't move" bug for an entire day)
+(function() {
+  function grabFocus() {
+    var c = document.getElementById('canvas');
+    if (c) {
+      c.setAttribute('tabindex', '0');
+      try { c.focus({ preventScroll: true }); } catch(e) { c.focus(); }
+    }
+  }
+  // Try immediately, again after Godot loads, and again on every user interaction
+  document.addEventListener('DOMContentLoaded', grabFocus);
+  document.addEventListener('click', grabFocus, true);
+  document.addEventListener('mousedown', grabFocus, true);
+  document.addEventListener('touchstart', grabFocus, true);
+  window.addEventListener('load', function() { setTimeout(grabFocus, 100); setTimeout(grabFocus, 1000); setTimeout(grabFocus, 3000); });
+})();
+</script>
+</body>
 </html>
 
