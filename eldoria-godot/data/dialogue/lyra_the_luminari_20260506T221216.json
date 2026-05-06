@@ -1,0 +1,167 @@
+{
+  "npc_slug": "lyra_the_luminari",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I'm Lyra, the village Luminari. Our village is famous for its glowing mushrooms. Would you like to learn more?",
+      "options": [
+        {
+          "player_text": "Tell me about the mushrooms!",
+          "goto": "mushroom_magic",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "What's a Luminari?",
+          "goto": "luminari_role",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mushroom_magic",
+      "npc_text": "Our mushrooms glow with a soft, magical light. We use them to guide travelers through the forest at night. But we've had some trouble with them lately...",
+      "options": [
+        {
+          "player_text": "What kind of trouble?",
+          "goto": "trouble_in_the_forest",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "That sounds amazing! Can I help?",
+          "goto": "helping_lyra",
+          "tags": [
+            "helpful"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "luminari_role",
+      "npc_text": "As the village Luminari, it's my job to keep the mushrooms healthy and glowing. I also help the villagers with any problems they might have.",
+      "options": [
+        {
+          "player_text": "That sounds like a big responsibility!",
+          "goto": "village_problems",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'd love to learn more about the mushrooms!",
+          "goto": "mushroom_magic",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trouble_in_the_forest",
+      "npc_text": "Some of the mushrooms have stopped glowing, and we're not sure why. We've tried everything to fix them, but nothing seems to work.",
+      "options": [
+        {
+          "player_text": "I'll help you investigate!",
+          "goto": "investigating",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Sorry to hear that. Maybe I'll see you around?",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "helping_lyra",
+      "npc_text": "That's very kind of you! I could use some help gathering rare herbs to make a special potion for the mushrooms.",
+      "options": [
+        {
+          "player_text": "I'd be happy to help you gather herbs!",
+          "goto": "herb_gathering",
+          "tags": [
+            "helpful"
+          ]
+        },
+        {
+          "player_text": "I'm not sure... I'm on a quest.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "village_problems",
+      "npc_text": "We've had some issues with missing food from the village stores. We're not sure who or what is taking it.",
+      "options": [
+        {
+          "player_text": "I'll help you figure out who's taking the food!",
+          "goto": "investigating",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Sorry to hear that. I hope you find the culprit!",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "investigating",
+      "npc_text": "Let's go take a look at the affected areas and see if we can find any clues. Be careful, though - we don't know what we might be up against!",
+      "options": [
+        {
+          "player_text": "I'm ready to investigate!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'm not sure... this sounds scary.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herb_gathering",
+      "npc_text": "Great! The herbs we need are rare and only grow in certain areas of the forest. Let's go find some!",
+      "options": [
+        {
+          "player_text": "I'm excited to help!",
+          "goto": "END",
+          "tags": [
+            "helpful"
+          ]
+        },
+        {
+          "player_text": "I'm not sure... I've never gathered herbs before.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    }
+  ]
+}
