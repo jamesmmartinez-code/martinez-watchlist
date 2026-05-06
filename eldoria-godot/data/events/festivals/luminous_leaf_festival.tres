@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "event"
+metadata/_category = "festival"
+metadata/_data = """
+{
+  "id": "luminous_leaf_festival",
+  "name": "Luminous Leaf Festival",
+  "category": "festival",
+  "trigger": "date",
+  "duration_hours": 4,
+  "participants": [
+    "maeve"
+  ],
+  "mechanics": [
+    "special_vendor"
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": []
+  },
+  "repeats_yearly": true,
+  "flavor": "Celebrate the changing colors of the leaves with Maeve in the Briarwood region, featuring a special vendor selling rare autumnal items."
+}
+"""
