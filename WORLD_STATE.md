@@ -40,21 +40,61 @@ run easier — what's the *next* thing that compounds?)
   `bandits_emergent` warm_world_flag tier reads it) all light up the
   moment a bandit spawns. New player toast: "Hooded figures stalk the
   south road." fires when `bandit_count > 0`.
-- **Top-priority next (run 23+):** Roan's bandit-clear quest. Consume the
-  new pressure direction with a kill quest ("Take down 4 bandits on the
-  south road") and `consequence: pressure_delta -0.15 on bandits` —
-  inverse of the wolf-quest template (which ADDS pressure). Closes the
-  loop on Roan's tier-3 dialogue ("saddle-bell on the south road")
-  finally giving the player a verb to act on the lore. Pure data entry
-  in Roan's quest table, zero new code.
-- **Top-priority next (run 23+):** Bandit Captain boss. Once
-  `bandit_count >= 4` (i.e. extreme-tame state where both goblins and
-  wolves are deeply quieted), spawn a Captain at the camp center —
-  warrior.glb at 1.4× scale, dark-purple tint, ~130 hp / 18 dmg, drops
-  from `bandit` table tilted toward `steel_blade`/`chainmail`. Single
-  `if bandit_count >= 4: _spawn_bandit_captain(bandit_camp)` clause in
-  `_build_enemies`. Reuses Boss.gd if it generalizes; otherwise a flat
-  Enemy.gd kind with extra HP. Compounds the camp size threshold ladder.
+- ✅ **Resolved 2026-05-06 (run 23 — Builder):** Roan's bandit-clear
+  quest shipped as `bandit_road_for_roan` in `World.QUEST_CATALOG`.
+  Kind=kill, target=bandit, needed=4. Reward 80 xp + 75 gold.
+  Consequence: `bandits` `pressure_delta: -0.20` (double the wolf-quest
+  delta — bandits are the inverse-pressure faction meant to be cleared
+  FAST), `world_flag: roan_bandit_road_clear`, `npc_flag: ["Stablemaster
+  Roan", "road_warden"]`. Gated by NEW schema field
+  `prerequisite_npc_flag: ["Stablemaster Roan", "first_bounty_done"]` —
+  unlocks AFTER Roan's wolf bounty. `_quest_for_role` was upgraded in the
+  same edit to honor prereq + auto-skip-on-completion (consequence's
+  world_flag already set), so a single role can issue a SEQUENCE of
+  quests in narrative order. First role to use it: Roan
+  (`wolf_fang_for_roan` → `bandit_road_for_roan`).
+- ✅ **Resolved 2026-05-06 (run 23 — Builder):** Bandit Captain mini-boss
+  shipped. New `bandit_captain` enemy kind in `Enemy.KIND_MODELS` /
+  `KIND_TINT_OVERRIDE` / `KIND_TO_FACTION` (warrior.glb at 1.40× scale,
+  bruise-purple tint, joins `bandits` faction so kills count toward the
+  `target: "bandit"` quest). Spawn gated by
+  `WorldBuilder._bandit_captain_should_spawn(pressure)` at pressure ≥
+  0.70 (same threshold that maxes regular bandit_count to 4 — full
+  camp). Stat profile: 130 hp / 15 dmg / 120 xp / 50 gold (between
+  Goblin Brute 90 hp and Goblin Warlord ~600 hp). Drops from new
+  `Items.bandit_captain` table tilted toward steel_blade/chainmail/
+  ember_axe + `crystal_shard` 12 (qty 2-4 — bridge to Edda's forge for
+  road-tame players who haven't run the Crystal Caves yet) + crit_amulet
+  + shadow_dagger. Total weight 100. Captain joins `boss_silhouettes`
+  group for future polish-run scale-cap exemption. Two-beat toast
+  cascade: "Hooded figures stalk the south road." then "🗡️ A Captain
+  leads the south-road camp." Achievement `road_warden` (priority 45,
+  title "Road-Warden") fires on quest completion via the existing
+  unlock pipeline.
+- **Top-priority next (run 24+):** Lore Keeper writes Roan's
+  `road_warden` warm_lines. The new `npc_flag` set by
+  `bandit_road_for_roan` has no warm_lines yet — Lore Keeper authors 4
+  lines for `road_warden` (same shape as the existing `first_bounty_done`
+  warm_lines). Tier-2 resolver picks the FIRST flag in npc_flags so
+  authoring order matters (LIFO append on `road_warden` to outrank
+  `first_bounty_done`). Pure data, zero new code.
+- **Top-priority next (run 24+):** `captain_seal` material + Maeve
+  sequenced quest. Add a 0-weight `captain_seal` slot now in the
+  `bandit_captain` table; a future run lifts it to ~10 by pulling from
+  `cloth` (lowest-weight floor) and wires a Maeve fetch quest "bring me
+  the captain's seal" as her SECOND quest using the run-23
+  `prerequisite_npc_flag` schema. SECOND consumer of `prerequisite_npc_flag`
+  proves the schema scales beyond Roan; composes Roan's south-road verb
+  into Maeve's narrative.
+- **Top-priority next (run 24+):** Bandit Captain name-beat. Captain is
+  currently the generic "Bandit Captain." Lore Keeper run can name them
+  via per-spawn name dict in `WorldBuilder._build_enemies`, mirroring
+  the "Pippin"-the-horse pattern. Pure data.
+- **Top-priority next (run 24+):** Maeve cross-NPC mention of bandit
+  clear. Maeve's open `warm_world_flag` slot can now read
+  `roan_bandit_road_clear` as a fourth cross-NPC flag-recognition tier
+  (joining `mara_bounty_paid`, `lyra_potion_brew`, `bram_nights_quiet`).
+  Pure data add in `WorldBuilder.NPCS`.
 - **Hook for Lore Keeper:** the leaning plank in `_make_bandit_camp` is
   un-painted `MAT_DARK_WOOD`. A Lore Keeper run can paint a "TOLL" rune
   decal once the rune-texture pipeline lands, turning the foreshadowing

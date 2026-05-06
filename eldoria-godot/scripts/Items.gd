@@ -335,6 +335,36 @@ const DROP_TABLE = {
 		{"id":"chainmail",    "weight":6,  "qty":[1,1]},
 		{"id":"steel_blade",  "weight":4,  "qty":[1,1]},
 	],
+	# COMPOUND (run 23 — Builder): Bandit Captain drop table. Spawns at the
+	# south-road camp ONLY when bandits faction pressure ≥ 0.70 (the same
+	# threshold that maxes regular bandit_count to 4 — see WorldBuilder
+	# `_bandit_camp_size`). Captain is a mini-boss: ~3.0× HP of a regular
+	# bandit, +60% damage, ~5× xp, ~6× gold. Loot tilts AWAY from the
+	# bandit table's "pocket lint" floor (rusty_sword/cloth) and toward
+	# steel_blade / chainmail / ember_axe — gear a captain would actually
+	# carry. Drop weights total 100 to match wolf/goblin/bandit ratio math.
+	# `crystal_shard` slot (12 weight) is the bridge to the forge economy:
+	# captain kills feed Edda's anvil without forcing a Crystal Caves run,
+	# which closes a long-standing onboarding hole for players who tame
+	# the road before they explore the dungeon. `crit_amulet` (8 weight)
+	# is the only run-7+ rare: a captain dropping a hawk-eye amulet reads
+	# as "they were a real threat, not a costume." Future Lore Keeper
+	# runs may add a `captain_seal` material here for a Maeve fetch quest;
+	# pull it from `cloth` (the lowest-weight floor) to preserve the 100
+	# total without breaking other entries. Same fail-soft contract as
+	# the existing tables — drop_table is consulted by Enemy.gd's
+	# DROP_TABLE.get(enemy_kind, []) so missing/typo'd kinds drop nothing
+	# rather than crash.
+	"bandit_captain": [
+		{"id":"steel_blade",  "weight":24, "qty":[1,1]},
+		{"id":"chainmail",    "weight":18, "qty":[1,1]},
+		{"id":"ember_axe",    "weight":12, "qty":[1,1]},
+		{"id":"crystal_shard","weight":12, "qty":[2,4]},
+		{"id":"hp_potion_l",  "weight":12, "qty":[1,2]},
+		{"id":"crit_amulet",  "weight": 8, "qty":[1,1]},
+		{"id":"leather",      "weight": 8, "qty":[1,2]},
+		{"id":"shadow_dagger","weight": 6, "qty":[1,1]},
+	],
 }
 
 static func get_item(id: String) -> Dictionary:

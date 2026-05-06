@@ -154,6 +154,29 @@ const ACHIEVEMENTS: Dictionary = {
 			],
 		},
 	},
+	# Tier 3 (run 23 — Builder) — Roan's bandit-clear quest landed. THIRD
+	# achievement keyed on a single quest-issued world flag (joins
+	# `first_steps` at the entry tier and `first_forge` at the smith tier).
+	# The new run-23 quest `bandit_road_for_roan` is the SOLE writer of
+	# `roan_bandit_road_clear`, so this predicate is unambiguous. Title
+	# slots BETWEEN Goblin-Bane (40, faction-quiet beat) and Trusted (50,
+	# three-villager NPC-flag beat) — clearing the south road sits below
+	# "trusted by your neighbors" but above "goblin-quiet woods" because
+	# bandits are a player-AGENCY beat (you reduced them in one quest)
+	# whereas goblin-quiet is a multi-quest accumulation. Auto-equipper
+	# picks Road-Warden the moment the quest turns in, then yields to
+	# Trusted once the third villager flag flips. Painterly crest icon
+	# pipeline matches the rest — Artist Agent ships the PNG later;
+	# emoji `🛡️` is the legacy fallback.
+	"road_warden": {
+		"name": "Warden of the South Road",
+		"desc": "The hooded camp goes cold. The road belongs to travelers again.",
+		"icon": "🛡",
+		"icon_path": "res://assets/icons/achievements/road_warden.png",
+		"title_text": "Road-Warden",
+		"title_priority": 45,
+		"predicate": {"kind": "world_flag", "flag": "roan_bandit_road_clear"},
+	},
 	# Tier 4 — both factions humbled AND three trusts. Mastery rung. Title is
 	# the most prestigious so the auto-equipper picks it once Owen gets here.
 	"realm_warden": {

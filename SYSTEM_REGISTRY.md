@@ -107,8 +107,9 @@ edits `Items.ITEMS`; otherwise the next architect audit will flag drift.
 
 Defined in `Items.DROP_TABLE`. Entries: `{id, weight, qty:[min,max]}`.
 Currently keyed: `goblin`, `wolf`, `goblin_warlord`, `skeleton`,
-`crystal_elemental`, `bandit` (entries vary). New enemy kinds MUST add a drop
-table entry; do not let an enemy ship without loot.
+`crystal_elemental`, `bandit`, `bandit_captain` (entries vary). New
+enemy kinds MUST add a drop table entry; do not let an enemy ship
+without loot.
 
 ### Live wolf table (run 20 — Builder)
 
@@ -130,6 +131,31 @@ loop. Hala's 4-kill quest finishes earliest. The drift on each id's
 relative odds is < 4% from the run-17 weights, so existing 30-kill grind
 expectations are byte-identical within rounding.
 
+### Live bandit_captain table (run 23 — Builder)
+
+| id              | weight | qty | notes                                                |
+|-----------------|--------|-----|------------------------------------------------------|
+| `steel_blade`   |   24   | 1   | the captain's own blade — readable as "they were a real threat" |
+| `chainmail`     |   18   | 1   | gear a captain would actually wear                   |
+| `ember_axe`     |   12   | 1   | rare 26-dmg axe, mini-boss tier                      |
+| `crystal_shard` |   12   | 2-3 | bridge to Edda's forge for road-tame players         |
+| `hp_potion_l`   |   12   | 1-2 | Greater Health, mid-game survival rung               |
+| `crit_amulet`   |    8   | 1   | only run-7+ rare; "captain wore the hawk's eye"      |
+| `leather`       |    8   | 1-2 | crafting floor                                       |
+| `shadow_dagger` |    6   | 1   | epic +18 dmg / +18% crit — the rarest single drop    |
+| **Total**       | **100**|     | matches wolf/goblin/bandit ratio convention          |
+
+Bandit Captain spawns ONLY at `bandits` pressure ≥ 0.70 (gated by
+`WorldBuilder._bandit_captain_should_spawn(pressure)`) — the same rung
+that maxes regular `bandit_count` to 4. So the table is consulted
+roughly once per "extreme-tame" world: the moment the player has driven
+both goblins and wolves so quiet that opportunists become bold, the
+captain rides in with one shot at the loot. The `crystal_shard` slot
+was deliberately tuned at qty 2-4 with weight 12 so a single captain
+kill (rare) carries roughly the same shard delivery as a Crystal
+Elemental kill (more common but less reliable per-fight) — keeps the
+forge economy reachable for either play style.
+
 ## Status Effects
 
 NONE shipped yet. Reserved schema for downstream runs:
@@ -150,11 +176,33 @@ A quest may grant any combination of:
 ## Live Quest Catalog (run 19 update)
 
 Lives in `World.QUEST_CATALOG`. Mapped to NPCs by `role` field via
-`World._quest_for_role(role)` — returns the FIRST matching entry, so each
-role currently has at most one quest. Schema fields: `giver`, `actor`,
-`role`, `kind` (`kill`|`fetch`), `target`/`item`, `needed`, `title`,
-`text`, `xp_reward`, `gold_reward`, `motivation`, `location`, `urgency`,
-`world_trigger`, `consequence`.
+`World._quest_for_role(role)`. As of run 23 the resolver iterates
+QUEST_CATALOG in dict-insertion order and returns the FIRST entry whose
+`role` matches AND whose optional `prerequisite_npc_flag` is satisfied
+AND whose `consequence.world_flag` is NOT already set on `world_flags`
+— so a single role can issue a SEQUENCE of quests, and a completed
+quest auto-yields to the next entry in the chain.
+
+Schema fields:
+* Required: `giver`, `actor`, `role`, `kind` (`kill`|`fetch`),
+  `target`/`item`, `needed`, `title`, `text`, `xp_reward`,
+  `gold_reward`, `motivation`, `location`, `urgency`, `world_trigger`,
+  `consequence`.
+* Optional: `reward_item`, `reward_item_qty`,
+  `prerequisite_npc_flag: ["NPC Name", "flag_name"]` — quest is hidden
+  unless the named flag is set on the named NPC's `npc_flags`. (Run 23.
+  Quests authored before run 23 omit this field and are equivalent to
+  prereq-satisfied. Used today by `bandit_road_for_roan` to gate behind
+  Roan's `first_bounty_done`. Future authoring rule: name the prereq's
+  source quest in the COMPOUND comment so a future architect can
+  trace the chain without grepping npc_flags writers.)
+
+**Authoring rule:** every quest must define a UNIQUE
+`consequence.world_flag` (otherwise the auto-skip-on-completion in
+`_quest_for_role` would also skip a sibling quest sharing the flag).
+All shipped quests (runs 1-23) satisfy this — `first_quest_done` and
+similar npc_flags are role-namespaced enough to avoid collisions, and
+world_flags are explicitly distinct.
 
 | id                     | giver               | role     | kind  | needed | reward         | faction Δ                  | npc_flag (set)           | world_flag (set)        |
 |------------------------|---------------------|----------|-------|--------|----------------|----------------------------|--------------------------|-------------------------|
@@ -164,6 +212,7 @@ role currently has at most one quest. Schema fields: `giver`, `actor`,
 | `wolf_fang_for_roan`   | Stablemaster Roan   | stable   | fetch | 5 wolf_fang | 65 xp / 50 g | `dire_wolves` -0.1         | `first_bounty_done`      | `roan_bounty_paid`      |
 | `wolf_form_with_hala`  | Trainer Hala        | trainer  | kill  | 4 wolf      | 90 xp / 35 g | `dire_wolves` -0.1         | `wolf_form_taught`       | `hala_wolf_form_done`   |
 | `wolf_heart_for_bram` ⭐| Innkeeper Bram      | inn      | fetch | 3 wolf_heart| 70 xp / 55 g | `dire_wolves` -0.1         | `nights_quiet`           | `bram_nights_quiet`     |
+| `bandit_road_for_roan` ✦| Stablemaster Roan  | stable   | kill  | 4 bandit    | 80 xp / 75 g | `bandits` -0.20            | `road_warden`            | `roan_bandit_road_clear`|
 
 ⭐ = NEW in run 19 — FOURTH `dire_wolves` reducer (trips the run-6 third
 cliff: pressure 0.1, packs of 1). Bram's role `inn` was QUEST-BLANK before
@@ -178,6 +227,25 @@ title still attainable on the Lyra+Roan+Hala arc. The single surviving
 wolf at pressure 0.1 reads as "the alpha that wouldn't be hunted" —
 boss-feeling fight without a boss-spawn, pure compound on existing
 cooldown/chase scalars.
+
+✦ = NEW in run 23 — FIRST quest gated by the new
+`prerequisite_npc_flag` schema field (requires Roan's
+`first_bounty_done`). FIRST `bandits` faction reducer; the bandits
+faction was wired in run 21 with INVERTED pressure semantics (high =
+bandits bold), so `pressure_delta: -0.20` is double the wolf-quest
+deltas — bandits are meant to be reduced fast. Roan is the FIRST role
+with TWO authored quests (`wolf_fang_for_roan` then
+`bandit_road_for_roan`); the run-23 resolver handles the sequence
+automatically. Composes with the run-22 bandit-camp spawn pattern (the
+quest target is the camp the player has already been seeing in cold-
+ash form since run 21) and the new run-23 Bandit Captain mini-boss
+(spawns at pressure ≥ 0.70, kills count toward the same `target:
+"bandit"` counter via `Enemy.KIND_TO_FACTION["bandit_captain"] =
+"bandits"`). Reward 80 xp / 75 gold matches Maeve's
+`whisperwood_cleansing` tier — Roan's "second errand" sits at the
+same gravity as Maeve's "first errand" because by run 23 the player
+has earned that weight. Achievement `road_warden` (priority 45,
+title "Road-Warden") fires on `roan_bandit_road_clear`.
 
 (Run-18 note retained:) `wolf_form_with_hala` is the run-18 third
 `dire_wolves` reducer. Hala's role `trainer` was quest-blank before; now
@@ -797,8 +865,11 @@ player isn't ready yet.
 3. Use a UNIQUE `title_priority` across achievements that can co-unlock so
    the auto-equipper's pick is unambiguous. Current ladder:
    - 10  `the Apprentice` (first quest)
+   - 25  `the Forged` (first reforge)
    - 30  `Wolf-Friend` (wolves down 1 cliff)
+   - 35  `the Wolf-Tamer` (Lyra + Roan + Hala wolf trio)
    - 40  `Goblin-Bane` (goblins down 1 cliff)
+   - 45  `Road-Warden` (run 23 — Roan's bandit-clear)
    - 50  `the Trusted` (3 NPC trusts)
    - 100 `Warden of Eldoria` (mastery — both factions tamed + 3 trusts)
 4. Predicate evaluation MUST be PURE. The evaluator runs on every
@@ -834,13 +905,22 @@ on Maeve, Edda, Bram, and Lyra now actually reach players.
 Renown is a strict function of `unlocked_achievements`. Each newly-unlocked
 achievement awards renown equal to its `title_priority`:
 
-| Achievement              | Title              | Priority / Renown |
-|--------------------------|--------------------|------------------:|
-| First Steps              | the Apprentice     |                10 |
-| Pack Thinner             | Wolf-Friend        |                30 |
-| Bane of the Whisperwood  | Goblin-Bane        |                40 |
-| Trusted by Three         | the Trusted        |                50 |
-| Warden of the Realm      | Warden of Eldoria  |               100 |
+| Achievement                  | Title              | Priority / Renown |
+|------------------------------|--------------------|------------------:|
+| First Steps                  | the Apprentice     |                10 |
+| First Forge                  | the Forged         |                25 |
+| Pack Thinner                 | Wolf-Friend        |                30 |
+| Tamer of the Wolfwoods       | the Wolf-Tamer     |                35 |
+| Bane of the Whisperwood      | Goblin-Bane        |                40 |
+| Warden of the South Road ✦   | Road-Warden        |                45 |
+| Trusted by Three             | the Trusted        |                50 |
+| Warden of the Realm          | Warden of Eldoria  |               100 |
+
+✦ = NEW in run 23 — fires on `world_flag: roan_bandit_road_clear` set
+by `bandit_road_for_roan` quest completion. Title slots between
+Goblin-Bane and Trusted because clearing the south road is a player-
+AGENCY beat (one quest does it) whereas faction-below-threshold and
+three-NPC-trust beats accumulate over multiple sessions.
 
 Crossing the default `high_renown` threshold (100, set in DialogueDB) takes
 **all five** of the current achievements OR the Warden tier alone. By the

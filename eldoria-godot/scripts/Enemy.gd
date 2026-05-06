@@ -67,6 +67,17 @@ const KIND_MODELS := {
 	# closes the loop. WorldBuilder._make_bandit_camp + _build_enemies
 	# add the south-road spawn pattern in this same run.
 	"bandit":            preload("res://assets/models/npcs/warrior.glb"),
+	# COMPOUND (run 23 — Builder): bandit_captain mini-boss. Same warrior.glb
+	# placeholder reuse as the regular bandit, scaled up at the visual layer
+	# (1.40× via the `bandit_captain` match branch below) and re-tinted to
+	# a deeper purple-leather (KIND_TINT_OVERRIDE forces the override). The
+	# `bandit_captain` kind shares the `bandits` faction (KIND_TO_FACTION
+	# mapping below) so kills count toward Roan's road-clear quest target
+	# `bandit` — see World.QUEST_CATALOG.bandit_road_for_roan note about
+	# captain-as-bandit in the kill counter. Spawns ONLY at extreme bandit
+	# pressure (≥0.70) where regular bandit_count is also 4 — see
+	# WorldBuilder._bandit_captain_should_spawn.
+	"bandit_captain":    preload("res://assets/models/npcs/warrior.glb"),
 }
 
 # THEME §4 — kinds whose KIND_MODELS entry is a *placeholder reuse* (warrior.glb
@@ -82,6 +93,11 @@ const KIND_TINT_OVERRIDE := {
 	# Without this entry the warrior model would render in its painted
 	# armor-knight palette and read as a friendly fighter, not an outlaw.
 	"bandit":            true,
+	# Run 23 — bandit_captain reuses warrior.glb at +1.40 scale; the deeper
+	# purple-leather Color passed by WorldBuilder._spawn_enemy IS the
+	# silhouette differentiator. Without this entry the captain would
+	# render in the friendly armor-knight palette and fail THEME §4 read.
+	"bandit_captain":    true,
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
@@ -110,6 +126,12 @@ const KIND_TO_FACTION := {
 	# attack rung; a dormant bandit (pressure 0.0) keeps baseline. That's
 	# precisely the "they're feeling brave today" feedback we want.
 	"bandit": "bandits",
+	# Run 23 — bandit_captain shares the bandits faction. All five readers
+	# of faction_pressure (cooldown band, chase_speed band, damage band,
+	# xp_reward band, spawn density helpers) light up at captain spawn,
+	# so a captain at pressure 0.7+ inherits the agitated rung WITHOUT
+	# the captain having its own scalar.
+	"bandit_captain": "bandits",
 }
 
 # Cooldown band: baseline = kid-friendly recovery valve (Alden's 9-yo timing
@@ -304,6 +326,16 @@ func _spawn_model() -> void:
 			_model.scale = Vector3(1.10, 1.20, 1.10)
 		"crystal_guardian":
 			_model.scale = Vector3(1.55, 1.65, 1.55)
+		"bandit_captain":
+			# COMPOUND (run 23 — Builder): captain reads as a mini-boss at
+			# 30m by silhouette alone — 1.40× the regular bandit_scale (1.05).
+			# Y bumped a touch higher than X/Z to add the "shoulders that
+			# enter the room first" feel. Final visible height after the
+			# global scale sweep clamps to ≤1.4m for "enemies" group; the
+			# captain also joins the "boss_silhouettes" group below for any
+			# future polish run that wants to lift bosses above the cap.
+			add_to_group("boss_silhouettes")
+			_model.scale = Vector3(1.40, 1.50, 1.40)
 		_:
 			_model.scale = Vector3(1.0, 1.0, 1.0)
 	add_child(_model)
