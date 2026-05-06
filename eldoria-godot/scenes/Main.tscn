@@ -7,16 +7,22 @@
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
 [ext_resource type="PackedScene" uid="uid://b0j4kdyg3stf2" path="res://assets/models/Hero.glb" id="8_hero"]
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
-[ext_resource type="Texture2D" uid="uid://75hg5h11bt7u" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="9_sky_panorama"]
 [ext_resource type="Script" path="res://scripts/HoverInspector.gd" id="20_hover"]
 
-[sub_resource type="PanoramaSkyMaterial" id="Sky_panorama"]
-panorama = ExtResource("9_sky_panorama")
-filter = true
-energy_multiplier = 1.0
+[sub_resource type="ProceduralSkyMaterial" id="Sky_procedural"]
+sky_top_color = Color(0.94, 0.78, 0.78, 1)        ; soft pink dome
+sky_horizon_color = Color(1.0, 0.62, 0.32, 1)     ; THEME §3 burnt-orange #FF8000-ish
+sky_curve = 0.18
+sky_energy_multiplier = 1.0
+ground_bottom_color = Color(0.55, 0.42, 0.28, 1)  ; parchment / earth
+ground_horizon_color = Color(0.88, 0.66, 0.42, 1)
+ground_curve = 0.05
+ground_energy_multiplier = 1.0
+sun_angle_max = 30.0
+sun_curve = 0.15
 
 [sub_resource type="Sky" id="Sky"]
-sky_material = SubResource("Sky_panorama")
+sky_material = SubResource("Sky_procedural")
 radiance_size = 4
 
 [sub_resource type="Environment" id="Env"]
