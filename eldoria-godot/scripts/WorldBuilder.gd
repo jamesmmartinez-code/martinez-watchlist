@@ -9,15 +9,31 @@ class_name WorldBuilder
 # (or hand-curated) GLB that reads as the right archetype from 30m. NPCs whose
 # `name` is missing here fall through to `npc_scene` (CesiumMan placeholder),
 # so wiring is additive and safe.
-const NPC_MODELS := {
-	"Elder Maeve":         preload("res://assets/models/npcs/elder_maeve.glb"),
-	"Smith Edda":          preload("res://assets/models/npcs/worker_girl.glb"),
-	"Mara the Merchant":   preload("res://assets/models/npcs/mushroom_merchant.glb"),
-	"Herbalist Lyra":      preload("res://assets/models/npcs/herbalist_lyra.glb"),
-	"Innkeeper Bram":      preload("res://assets/models/npcs/innkeeper_bram.glb"),
-	"Stablemaster Roan":   preload("res://assets/models/npcs/stablemaster_roan.glb"),
-	"Trainer Hala":        preload("res://assets/models/npcs/warrior.glb"),
-}
+# WorldBuilder hardening 2026-05-06: switched const+preload() → var+load()
+# so a missing or 0-byte GLB no longer takes the entire script offline. Empty
+# world reports trace back to preload-of-missing-file aborting script compile.
+var NPC_MODELS: Dictionary = {}  # populated in _ready
+
+func _safe_load_glb(path: String) -> PackedScene:
+	if not ResourceLoader.exists(path):
+		push_warning("[WorldBuilder] missing GLB: " + path)
+		return null
+	var res: Resource = load(path)
+	if res is PackedScene:
+		return res as PackedScene
+	push_warning("[WorldBuilder] not a scene: " + path)
+	return null
+
+func _populate_npc_models() -> void:
+	NPC_MODELS = {
+		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
+		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
+		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
+		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
+		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+	}
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {
 	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
@@ -499,6 +515,7 @@ const BUILDINGS = [
 func _ready() -> void:
 	if _buildings_built: return
 	_buildings_built = true
+	_populate_npc_models()
 	_build_ground_overlay()
 	_build_path_network()
 	_build_village()
@@ -1616,6 +1633,8 @@ func _make_npc(data: Dictionary) -> void:
 	# for NPCs we haven't sourced yet. The flat tint is applied ONLY to the
 	# placeholder — real models carry their own painted textures.
 	var src: PackedScene = NPC_MODELS.get(data.name, npc_scene)
+	if src == null:
+		src = npc_scene  # fallback to CesiumMan placeholder if GLB missing
 	var uses_real_model: bool = src != npc_scene
 	var model := src.instantiate()
 	# Auto-normalize to ~1.8m tall (handles any authored size — supersedes the
