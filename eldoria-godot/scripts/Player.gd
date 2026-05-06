@@ -667,6 +667,7 @@ func _on_equipment_changed() -> void:
 	_rebuild_shield_visual()
 	_rebuild_helmet_visual()
 	_rebuild_cape_visual()
+	call_deferred("_clamp_all_attachments_scale")
 	# Update HP/MP caps based on equipment bonuses
 	stats_changed.emit()
 

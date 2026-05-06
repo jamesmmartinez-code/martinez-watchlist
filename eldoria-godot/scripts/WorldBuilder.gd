@@ -41,13 +41,13 @@ var _buildings_built: bool = false
 # so the world NEVER spawns empty.
 const TREE_VARIANTS: Array = [
 	{"path": "res://assets/models/trees/oak_tree.glb",  "weight": 0.45,
-	 "scale_min": 0.80, "scale_max": 1.40, "kind": "oak"}  # capped 2026-05-06: was 1.20-1.85, produced 11-15m trees that read as walls,
+	 "scale_min": 0.55, "scale_max": 0.95, "kind": "oak"}  # HAMMER 2026-05-06  # capped 2026-05-06: was 1.20-1.85, produced 11-15m trees that read as walls,
 	{"path": "res://assets/models/trees/pine_tree.glb", "weight": 0.30,
-	 "scale_min": 0.90, "scale_max": 1.50, "kind": "pine"}  # capped 2026-05-06: was 1.40-2.10, produced 17m brown-wall pines,
+	 "scale_min": 0.60, "scale_max": 1.05, "kind": "pine"}  # HAMMER 2026-05-06  # capped 2026-05-06: was 1.40-2.10, produced 17m brown-wall pines,
 	{"path": "res://assets/models/trees/bush.glb",      "weight": 0.20,
 	 "scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
 	{"path": "res://assets/models/trees/dead_tree.glb", "weight": 0.05,
-	 "scale_min": 0.75, "scale_max": 1.20, "kind": "dead"}  # capped 2026-05-06: was 1.10-1.55,
+	 "scale_min": 0.50, "scale_max": 0.85, "kind": "dead"}  # HAMMER 2026-05-06  # capped 2026-05-06: was 1.10-1.55,
 ]
 # Sketchfab CC-BY boulder GLB used by `_scatter_rocks` in place of the lumpy
 # sphere primitives. Same fallback contract as TREE_VARIANTS above.
