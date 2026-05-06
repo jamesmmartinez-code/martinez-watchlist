@@ -548,6 +548,64 @@ Authoring rules:
   this helper pattern: `_<kind>_pack_size(pressure)` returning a Dictionary
   with `{"count": int, ...}` so callers can query named fields, not tuples.
 
+## Bandit Spawn Schema
+
+✅ **Shipped 2026-05-05 (run 22 — Builder).** Per-load bandit count derives
+from `World.faction_pressure("bandits")` with **INVERTED** semantics
+relative to the goblin / wolf schemas: high pressure = MORE bandits (bold
+on the road), low pressure = NO bandits (dormant). Lives in
+`WorldBuilder.gd → _bandit_camp_size(pressure: float) -> Dictionary`.
+Returns `{"count": int}` with thresholds:
+
+| Pressure  | Bandits | Co-fires with                                     |
+|-----------|---------|---------------------------------------------------|
+| < 0.20    | 0       | (camp prop visible as foreshadowing — cold ash)   |
+| < 0.40    | 1       | (lone scout; visible BEFORE `bandits_emergent`)   |
+| < 0.55    | 2       | `bandits_emergent` flag fires at p ≥ 0.40         |
+| < 0.70    | 3       | (player has tamed both goblins & wolves heavily)  |
+| ≥ 0.70    | 4       | (extreme-tame state; both factions deeply quieted)|
+
+Pressure is derived by `World.update_bandit_pressure()` as
+`raw = (1.0 - 0.5 * (goblin_p + wolf_p)) - 0.20` clamped to `[0, 1]`. At
+fresh save (goblin 1.0 + wolf 0.5) raw = 0.05 → `bandit_count = 0`.
+Realistic ceiling at extreme tame (goblin 0.0 + wolf 0.0) raw = 0.80 →
+`bandit_count = 4`.
+
+`_build_enemies()` reads `bandits` pressure once at world build, derives
+camp population, places ONE camp at `Vector3(2, 0, -55)` south of the
+path-network terminus, calls `_make_bandit_camp(center)` for the prop,
+then spawns `bandit_count` "Bandit Ambusher" enemies in a 2.0–5.5 m
+random ring around the camp center. The camp prop is ALWAYS spawned —
+even at count 0 — mirroring the goblin "memorial camp" pattern from
+run 5: empty camps persist across pressure changes as a "they used to
+be here / they will be here" breadcrumb.
+
+Player-facing feedback: deferred call to
+`World._show_toast("Hooded figures stalk the south road.")` when
+`bandit_count > 0`. Phrased as a fresh threat (not a calmer state) to
+match the inverted pressure semantics. Composes with Roan's
+`bandits_emergent` warm_world_flag dialogue tier (run 21) — the village
+voice and the road state agree at every load.
+
+Authoring rules:
+- Read accessor is `World.faction_pressure("bandits")`. Same fail-soft
+  guard as goblins/wolves: missing world / missing accessor → baseline
+  pressure 0.0 → count 0 (camp prop only).
+- Assert at the top of the bandit block enforces `bandit_count ∈ [0, 4]`.
+- Bandit stats (HP 42 / dmg 9 / xp 24 / gold 8) sit halfway between
+  Goblin Scout (28/6) and Goblin Brute (56/11) — readable as "harder
+  than a scout, softer than a brute." Movespd 2.6, chase 4.8 (slightly
+  more committed than a scout once seen).
+- Bandit `tint` is `Color(0.30, 0.22, 0.18)` — dark weathered leather,
+  THEME §3 charcoal palette, §4 hooded silhouette. The
+  `KIND_TINT_OVERRIDE["bandit"] = true` entry forces the tint to apply
+  to the warrior.glb model (otherwise the painted armor-knight palette
+  would override and the enemy would read as a friendly fighter).
+- Authoring trap: NEVER pair a bandit-pressure REDUCER (e.g. Roan's
+  bandit-clear quest) with `pressure_delta > 0` — that would BUFF
+  bandits, the opposite of what the player just did. Reducers MUST use
+  `pressure_delta < 0` for the bandit faction.
+
 ## Enemy Cooldown Schema
 
 ✅ **Shipped 2026-05-04 (run 7).** Per-enemy `attack_cooldown` derives from
@@ -562,7 +620,7 @@ single source of truth:
 | `skeleton`          | `crystal_caves`         | `[1.05, 1.45]`        |
 | `crystal_elemental` | `crystal_caves`         | `[1.05, 1.45]`        |
 | `crystal_guardian`  | `crystal_caves`         | `[1.05, 1.45]`        |
-| `bandit`            | (unmapped)              | baseline 1.45 only    |
+| `bandit`            | `bandits` (INVERTED)    | `[1.05, 1.45]`        |
 
 Resolved value = `lerp(BASELINE, MIN, 1.0 - pressure)` where
 `BASELINE = 1.45` (Alden's recovery valve) and `MIN = 1.05` (Owen's mastery
