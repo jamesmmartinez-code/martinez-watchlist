@@ -2813,3 +2813,244 @@ trickster god of chance.
 **Branch:** `auto/lore`. **Single artifact this run:** yes. **No
 overwrites:** verified — only this WORLD_STATE.md append and the new codex
 file `eldoria-godot/data/codex/pond_and_lanterns.md`.
+
+
+---
+
+## Lore Keeper run — 2026-05-06 — codex fragment added
+
+**Artifact:** `eldoria-godot/data/codex/longnight_vigil.md` (priority 5 —
+codex entry seeded against the Wild Pantheon, specifically the Hollow King,
+and against the Calendar's Longnight, paired in `lore/world.md` with
+Honeysong as the year's two great festivals).
+
+**Why now:** Codex held four fragments — `pale_wyrm_beneath.md`,
+`stag_courts_courtesy.md`, `steppe_riders_refusal.md`, and
+`pond_and_lanterns.md`. Of the *two* festivals named in `world.md`'s
+Calendar, only **Honeysong Eve** had codex coverage (the pond-and-lanterns
+fragment for Erris of the Two Roads). **Longnight Vigil** — the year's
+twin, the deep-winter household candle ritual that anchors the Hollow King
+in the Wild Pantheon and that is canonically Maeve's keeping in
+`elder_maeve.md` and Bram's stew-round in `innkeeper_bram.md` — had no
+codex anchor. This fragment closes that festival pair: summer-pond
+fragment, winter-hearth fragment. It also brings the codex squarely into
+**Briarwood's hearth** (the pond fragment was Briarwood-pond; this is
+Briarwood-hearth). And it gives the **Hollow King**, the only Wild Pantheon
+god named "thanked, in his season, with candles" and not yet rendered in
+codex, his first in-fiction codex appearance — in keeping with `world.md`'s
+voice rule that he "is not feared. He is thanked."
+
+**Sibling-hand canon advanced (no overwrite):** The codex now formally
+holds three Briarwood scribal hands of the same family — the *older
+sister* (Crystal Cave leaves: `pale_wyrm_beneath.md`,
+`stag_courts_courtesy.md`), the *younger sister* (pond leaf:
+`pond_and_lanterns.md`), and now the *eldest sibling* (this leaf:
+hearth-side, midnight, deepest cold). The fragment is explicit on the
+voice difference: where the older sister's ink is "the cold-iron quiet of
+the under-stream" and the younger sister's "sits up on warm summer paper,"
+the eldest's "sits where the candle could see — wider near the flame's
+reach, narrower toward the page-edge where the dark crowded in on it."
+This is pure deepening, no contradiction with prior fragments. Future
+Polisher passes may light hearth-side, pond-side, and cave-side fragments
+with matching paper-texture but different brush feel (cold-iron quiet vs.
+warm summer ink vs. candle-reach winter ink).
+
+**Old Faerie added (3):**
+
+- ***mhirran-vel*** *(MEER-an-vel)* — "the kept candle against the slow
+  turning under." The wick that is allowed to burn through Longnight
+  without being asked to do work — to warm a room, to light a path, to
+  read by. It does not. It only *is.* That is the entirety of its task.
+  Pairs with *mhirren* (`pale_wyrm_beneath.md`) as *kerrith-ai* (this
+  artifact) pairs with *kerrithen* — the small, specific, hearth-side
+  form of the broader idea. Hollow-King-keyed, hearth-keyed.
+  Distinguishable from Bram's *vethar* (`innkeeper_bram.md`):
+  *vethar* is Erris-keyed and road-side (the candle in the window for
+  someone whose road has not ended); *mhirran-vel* is Hollow-King-keyed
+  and hearth-side (the Vigil candle for the gone). Bram's vethar is *also*
+  a *mhirran-vel* on Longnight; both words are correct, in different
+  registers.
+
+- ***thirren-aeth*** *(THEER-en-ayth)* — "memory still warm." The gone
+  who are still close enough to be spoken to without strangeness. Distinct
+  from *thirre* (`world.md`) which is memory gone deep into stone —
+  settled, kind, far. *Thirren-aeth* is the grandmother three winters
+  gone whose chair is still left at the table; the smith's mother whose
+  hammer-mark is on the anvil though her hand is not; the courier whose
+  road has ended whose mug Bram still puts a polish on, on Longnight
+  evening, "in case." It is the remembering that is also a small visiting.
+  It is what the Vigil candle keeps. Hollow-King-keyed; Longnight-keyed;
+  child-safe by careful design (does not name death; names "the gone").
+
+- ***kerrith-ai*** *(KER-ith-eye)* — "laid down for the long path's
+  sake." A specific form of *kerrithen* (`world.md`) used at Longnight
+  dawn. Where *kerrithen* sets a thing down so the land may hold it for
+  whoever may pick it up next, *kerrith-ai* sets a thing down knowing the
+  *ai-velin* itself will take it — the morning wind, the long path, the
+  Hollow King walking on. The Vigil candle at dawn is not blown out; it
+  is *kerritha-ai* on the windowsill, on its side, and the morning wind
+  is allowed to take it. The word also names a tired walker who sets
+  down a pack at the road's end without lifting it again.
+
+**Per the canon cap, total Old Faerie words now in formal canon:** *thirre*,
+*ai-velin*, *kerrithen* (`world.md`); *vael-tor*, *thressa-mai*
+(`elder_maeve.md`); *haethe*, *unnen* (`smith_edda.md`); *thalen-ai*
+(`herbalist_lyra.md`); *vethar*, *haisten*, *breos* (`innkeeper_bram.md`);
+*vael-i-thirren*, *ai-mhorren*, *velhain-tor* (`stag_courts_courtesy.md`);
+*mhordin* (`quest_text/wolf_heart_for_bram.md`); *haelen*, *mor-vaere*,
+*thrennen* (`items_flavor.json`); *mhirren* (`pale_wyrm_beneath.md`);
+*thithrae* (`pond_and_lanterns.md`); ***mhirran-vel***, ***thirren-aeth***,
+***kerrith-ai*** (this artifact). Stone-Tongue cap of three holds — no new
+Stone-Tongue coined.
+
+**Cross-anchors (no edits required):**
+
+- `lore/world.md` — Longnight Vigil canon and the Hollow King's pillar
+  confirmed in-fiction. No overwrite, only deepening. The phrase "every
+  household lights a candle for someone who has gone" is gently re-read
+  here as the *household* rule (the *mhirran-vel* in the south window),
+  while the village's living Vigil ritual (Maeve's candle-order at the
+  well) is explicitly held back as "not in this leaf." Both readings are
+  compatible — the village's ritual descends from these scribal rules and
+  warmed them.
+
+- `lore/npcs/elder_maeve.md` — Maeve's role as "Keeper of the Vigil
+  candles" and her teaching of Lyra "one candle at a time" is named in
+  the fragment as *the Elder's keeping* and explicitly *not* re-stated
+  by the leaf. The fragment positions itself as the **scribal record the
+  ritual descends from**, three centuries older than Maeve. Maeve is the
+  living inheritor; the fragment is the ground she stands on. No
+  Maeve-canon advanced. No Maeve-canon contradicted.
+
+- `lore/npcs/innkeeper_bram.md` — Bram's *vethar* word is
+  preserved verbatim (Erris-keyed, road-side). The fragment uses *vethar*
+  in its older scribal sense (the village-wide kept-light at every south
+  window) and explicitly distinguishes it from the new hearth-side word
+  *mhirran-vel.* Both are canon. Bram's vethar is one specific vethar,
+  and on Longnight his vethar is also a mhirran-vel — the two readings
+  do not conflict. The Innkeeper's mead-bell silence through Vigil and
+  the "third-bell single soft note" are both gestured at without being
+  reified — the fragment writes "the innkeeper of my time says he can
+  hear the whole village breathing out at the third bell," which is
+  three centuries older than Bram's living tradition and gives Bram's
+  current practice a deep ancestral root without overwriting it.
+
+- `lore/npcs/herbalist_lyra.md` — Lyra's dreamleaf gift to Bram and
+  Maeve's teaching of her are acknowledged only by the village rule
+  ("the Elder will teach you the candle-order one candle at a time, as
+  is right"). No Lyra canon advanced.
+
+- `lore/factions/wardens_of_the_mark.md` — Bram's grandmother's ledger
+  gets one quiet new in-fiction entry (the Iron Crown bad-winter
+  Longnight, ninety-one years before the present count, when the
+  candle-of-the-stranger was not given but was lit anyway and laid down
+  *kerritha-ai*). The ledger remains the canonical Warden artifact; this
+  fragment only adds one entry to it from the hearth side. The Warden
+  practice of standing the inn's south-window watch through Vigil is
+  acknowledged ("the warden on Vigil watch may, if asked kindly, count it
+  for you").
+
+- `data/codex/pond_and_lanterns.md` — sibling-hand canon advanced from
+  *two* hands to *three* (older sister / younger sister / eldest sibling).
+  The pond-leaf's "we do not name the songs" rule is mirrored here as
+  "the candle is the name. The flame is the saying." The pond-leaf's
+  *thithrae* (the song that ends on a question) is reused once at the
+  fragment's close, anchoring the eldest sibling's leaf to the younger
+  sister's pond-leaf without overwriting either.
+
+- `data/codex/stag_courts_courtesy.md` and
+  `data/codex/pale_wyrm_beneath.md` — sibling-hand notation now ties all
+  four Briarwood-scribe fragments (two cave, one pond, one hearth) to
+  one scribal family. *Velhain-tor* and *kerrithen* recur as the family's
+  shared parting/practice words.
+
+- `data/quest_text/wolf_heart_for_bram.md` — *mhordin* (the
+  holding-of-the-asking) is reused once in its village-side sense ("the
+  *mhordin* of the box — the holding-of-the-asking, no more"). No
+  quest-text canon advanced.
+
+**Builder hooks proposed (lore-only this run, not wired):**
+
+1. `vigil_candle_box` examine prop — small cedar box decal placed on the
+   lower shelf of the existing village hearth mesh. Pure decal-tint work,
+   no new mesh required. A candle-and-window sigil pressed twice slightly
+   off-register on the lid.
+
+2. Optional `season: longnight` parameter on the alternate trigger —
+   pairs with a future calendar-tick system that surfaces seasonal codex
+   on the right moon. If the calendar-tick system never lands, the primary
+   `examine_prop` trigger covers discovery on its own. Parallels the
+   `season: honeysong` parameter on `pond_and_lanterns.md`.
+
+3. Optional Maeve one-line addition to a future Longnight dialogue tier:
+   *"The leaf in the cedar box is older than my keeping. It tells the
+   household rules. The well-rules I keep myself. Velhain-tor — light the
+   candle when the second bell sounds, not the first."* Deferred — this
+   run is canon-only, and the Maeve dialogue tier already has Vigil lines
+   per `data/dialogue/elder_maeve.json`.
+
+4. Optional Bram one-line addition: *"There is a candle-stub in the
+   cedar box at the village hearth — the candle-of-the-stranger. We have
+   lit it seven times in my keeping. The tally is on the inside of the
+   south-window shutter. The warden may count it for you, if you ask
+   kindly. Velhain-tor."* Deferred — this run is canon-only.
+
+5. Optional dawn-tint on the village hearth sill on the morning of
+   Foxthaw 1 (if the calendar-tick system lands): a single laid-down
+   candle silhouette on the south sill, decal-tint only, fading by midday.
+   Polisher / Environment territory; no Lore Keeper authoring.
+
+**Withholding (held back deliberately):**
+
+- The **village's Vigil ritual itself** — the candle-order at the well,
+  the family-by-family placement, the year-of-nine first-candle rule — is
+  *not* described in the leaf. That is the Elder's keeping and Maeve's
+  bible already names it as such. The fragment is comfortable with this.
+  Future runs may, on Maeve's bible's terms, write that ritual; this
+  fragment does not pre-empt them.
+
+- The **scribal family's names** are still not given. We now have three
+  hands — older sister, younger sister, eldest sibling — and a
+  generations-deeper hand in the eldest's marginalia ("my grandmother's
+  grandmother wrote this rule first"). The family is canon. The names
+  are not. Future runs may name them.
+
+- The **three centuries** is the only date anchor. The "ninety-one years
+  before the present count" of Bram's grandmother's bad-winter Vigil is
+  set at ninety-*one* (not ninety-three, which is the pond-leaf's
+  Honeysong-mead anchor) so the two ledger entries are distinct
+  Longnight/Honeysong years and integrator may anchor each independently.
+
+- The **gone named in the leaf** — the courier, the boy who walked into
+  the Whisperwood after his sister, the smith's mother, the baby Lyra
+  could not keep — are gestured at but never tied to any *living* NPC's
+  bible. The smith's mother's hammer-mark on the anvil is the sole
+  near-anchor and is consistent with `lore/npcs/smith_edda.md` (Halsa's
+  hammer-mark on Edda's anvil). The fragment does not name Halsa. It does
+  not need to.
+
+- The **Iron Crown bad winter** is named only as "the year of the Iron
+  Crown's bad winter" — a phrase that gives integrator and future
+  Lore-Keeper runs an open hook (climate event, political event, both)
+  without committing this fragment to a specific cause.
+
+- The **Hollow King's appearance** is held to "He passes. He notices, and
+  his noticing is the gift." No physical description. No voice. No
+  attendants. The Hollow King is preserved for a future codex of his own,
+  if the priority lattice ever calls for one.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark.
+The fragment uses "gone" / "quiet" / "walked on" instead of "death"; the
+Hollow King is "patient and noticing," not "feared"; Longnight is
+"patient" and "small and warm," not "sad." The words *death*, *sad*, and
+*fear* do not appear anywhere in the leaf or its frame. The Vigil is
+framed as a sitting-up-with, not a mourning. The gone are *thirren-aeth*
+— still close enough to be spoken to without strangeness. Audience age
+9 and 11: the fragment treats memory and absence directly but with a
+parent-by-the-hearth tone, not a grief manual; the rules are practical
+("light from the hearth-coal, not from another candle") and the closing
+permission is a kindness ("then, only then, may you sleep").
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes. **No
+overwrites:** verified — only this WORLD_STATE.md append and the new
+codex file `eldoria-godot/data/codex/longnight_vigil.md`.
