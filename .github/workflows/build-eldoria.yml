@@ -21,6 +21,8 @@ concurrency:
 
 permissions:
   contents: write   # needed to commit the built /eldoria/ folder back
+  pages: write      # 2026-05-06: deploy-pages action needs this
+  id-token: write   # 2026-05-06: deploy-pages OIDC token (fixes transient deploy failures)
 
 jobs:
   build:
