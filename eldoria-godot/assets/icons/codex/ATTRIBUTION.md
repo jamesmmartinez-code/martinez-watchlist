@@ -55,3 +55,28 @@ PNG path is missing.
 
 CC0 — Pillow + NumPy, no external assets. Seed: 8131
 (`python3 scripts/art/gen_codex_glyphs_v2.py`).
+
+## v3 batch — added 2026-05-06 (Art agent)
+
+Six painterly heraldic glyphs filling the data/codex/*.md icon_glyph
+coverage gap. All generated procedurally with Pillow + NumPy from
+`scripts/art/gen_codex_glyphs_v3.py`. CC0. Same disc/ring/grain
+treatment as v1 + v2 so the codex panel reads as one consistent set.
+
+| File                                  | Codex entry                                       | Device                                                   | Palette anchor                                  |
+|---------------------------------------|---------------------------------------------------|----------------------------------------------------------|-------------------------------------------------|
+| `candle-and-window.png`               | `data/codex/longnight_vigil.md`                   | candle in a small mullioned window                        | candle-amber + brass + ink                      |
+| `coiled-wyrm-and-stone.png`           | `data/codex/pale_wyrm_beneath.md`                 | wyrm coiled around a tall standing stone                  | pale-frost + stone-blue + brass-dark            |
+| `kindling-bundle-and-red-ribbon.png`  | `data/codex/brigids_ribbon.md`                    | tied bundle of pine kindling with red lambswool ribbon    | brass + brass-dark + wine                       |
+| `lantern-and-pond-ripple.png`         | `data/codex/pond_and_lanterns.md`                 | hanging paper lantern reflected in concentric ripples     | sunset-gold + frost-silver + stone-blue         |
+| `spine-of-stone-and-ring.png`         | `data/codex/vellums_spine.md`                     | vertical stone book-spine with brass ring at top          | stone-blue + frost-silver + brass               |
+| `stag-and-bow-unstrung.png`           | `data/codex/thiars_mercy_owed_to_prey.md`         | leaping stag silhouette beside an unstrung longbow        | brass-dark + moss + ink                         |
+
+THEME.md anchors: §1 painterly hand-painted; §3 palette
+(parchment #D9C99B, ink #0E0A0E, brass #B0742A, moss #4A7038,
+wine #8C2020, stone-blue #7B8693, frost-silver #C8E0E5,
+sunset-gold #FFD86B); §5 hand-drawn banner/sign aesthetic.
+
+License: CC0 — generated with Pillow + NumPy, no external assets, fonts,
+or trademarks. Seed: 8131 (deterministic regeneration:
+`python3 scripts/art/gen_codex_glyphs_v3.py`).
