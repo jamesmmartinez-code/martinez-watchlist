@@ -94,3 +94,12 @@ both the canonical surface and the extended surface are present.
   `engine:prereq_resolver`, `engine:enter_region_trigger`,
   `lore:regions_folder`.
 - Branch: `auto/quest`.
+
+## Authored .tres Quests Log
+
+(Appended by quest-writer; never overwrite. One line per authored quest.)
+
+| Date       | Quest id                   | Region        | Act | Band | Giver        | Kind  | Notes                               |
+|------------|----------------------------|---------------|-----|------|--------------|-------|-------------------------------------|
+| 2026-05-05 | shards_for_mara            | crystal_caves | 2   | 6-8  | Mara         | fetch | First .tres quest; rewards ring_focus |
+| 2026-05-06 | bones_in_the_choirstone    | crystal_caves | 2   | 6-8  | Elder Maeve  | kill  | Pairs with shards_for_mara; rewards 2× hp_potion_l + Vigil-candle world flag; raises NEEDS:player_experience:level_band_balance |
