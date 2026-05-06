@@ -1,3 +1,29 @@
+## 2026-05-05T03:55Z — Scale Eng: spawner-source canon fixes
+
+**Run @ ~03:55 UTC** (eldoria-scale-engineer scheduled task, run 4 of the day).
+Builds on runs 1–3 (commits 19b51cb / b20d7fe / 61dfe99) which installed the
+ENV_CAPS table, _enforce_env_cap sweep, _normalize_env_mesh helper, and GLB
+tree/boulder normalization. Those handle dynamic clamping; this run fixes the
+two source-level offenders the sweep cannot fix:
+
+- **Lantern** — measured spawn top **2.71m**, canon cap 2.5m (8% over).
+  `post.height` 2.4→2.2 (centered y 1.2→1.1); `box`/`glass`/`light` y 2.5→2.25.
+  New top **2.46m** at spawn. Sweep no longer clamps every lantern every tick.
+- **Windmill** — measured roof-tip **5.7m**, canon floor 8m (~30% under).
+  ENV_CAPS sweep clamps DOWN over-cap nodes but cannot grow UNDER-floor nodes.
+  One-line uniform-scale fix: `mill.scale = Vector3(1.55, 1.55, 1.55)` → ~8.8m.
+  Within canon band [8, 18], target 12m.
+
+**Audit summary:**
+- Nodes audited: every `_make_*` / `_build_*` spawner in WorldBuilder.gd plus
+  Player/Enemy/Boss/Pet/NPC `_normalize_*` callsites.
+- Outside spec at spawn (pre-fix): 2 (lantern, windmill).
+- Outside spec at spawn (post-fix): 0.
+- Most-egregious offender by % of canon: **windmill at 71% of floor**
+  (5.7m / 8m = 0.71×); fixed.
+
+NEVER touched character rig / mesh / animation files. Scale-property only.
+
 ## 2026-05-06 — QA: deleted Owen.glb (resolves §15 violation, asset retired)
 
 **Run @ ~03:30 UTC** (eldoria-qa-triage scheduled task).
