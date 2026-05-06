@@ -464,8 +464,8 @@ func _roll_damage() -> Dictionary:
 
 func _spawn_crit_flash() -> void:
 	# A quick screen-edge flash via a Label3D popup at the player
-	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.85,0.20) → (1.0,0.92,0.28) sits squarely in THEME §3 sunset-gold (#FFD86B family) instead of the slightly muddy mustard.
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.0, 0.92, 0.28), 56, 8)
+	# REFINE: combat-feel — crit flash chunkier & warmer. font 48 → 56, outline 6 → 8 reads from camera distance (Alden); modulate (1.0,0.92,0.28) → (1.00,0.85,0.42). The prior run claimed §3 sunset-gold #FFD86B alignment but B=0.28 (≈#47) was still a half-step off the canonical (1.00,0.85,0.42) (= #FFD86B exact) the rest of the project converged on: UITheme.GOLD, Chest.gd glow_color, WorldMap COL_TITLE, NPC nameplate modulate, Player.gd title_label modulate, the LEVEL UP! popup directly above this on line 585, and the Boss.gd crown emission. CRIT! is the loudest mastery-tier flash Owen reads (per PLAYER_MODEL.md — visible mastery, damage numbers); shouldn't be the lone outlier in the §3 'this matters' gold family. Now eight surfaces beat on one painterly hue. THEME §3 palette discipline.
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.00, 0.85, 0.42), 56, 8)
 
 func _play_anim(name: String) -> void:
 	if not animation_player:

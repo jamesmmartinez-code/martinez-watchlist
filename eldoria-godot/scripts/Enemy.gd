@@ -517,8 +517,8 @@ func take_damage(amount: int, source: Node = null) -> void:
 		_die(source)
 
 func _spawn_damage_number(amount: int, is_crit: bool) -> void:
-	# REFINE: combat-feel — chunkier font + warmer crit gold + brighter normal hit so damage reads at a glance.
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3)), ("%d!" % amount) if is_crit else str(amount), Color(1.0, 0.88, 0.22) if is_crit else Color(1.0, 0.72, 0.32), 62 if is_crit else 44, 7)
+	# REFINE: combat-feel — crit damage number §3 #FFD86B convergence. Crit color (1.0, 0.88, 0.22) → (1.00, 0.85, 0.42); B=0.22 read as deep amber/mustard, well off the canonical sunset-gold the rest of the project's mastery-tier surfaces converged on (UITheme.GOLD, Chest.gd glow_color, WorldMap COL_TITLE, NPC nameplate modulate, Player.gd title_label modulate, LEVEL UP! popup, Boss.gd crown emission, and the Player.gd CRIT! flash on line 468 that this run also pulled in). Crit-tier feedback now beats on one painterly gold across player flash + enemy number — Owen's mastery-affinity 'I earned that one' read aligned across the chain (PLAYER_MODEL.md — visible mastery, damage numbers). Normal-hit color (1.0, 0.72, 0.32) preserved: that's the warm-bronze hammer-hit tier, intentionally distinct from gold crit-tier — keeps the visual hierarchy 'normal hit < crit hit' readable at a glance, which is the point of this REFINE in the first place. THEME §3 palette discipline + chunkier font preserved.
+	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3)), ("%d!" % amount) if is_crit else str(amount), Color(1.00, 0.85, 0.42) if is_crit else Color(1.0, 0.72, 0.32), 62 if is_crit else 44, 7)
 
 func _die(source: Node) -> void:
 	_state = "dead"
