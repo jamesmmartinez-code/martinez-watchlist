@@ -1,12 +1,12 @@
 # Eldoria Integration Gaps
-generated_at: 2026-05-06T20:07:06Z
+generated_at: 2026-05-06T20:48:44Z
 by: integrator (auto)
-main: 9f8b3947ecda4cb3df4ac3fbb9e258003dbb6ed5
+main: 6ba54797d3d1d0b98cde06a94122a21d37977230
 
 ## Summary
 
 - orphan assets (`.glb`): 7
-- orphan quests (`data/quests/*.tres`): 0 (no quest .tres present)
+- orphan quests (`data/quests/*.tres`): 2 (in crystal_caves, no NPC dialogue references yet)
 - orphan animations (AnimationLibrary `.tres`): 0 (no AnimationLibrary .tres present — see CQ-S2-07)
 - orphan StandardMaterial3D `.tres`: 26
 
@@ -21,6 +21,11 @@ GLB files present in `assets/models/` but the basename is not referenced in `scr
 - `eldoria-godot/assets/models/heroes/owen_vanguard.glb`
 - `eldoria-godot/assets/models/npcs/warrior.glb`
 - `eldoria-godot/assets/models/npcs/worker_girl.glb`
+
+## [GAP: orphan quest] — `data/quests/*.tres` with no NPC dialogue mention
+
+Quest resources whose ID/basename is not mentioned in any dialogue JSON. Likely the dialogue hookup hasn't shipped yet — assign to quest-writer.
+
 
 ## [GAP: orphan material] — `StandardMaterial3D` `.tres` with no MeshInstance reference
 
@@ -53,10 +58,7 @@ Material resources under `assets/materials/{arch,tidesong}/` and one terrain-ass
 - `eldoria-godot/assets/materials/tidesong/sand_pebble_beach.tres`
 - `eldoria-godot/assets/materials/tidesong/seaweed.tres`
 
-## [GAP: orphan quest] — none
+## Notes
 
-No `data/quests/*.tres` files present in main.
-
-## [GAP: orphan animation] — none in this scan
-
-No AnimationLibrary `.tres` files in `assets/animations/` yet. Tracked separately under canon-qa CQ-S2-07 (animation-sourcer owes first batch).
+- AnimationLibrary check is currently a no-op: 435 source FBX files exist under `eldoria-godot/assets/animations/` but no `.tres` AnimationLibrary has been built. See Canon QA item CQ-S2-07 (owner @animation-sourcer).
+- Owners: orphan assets → builder/character; orphan quests → quest-writer; orphan materials → architect/environment/scale-engineer.
