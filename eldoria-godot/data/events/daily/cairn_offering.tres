@@ -1,0 +1,37 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "cairn_offering",
+"name": "A Stone for the Cairn",
+"category": "daily",
+"region": "mountain_ring",
+"giver": "trainer_hala",
+"objective": "Hala asks you to walk the lower ring-path before sundown and lay a single hand-sized stone on the unfinished cairn at the second switchback. No combat. No words required.",
+"trigger": {"kind": "random_pool", "weight": 2, "cooldown_hours": 72, "only_at_time_of_day": "morning"},
+"duration_hours": 8,
+"participants": ["trainer_hala"],
+"mechanics": [
+  {"id": "stone_pickup", "kind": "minigame_id", "label": "Pick up a hand-sized stone", "flag_for": "px_team", "note": "Any rock node along the path counts. Player carries it (slows walk by 10%). If dropped before the cairn, the quest does not fail — Hala simply asks again next week."},
+  {"id": "cairn_place", "kind": "minigame_id", "label": "Place the stone on the cairn", "flag_for": "px_team", "note": "Single button press at the cairn marker. The cairn grows visibly across the year as players add stones (server/persistent state — flag for builder)."},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "wind_high_no_chord", "wind_strength_mult": 1.4}
+],
+"rewards": {
+  "complete": {"renown": 1, "items": ["mountain_ring_clay_token"], "coin": 0},
+  "miss": {"renown": 0, "morning_after_line": "hala_did_not_ask_again_today"}
+},
+"variant_lines": {
+  "accept": "Hala, sharpening her staff: \"The cairn at the second switchback. One stone. No words. The mountain is patient; do not hurry it.\"",
+  "complete": "Hala nods once. Does not look up from the staff. \"Vellum kept it. Good.\"",
+  "miss": "Hala does not mention it. The path was open. The wind was cold."
+},
+"hooks": {
+  "missed": "No flag. The cairn does not grow today. Other players may have added a stone — the player sees the cairn one stone taller anyway. The world goes on.",
+  "caught": "Sets player_flag laid_a_cairn_stone += 1. At 7 stones, Hala unlocks one extra training-line about *kerrithen.* Lore-anchored.",
+  "kid_specific": "If both Owen and Alden complete on the same day, Hala says: \"Two stones. Brothers should always lay two.\" Cosmetic — paired stones glow faintly at dusk for one in-game week."
+},
+"lore_anchor": "world.md → Tongues → kerrithen; world.md → Wild Pantheon → Vellum the Patient Stone.",
+"banned": ["combat_on_path", "rushing_animation", "any_haggling_over_reward", "modern_signposts"],
+"audio_brief": "Wind only. No music. The footstep mix should pick up gravel-on-leather above 1500m elevation.",
+"px_team_notes": "The cairn-stone-count is a SHARED PERSISTENT WORLD STATE — flag for builder. Single integer. Visible mesh swap at thresholds 7, 21, 49, 100 stones. After 100 the cairn is considered *finished* for the year and does not accept stones until next Lambmoon."
+}
