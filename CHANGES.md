@@ -5279,3 +5279,40 @@ load-bearing prop for the next 2–3 runs of compound dialogue work.
    see "no space left on device", clean your sibling agents' temp
    dirs OR use the bindfs `outputs` mount which has ~9 GB. Not a rule
    change, just situational awareness.
+
+## Scale: missing canon
+
+Notes from scale-eng 2026-05-06 — categories where the runtime sweep
+cannot fully respect the canon table because the project lacks the
+group-level distinction the canon implies. None of these are bugs in
+the current build; they're future-asset traps.
+
+  • **House (longhouse) vs cottage.** Canon: cottage cap 7m, longhouse
+    cap 9m. WorldBuilder spawns every house in group `buildings` and the
+    sweep clamps the group to 7m. A future longhouse asset that wants
+    7-9m of legitimate height needs its own `longhouses` group (cap 9m)
+    or the cottage clamp will crush it.
+
+  • **Boss (humanoid) vs boss (dragon/wyrm).** Canon: humanoid boss cap
+    4m, dragon/wyrm cap 9m. SIZE_STANDARDS["bosses"] band is [2.56, 3.84]
+    and the Node3D character sweep emergency-shrinks `bosses` over 4m.
+    Any future dragon spawn must opt OUT of "bosses" and into a new
+    `dragon_bosses` group (target 6m, cap 9m, floor 4m), or both the
+    standards table and the emergency cap need a kind-aware lookup.
+
+  • **Tree (sapling).** Canon: sapling cap 4m, target 2.5m. Currently
+    every spawned tree joins group `trees` (cap 14m), so a 3m sapling
+    is in spec but indistinguishable from a young oak. A `saplings`
+    group with cap 4m is the future split.
+
+  • **Mount (horse, stag).** Canon cap 2.4m. WorldBuilder spawns the
+    stable horse with `add_to_group("scenery"); add_to_group("stable_horses")`
+    — neither is clamp-watched. A `mounts` group at cap 2.4m would catch
+    a future GLB-mount whose scale drifts.
+
+  • **Cliff face / Market stall / Well / Sundering relic prop / Bush /
+    Rock (small).** No code group exists for these yet — they spawn as
+    bare MeshInstance3D inside _build_<area> functions. Adding category
+    groups (`cliffs`, `stalls`, `wells`, `relics`, `bushes`,
+    `small_rocks`) at the call sites would let the sweep enforce the
+    canon caps (30m / 3.5m / 3m / 3m / 2m / 1.5m respectively).

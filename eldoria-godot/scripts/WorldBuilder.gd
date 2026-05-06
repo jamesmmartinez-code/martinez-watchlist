@@ -2906,6 +2906,43 @@ func _global_scale_sweep() -> void:
 			if not body.is_in_group("lanterns"):
 				continue
 			_clamp_max_height(body, 2.5)
+		# scale-eng 2026-05-06: windmills — canon cap 18m (target 12m, floor 8m).
+		# _build_windmill joins "windmills" already. Cheap insurance against a
+		# stylized Sketchfab windmill GLB whose bake comes in at 30+m and the
+		# 1.55x post-multiplier blowing past 18m.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("windmills"):
+				continue
+			_clamp_max_height(body, 18.0)
+		# scale-eng 2026-05-06: boulders — canon cap 5m. _make_glb_boulder joins
+		# "boulders". Sketchfab boulders typically export 1-3m; cap defends
+		# against future imports that ship at 8-12m natural size.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("boulders"):
+				continue
+			_clamp_max_height(body, 5.0)
+		# scale-eng 2026-05-06: campfires — canon cap 3m (incl. flame). Both
+		# _build_campfire ("campfires") and _make_bandit_camp ("goblin_fires")
+		# join here. Particle plumes can read tall but the visible AABB of the
+		# stone ring + logs should never exceed 3m.
+		for body in root.find_children("*", "Node3D", true):
+			if not (body.is_in_group("campfires") or body.is_in_group("goblin_fires")):
+				continue
+			_clamp_max_height(body, 3.0)
+		# scale-eng 2026-05-06: banner poles — canon cap 6m. _build_banners
+		# joins "banner_poles". Procedural pole spawns at canonical ~4m so this
+		# is insurance for a future GLB-banner swap.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("banner_poles"):
+				continue
+			_clamp_max_height(body, 6.0)
+		# scale-eng 2026-05-06: chests — canon cap 1m. Chest.gd joins "chests"
+		# in _ready. Procedural body+lid is ~0.9m so this defends only against
+		# future loot-chest GLB swaps that might import at 2m+.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("chests"):
+				continue
+			_clamp_max_height(body, 1.0)
 
 
 # Helper used by the sweep — uniformly shrink a Node3D so its world-space
