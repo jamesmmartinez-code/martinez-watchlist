@@ -1681,29 +1681,38 @@ func _merge_humanoid_library(ap: AnimationPlayer) -> void:
 # with names starting with "Body" or "Hero" so we never shrink the player
 # body itself.
 func _clamp_all_attachments_scale() -> void:
-	var MAX_GEAR_M := 1.5
-	var stack: Array = [self]
-	var visited := 0
-	while not stack.is_empty():
-		var n: Node = stack.pop_back()
-		visited += 1
-		if visited > 500: break  # safety cap
-		for child in n.get_children():
-			stack.push_back(child)
-			if not (child is MeshInstance3D): continue
-			var mi: MeshInstance3D = child
-			if mi.mesh == null: continue
-			# Skip the player body itself
-			var nm := str(mi.name).to_lower()
-			if nm.begins_with("body") or nm.begins_with("hero") or nm.begins_with("alpha"):
-				continue
-			var aabb: AABB = mi.global_transform * mi.get_aabb()
-			var h := aabb.size.y
-			if h <= MAX_GEAR_M: continue
-			# Shrink the parent (BoneAttachment3D or holder) uniformly
-			var parent_node: Node = mi.get_parent()
-			if parent_node is Node3D:
-				var p3: Node3D = parent_node
-				var shrink: float = MAX_GEAR_M / max(h, 0.001)
-				p3.scale = p3.scale * shrink
+	# 2026-05-06 v2: scope strictly to BoneAttachment3D descendants (gear).
+	# Earlier name-based exemption (Body/Hero/Alpha) was unreliable — Meshy
+	# GLBs name their mesh things like "Beta_Surface" or just "Mesh", so my
+	# function shrunk the body mesh on every equipment_changed, eventually
+	# making the player invisible. BoneAttachment3D is the canonical Godot
+	# parent for equipment items (helmets, capes, shields, boots), so we
+	# only walk those subtrees.
+	var MAX_GEAR_M: float = 1.5
+	var attachments: Array = []
+	_collect_bone_attachments(self, attachments)
+	for att in attachments:
+		if not (att is Node3D): continue
+		var att3: Node3D = att
+		# Find the largest mesh under this BoneAttachment subtree
+		var max_h: float = 0.0
+		var stack: Array = [att3]
+		while not stack.is_empty():
+			var n: Node = stack.pop_back()
+			for child in n.get_children():
+				stack.push_back(child)
+				if child is MeshInstance3D:
+					var mi: MeshInstance3D = child
+					if mi.mesh == null: continue
+					var aabb: AABB = mi.global_transform * mi.get_aabb()
+					if aabb.size.y > max_h: max_h = aabb.size.y
+		if max_h <= MAX_GEAR_M: continue
+		var shrink: float = MAX_GEAR_M / max(max_h, 0.001)
+		att3.scale = att3.scale * shrink
+
+func _collect_bone_attachments(root: Node, out: Array) -> void:
+	for child in root.get_children():
+		if child is BoneAttachment3D:
+			out.append(child)
+		_collect_bone_attachments(child, out)
 
