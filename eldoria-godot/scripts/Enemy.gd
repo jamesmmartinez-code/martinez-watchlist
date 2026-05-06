@@ -162,6 +162,17 @@ const KIND_TINT_OVERRIDE := {
 	"bandit_captain":    true,
 }
 
+# char-spec 2026-05-06: per-kind normalize target. SIZE_STANDARDS.md §2 explicitly
+# names "Crystal Guardian, Mountain Ogre" in the gargantuan-boss row (4.00m). The
+# default (1.55m, medium enemy) was silently overriding the per-kind scale
+# multipliers in the match below. Kinds not listed here use 1.55m.
+const _NORMALIZE_TARGET_BY_KIND := {
+	"crystal_guardian": 4.00, # SIZE_STANDARDS §2 gargantuan boss
+	"bandit_captain":   2.30, # SIZE_STANDARDS §2 elite enemy (mini-boss)
+	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped canon
+	"goblin_warlord":   2.80, # SIZE_STANDARDS §2 boss-standard (matches Boss.gd)
+}
+
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
 # When a kind's faction has a `pressure` entry in `World.factions`, the enemy
 # resolves its `attack_cooldown` against that scalar at spawn — the THIRD
@@ -360,8 +371,14 @@ func _spawn_model() -> void:
 	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
 	var uses_real_model: bool = src != enemy_model
 	_model = src.instantiate()
-	# char-spec 2026-05-06: 1.5 → 1.55 medium-enemy default per SIZE_STANDARDS.md §2.
-	call_deferred("_normalize_to_height", _model, 1.55)  # enemies ~1.55m (medium)
+	# char-spec 2026-05-06 (gargantuan-bosses pass): SIZE_STANDARDS.md §2 explicitly
+	# names Crystal Guardian as a gargantuan boss (4.00m target). Previously, every
+	# enemy normalized to 1.55m and the per-kind scale multipliers below were
+	# silently cancelled by the deferred normalize (which recomputes scale from
+	# world AABB after the multiplier was set). Result: crystal_guardian rendered
+	# the same height as a regular goblin. Now uses a per-kind target table.
+	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
+	call_deferred("_normalize_to_height", _model, _norm_target)
 	# Scale by kind
 	match enemy_kind:
 		"goblin":
@@ -388,6 +405,14 @@ func _spawn_model() -> void:
 		"crystal_elemental":
 			_model.scale = Vector3(1.10, 1.20, 1.10)
 		"crystal_guardian":
+			# char-spec 2026-05-06: Crystal Guardian is canon-named gargantuan boss
+			# (SIZE_STANDARDS §2 — 4.00m target). Joins gargantuan_bosses (narrowest
+			# match in _expected_height_for, takes precedence over bosses), plus
+			# bosses + boss_silhouettes for any other lifecycle hooks. Per-kind
+			# normalize target = 4.00m via _NORMALIZE_TARGET_BY_KIND above.
+			add_to_group("gargantuan_bosses")
+			add_to_group("bosses")
+			add_to_group("boss_silhouettes")
 			_model.scale = Vector3(1.55, 1.65, 1.55)
 		"bandit_captain":
 			# COMPOUND (run 23 — Builder): captain reads as a mini-boss at
