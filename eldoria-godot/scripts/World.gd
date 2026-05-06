@@ -424,14 +424,106 @@ const QUEST_CATALOG := {
 			"toast": "🍻 The Long Lantern's bards play through to dawn now.",
 		},
 	},
+	# COMPOUND (run 23 — Builder): Roan-issued bandit-clear kill quest. The
+	# FIRST quest to consume the run-21/22 bandit infrastructure as PLAYER
+	# AGENCY — until now bandits could spawn (run 22), Roan could WARN about
+	# them (run 21 `bandits_emergent` warm_world tier), but the player had
+	# no verb. This entry closes the loop. Pulls the inverse-pressure
+	# direction the bandits faction was authored against:
+	#   * Bandits go from EMERGENT (pressure ≥ 0.40) toward HIDDEN (< 0.20).
+	#   * `pressure_delta: -0.20` is double Lyra/Roan/Hala/Bram's wolf-quest
+	#     deltas because bandits are MEANT to be reduced fast — they are a
+	#     "you tamed too much, opportunists arrived" beat, not a recurring
+	#     fauna. One clean clear visibly empties the camp.
+	#   * `prerequisite_npc_flag: ["Stablemaster Roan", "first_bounty_done"]`
+	#     uses the new run-23 quest-resolver field — Roan's wolf bounty must
+	#     finish FIRST, so this quest unlocks ONLY after the player has
+	#     proved they answer the road. Authoring intent: bandit-clear is
+	#     Roan's "second errand," not his opening pitch.
+	#   * `npc_flag: ["Stablemaster Roan", "road_warden"]` is Roan's THIRD
+	#     personal flag (after `first_bounty_done` and the existing memory
+	#     chain). Lights up future Roan tier-2 dialogue (warm_lines tied to
+	#     `road_warden` are a Lore Keeper hook for next run; until then the
+	#     existing first_bounty_done warm_lines stay correct because tier-2
+	#     resolves on the FIRST flag in npc_flags, see NPC.gd::npc_flag tier).
+	#   * `world_flag: roan_bandit_road_clear` joins the SEVENTH quest-issued
+	#     world flag (after mara/lyra/whisperwood/roan_bounty/hala/bram).
+	#     New Achievement `road_warden` (Achievements.gd run 23) reads it.
+	# Reward economy: 80 xp + 75 gold matches Maeve's `whisperwood_cleansing`
+	# (kill quest, 5 needed) — Roan's "second errand" sits at the same tier
+	# as Maeve's "first errand" because by run 23 the player has earned that
+	# weight. `needed: 4` matches the bandit-camp population at the highest
+	# pressure threshold (≥0.70 → 4 bandits) so the quest is satisfiable in
+	# a single visit to the south-road camp once the captain spawn is also
+	# included on the same `needed` counter (kill-quest target "bandit"
+	# matches both regular bandits AND the captain — see Enemy.gd
+	# KIND_TO_FACTION mapping; the captain's kill counts as "bandit" for
+	# faction-pressure and quest-progress purposes).
+	"bandit_road_for_roan": {
+		"giver": "Stablemaster Roan",
+		"actor": "Stablemaster Roan",
+		"role": "stable",
+		"kind": "kill",
+		"target": "bandit",
+		"needed": 4,
+		"title": "Hooded Figures, South Road",
+		"text": "Roan asks: take down 4 bandits camped on the south road",
+		"xp_reward": 80,
+		"gold_reward": 75,
+		"motivation": "duty",
+		"location": "South Road",
+		"urgency": "rising",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"prerequisite_npc_flag": ["Stablemaster Roan", "first_bounty_done"],
+		"consequence": {
+			"faction": "bandits",
+			"pressure_delta": -0.20,
+			"npc_flag": ["Stablemaster Roan", "road_warden"],
+			"world_flag": "roan_bandit_road_clear",
+			"toast": "🛡️ The south road is yours. Roan tips his hat.",
+		},
+	},
 }
 
 
-# Returns the role->quest mapping for fast NPC lookup
+# Returns the role->quest mapping for fast NPC lookup.
+#
+# COMPOUND (run 23 — Builder): the resolver now honors two new optional
+# fields on a QUEST_CATALOG entry, so a single role can issue a SEQUENCE
+# of quests gated by player progress without authoring duplicate roles
+# or rewriting NPCs:
+#   * `prerequisite_npc_flag: ["NPC Name", "flag_name"]` — skip this
+#     quest unless the named flag is set on the named NPC. The role's
+#     FIRST quest typically has no prereq; later ones cite the prior
+#     quest's `consequence.npc_flag` so they unlock in narrative order.
+#   * The quest is skipped if its own `consequence.world_flag` is
+#     already set on `world_flags` — i.e. once completed, the role
+#     hands out the NEXT in the chain, not the same quest twice.
+# Iteration order is dict-insertion order, which matches the authored
+# QUEST_CATALOG layout — first-defined wins. Quests without these fields
+# behave identically to runs 1-22 (the existing wolf/goblin chains have
+# no prereq AND set distinct world_flags, so they pass through unchanged).
+# Fail-soft: bad/empty NPC names or missing factions just skip the quest
+# silently rather than crashing — same contract as the rest of the world
+# state readers.
 func _quest_for_role(role: String) -> Dictionary:
 	for k in QUEST_CATALOG:
-		if QUEST_CATALOG[k].role == role:
-			return QUEST_CATALOG[k]
+		var q: Dictionary = QUEST_CATALOG[k]
+		if q.get("role", "") != role:
+			continue
+		# Skip if the prerequisite NPC flag is missing.
+		var prereq: Variant = q.get("prerequisite_npc_flag", null)
+		if prereq is Array and prereq.size() >= 2:
+			var prereq_npc: String = String(prereq[0])
+			var prereq_flag: String = String(prereq[1])
+			if not npc_has_flag(prereq_npc, prereq_flag):
+				continue
+		# Skip if this quest's completion world_flag has already fired.
+		var consequence: Dictionary = q.get("consequence", {})
+		var done_flag: String = String(consequence.get("world_flag", ""))
+		if done_flag != "" and bool(world_flags.get(done_flag, false)):
+			continue
+		return q
 	return {}
 
 # ────────────────────────────────────────────────────────────────────────

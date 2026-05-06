@@ -1543,6 +1543,36 @@ func _build_enemies() -> void:
 	if bandit_count > 0 and world_node and world_node.has_method("_show_toast"):
 		world_node.call_deferred("_show_toast", "Hooded figures stalk the south road.")
 
+	# COMPOUND (run 23 — Builder): Bandit Captain mini-boss. Spawns ONLY at
+	# the extreme-tame pressure rung (≥0.70 → bandit_count == 4) where the
+	# south-road camp is fully populated. _bandit_captain_should_spawn
+	# returns true at that single threshold so the captain is RARE — Owen-
+	# tier mastery beat after the player has visibly tamed both goblins
+	# AND wolves enough that bandits feel safe in numbers. THEME §13:
+	# captain rides 0.6m closer to the camp pit so the silhouette reads
+	# as "the one giving orders," and the +1.0m Y lift in _spawn_enemy
+	# keeps feet on the path. Tag bandit_count fed forward — the captain
+	# does NOT increment bandit_count; the assert above (≤4) holds.
+	if _bandit_captain_should_spawn(bandit_pressure):
+		var captain_pos: Vector3 = bandit_camp + Vector3(0, 0, -0.6)
+		# Stat profile: ~3.0× HP of regular bandit (42 → 130), +60% damage
+		# (9 → 15), ~5× xp (24 → 120), ~6× gold (8 → 50). Sits between
+		# Goblin Brute (90 hp) and Goblin Warlord (~600 hp) — a true
+		# mini-boss. Tint deepened to bruise-purple leather so the captain
+		# reads as a tier above the dark-charcoal regulars at 30m. Move
+		# speed matches regular bandits; chase speed up 0.2 ("commits
+		# harder"). All other adaptive bands (cooldown/chase/damage/xp)
+		# already light up via the bandits-faction mapping in Enemy.gd.
+		_spawn_enemy("bandit_captain", captain_pos, "Bandit Captain", 130, 15, 120, 50,
+			Color(0.32, 0.18, 0.30), 2.6, 5.0)
+		# Player-facing feedback (Rule 2 iii): captain-arrival toast lands
+		# AFTER the regular hooded-figures toast so the kids hear the
+		# escalation as two beats. Distinct emoji (🗡️) and phrasing so
+		# Alden's HUD log reads the captain as a separate event in the
+		# scrollback.
+		if world_node and world_node.has_method("_show_toast"):
+			world_node.call_deferred("_show_toast", "🗡️ A Captain leads the south-road camp.")
+
 	# Goblin Warlord — boss in the deepest part of the Whisperwood
 	_build_boss_arena(Vector3(60, 0, 60))
 
@@ -1621,6 +1651,24 @@ func _bandit_camp_size(pressure: float) -> Dictionary:
 	if p >= 0.70:
 		count = 4
 	return {"count": count}
+
+# COMPOUND (run 23 — Builder): Bandit Captain spawn predicate. Single-threshold
+# Boolean: captain spawns ONLY at bandit pressure ≥ 0.70 — the same threshold
+# that maxes _bandit_camp_size to 4 regulars. The threshold is hard-coded
+# rather than derived from the camp-size dict to make the contract explicit:
+# "captain only with a full camp." If a future run rebalances the camp-size
+# bands, this helper must be revisited in the same edit (caught by SYSTEM_
+# REGISTRY.md "Bandit Spawn Schema" doc-test pairing).
+#
+# At fresh save (bandits pressure ≈ 0.05) the captain stays dormant alongside
+# his crew — the camp prop alone (cold ash + leaning plank) is the only
+# south-road silhouette. The captain's first appearance is roughly the moment
+# Roan's `bandits_emergent` warm_world dialogue tier has been resonating for
+# enough screens that the player has started LOOKING for the source — and
+# now the player has both the prereq quest unlocked (run 23 quest schema)
+# AND the boss to chase.
+func _bandit_captain_should_spawn(pressure: float) -> bool:
+	return pressure >= 0.70
 
 func _spawn_enemy(kind: String, pos: Vector3, ename: String, hp: int, dmg: int,
 		xp: int, gold: int, tint: Color = Color(0.45, 0.85, 0.30),
