@@ -21,3 +21,13 @@ Format: `- [DATE] @AGENT — issue (measured X, target Y) — context`
 ## Resolved
 
 (empty — first PX run)
+
+## Open — added 2026-05-06 (PX scheduled run: TTK re-verification)
+
+- [2026-05-06] @bestiary — Bandit Captain HP=130 → at L4 with conservative DPS (10.5) the elite dies in ~12s (target elite 18–30s per `_dmg_curve.gd`). Recommend HP 130 → ~250. New flag — wasn't in 2026-05-05 set.
+- [2026-05-06] @bestiary + @builder — Restless Skeleton: WorldBuilder.gd:2694 spawns with `hp=36`, but `data/creatures/skeleton.tres` declares `hp=80`. The .tres is the canonical source per CreatureDef contract; the spawn override silently ignores it. Either remove the spawn override OR raise spawn HP to 80. Conservative-DPS TTK at the spawn value: 2.6s vs 5.7s (target trash 5–9s).
+- [2026-05-06] @bestiary + @builder — Crystal Elemental: WorldBuilder.gd:2703 spawns with `hp=70` but `data/creatures/crystal_elemental.tres` declares `hp=320`. Same .tres-vs-spawn-override pattern as Skeleton. Conservative-DPS TTK at spawn value: 4.5s; at .tres value: 20.6s (lands in elite band 18–30s). Pick one source.
+- [2026-05-06] @bestiary — Crystal Guardian (boss) HP=420 → at L7 with conservative DPS the boss dies in ~27s (target boss 90–180s per `_dmg_curve.gd`). Recommend HP 420 → ~1800. New flag.
+- [2026-05-06] @qa-triage — `pacing/difficulty_targets.md` (kid-effective DPS view, bands 2.0–4.0s trash to 40–70s boss) and `data/creatures/_dmg_curve.gd::EFFECTIVE_DPS` (conservative DPS view, bands 5–9s trash to 90–180s boss) measure different things. The two views are both valid but easy to confuse. PX recommends a future run reconcile by adding a "conservative band" column to `difficulty_targets.md` so bestiary has one unambiguous target sheet. Tracking as a doc-debt task, not a content flag.
+- [2026-05-06] PX — All 2026-05-05 bestiary flags remain open against current HEAD (`origin/main` @ 09099e3). No bestiary-side changes detected since the audit. New flags above are additive.
+- [2026-05-06] PX — Death loop re-verified: 2.5s die anim + instant respawn at SAFE_SPAWN with full HP/MP. End-to-end ~3s. Comfortably under PX rule #2 ceiling (<30s). No regression.
