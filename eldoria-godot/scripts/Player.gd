@@ -493,12 +493,29 @@ func _play_anim(name: String) -> void:
 			animation_player.play(canonical)
 		return
 	var candidates := {
-		"idle":   ["Idle", "idle", "ANIM_idle"],
-		"walk":   ["Walk", "walk", "Walking", "ANIM_walk"],
-		"run":    ["Run", "run", "Running", "ANIM_run"],
-		"attack": ["Attack", "Punch", "Slash"],
-		"die":    ["Death", "Die", "ANIM_death"],
+		"idle":   ["Idle", "idle", "ANIM_idle", "Armature|walking_man|baselayer", "rest"],
+		"walk":   ["Walk", "walk", "Walking", "ANIM_walk", "walk_forward"],
+		"run":    ["Run", "run", "Running", "ANIM_run", "run_1", "run_fast", "run_forward"],
+		"attack": ["Attack", "Punch", "Slash", "attack_1", "attack_2", "attack_3", "Lunge_Spin_Kick", "sword_slash"],
+		"die":    ["Death", "Die", "ANIM_death", "die"],
+		"hurt":   ["Hurt", "hurt", "React", "react"],
+		"victory":["Victory", "victory", "Cheering", "cheer"],
+		"wave":   ["Wave", "wave", "Waving"],
+		"yes":    ["Yes", "yes", "Nod", "Agree_Gesture"],
+		"no":     ["No", "no", "ShakeHead"],
+		"jump":   ["Jump", "jump", "Jumping_Up"],
 	}
+	# Animation Wire 2026-05-05: also fall back to ANY animation matching by
+	# substring (case-insensitive) so a Meshy export named "walking" or
+	# "Idle_Loop" or whatever still plays. Last-resort match — if none of the
+	# explicit candidates hit, try to find one whose name contains the slot name.
+	if true:
+		var lc := name.to_lower()
+		for a in animation_player.get_animation_list():
+			if lc in a.to_lower():
+				if animation_player.current_animation != a:
+					animation_player.play(a)
+				return
 	var possible = candidates.get(name, [name])
 	for c in possible:
 		if animation_player.has_animation(c):
