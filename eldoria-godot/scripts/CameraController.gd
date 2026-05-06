@@ -11,7 +11,7 @@ class_name CameraController
 # REFINE: combat feel — camera: min_distance 3.0 → 3.4 — prevents camera clipping through the player model when fully zoomed in against a wall (the previous 3.0 occasionally put the camera inside the cape).
 @export var min_distance: float = 3.4
 # REFINE: combat feel — camera: max_distance 16.0 → 13.5 — at 16m the painterly LODs and HDRI sky-band fill the frame and combat reads collapse; 13.5m keeps the player silhouette legible while still allowing a wide reveal.
-@export var max_distance: float = 13.5
+@export var max_distance: float = 35.0
 # REFINE: combat feel — camera: sensitivity 0.006 → 0.0055 — softens overshoot for Alden's imprecise drag; Owen still reaches a full 360 in well under 2s of drag.
 @export var sensitivity: float = 0.0055
 # REFINE: combat feel — camera: smooth_lerp 0.18 → 0.22 — snappier follow when Owen sprints (race affinity); still well below 1.0 (snap) so the camera keeps a weighted painterly drift, just less rubber-banded behind a moving player. THEME §12 motion & life: weighted, never snap.
@@ -51,10 +51,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if dragging else Input.MOUSE_MODE_VISIBLE
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			# REFINE: combat feel — camera: scroll step 0.6 → 0.55 — finer zoom granularity over the (now narrower) 3.4–13.5m band; about the same total number of ticks but each tick covers a more proportional fraction of the new range.
-			distance = clamp(distance - 0.55, min_distance, max_distance)
+			distance = clamp(distance - 1.5, min_distance, max_distance)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			# REFINE: combat feel — camera: scroll step 0.6 → 0.55 (mirror of WHEEL_UP).
-			distance = clamp(distance + 0.55, min_distance, max_distance)
+			distance = clamp(distance + 1.5, min_distance, max_distance)
 	elif event is InputEventMouseMotion and dragging:
 		yaw   -= event.relative.x * sensitivity
 		# REFINE: combat feel — camera: pitch clamp lower 0.05 → 0.10 (no more ankle-height frames where the player silhouette disappears below the screen — THEME §13 ground contact stays in frame), upper 1.3 → 1.15 (caps the bird's-eye top-down at a still-cinematic ~7.3m above / ~3.25m back instead of the previous near-overhead 7.7m / 2.1m where ground geometry inverts).
