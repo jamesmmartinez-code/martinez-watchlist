@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/arch/whitewashed_plaster/basecolor.png" id="1_bas"]
+[ext_resource type="Texture2D" path="res://assets/textures/arch/whitewashed_plaster/normal.png" id="2_nor"]
+[ext_resource type="Texture2D" path="res://assets/textures/arch/whitewashed_plaster/roughness.png" id="3_rou"]
+[ext_resource type="Texture2D" path="res://assets/textures/arch/whitewashed_plaster/ambientocclusion.png" id="4_amb"]
+
+[resource]
+resource_name = "whitewashed_plaster"
+albedo_texture = ExtResource("1_bas")
+normal_enabled = true
+normal_texture = ExtResource("2_nor")
+roughness_texture_channel = 0
+roughness_texture = ExtResource("3_rou")
+ao_enabled = true
+ao_texture_channel = 0
+ao_texture = ExtResource("4_amb")
+uv1_scale = Vector3(2, 2, 2)
