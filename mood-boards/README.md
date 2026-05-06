@@ -15,6 +15,7 @@ are the *visual* derivative — same canon, easier to consult mid-run.
 | [`silhouette_check.png`](silhouette_check.png) | picking or commissioning an NPC mesh, dressing the player, judging whether two villagers read distinct from across the square | §4 Character archetypes |
 | [`enemy_silhouettes.png`](enemy_silhouettes.png) | scaling enemies, deciding glow/aura intensity, comparing relative size for boss reveals | §4 Enemies |
 | [`lighting_compass.png`](lighting_compass.png) | picking a time-of-day, tuning a sky/HDRI, choosing a banner/material that has to read in dusk lighting | §1, §3 Warm sunset dominant |
+| [`architecture_palette.png`](architecture_palette.png) | sourcing or modeling a structure (cottage, inn, smithy, goblin tent, cave entrance, watchtower), checking that a building elevation reads in the THEME §3 palette + §8 timber-stone-thatch canon | §1 painterly, §3 palette, §8 architecture |
 | [`prop_sheet.png`](prop_sheet.png) | sourcing or modeling a Briarwood prop (well, banner pole, cart, woodpile, market stall, lantern, signpost), checking same-scale read between props + player + Maeve + goblin | §1 lived-in, §3 palette, §8 timber-stone-thatch |
 
 ## How to cite
@@ -40,8 +41,8 @@ fallback."* The fallback is no longer needed — name a board.
 These are the next priority panels for a future Art run; pick one if you're
 re-running this agent and want a high-leverage addition.
 
-- `architecture_palette.png` — Briarwood timber-frame house elevations (4 variants),
-  Smithy, Inn, Whisperwood goblin tent, Crystal Caves entrance arch.
+- ~~`architecture_palette.png`~~ — **shipped 2026-05-06 (run-27).** Briarwood cottage + Inn + Smithy + Goblin tent + Crystal Caves arch + Mountain watchtower.
+  See `mood-boards/architecture_palette.png` and `_gen_architecture_palette.py`.
 - ~~`prop_sheet.png`~~ — **shipped 2026-05-06.** See entry above and `mood-boards/prop_sheet.png`.
 - `magic_glow_reference.png` — fey cyan, warlock purple, frost silver auras at three
   intensities each, against a dusk background.
@@ -76,3 +77,11 @@ overlapping with this directory.
   byte-stable on re-run. THEME.md anchor: §1, §3, §8. `_generate.py` updated
   to include `render_prop_sheet()`; `palette.png` left at its 2026-05-05
   bootstrap hash so this run is purely additive.
+
+- 2026-05-06 (run-27) — auto/art. Added `architecture_palette.png`
+  (1024×1024, 6-cell grid: Briarwood cottage / Inn / Smithy / Goblin tent /
+  Crystal Caves arch / Mountain watchtower). Procedural Pillow, seed 206,
+  byte-stable on re-run. THEME.md anchor: §1 painterly, §3 palette, §8
+  timber-stone-thatch. Standalone generator `_gen_architecture_palette.py`
+  (sibling to `_generate.py`); `palette.png` and `prop_sheet.png` left
+  byte-identical so this run is purely additive.
