@@ -419,6 +419,9 @@ func _attack() -> void:
 	is_attacking = true
 	_play_anim("attack")
 	get_tree().call_group("world", "play_sfx", "sword_swing")
+	# 2026-05-06 fallback feedback — when Mixamo/sound unavailable, give visible cue.
+	print("[Attack] swung — range=%s arc=%s°" % [attack_range, attack_arc_deg])
+	_attack_visual_feedback()
 
 	# Hit window — small delay to match the swing
 	# REFINE: combat-feel — hit-window 0.18 → 0.16. Snappier register, closer to swing-peak. Owen's "speed affinity" rung; Alden still has the visible windup.
