@@ -60,41 +60,41 @@ const ITEMS = {
 	# Iron / steel / silver are common→uncommon→rare tints of one base GLB
 	# (assets/gear/head/iron_helm.glb). Crown of Eldoria is a unique mesh.
 	"iron_helm":     {"name":"Iron Helm",     "type":"helmet", "slot":"helmet","rarity":"common",
-	                  "icon":"⛑", "color":Color(0.78,0.78,0.82), "armor":3,  "value":22},
+	                  "icon":"⛑", "icon_path":"res://assets/icons/iron_helm.png", "color":Color(0.78,0.78,0.82), "armor":3,  "value":22},
 	"steel_helm":    {"name":"Steel Helm",    "type":"helmet", "slot":"helmet","rarity":"uncommon",
-	                  "icon":"⛑", "color":Color(0.85,0.88,0.92), "armor":7,  "value":75},
+	                  "icon":"⛑", "icon_path":"res://assets/icons/steel_helm.png", "color":Color(0.85,0.88,0.92), "armor":7,  "value":75},
 	"silver_helm":   {"name":"Silver Helm",   "type":"helmet", "slot":"helmet","rarity":"rare",
-	                  "icon":"⛑", "color":Color(0.92,0.92,0.95), "armor":12, "value":210},
+	                  "icon":"⛑", "icon_path":"res://assets/icons/silver_helm.png", "color":Color(0.92,0.92,0.95), "armor":12, "value":210},
 	"ranger_hood":   {"name":"Ranger Hood",   "type":"helmet", "slot":"helmet","rarity":"uncommon",
-	                  "icon":"🪖", "color":Color(0.40,0.55,0.30), "armor":5, "crit_bonus":0.04, "value":85},
+	                  "icon":"🪖", "icon_path":"res://assets/icons/ranger_hood.png", "color":Color(0.40,0.55,0.30), "armor":5, "crit_bonus":0.04, "value":85},
 	"crown_eldoria": {"name":"Crown of Eldoria","type":"helmet","slot":"helmet","rarity":"legendary",
-	                  "icon":"👑", "color":Color(1.0,0.85,0.30), "armor":18, "hp_bonus":40, "mp_bonus":20, "value":2400},
+	                  "icon":"👑", "icon_path":"res://assets/icons/crown_eldoria.png", "color":Color(1.0,0.85,0.30), "armor":18, "hp_bonus":40, "mp_bonus":20, "value":2400},
 
 	# ── Capes (chest_back slot — Equipment Visualizer 2026-05-05) ────────
 	# Hangs off the player's spine bone. Tier-tinted from a single base GLB
 	# (assets/gear/chest_back/traveller_cape.glb) for the common variants.
 	"traveller_cape":{"name":"Traveller's Cape","type":"cape","slot":"cape","rarity":"common",
-	                  "icon":"🧣", "color":Color(0.65,0.30,0.25), "armor":1, "value":18},
+	                  "icon":"🧣", "icon_path":"res://assets/icons/traveller_cape.png", "color":Color(0.65,0.30,0.25), "armor":1, "value":18},
 	"mage_cape":     {"name":"Mage Cape",      "type":"cape", "slot":"cape", "rarity":"uncommon",
-	                  "icon":"🧣", "color":Color(0.30,0.35,0.85), "mp_bonus":15, "value":85},
+	                  "icon":"🧣", "icon_path":"res://assets/icons/mage_cape.png", "color":Color(0.30,0.35,0.85), "mp_bonus":15, "value":85},
 	"ranger_cape":   {"name":"Ranger Cape",    "type":"cape", "slot":"cape", "rarity":"uncommon",
-	                  "icon":"🧣", "color":Color(0.35,0.55,0.30), "crit_bonus":0.05, "value":80},
+	                  "icon":"🧣", "icon_path":"res://assets/icons/ranger_cape.png", "color":Color(0.35,0.55,0.30), "crit_bonus":0.05, "value":80},
 	"royal_cloak":   {"name":"Royal Cloak",    "type":"cape", "slot":"cape", "rarity":"rare",
-	                  "icon":"🧣", "color":Color(0.55,0.20,0.55), "armor":4, "hp_bonus":20, "value":290},
+	                  "icon":"🧣", "icon_path":"res://assets/icons/royal_cloak.png", "color":Color(0.55,0.20,0.55), "armor":4, "hp_bonus":20, "value":290},
 	"dragonscale_cape":{"name":"Dragonscale Cape","type":"cape","slot":"cape","rarity":"epic",
-	                  "icon":"🧣", "color":Color(0.20,0.55,0.30), "armor":8, "hp_bonus":35, "value":820},
+	                  "icon":"🧣", "icon_path":"res://assets/icons/dragonscale_cape.png", "color":Color(0.20,0.55,0.30), "armor":8, "hp_bonus":35, "value":820},
 
 	# ── Shields (left_hand slot — Equipment Visualizer 2026-05-05) ───────
 	# Bolted to the off-hand bone. Note that equipping a shield doesn't yet
 	# disable two-handed weapons — Combat Specialist owns that interaction.
 	"wooden_shield": {"name":"Wooden Shield",  "type":"shield","slot":"shield","rarity":"common",
-	                  "icon":"🛡", "color":Color(0.55,0.40,0.25), "armor":4,  "value":20},
+	                  "icon":"🛡", "icon_path":"res://assets/icons/wooden_shield.png", "color":Color(0.55,0.40,0.25), "armor":4,  "value":20},
 	"iron_shield":   {"name":"Iron Shield",    "type":"shield","slot":"shield","rarity":"uncommon",
-	                  "icon":"🛡", "color":Color(0.75,0.75,0.78), "armor":9,  "value":75},
+	                  "icon":"🛡", "icon_path":"res://assets/icons/iron_shield.png", "color":Color(0.75,0.75,0.78), "armor":9,  "value":75},
 	"kite_shield":   {"name":"Kite Shield",    "type":"shield","slot":"shield","rarity":"rare",
-	                  "icon":"🛡", "color":Color(0.60,0.70,0.85), "armor":15, "value":260},
+	                  "icon":"🛡", "icon_path":"res://assets/icons/kite_shield.png", "color":Color(0.60,0.70,0.85), "armor":15, "value":260},
 	"runed_shield":  {"name":"Runed Shield",   "type":"shield","slot":"shield","rarity":"epic",
-	                  "icon":"🛡", "color":Color(0.50,0.85,1.00), "armor":24, "hp_bonus":30, "value":720},
+	                  "icon":"🛡", "icon_path":"res://assets/icons/runed_shield.png", "color":Color(0.50,0.85,1.00), "armor":24, "hp_bonus":30, "value":720},
 
 	# ── Consumables ───────────────────────────────────────────────────────
 	"hp_potion_s":   {"name":"Lesser Health Potion","type":"consumable","slot":"","rarity":"common",
