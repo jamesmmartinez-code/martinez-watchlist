@@ -48,9 +48,26 @@ From **"20 Sword Sound Effects (Attacks and Clashes)"** by StarNinjas (CC0) —
 https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes:
 `sword_hit.ogg`, `sword_hit_2.ogg`, `sword_hit_3.ogg`.
 
-`boss_intro.wav` — placeholder WAV pending replacement; queued for a future
-audio pass to convert to OGG and source from a CC0 brass-stinger pack
-(candidate: artisticdude "Trumpet/Horn Sound Effects" or Sonniss GDC bundles).
+`boss_intro.ogg` — derivative work composited from existing CC0 sources in
+this bundle (per the same precedent as `enemy_death.ogg` / `player_death.ogg`):
+
+- Brass/drum swell: 2.5 s slice of `music/battle_theme.ogg` (Komiku, CC0),
+  downmixed to mono, low-passed at 2.2 kHz / high-passed at 80 Hz to retain
+  horns and timpani while shedding cymbal shimmer, pitched down ~3 semitones,
+  fade-in 0.25 s, fade-out 0.5 s.
+- Onset cue: full `sfx/sword_unsheathe.ogg` (artisticdude RPG Sound Pack, CC0)
+  with a 50 ms pre-roll.
+- Boss-arrival impact: `sfx/sword_hit_3.ogg` (StarNinjas, CC0) placed at
+  ~1.7 s with a short reverberant tail (`aecho 0.6:0.9:120|220:0.4|0.25`).
+
+The three layers are mixed (weights 1.4 / 0.7 / 1.1), peak-limited at 0.95,
+and tail-faded over the final 0.3 s. All three sources are CC0; the derivative
+remains CC0. THEME §6 compliant — entirely acoustic-orchestral, no synth.
+
+Replaced the previous `boss_intro.wav` placeholder (110 KiB, PCM 22.05 kHz)
+with a 16 KiB OGG Vorbis q=2 mono stream (~7x smaller, identical 2.5 s
+duration). The Godot `.import` sidecar uses the same deterministic
+`sha1(res-path)[:8]` UID scheme as the rest of the bundle.
 
 Encoding (OGG entries): mono 22.05 kHz OGG Vorbis, q=2.
 
