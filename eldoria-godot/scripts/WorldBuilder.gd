@@ -1461,6 +1461,7 @@ func _build_pond() -> void:
 # Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
+	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	var spots = [Vector3(0, 0, 0), Vector3(15, 0, 12), Vector3(-15, 0, -12), Vector3(0, 0, 18)]
 	for s in spots:
@@ -1525,6 +1526,7 @@ const LEAF_PALETTE: Array = [
 ]
 
 func _build_falling_leaves() -> void:
+	return  # 2026-05-06 disabled: re-enabled by agent w/ bad textures, will re-fix later
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for i in FALLING_LEAF_SPOTS.size():
 		var spot: Vector3 = FALLING_LEAF_SPOTS[i]
@@ -2349,7 +2351,7 @@ func _build_campfire() -> void:
 	# Fire particles
 	var p := GPUParticles3D.new()
 	p.position.y = 0.45
-	p.amount = 80
+	p.amount = 30
 	p.lifetime = 1.6
 	p.preprocess = 1.0
 	var pm := ParticleProcessMaterial.new()
@@ -2358,18 +2360,19 @@ func _build_campfire() -> void:
 	pm.gravity = Vector3(0, 1.2, 0)
 	pm.initial_velocity_min = 0.4
 	pm.initial_velocity_max = 1.2
-	pm.scale_min = 0.5
-	pm.scale_max = 1.6
+	pm.scale_min = 0.20
+	pm.scale_max = 0.55
 	pm.color = Color(1.0, 0.55, 0.10)
 	pm.color_ramp = _make_fire_gradient()
 	p.process_material = pm
 	var qm := QuadMesh.new()
-	qm.size = Vector2(0.4, 0.4)
+	qm.size = Vector2(0.18, 0.18)
 	var dm := StandardMaterial3D.new()
 	dm.albedo_color = Color(1.0, 0.75, 0.30)
+	dm.albedo_texture = _make_soft_particle_texture()
 	dm.emission_enabled = true
 	dm.emission = Color(1.0, 0.45, 0.10)
-	dm.emission_energy_multiplier = 6.0
+	dm.emission_energy_multiplier = 1.5
 	dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	dm.no_depth_test = false
@@ -2380,7 +2383,7 @@ func _build_campfire() -> void:
 	# Smoke particles above the fire
 	var smoke := GPUParticles3D.new()
 	smoke.position.y = 1.4
-	smoke.amount = 40
+	smoke.amount = 18
 	smoke.lifetime = 4.0
 	smoke.preprocess = 2.0
 	var smpm := ParticleProcessMaterial.new()
@@ -2389,14 +2392,15 @@ func _build_campfire() -> void:
 	smpm.gravity = Vector3(0.05, 0.6, 0)
 	smpm.initial_velocity_min = 0.2
 	smpm.initial_velocity_max = 0.4
-	smpm.scale_min = 0.6
-	smpm.scale_max = 2.0
+	smpm.scale_min = 0.25
+	smpm.scale_max = 0.70
 	smpm.color = Color(0.55, 0.50, 0.45, 0.5)
 	smoke.process_material = smpm
 	var sqm := QuadMesh.new()
-	sqm.size = Vector2(0.5, 0.5)
+	sqm.size = Vector2(0.22, 0.22)
 	var sdm := StandardMaterial3D.new()
-	sdm.albedo_color = Color(0.7, 0.65, 0.6, 0.55)
+	sdm.albedo_color = Color(0.7, 0.65, 0.6, 0.45)
+	sdm.albedo_texture = _make_soft_particle_texture()
 	sdm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	sdm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	sqm.material = sdm
@@ -2407,8 +2411,8 @@ func _build_campfire() -> void:
 	var light := OmniLight3D.new()
 	light.name = "FireLight"
 	light.light_color = Color(1.0, 0.55, 0.20)
-	light.light_energy = 3.0
-	light.omni_range = 12.0
+	light.light_energy = 1.2
+	light.omni_range = 5.0
 	light.position.y = 0.7
 	light.shadow_enabled = false
 	fire.add_child(light)
