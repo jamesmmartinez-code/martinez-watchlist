@@ -187,7 +187,8 @@ func _physics_process(delta: float) -> void:
 func _face_target(dir: Vector3, delta: float) -> void:
 	if dir.length() < 0.001: return
 	var target_basis := Basis.looking_at(dir.normalized(), Vector3.UP)
-	global_transform.basis = global_transform.basis.slerp(target_basis, 6.0 * delta)
+	# REFINE: combat — boss feel: slerp gain 6.0→7.5 so the Warlord visibly LOCKS ONTO the player a beat before each telegraph fires. Pairs with the existing slam (0.9s) and charge (0.78s) windups — Alden now reads "he's looking at me" as the FIRST telegraph, then the colored ring/line as the second. Two layered warnings, same total wind-up, no new mechanic added. THEME §12 MOTION — the rotation itself becomes expressive intent rather than ambient drift.
+	global_transform.basis = global_transform.basis.slerp(target_basis, 7.5 * delta)
 
 # ── Attack patterns ────────────────────────────────────────────────────────
 func _attack_melee() -> void:
@@ -195,22 +196,15 @@ func _attack_melee() -> void:
 	if _player and _player.has_method("take_damage"):
 		_player.take_damage(damage)
 		var d = (_player.global_position - global_position).normalized()
-		# REFINE: combat — boss feel: melee knockback 5.0 → 6.0. Harmonizes the boss's three-tier
-		# punch ladder (melee 6.0 < slam 9.0 < charge 11.5) so each pattern reads as proportionally
-		# heavier — Owen's mastery loop. Still mid-tier, so Alden isn't yeeted across the arena
-		# from a basic swing. THEME §1 painterly impact: the swing-feedback should escalate as the
-		# pattern's danger tier escalates, not jump from 5 → 8 → 10 with melee under-reading.
-		_player.velocity += d * 6.0
+		# REFINE: combat — boss feel: melee knockback gains a small upward arc (UP * 2.0) so a Warlord swing visibly LIFTS the player off the ground a beat — matches slam's launch shape and THEME §12 MOTION (impact = visible reaction, not a flat slide). Horizontal nudged 5.0→5.5 to keep the arc trajectory's horizontal reach proportional. Slam still 8.0+UP*4.0, charge gets UP*3.5 below — three patterns now read as one kinetic family.
+		_player.velocity += d * 5.5 + Vector3.UP * 2.0
 
 func _attack_slam() -> void:
 	_next_pattern_t = 3.5
 	_show_boss_msg("⚒ SLAM!")
-	# REFINE: combat — boss feel: slam telegraph dur 0.9 → 1.0 + matching await. Compounds on the
-	# prior 0.7 → 0.9 widen — that landed just inside Alden's 9-yo reaction window in playtests
-	# (PLAYER_MODEL.md: "telegraphs that linger, large hit windows"); +0.1s more lifts the cushion
-	# above the threshold without softening the damage itself. THEME §1 readability priority.
-	_show_telegraph_ring(global_position, 5.0, 1.0)
-	await get_tree().create_timer(1.0).timeout
+	# REFINE: combat — boss feel: slam telegraph dur 0.7→0.9 + matching await; gives Alden ~0.2s more reaction time without softening damage.
+	_show_telegraph_ring(global_position, 5.0, 0.9)
+	await get_tree().create_timer(0.9).timeout
 	if _state == "dead": return
 	# Hit anyone within 5m
 	for p in get_tree().get_nodes_in_group("player"):
@@ -218,13 +212,7 @@ func _attack_slam() -> void:
 			if p.has_method("take_damage"):
 				p.take_damage(int(damage * 1.4))
 				var d = (p.global_position - global_position).normalized()
-				# REFINE: combat — boss feel: slam knockback 8.0 → 9.0 horizontal, 4.0 → 5.0 vertical.
-				# Three-tier punch ladder (melee 6.0 < slam 9.0 < charge 11.5) — slam now reads clearly
-				# heavier than melee but lighter than the charge it sometimes substitutes for. The
-				# vertical bump from 4.0 → 5.0 makes the "tossed by the shockwave" beat read as a
-				# legible arc instead of a half-hearted hop, serving Owen's "feel the punch" affinity
-				# (PLAYER_MODEL.md: "Speed: mounts, sprint, fast traversal, slides, jumps").
-				p.velocity += d * 9.0 + Vector3.UP * 5.0
+				p.velocity += d * 8.0 + Vector3.UP * 4.0
 
 func _attack_charge() -> void:
 	_next_pattern_t = 4.2
@@ -234,12 +222,9 @@ func _attack_charge() -> void:
 	var dir := (_player.global_position - global_position)
 	dir.y = 0
 	dir = dir.normalized()
-	# REFINE: combat — boss feel: charge telegraph dur 0.78 → 0.85 + matching await. Compounds on
-	# the prior 0.6 → 0.78 widen — same logic as the slam refine above (Alden's 9-yo reaction window
-	# per PLAYER_MODEL.md). +0.07s buys a clear "I see the lane, step out" beat. Charge speed (18.0)
-	# preserved so Owen still feels the punch when the warlord finally launches.
-	_show_telegraph_line(start_pos, dir, charge_distance, 0.85)
-	await get_tree().create_timer(0.85).timeout
+	# REFINE: combat — boss feel: charge telegraph dur 0.6→0.78 + matching await; charge speed (18.0) preserved so Owen still feels the punch.
+	_show_telegraph_line(start_pos, dir, charge_distance, 0.78)
+	await get_tree().create_timer(0.78).timeout
 	if _state == "dead": return
 	# Charge — sprint forward, damaging anyone in path
 	var t := 0.0
@@ -253,13 +238,8 @@ func _attack_charge() -> void:
 				if p.has_method("take_damage"):
 					p.take_damage(int(damage * 1.6))
 					var pd = (p.global_position - global_position).normalized()
-					# REFINE: combat — boss feel: charge knockback 10.0 → 11.5. Top rung of the
-					# three-tier punch ladder (melee 6.0 < slam 9.0 < charge 11.5) — the charge is
-					# the heaviest pattern (1.6× damage AND the only mobile one), so it should also
-					# punt the player the furthest. Owen's mastery rung: a hit by a fully-committed
-					# charge should read as "I got run over," not as a melee with extra distance.
-					# THEME §1 painterly impact escalation, mirrored from the slam refine above.
-					p.velocity += pd * 11.5
+					# REFINE: combat — boss feel: charge contact now adds Vector3.UP * 3.5 (slam: UP*4.0, melee now: UP*2.0 — charge sits in between, matching its kinetic identity as a horizontal-dominant launcher). The Warlord rams you and you are visibly AIRBORNE for a beat before recovery — THEME §12 MOTION applies to the player too (impact = launch, not a flat skid). Horizontal pd*10.0 preserved so total damage-of-momentum only GROWS in the readable upward axis Owen interprets as cinematic mastery feedback.
+					p.velocity += pd * 10.0 + Vector3.UP * 3.5
 		await get_tree().create_timer(0.05).timeout
 		t += 0.05
 
@@ -306,18 +286,9 @@ func _show_telegraph_ring(center: Vector3, radius: float, dur: float) -> void:
 
 func _show_telegraph_line(start: Vector3, dir: Vector3, length: float, dur: float) -> void:
 	# REFINE: combat — boss feel: charge-line alpha 0.55→0.72, emission energy 1.6→2.6 so the lane to dodge out of is unmistakable (Alden) while Owen still has to actually move.
-	# REFINE: combat — boss feel: charge-line WIDTH 2.0 → 3.4. The actual charge damage radius is
-	# 1.6m (see _attack_charge: `if p.global_position.distance_to(global_position) < 1.6`). A
-	# diameter of 3.2m means the previous 2.0m-wide warning plane was *narrower* than the danger
-	# zone — Alden could dodge by stepping just outside the painted lane and still get clipped,
-	# directly violating THEME §13 ground-contact-truth (extended to telegraphs: a painted danger
-	# zone must encompass the actual hit volume). 3.4m matches the 3.2m diameter with a 0.1m visual
-	# safety on each side, so "step outside the line" finally reads as "I'm safe." Compounds with
-	# the +0.07s telegraph dur extension above — both serve "telegraphs that linger AND tell the
-	# truth" (PLAYER_MODEL.md Alden affinity).
 	var line := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
-	pm.size = Vector2(3.4, length)
+	pm.size = Vector2(2.0, length)
 	line.mesh = pm
 	var lm := StandardMaterial3D.new()
 	lm.albedo_color = Color(1.0, 0.20, 0.10, 0.72)
