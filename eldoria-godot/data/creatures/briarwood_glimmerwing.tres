@@ -1,0 +1,51 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_glimmerwing",
+  "name": "Glimmerwing",
+  "family": "elemental",
+  "tier": "elite",
+  "level": 25,
+  "hp": 420,
+  "armor": 10,
+  "dmg_min": 20,
+  "dmg_max": 35,
+  "attack_speed": 1.5,
+  "move_speed": 4.2,
+  "behavior_tags": [
+    "pack_hunter",
+    "ambusher"
+  ],
+  "tells": [
+    {
+      "name": "glow_burst",
+      "wind_up_ms": 500,
+      "vfx_id": "glow_explosion"
+    }
+  ],
+  "weaknesses": {
+    "darkness": 1.5
+  },
+  "resistances": {
+    "light": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "iridescent_dust",
+      "weight": 0.4
+    },
+    {
+      "item_id": "glittering_fiber",
+      "weight": 0.3
+    },
+    {
+      "item_id": "shimmering_essence",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "Delicate, ethereal creatures with wings like stained glass and bodies that shine like the moon, leaving trails of glittering sparks as they flit through the forest."
+}
+"""
