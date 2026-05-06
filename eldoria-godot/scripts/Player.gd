@@ -671,6 +671,13 @@ func complete_quest_if_done() -> bool:
 # attached) so it works on any GLB without needing a known skeleton path.
 # ────────────────────────────────────────────────────────────────────────
 func _on_equipment_changed() -> void:
+	# 2026-05-06 EMERGENCY HIDE — Equipment Visualizer was attaching gear at
+	# native GLB scale, producing screen-filling boots/helmets. Until the
+	# attachment scaling is verified, ALL gear visuals are suppressed. The
+	# bare Hero body still renders. Restore the gear visuals once we confirm
+	# every attachment GLB has scale-clamp at attach time.
+	stats_changed.emit()
+	return  # SKIP gear rebuilds until verified
 	# Equipment Visualizer (Pillar 1 — Combat) — refresh every visible gear
 	# slot, not just the right hand. Each rebuilder prefers an authored GLB
 	# at assets/gear/<slot>/<item_id>.glb and falls back to legacy procedural
@@ -680,6 +687,7 @@ func _on_equipment_changed() -> void:
 	_rebuild_helmet_visual()
 	_rebuild_cape_visual()
 	call_deferred("_clamp_all_attachments_scale")
+	call_deferred("_emergency_hide_all_gear")
 	# Update HP/MP caps based on equipment bonuses
 	stats_changed.emit()
 
@@ -711,6 +719,7 @@ func _rebuild_slot(slot: String) -> void:
 			# through the aggregate equipment_changed connection.
 			pass
 	call_deferred("_clamp_all_attachments_scale")
+	call_deferred("_emergency_hide_all_gear")
 	stats_changed.emit()
 
 func _rebuild_weapon_visual() -> void:
@@ -1750,3 +1759,17 @@ func _force_hero_height_cap() -> void:
 	if aabb.size.y > 1.4:
 		var shrink: float = 1.4 / aabb.size.y
 		hero3.scale = hero3.scale * shrink
+
+
+# 2026-05-06 EMERGENCY: walk and hide every gear visual at startup so
+# leftover attachments from a previous session don't keep rendering at
+# wrong scale. Removes the giant-boot problem regardless of upstream cause.
+func _emergency_hide_all_gear() -> void:
+	var hero: Node = get_node_or_null("Hero")
+	if hero == null: return
+	for n in hero.find_children("*", "BoneAttachment3D", true):
+		if n is Node3D:
+			(n as Node3D).visible = false
+	for n in find_children("*", "BoneAttachment3D", true):
+		if n is Node3D:
+			(n as Node3D).visible = false
