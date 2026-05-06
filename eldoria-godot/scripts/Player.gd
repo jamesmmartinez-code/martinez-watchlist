@@ -1704,6 +1704,6 @@ func _clamp_all_attachments_scale() -> void:
 			var parent_node: Node = mi.get_parent()
 			if parent_node is Node3D:
 				var p3: Node3D = parent_node
-				var shrink := MAX_GEAR_M / max(h, 0.001)
+				var shrink: float = MAX_GEAR_M / max(h, 0.001)
 				p3.scale = p3.scale * shrink
 
