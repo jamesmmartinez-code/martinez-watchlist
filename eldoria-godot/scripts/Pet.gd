@@ -21,9 +21,9 @@ var _label: Label3D
 # REFINE: character — five-bark catchphrase pool so Ember stops sounding like a tape loop.
 # Picked uniformly per bark; no schedule change. Same bark cadence the rest of the script
 # already enforces — just visual variety.
-const BARK_LINES: PackedStringArray = PackedStringArray(["yip!", "arf!", "rrr!", "yip yip!", "yap!"])
+const BARK_LINES: Array[String] = ["yip!", "arf!", "rrr!", "yip yip!", "yap!"]
 # REFINE: character — bark color picks one of two ember tones per bark for visual variety.
-const BARK_COLORS: PackedColorArray = PackedColorArray([Color(1.0, 0.85, 0.30), Color(1.0, 0.62, 0.18)])
+const BARK_COLORS: Array[Color] = [Color(1.0, 0.85, 0.30), Color(1.0, 0.62, 0.18)]
 
 
 func _ready() -> void:
