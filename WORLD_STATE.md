@@ -2644,3 +2644,172 @@ captain_seal is not yet a visible mantle-prop (Builder territory).
   *toll* in Old Faerie compound (working name *thrian-toll*, "the long
   listening's toll"; final word to be set when the codex run begins, must
   rhyme tonally with *thrian-mor* in `lore/factions/three_crowns.md`).
+
+---
+
+## Lore Keeper run — 2026-05-06 — codex fragment added
+
+**Artifact:** `eldoria-godot/data/codex/pale_wyrm_beneath.md` (priority 5 — codex
+entry seeded against the Sundering, per `lore/world.md` next-runs note).
+
+**Why now:** Codex had only two fragments
+(`stag_courts_courtesy.md`, `steppe_riders_refusal.md`). World canon explicitly
+calls for "codex entries seeded against the Sundering" as next-run work. This
+adds a third fragment that anchors against three distinct canon pillars at
+once — the Sundering / Pale Wyrm pillar (`world.md`), the smith-voice pillar
+(`smith_edda.md` voice rule "never names a blade Frost"), and the Crystal
+Caves discovery zone (sibling to the existing `stag_courts_courtesy.md`
+fragment recovered from the same under-stream wall).
+
+**Old Faerie added (1):** ***mhirren*** (MEER-en — the slow-turning sleep, the
+Wyrm's dreaming; also said of a banked hearth or a kettle off the hob). Per
+the canon cap, total Old Faerie words now in formal canon: *thirre*,
+*ai-velin*, *kerrithen* (`world.md`); *vael-tor*, *thressa-mai*
+(`elder_maeve.md`); *haethe*, *unnen* (`smith_edda.md`); *thalen-ai*
+(`herbalist_lyra.md`); *vael-i-thirren*, *ai-mhorren*, *velhain-tor*
+(`stag_courts_courtesy.md`); *mhordin* (`quest_text/wolf_heart_for_bram.md`);
+*haelen*, *mor-vaere*, *thrennen* (`items_flavor.json`); *mhirren* (this
+artifact). Stone-Tongue cap of three holds — no new Stone-Tongue coined.
+
+**Cross-anchors (no edits required):**
+- `data/dialogue/smith_edda.json` — the voice rule "Never names a blade Frost.
+  The Pale Wyrm is kept asleep by silence." now has a canon source-of-truth
+  for *why*. The dialogue line continues to hold verbatim.
+- `data/codex/stag_courts_courtesy.md` — same Briarwood scribe's hand. Both
+  fragments recovered from opposite sides of the under-stream's flow. Future
+  Polisher pass may light them with matching paper-texture / pin-shadow.
+- `lore/world.md` — Sundering pillar + Pale Wyrm sleeping reference confirmed
+  in-fiction; no overwrite, only deepening.
+
+**Builder hooks proposed (lore-only this run, not wired):**
+1. `world_flag_excludes: warlord_slain_with_frost` gating — codex is an
+   *if-you-haven't-yet* artifact; if the saver-arc is sealed it still
+   surfaces via the alternate trigger.
+2. `cave_runeface_north` examine prop — alternate `also_acceptable` trigger.
+   Pure decal-tint work, no new mesh required.
+3. Optional Edda one-line addition to `boss_slain` if player slew the Warlord
+   *without* carrying the Edda-saber: *"You did not carry the Frost-thread.
+   Brigid heard you not name it. Velhain-tor."* Deferred — this run is
+   canon-only.
+
+**Withholding (held back deliberately):**
+- The Wyrm's true name is not given; *mhirren* is its sleep, not its name.
+- The Antler-King is not invoked.
+- No specific year ("the year the bridge was rebuilt" stays indeterminate
+  for future integrator anchoring).
+- No new Stone-Tongue word.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark. The
+fragment uses "careful" / "patient" instead of "fear"; the Wyrm is framed as
+a sleeper to be respectful of, not a monster to be afraid of.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes. **No overwrites:**
+verified — only this WORLD_STATE.md append and the new codex file.
+
+
+---
+
+## Lore Keeper run — 2026-05-06 — codex fragment added
+
+**Artifact:** `eldoria-godot/data/codex/pond_and_lanterns.md` (priority 5 —
+codex entry seeded against the Wild Pantheon, specifically Erris of the Two
+Roads, per `lore/world.md` §The Wild Pantheon).
+
+**Why now:** Codex held three fragments
+(`stag_courts_courtesy.md`, `pale_wyrm_beneath.md`,
+`steppe_riders_refusal.md`), all set in the Crystal Caves. Of the five
+named gods of the Wild Pantheon, only the Pale Wyrm pillar (adjacent to
+Vellum) had codex coverage; Erris of the Two Roads, despite carrying both
+Honeysong Eve canon and the bards'-coin-at-the-crossroads tradition, had
+none. This fragment adds Erris-side codex coverage, brings the codex into
+the **Briarwood** region for the first time (every prior fragment was
+Crystal Caves-locked), and renders two pieces of canon that `world.md`
+gestures at but had never been told from inside the village: *what the
+Honeysong lanterns are*, and *what the bards' crossroad coin is doing.*
+
+**Old Faerie added (1):** ***thithrae*** (THITH-ray — "the song that ends
+on a question," Erris's specific blessing; what a bard leaves half-sung so
+a stranger may finish it; what the coin set down at a crossroads
+represents; in warmer Briarwood usage, also a kettle taken off the hob
+with the water still murmuring — a thing not finished, but kindly paused
+for whoever walks in next). Per the canon cap, total Old Faerie words now
+in formal canon: *thirre*, *ai-velin*, *kerrithen* (`world.md`); *vael-tor*,
+*thressa-mai* (`elder_maeve.md`); *haethe*, *unnen* (`smith_edda.md`);
+*thalen-ai* (`herbalist_lyra.md`); *vael-i-thirren*, *ai-mhorren*,
+*velhain-tor* (`stag_courts_courtesy.md`); *mhordin*
+(`quest_text/wolf_heart_for_bram.md`); *haelen*, *mor-vaere*, *thrennen*
+(`items_flavor.json`); *mhirren* (`pale_wyrm_beneath.md`); ***thithrae***
+(this artifact). Stone-Tongue cap of three holds — no new Stone-Tongue
+coined.
+
+**Sibling-hand canon advanced (no overwrite):** This fragment establishes
+that the Briarwood scribal hand of the Crystal Cave leaves has a *younger
+sister* — same scribal family, broader stroke, ink that "sits up" on warm
+paper, written outdoors. Pure deepening; no contradiction with prior
+fragments. Future Polisher passes may light pond-side and cave-side
+fragments with matching paper-texture but slightly different brush feel
+(warm summer ink vs. cold-iron quiet of the under-stream).
+
+**Cross-anchors (no edits required):**
+- `lore/world.md` — Erris pillar + Honeysong Eve canon confirmed in-fiction.
+  No overwrite, only deepening. The phrase "paper lanterns set adrift on
+  the pond, an offering to Erris" is gently re-read here: the lanterns
+  are *seats*, not offerings. (Both readings are compatible — a seat is a
+  kind of offering — and the fragment is careful not to contradict the
+  priestly reading, only to add the village's own.)
+- `lore/factions/wardens_of_the_mark.md` — Bram's grandmother's ledger
+  gets one quiet new in-fiction entry (the ninety-three-year-ago Honeysong
+  Eve when "every lantern carried past the second bell"). The ledger
+  remains the canonical Warden artifact; this fragment only acknowledges
+  it from the pond-side.
+- `data/codex/stag_courts_courtesy.md` and `data/codex/pale_wyrm_beneath.md`
+  — sibling-hand notation now ties all three Briarwood-scribe fragments to
+  one scribal family. Voice-rules in this fragment explicitly mark the
+  difference: warmer, outdoors, summer cadence vs. the cave's
+  cold-iron quiet.
+- `lore/npcs/innkeeper_bram.md` — the inn's mead-bell tradition gets one
+  new pond-side echo (Honeysong's "smallest miracle" being the mead
+  running out before midnight). Inn lore is not advanced; the existing
+  bible holds verbatim.
+
+**Builder hooks proposed (lore-only this run, not wired):**
+1. `pond_lantern_post` examine prop — small tin box decal at the back of
+   the existing pond lantern-post. Pure decal-tint work, no new mesh
+   required. Hawthorn-leaf sigil pressed into the tin hinge.
+2. Optional `season: honeysong` parameter on the alternate trigger — pairs
+   with a future calendar-tick system that surfaces seasonal codex on the
+   right moon. If the calendar-tick system never lands, the primary
+   `examine_prop` trigger covers discovery on its own.
+3. Optional Bram one-line addition to a future Honeysong dialogue tier:
+   *"My grandmother's ledger says every lantern once carried past the
+   second bell. She did not write what the songs were. Some kindnesses
+   are kept by not naming them. Velhain-tor."* Deferred — this run is
+   canon-only.
+4. Optional pond reflection-shader seasonal tint on Honeysong moon — warm
+   gold from the lanterns' glow, not the usual cool blue-grey night
+   pond. Polisher / Environment territory; no Lore Keeper authoring.
+
+**Withholding (held back deliberately):**
+- The three-centuries-ago year is left unfixed. "Ninety-three years before
+  the present count" is the only anchor; the present count itself is not
+  pinned (preserves future calendar-tick flexibility).
+- The lantern-maker's name is not given; the hawthorn-leaf sigil is the
+  only mark.
+- No specific "finished song" from the ledger is named.
+- The coin's denomination is not given. It is "not a Halevant coin." That
+  is enough.
+- Erris's mortal aspect is not described. Erris is the host; the host is
+  invisible at her own table.
+- The other four Briarwood scribal hands (the two Crystal Cave leaves +
+  the Steppe Riders fragment, plus this one) are still not given names.
+  The scribal *family* is now canon. Names are not.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark.
+The fragment uses "kindness" / "open" / "host" instead of "luck" / "lost"
+/ "trickster." The words "fear" and "fortune" do not appear. Erris is
+framed as a host who keeps the door open for unfinished songs, not a
+trickster god of chance.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes. **No
+overwrites:** verified — only this WORLD_STATE.md append and the new codex
+file `eldoria-godot/data/codex/pond_and_lanterns.md`.
