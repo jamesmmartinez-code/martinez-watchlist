@@ -15,6 +15,7 @@ are the *visual* derivative — same canon, easier to consult mid-run.
 | [`silhouette_check.png`](silhouette_check.png) | picking or commissioning an NPC mesh, dressing the player, judging whether two villagers read distinct from across the square | §4 Character archetypes |
 | [`enemy_silhouettes.png`](enemy_silhouettes.png) | scaling enemies, deciding glow/aura intensity, comparing relative size for boss reveals | §4 Enemies |
 | [`lighting_compass.png`](lighting_compass.png) | picking a time-of-day, tuning a sky/HDRI, choosing a banner/material that has to read in dusk lighting | §1, §3 Warm sunset dominant |
+| [`prop_sheet.png`](prop_sheet.png) | sourcing or modeling a Briarwood prop (well, banner pole, cart, woodpile, market stall, lantern, signpost), checking same-scale read between props + player + Maeve + goblin | §1 lived-in, §3 palette, §8 timber-stone-thatch |
 
 ## How to cite
 
@@ -41,8 +42,7 @@ re-running this agent and want a high-leverage addition.
 
 - `architecture_palette.png` — Briarwood timber-frame house elevations (4 variants),
   Smithy, Inn, Whisperwood goblin tent, Crystal Caves entrance arch.
-- `prop_sheet.png` — well, banner pole, cart, woodpile, market stall, lantern, signpost
-  drawn together at the same scale and palette so the village reads cohesive.
+- ~~`prop_sheet.png`~~ — **shipped 2026-05-06.** See entry above and `mood-boards/prop_sheet.png`.
 - `magic_glow_reference.png` — fey cyan, warlock purple, frost silver auras at three
   intensities each, against a dusk background.
 - `ui_chrome.png` — parchment panel + wood frame + ornate divider + button states
@@ -70,3 +70,9 @@ overlapping with this directory.
 
 - 2026-05-05 — auto/art bootstrap. Five panels: palette, era window,
   silhouette check (NPCs), enemy silhouettes, lighting compass. README + this changelog.
+- 2026-05-06 — auto/art. Added `prop_sheet.png` (Briarwood props at unified
+  scale: well, banner pole, cart, woodpile, market stall, lantern, signpost,
+  + player/Maeve/goblin scale reference). Procedural Pillow, seed 73,
+  byte-stable on re-run. THEME.md anchor: §1, §3, §8. `_generate.py` updated
+  to include `render_prop_sheet()`; `palette.png` left at its 2026-05-05
+  bootstrap hash so this run is purely additive.
