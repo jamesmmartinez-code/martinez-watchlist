@@ -501,7 +501,6 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
-	call_deferred("save_game")  # save immediately on level-up
 		# REFINE: balance — chunkier per-level HP gain (14 → 18) so Alden has more
 		# survivability headroom across a 30-kill session, and Owen's "I just leveled"
 		# beat reads as a meaningful step rather than a sliver.
@@ -515,6 +514,7 @@ func gain_xp(amount: int) -> void:
 		# Level-up celebration popup
 		# REFINE: visual — LEVEL UP! popup gold pulled to exact §3 #FFD86B. Color (1.0, 0.85, 0.30) was off-palette mustard (B=0.30 ≈ #4D) → (1.00, 0.85, 0.42) (B=0.42 = #6B) now matches UITheme GOLD, title_label modulate, WorldMap COL_TITLE, Chest.gd glow_color, and the NPC nameplate modulate the recent polish runs converged on. Owen's mastery-affinity LEVEL UP! beat now reads in the same sunset-gold as every other §3 'this matters' surface — visual continuity across mastery rungs.
 		UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 3.0, 0), "LEVEL UP!", Color(1.00, 0.85, 0.42), 56, 7)
+	call_deferred("save_game")  # save after all level-ups (QA: re-fix indent regression from 031f9bb0)
 	stats_changed.emit()
 
 func xp_for_next_level() -> int:
