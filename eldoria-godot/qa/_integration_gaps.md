@@ -1,23 +1,40 @@
-# Integration Gaps Report — 2026-05-06T08:03:12Z
+# Integration Gaps Log
 
-Run: scheduled integrator
-Canon QA gate: PASS (no _blocking_status.md present on main, defaulted)
-Branches discovered: 8 (auto/art, auto/builder, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix)
-Branches merged: auto/environment (1 commit)
-Branches skipped (conflicts): none
-Branches with no commits ahead (skipped): auto/art, auto/builder, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
+last_run: 2026-05-06T13:55:51Z
+canon_qa_status_at_run: PASS_WITH_DEBT
+merged_this_cycle: auto/art (1 commit), auto/lore (2 commits)
+skipped_this_cycle: auto/scale (merge conflict — needs manual resolution)
+nothing_to_merge: auto/builder, auto/polisher, auto/qa, auto/scale-floorfix
 
-## Gap Scan
-Scanned new files in merged commits for orphan assets / quests / animations / materials.
+## Gaps surfaced this run
 
-New / modified files this run:
-auto/environment merge (ea810803):
-- eldoria-godot/scripts/WorldBuilder.gd  (modified, +74/-0 — env ambient atmosphere: falling leaves drift through Whisperwood canopy per THEME §12; no new assets)
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/the_sundering.png
+  PNG present (auto/art @ 074b835) but no codex .md frontmatter has `icon_glyph: the_sundering`.
+  Owner: @lorekeeper. Renderer falls back to legacy emoji, so non-blocking.
 
-Gap rule checks:
-- Orphan asset (.glb in assets/ with no spawn logic in WorldBuilder.gd or _make_*): none — no .glb added
-- Orphan quest (.tres in data/quests/ with no NPC dialogue): none — no quest .tres added
-- Orphan animation (AnimationLibrary .tres with no .tscn ref): none added
-- Orphan material (StandardMaterial3D .tres with no MeshInstance use): none added
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/oath_of_thorns.png
+  PNG present, no codex .md references it via `icon_glyph: oath_of_thorns`. Owner: @lorekeeper.
 
-Gaps found: 0
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/wyrmsong_winds.png
+  PNG present, no codex .md references it via `icon_glyph: wyrmsong_winds`. Owner: @lorekeeper.
+
+[GAP: orphan asset] eldoria-godot/assets/icons/codex/sunken_chord.png
+  PNG present, no codex .md references it via `icon_glyph: sunken_chord`. Owner: @lorekeeper.
+
+[GAP: skipped merge] auto/scale (1 commit ahead, 73 behind) — merge conflict
+  Tip: 76bb428 "Scale: extend sweep to windmills/boulders/campfires/banner_poles/chests"
+  Action: scale-engineer to rebase auto/scale onto main and re-push.
+
+## Carry-over (from canon-qa _blocking_status.md)
+
+PASS_WITH_DEBT: 7 S2 issues logged in eldoria-godot/qa/_blocking_status.md
+(items_flavor entries, ITEMS dict drift, mossbound recipe, tree collision parity, AnimationLibrary batch).
+These are owner-tracked S2 debt and do not block merge.
+
+## Notes
+
+- auto/art commit explicitly noted the codex frontmatter linkage is the Lore agent's
+  responsibility on the next run; the four orphan-asset entries above are expected
+  to clear when @lorekeeper ships icon_glyph: <name> frontmatter for matching codex
+  fragments. They are logged here per integrator policy regardless of the planned
+  follow-up.
