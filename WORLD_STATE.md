@@ -4229,3 +4229,300 @@ quieting, not a triumph; the crown is borrowed, not won. Two Old
 Faerie words enter canon (*mhain-thra,* *thrael-hoir*); the third
 pacing-slot is held in its own *mhain-thra.* The Warlord-side
 glossary holds at three. The Stone-Tongue cap holds at three.
+
+---
+
+## Run: Stag-Court faction file (auto/lore)
+
+**Artifact:** `eldoria-godot/lore/factions/stag_court.md` (new file).
+
+**Priority addressed:** Top-priority next #3 from the previous run —
+*The Stag-Court / Antler Crown* as a dedicated faction file. The
+Court was previously canon only at the codex level
+(`stag_courts_courtesy.md`) and at the inter-Crown level
+(`three_crowns.md`). This run gives the Court its own structural
+frame: how it moves (*thirren-velin*), how it decides (*vael-anam*),
+what it holds (*kerren-tor*).
+
+### *thrael-hoir* / *vael-anam* verb-pair — completed
+
+The previous run reserved *thrael-hoir* as the Court's active verb
+(slow patient pressure on un-listened-to wants). This run completes
+the pair by canonizing *vael-anam* — the **passive** counterpart, the
+slow-listened answer that rises out of pooled time. Together they
+form the Court's whole verb-pair for *acting* (*thrael-hoir*) and
+*deciding* (*vael-anam*).
+
+The previous run's *thrael-hoir* read on the Halevant captain's iron
+circlet is, by this run, **completed:** the *thrael-hoir* was the
+active hand; the *vael-anam* was the listening that made the hand
+inevitable. The application-rule (un-listened-to want; passed out of
+proper keeper's hand; slow shaping) holds. The Pale Wyrm scale
+qualification remains held-open. No new objects qualify.
+
+The Court is now the **only** subject in canon that performs
+*thrael-hoir*. No other power may. (Iron Crown's *thrian-mor* is
+listening, not shaping. Stone Crown's *korr* is declining. Vellum is
+patient *of,* not *with.* The bandits' coal-ash brand was already
+disqualified.)
+
+### Architecture canon — *thirre / kerren-tor / aen-thirre*
+
+Three-tier structural canon for the Court's relationship to places:
+
+- ***thirre*** *(world.md)* — memory-of-stone places; doorways on the
+  Court's network.
+- ***kerren-tor*** *(this run)* — *thirre*-places where the Court has
+  set the seat; the Court's word for *home.* The deep Whisperwood is
+  *kerren-tor* alone. The Crystal Caves are *kerren-tor* held jointly
+  with Vellum (the **only** joint *kerren-tor* in canon). One former
+  *kerren-tor,* now shallow, lies on the High Steppe (Cailen passed
+  it without knowing; reserved by `steppe_riders_refusal.md`).
+- ***aen-thirre*** *(`three_crowns.md`)* — small-thirre, watched but
+  not entered; outside the Court's house. Briarwood is one.
+
+Mortal door / no mortal door rule: a *kerren-tor* has a mortal door
+*through the thirre* (the seat at the forest-line, accepted, costs
+*one mortal year remembered backwards*). An *aen-thirre* does **not**
+have a mortal door. **Briarwood does not have a door for the Court.**
+Architectural, not diplomatic. Future writers may not stage a Court-
+in-Briarwood scene.
+
+### Stag-night canonized as a Court night
+
+`world.md`'s Stag-night in Emberfall (bow at Thiar's stone) is, by
+this run, also a **Court night.** The Court does not appear and does
+not speak. The Court *listens* to the *kerrithen* of the first kill
+laid at Thiar's stone. The Court's only mortal trace is, on rare
+Stag-night dawns, a single antler laid where the kill was laid the
+night before. The antler is the **physical form** of *velhain-tor*
+(`stag_courts_courtesy.md`, *go warmly*). It is the **only** Court-
+to-mortal physical gift permitted in canon.
+
+This is the **only** mortal ritual at which the Court turns toward
+the village. Honeysong, Longnight, Lambmoon, the planting-moons —
+all mortal-only. The pantheon-correspondences hold: Hollow King hears
+Longnight; Brigid hears the smith-hearths; Erris hears Honeysong;
+Thiar holds the stone. The Court hears the *kerrithen* at Thiar's
+stone, and that is the Court's whole audible mortal world.
+
+### Iron Crown ↔ Stag-Court canon
+
+Three failed Iron Crown delegations to the Court (in the smoke-cities'
+written record). All went the same way: the forest-line was just
+trees; the Court was elsewhere on the *thirren-velin;* the
+magistrate's clerks marked *thrunn — no answer* and filed. **The
+Iron Crown does not know the Court is listening.** Halevant's
+clerks have only the borrowed *thrunn* (Stone-Tongue, learned via
+Halevant). The Court is, on canon, slightly more attentive to
+hamlets the Iron Crown has chalk-pointed *(point*) than to those it
+has not. Briarwood is one.
+
+### Stone Crown ↔ Stag-Court canon
+
+The Stone Crown is, on the Court's reading, the **only** mortal power
+that has *understood ai-mhorren without being told.* The single-
+antler-on-the-trail gesture (Stone-rider passing a *thirre* on the
+High Steppe, finding an antler laid across the trail, riding on,
+leaving the antler where it lay) is the Court's *velhain-tor* in the
+Stone-rider's own language. This is a rare honour from the Court —
+the Court does not, otherwise, condescend to mortal tongues.
+
+### Old Faerie corpus — extended to twenty-three
+
+Three new compounds enter canon this run:
+
+- ***thirren-velin*** *(THEER-en VEL-in)* — the long path through
+  pooled time; the Court's travel network.
+- ***vael-anam*** *(VAY-l AH-nam)* — the slow-listened answer; the
+  Court's passive deciding-verb.
+- ***kerren-tor*** *(KAIR-en tor)* — the laid-down hearth; the
+  Court's word for *home* (a *thirre* the Court has set the seat
+  at).
+
+Running corpus (twenty-three): *thirre, ai-velin, kerrithen*
+(`world.md`); *vael-tor, thressa-mai* (`elder_maeve.md`); *haethe,
+unnen* (`smith_edda.md`); *vael-i-thirren, ai-mhorren, velhain-tor*
+(`stag_courts_courtesy.md`); *drevenn-i-haern*
+(`steppe_riders_refusal.md`); *mhirren* (`pale_wyrm_beneath.md`);
+*thrian-mor, aen-thirre, aen-velin-corr* (`three_crowns.md`);
+*aen-irren, vell-mor-shau, korr-thau-vell*
+(`whisperwood_goblins.md`); *mhain-thra, thrael-hoir* (previous
+run's WORLD_STATE); *thirren-velin, vael-anam, kerren-tor* (this
+run).
+
+The cap-of-three-per-artifact rule (THEME §7) holds. Stone-Tongue
+holds at three (*korthain, thrunn, korr*). Goblin Cant holds at
+three (*aen-irren, vell-mor-shau,* broken-form *vellmorsh*) and the
+**fourth** Faerie word of the goblin-fold's lost tongue
+(`whisperwood_goblins.md`, *Loose ends* #4) remains held.
+
+### Withholding ledger (preserved unchanged + one new)
+
+- **The pre-Sundering name of the first Warlord.** Held.
+- **The fourth Old Faerie word of the goblin-fold's lost tongue**
+  (the older drum-name). Held. Not lifted by this run.
+- **The Halevant pike-captain's name.** Held (fourth load-bearing
+  un-name in canon, alongside the well-mason, Halsa's mother, and
+  the Pale Wyrm). The captain's last unsigned name is on the
+  broken-point chevron the Warlord wears as decoration.
+- **The lifting of *aen-irren.*** Reserved as a late-game arc.
+  This run names the **shape** of the lifting (*kerren-tor* +
+  *thressa-mai* turning together) but does not begin it.
+- **The Antler-King's structure.** Held — one or many, Queen or no
+  Queen, rotating or fixed. *stag_courts_courtesy.md*'s
+  reservation holds; this run affirms it. Future writers may not
+  resolve the question without a load-bearing arc reason.
+- **The Court's gods.** Held silent. *world.md*'s *older powers
+  under the Pantheon, not named in polite company* may or may
+  not be the Court's gods. Not canonical either way. Future
+  writers may not give the Court a pantheon.
+- **NEW: The third *thirre* on the *thirren-velin.*** The Court's
+  network has, in canon, three *thirre* set down: deep Whisperwood
+  (*kerren-tor* alone), Crystal Caves (*kerren-tor* with Vellum),
+  High Steppe (former *kerren-tor,* now shallow). A future writer
+  may name a third *thirre* — held open. They may **not** put one
+  inside the smoke-cities or inside Briarwood.
+- **The Pale Wyrm scale's *thrael-hoir* qualification.** Held —
+  may qualify, not yet decided.
+- **A Stag-night quest in which the Court appears.** Forbidden.
+  The antler is the only trace. The Court's *not-appearing* is
+  the point.
+- **Court-given items with mechanical bonuses.** Forbidden. The
+  Stag-night antler is cosmetic; any future Court-given item
+  must also be cosmetic.
+- **Court-and-Vellum conversation.** Forbidden. They share the
+  Crystal Caves' *kerren-tor* by old accident, not alliance. They
+  do not speak.
+
+### Cross-canon anchors used (full list)
+
+- `lore/world.md` (Sundering, Wild Pantheon, the older powers,
+  Calendar, Three Crowns, Tongues, *thirre/ai-velin/kerrithen,*
+  Stag-night in Emberfall)
+- `lore/factions/three_crowns.md` (the three Crowns as postures,
+  the unbought road, Iron Crown's *thrian-mor,* Antler Crown's
+  *aen-thirre,* Stone Crown's *korr,* the Listening clock,
+  Halevant-on-the-Reap, the unwritten council-of-Crowns
+  prohibition)
+- `lore/factions/wardens_of_the_mark.md` (the four village
+  postures; the village's own held breath as the inside view of
+  *aen-velin-corr*)
+- `lore/factions/bandits.md` (Halevant pike-company; the captain
+  whose company never came home; the *clearing* verb;
+  cold-ash brand disqualified from *thrael-hoir*)
+- `lore/factions/whisperwood_goblins.md` (*aen-irren,*
+  *vell-mor-shau,* *korr-thau-vell;* the Warlord-as-wound; the
+  Court holds the goblins' pre-Sundering name; the lifting of
+  *aen-irren* requires *kerren-tor* + *thressa-mai* turning
+  together)
+- `lore/npcs/elder_maeve.md` (*vael-tor* as the chair-by-the-
+  hearth; *thressa-mai* as held-by-the-village un-name; *we
+  count for them*)
+- `lore/npcs/herbalist_lyra.md` (Lyra never speaks Old Faerie
+  aloud; the cave keeps its own counsel; *they are still being
+  courteous; to no-one*)
+- `lore/npcs/smith_edda.md` (*haethe, unnen;* never names a
+  blade *Frost*)
+- `lore/npcs/stablemaster_roan.md` (*clearing, not slaying;* the
+  fold-lines; Roan held by the unsaid *korr*)
+- `data/codex/stag_courts_courtesy.md` (*ai-mhorren, vael-i-
+  thirren, velhain-tor;* the leaf-scribe; the Antler-King's
+  voice; the seat at the forest-line; cost of one mortal year
+  remembered backwards; reservation of the Antler-King's
+  structure)
+- `data/codex/steppe_riders_refusal.md` (*drevenn-i-haern;*
+  Cailen passing a former *kerren-tor* without knowing; *korr*
+  declining the wider question; the second fragment in the
+  Crystal-Caves series)
+- `data/codex/pale_wyrm_beneath.md` (*mhirren* as a *broken
+  thirre;* Briarwood scribe's hand; the under-stream
+  keeping-place; the Pale Wyrm un-name)
+- `data/codex/longnight_vigil.md` (the Hollow King hears
+  Longnight; the village's mortal-only winter rite)
+- `data/codex/brigids_ribbon.md` (Brigid hears the smith-
+  hearths; the smithy's secondary hearth)
+- `data/codex/pond_and_lanterns.md` (Erris hears Honeysong;
+  the midsummer paper-lantern offering)
+- `data/quest_text/whisperwood_cleansing.md` (*the Warlord is no
+  chieftain; he is a wound;* the five clearings as small mercy)
+- `WORLD_STATE.md` previous run (*thrael-hoir, mhain-thra;* the
+  application rule; the Halevant captain's iron circlet
+  qualified; village-keeper working tools forbidden;
+  *anamh-ron* as the smith-line listened-to inheritance)
+- THEME §7 (warm gravitas, child-safe, no grimdark; ~3 Old
+  Faerie words per artifact)
+
+### Asks for downstream agents
+
+- **Audio agent** — if a future Whisperwood ambient pass includes
+  Stag-night, the Court's listening should be *the wood gone one
+  shade quieter for one breath* — the same quiet as the *Quieting*
+  drum-figure (`whisperwood_goblins.md`). Two quiets in the same
+  register, used together. **No music.** The Court does not score.
+- **Item agent (optional, future)** — a cosmetic *Stag-night
+  antler* item in `data/items_flavor.json` if a Stag-night quest
+  is wired. Single-line flavor in Lyra register: *some hunts are
+  heard further than the hunter knows.* The flavor must **not**
+  name the Court. Cosmetic only — no stats.
+- **Codex agent (future)** — a third Crystal-Caves fragment in
+  the Stone-rider's voice. Brief (Stone-Tongue is sparing). One
+  line about *the antler that lay across the trail and was not
+  picked up.* Pairs with this run's *kerren-tor* canon and with
+  the existing *steppe_riders_refusal.md.*
+- **Dialogue agent (optional, future)** — a Lyra dialogue tier on
+  *kerren-tor,* gated on **Foxthaw evening** + this faction file
+  read + codex-fragments-collected ≥ 4: *"The cave is the only one
+  held jointly, traveler. Do you know what that means? It means
+  the wound and the patience are sharing a hearth. They are not,
+  in their own reading, fighting."* Common-only; the Old Faerie
+  word *kerren-tor* is **not** spoken aloud. Lyra translates.
+
+### Top-priority next (refresh)
+
+1. **Wolfwake-side scribal-family leaf** in the elder brother's
+   hand, on *the closing-of-the-call,* anchored to the Warlord-
+   clearing season. Carries forward from previous run. The four
+   canonical hands now hold five of twelve moons — a sixth would
+   advance the arc cleanly without breaking the *Halsa is not a
+   fifth sibling* rule.
+2. **The Edda dialogue patch** still pending from earlier (the
+   Brigid's Ribbon arc): single line at the threshold
+   *codex_leaves_collected_gte:5 && Lambmoon && npc_thanked:Smith_Edda*
+   — *"The bundle on the cold rack has been there since I was
+   small. I do not lift it. The next will."* Dialogue agent
+   territory.
+3. **Erris of the Two Roads** — no codex page yet, only flavor
+   anchors across items_flavor and *pond_and_lanterns.md.* A
+   crossroads-coin codex fragment in the Stag-Court-fragment voice
+   register would balance the existing standalone fragments
+   (*pale_wyrm_beneath, vellums_spine, steppe_riders_refusal*).
+   Carries forward.
+4. **The Halevant captain's slate** — a faction-politics run on the
+   Iron Crown's *thrian-mor* slate-room, with the chalk-point that
+   means *re-listen in seven* depicted but the captain's name still
+   not set down. Carries forward.
+5. **A Stone-rider codex fragment** — the third in the Crystal-
+   Caves series, in the Stone-rider's voice, on the antler-on-the-
+   trail. Pairs naturally with this run's *kerren-tor* canon.
+   **NEW priority** introduced by this run.
+
+### Branch pushed: `auto/lore`
+
+Single artifact this run, per SKILL.md operating rule. Markdown
+only — no JSON validation needed. WORLD_STATE.md appended (this
+section). QUEST_GRAMMAR.md is **not** appended this run — no new
+quest type emerged; the Stag-Court faction file does not introduce
+any quest mechanic.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no
+grimdark. The Court is a courtesy older than the Sundering, not a
+fey-trap; the *vael-anam* is the answer rising, not a power
+imposing; the seat is offered, not taken; the antler is laid down,
+not given. Three Old Faerie compounds enter canon
+(*thirren-velin, vael-anam, kerren-tor*); the cap-of-three holds.
+The Stone-Tongue cap holds at three. The Goblin Cant cap holds at
+three. The withholding ledger gains one item (the third *thirre*
+held open) and otherwise preserves all prior holds.
+
+The valley does not have a door for the Court. *Vellum is patient.*
