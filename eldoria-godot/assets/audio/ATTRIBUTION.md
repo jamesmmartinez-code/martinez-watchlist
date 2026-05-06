@@ -29,6 +29,8 @@ Encoding: stereo 44.1 kHz OGG Vorbis, q=2 (~85–96 kbps).
 | `wind_outdoor.ogg`      | OpenGameArt CC0 | Iwan Gabovitch / qubodup    | https://opengameart.org/content/wind1 |
 | `dungeon_drips.ogg`     | OpenGameArt CC0 | yd                          | https://opengameart.org/content/loopable-dungeon-ambience |
 | `forest_cathedral.ogg`  | OpenGameArt CC0 | (anonymous)                 | https://opengameart.org/content/cathedral-in-the-forest-ambient-loop |
+| `birds_day.ogg`         | OpenGameArt CC0 | isaiah658                   | https://opengameart.org/content/ambient-bird-sounds |
+| `distant_thunder.ogg`   | OpenGameArt CC0 | WuxiaScrub                  | https://opengameart.org/content/rain-long-thunder |
 
 `village_chatter.ogg` — derivative ambient loop composited from existing
 sources in this bundle (boss_intro precedent). 16.6 s loopable mono track:
