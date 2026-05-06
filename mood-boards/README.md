@@ -17,6 +17,7 @@ are the *visual* derivative — same canon, easier to consult mid-run.
 | [`lighting_compass.png`](lighting_compass.png) | picking a time-of-day, tuning a sky/HDRI, choosing a banner/material that has to read in dusk lighting | §1, §3 Warm sunset dominant |
 | [`architecture_palette.png`](architecture_palette.png) | sourcing or modeling a structure (cottage, inn, smithy, goblin tent, cave entrance, watchtower), checking that a building elevation reads in the THEME §3 palette + §8 timber-stone-thatch canon | §1 painterly, §3 palette, §8 architecture |
 | [`prop_sheet.png`](prop_sheet.png) | sourcing or modeling a Briarwood prop (well, banner pole, cart, woodpile, market stall, lantern, signpost), checking same-scale read between props + player + Maeve + goblin | §1 lived-in, §3 palette, §8 timber-stone-thatch |
+| [`magic_glow_reference.png`](magic_glow_reference.png) | tuning aura / spell / boss-glow / unique-item halo intensity, picking which of the three §3 magic hues to use, sanity-checking that a glow reads against a dusk backdrop without bleeding into warm-band canon | §1 cool-tones-for-magic-only, §3 magic palette, §5 painterly soft rim |
 
 ## How to cite
 
@@ -44,8 +45,10 @@ re-running this agent and want a high-leverage addition.
 - ~~`architecture_palette.png`~~ — **shipped 2026-05-06 (run-27).** Briarwood cottage + Inn + Smithy + Goblin tent + Crystal Caves arch + Mountain watchtower.
   See `mood-boards/architecture_palette.png` and `_gen_architecture_palette.py`.
 - ~~`prop_sheet.png`~~ — **shipped 2026-05-06.** See entry above and `mood-boards/prop_sheet.png`.
-- `magic_glow_reference.png` — fey cyan, warlock purple, frost silver auras at three
-  intensities each, against a dusk background.
+- ~~`magic_glow_reference.png`~~ — **shipped 2026-05-06 (run-28).** Fey cyan,
+  warlock purple, frost silver auras at low / med / high intensity each, against
+  a dusk backdrop. See `mood-boards/magic_glow_reference.png` and
+  `_gen_magic_glow_reference.py`.
 - `ui_chrome.png` — parchment panel + wood frame + ornate divider + button states
   composited together, so UI agents see the assembled look not just isolated atlas pieces.
 - `world_map_sketch.png` — Eldoria on a hand-painted parchment, Briarwood / Whisperwood /
@@ -85,3 +88,14 @@ overlapping with this directory.
   timber-stone-thatch. Standalone generator `_gen_architecture_palette.py`
   (sibling to `_generate.py`); `palette.png` and `prop_sheet.png` left
   byte-identical so this run is purely additive.
+- 2026-05-06 (run-28) — auto/art. Added `magic_glow_reference.png`
+  (1024×1024, 3×3 grid: fey cyan / warlock purple / frost silver auras
+  at LOW / MED / HIGH intensity each, against a dusk backdrop with horizon
+  afterglow + tree-line ridge). Procedural Pillow, seed 307, byte-stable
+  on re-run. THEME.md anchor: §1 cool-tones-reserved-for-magic, §3 magic
+  palette, §5 painterly soft rim. Standalone generator
+  `_gen_magic_glow_reference.py` (sibling to `_generate.py` and
+  `_gen_architecture_palette.py`); `palette.png`, `prop_sheet.png`, and
+  `architecture_palette.png` left byte-identical so this run is purely
+  additive.
+
