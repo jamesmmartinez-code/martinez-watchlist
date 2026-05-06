@@ -948,6 +948,10 @@ func _build_windmill() -> void:
 	var pos := Vector3(0, 0, 12)
 	var mill := Node3D.new()
 	mill.position = pos
+	# scale-eng 2026-05-05: measured roof-tip 5.7m, canon windmill floor 8m
+	# (target 12m, cap 18m). Sweep clamps DOWN over-cap but cannot grow UP —
+	# under-floor windmills must be fixed at source. Uniform 1.55x → ~8.8m.
+	mill.scale = Vector3(1.55, 1.55, 1.55)
 	add_child(mill)
 	# Stone tower base
 	var base := MeshInstance3D.new()
@@ -1043,17 +1047,20 @@ func _make_lantern(pos: Vector3) -> void:
 	# ─── Procedural fallback (legacy primitive path) ─────────────────────────
 	var post := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
-	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.4
+	# scale-eng 2026-05-05: post 2.4m -> 2.2m. Measured lantern top at
+	# spawn = 2.71m (post 2.4 + box top 2.5+0.21). Canon lantern cap = 2.5m.
+	# Sweep would clamp every spawn; better to spawn in spec.
+	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.2
 	post.mesh = cm
 	post.material_override = MAT_DARK_WOOD(0.4)
-	post.position.y = 1.2
+	post.position.y = 1.1
 	lan.add_child(post)
 	var box := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(0.32, 0.42, 0.32)
 	box.mesh = bm
 	box.material_override = MAT_DARK_WOOD(0.3)
-	box.position.y = 2.5
+	box.position.y = 2.25  # scale-eng 2026-05-05: -0.25 -> top 2.46m (under canon cap 2.5m)
 	lan.add_child(box)
 	# Glowing glass
 	var glass_mat := StandardMaterial3D.new()
@@ -1068,7 +1075,7 @@ func _make_lantern(pos: Vector3) -> void:
 	gm.size = Vector3(0.22, 0.30, 0.22)
 	glass.mesh = gm
 	glass.material_override = glass_mat
-	glass.position.y = 2.5
+	glass.position.y = 2.25  # scale-eng 2026-05-05
 	glass.name = "Glow"
 	lan.add_child(glass)
 	# Light
@@ -1076,7 +1083,7 @@ func _make_lantern(pos: Vector3) -> void:
 	light.light_color = Color(1.0, 0.62, 0.28)
 	light.light_energy = 1.6
 	light.omni_range = 8.0
-	light.position.y = 2.5
+	light.position.y = 2.25  # scale-eng 2026-05-05
 	light.shadow_enabled = false
 	lan.add_child(light)
 
@@ -2057,12 +2064,17 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 	# A cluster of 3–6 elongated emissive shards radiating from a base point.
 	var cluster := Node3D.new()
 	cluster.position = pos
+	# scale-eng 2026-05-05: enable runtime cap-sweep (canon crystal cluster cap 4.0m).
+	cluster.add_to_group("crystals")
 	parent.add_child(cluster)
 	var shard_count: int = rng.randi_range(3, 6)
 	for i in shard_count:
 		var shard := MeshInstance3D.new()
 		var pm := PrismMesh.new()
-		pm.size = Vector3(0.45 * base_scale, rng.randf_range(1.2, 2.6) * base_scale, 0.45 * base_scale)
+		# scale-eng 2026-05-05: canon crystal cluster cap 4.0m. Boss-room
+		# base_scale=2.2 used to allow shard.y up to 2.6*2.2 = 5.72m (43% over cap).
+		var shard_y: float = clamp(rng.randf_range(1.2, 2.6) * base_scale, 0.5, 4.0)
+		pm.size = Vector3(0.45 * base_scale, shard_y, 0.45 * base_scale)
 		shard.mesh = pm
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = color
@@ -2092,15 +2104,19 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: bool = false) -> void:
 	var sm := MeshInstance3D.new()
 	var pm := PrismMesh.new()
-	pm.size = Vector3(0.7, height, 0.7)
+	# scale-eng 2026-05-05: clamp to canon stalagmite cap 6m at spawn so a
+	# rogue caller can't pass height=20 without runtime-sweep correction.
+	pm.size = Vector3(0.7, clamp(height, 0.5, 6.0), 0.7)
 	sm.mesh = pm
 	sm.material_override = MAT_ROCK(1.0)
 	sm.position = pos
+	sm.add_to_group("stalagmites")  # scale-eng 2026-05-05: enable runtime sweep
+	var h_eff: float = pm.size.y  # scale-eng 2026-05-05: use clamped height for offset
 	if point_down:
-		sm.position.y = pos.y - height * 0.5
+		sm.position.y = pos.y - h_eff * 0.5
 		sm.rotation.x = PI
 	else:
-		sm.position.y = pos.y + height * 0.5
+		sm.position.y = pos.y + h_eff * 0.5
 	sm.rotation.y = randf() * TAU
 	parent.add_child(sm)
 
@@ -2368,6 +2384,33 @@ func _global_scale_sweep() -> void:
 			if not body.is_in_group("buildings"):
 				continue
 			_clamp_max_height(body, 7.0)
+		# scale-eng 2026-05-05: mountain meshes spawn as bare MeshInstance3D
+		# (not StaticBody3D), so the static-body branch above with the "mountain"
+		# group check never fires. Walk Node3D too. Canon mountain cap 80m.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("mountain"):
+				continue
+			_clamp_max_height(body, 80.0)
+		# scale-eng 2026-05-05: decorative crystal clusters — canon cap 4.0m.
+		# _make_crystal_cluster now joins "crystals" so the cluster wrapper
+		# stays under cap even if a future caller passes a wild base_scale.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("crystals"):
+				continue
+			_clamp_max_height(body, 4.0)
+		# scale-eng 2026-05-05: stalagmites — canon cap 6.0m (treat as scenery
+		# pillar; spawned by _make_stalagmite which now joins "stalagmites").
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("stalagmites"):
+				continue
+			_clamp_max_height(body, 6.0)
+		# scale-eng 2026-05-05: lanterns — canon cap 2.5m. _make_lantern joins
+		# "lanterns" already; the source fix in commit 9b7d288 made these in-spec
+		# at spawn, but a runtime sweep is cheap insurance.
+		for body in root.find_children("*", "Node3D", true):
+			if not body.is_in_group("lanterns"):
+				continue
+			_clamp_max_height(body, 2.5)
 
 
 # Helper used by the sweep — uniformly shrink a Node3D so its world-space
@@ -2686,6 +2729,9 @@ const SIZE_STANDARDS := {
 	"pets":    [0.70, 0.20],
 	"enemies": [1.40, 0.20],   # default to small-enemy band
 	"bosses":  [3.20, 0.20],
+	# scale-eng 2026-05-05: wolf canon target 1.0m cap 1.4m floor 0.7m. Was
+	# matching "enemies" target 1.40 ±0.20 → band [1.12, 1.68], over canon cap.
+	"wolves":  [1.00, 0.30],
 }
 
 func _expected_height_for(body: Node) -> float:
@@ -2694,6 +2740,7 @@ func _expected_height_for(body: Node) -> float:
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][0]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][0]
 	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][0]
+	if body.is_in_group("wolves"):  return SIZE_STANDARDS["wolves"][0]
 	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][0]
 	return 1.8
 
@@ -2702,6 +2749,7 @@ func _tolerance_for(body: Node) -> float:
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][1]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][1]
 	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][1]
+	if body.is_in_group("wolves"):  return SIZE_STANDARDS["wolves"][1]
 	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][1]
 	return 0.15
 

@@ -282,12 +282,17 @@ func _spawn_model() -> void:
 		"goblin":
 			_model.scale = Vector3(0.85, 0.85, 0.85)
 		"wolf":
-			# Real wolf.glb stands on its own four legs (Y-up). _global_scale_sweep
-			# (SIZE_STANDARDS small-enemy target 1.40m ±20%) handles final size.
-			# NO unconditional rotation.x = -PI/2 — that legacy hack would flip a
-			# real quadruped onto its back. Apply it ONLY when the kind has fallen
-			# back to a humanoid placeholder (worker_girl) so the silhouette at
-			# least suggests a four-legged shape.
+			# Real wolf.glb stands on its own four legs (Y-up). NO unconditional
+			# rotation.x = -PI/2 — that legacy hack would flip a real quadruped
+			# onto its back. Apply it ONLY when the kind has fallen back to a
+			# humanoid placeholder (worker_girl) so the silhouette at least
+			# suggests a four-legged shape.
+			# scale-eng 2026-05-05: wolves now join "wolves" group. The global
+			# sweep targets that group at 1.0m ±30% (canon: target 1.0 cap 1.4
+			# floor 0.7); previously they matched "enemies" target 1.40 ±20%
+			# → band [1.12, 1.68], over the 1.4m wolf cap. Body is added below to
+			# both groups so the sweep finds the correct target.
+			add_to_group("wolves")
 			_model.scale = Vector3(0.95, 0.95, 0.95)
 			if not uses_real_model:
 				_model.rotation.x = -PI / 2  # placeholder-only quadruped hack
