@@ -1090,10 +1090,34 @@ func _make_lantern(pos: Vector3) -> void:
 # ============================================================================
 # Banner flags
 # ============================================================================
+# THEME §12 — banners must FLAP. Each banner is built with a pivot Node3D
+# at the top of the pole; the cloth hangs to one side of that pivot, so a
+# small Y-rotation on the pivot reads as wind catching the banner. The pivot
+# is added to the "banner_cloths" group so `_process` can sway it.
+const BANNER_COLORS: Array[Color] = [
+	Color(0.78, 0.22, 0.18),  # Eldoria crimson — see THEME §3
+	Color(0.62, 0.18, 0.14),  # deeper wine
+	Color(0.55, 0.34, 0.12),  # bronze-tabard
+]
+
 func _build_banners() -> void:
-	for x in [-14, 14]:
+	# THEME §8 — Briarwood banner poles ring the central plaza. Doubled count
+	# from 2 → 6 so the village reads as inhabited rather than half-built.
+	var spots: Array = [
+		Vector3(-14, 0,   0),
+		Vector3( 14, 0,   0),
+		Vector3(  0, 0,  14),
+		Vector3(  0, 0, -14),
+		Vector3( 10, 0,  10),
+		Vector3(-10, 0, -10),
+	]
+	var rng := RandomNumberGenerator.new(); rng.randomize()
+	for i in spots.size():
+		var p: Vector3 = spots[i]
 		var pole := Node3D.new()
-		pole.position = Vector3(x, 0, 0)
+		pole.position = p
+		pole.rotation.y = rng.randf() * TAU  # random facing so flap directions differ
+		pole.add_to_group("banner_poles")
 		add_child(pole)
 		var post := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
@@ -1102,18 +1126,35 @@ func _build_banners() -> void:
 		post.material_override = MAT_DARK_WOOD(0.3)
 		post.position.y = 2.25
 		pole.add_child(post)
-		# Banner cloth
+		# Crossbar at top — gives the banner something to hang from visually
+		var bar := MeshInstance3D.new()
+		var bcm := CylinderMesh.new()
+		bcm.top_radius = 0.04; bcm.bottom_radius = 0.04; bcm.height = 1.6
+		bar.mesh = bcm
+		bar.material_override = MAT_DARK_WOOD(0.3)
+		bar.rotation.z = PI * 0.5
+		bar.position = Vector3(0.7, 4.35, 0)
+		pole.add_child(bar)
+		# Pivot Node3D at top of pole — rotated by `_process` to flap the cloth.
+		# Cloth is offset along +X from pivot, so Y-rotation sweeps it through
+		# the wind and Z-rotation gives a subtle billow.
+		var pivot := Node3D.new()
+		pivot.position = Vector3(0, 4.35, 0)
+		pivot.add_to_group("banner_cloths")
+		pivot.set_meta("phase", rng.randf() * TAU)
+		pole.add_child(pivot)
 		var ban_mat := StandardMaterial3D.new()
-		ban_mat.albedo_color = Color(0.78, 0.22, 0.18)
-		ban_mat.roughness = 0.8
+		ban_mat.albedo_color = BANNER_COLORS[i % BANNER_COLORS.size()]
+		ban_mat.roughness = 0.85
 		ban_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 		var ban := MeshInstance3D.new()
 		var qm := QuadMesh.new()
 		qm.size = Vector2(1.4, 0.85)
 		ban.mesh = qm
 		ban.material_override = ban_mat
-		ban.position = Vector3(0.7, 3.9, 0)
-		pole.add_child(ban)
+		# Cloth pivots from its TOP edge so it hangs naturally
+		ban.position = Vector3(0.7, -0.45, 0)
+		pivot.add_child(ban)
 
 # ============================================================================
 # Stone well
@@ -1145,6 +1186,10 @@ func _build_well() -> void:
 	water.mesh = pm
 	water.material_override = water_mat
 	water.position.y = 0.85
+	water.add_to_group("water_planes")  # THEME §12 — animated by _process
+	water.set_meta("rest_y", 0.85)
+	water.set_meta("ripple_amp", 0.018)
+	water.set_meta("ripple_freq", 1.4)
 	well.add_child(water)
 	# Posts + crossbeam (the rope and bucket frame)
 	for dx in [-1.0, 1.0]:
@@ -1183,6 +1228,10 @@ func _build_pond() -> void:
 	w.mesh = pm
 	w.material_override = water_mat
 	w.position.y = 0.04
+	w.add_to_group("water_planes")  # THEME §12 — animated by _process
+	w.set_meta("rest_y", 0.04)
+	w.set_meta("ripple_amp", 0.035)
+	w.set_meta("ripple_freq", 0.9)
 	pond.add_child(w)
 	# Reeds along edge
 	var rng := RandomNumberGenerator.new(); rng.randomize()
@@ -2076,6 +2125,28 @@ func _process(delta: float) -> void:
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
 		if fl:
 			fl.light_energy = 2.4 + sin(_t * 17.0) * 0.4 + sin(_t * 31.0) * 0.25
+	# THEME §12 — banner flap. Each banner pivot sways around Y (wind passing
+	# through) plus a small Z-roll for "billow". Per-banner phase keeps every
+	# banner from moving in unison.
+	for pivot in get_tree().get_nodes_in_group("banner_cloths"):
+		var phase: float = float(pivot.get_meta("phase", 0.0))
+		var wind: float = sin(_t * 1.6 + phase) * 0.25 + sin(_t * 0.7 + phase * 1.7) * 0.10
+		var billow: float = sin(_t * 2.3 + phase) * 0.08
+		pivot.rotation.y = wind
+		pivot.rotation.z = billow
+	# THEME §12 — water ripple. Subtle Y-bob on each water plane plus a slow
+	# emission breathe so the surface reads as catching changing light.
+	for wp in get_tree().get_nodes_in_group("water_planes"):
+		var mi: MeshInstance3D = wp as MeshInstance3D
+		if mi == null:
+			continue
+		var rest_y: float = float(mi.get_meta("rest_y", mi.position.y))
+		var amp: float = float(mi.get_meta("ripple_amp", 0.02))
+		var freq: float = float(mi.get_meta("ripple_freq", 1.0))
+		mi.position.y = rest_y + sin(_t * freq + mi.position.x * 0.7 + mi.position.z * 0.5) * amp
+		var mat: StandardMaterial3D = mi.material_override as StandardMaterial3D
+		if mat:
+			mat.emission_energy_multiplier = 0.18 + sin(_t * 1.8 + mi.position.x) * 0.06
 
 
 # ============================================================================
