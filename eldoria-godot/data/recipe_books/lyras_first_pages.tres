@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe Book — "Lyra's First Pages"
+; A pressed-leaf folio Lyra hands the player after the Whisperwood apology quest.
+; In-world look: birch-paper booklet, marshmint-dyed cord, three pages.
+; Discoverable: dropped in the herb-shed inventory on first delivered wolf-pelt.
+
+[resource]
+resource_name = "Lyra's First Pages"
+metadata/schema = "recipe_books/_schema_v1"
+metadata/id = "lyras_first_pages"
+metadata/name = "Lyra's First Pages"
+metadata/teaches_recipes = ["herbshed_mp_draught"]
+metadata/discover_method = "given_by_npc"
+metadata/discover_npc = "herbalist_lyra"
+metadata/discover_trigger = "deliver_first_wolf_pelt"
+metadata/visual_palette = "parchment_with_marshmint_cord"
+metadata/lore_excerpt = "Three pages, pressed flat under the same board the pelts cure on. The first page is just a sprig of marshmint."

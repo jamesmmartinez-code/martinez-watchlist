@@ -1,0 +1,25 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Hammer Iron Buckle
+; A small honest recipe so beginners can practice the forge without burning a sword.
+; Output is a crafting component used by Roan's tier-2 leatherwork (future stable_bench station).
+; # NEEDS:item:iron_ingot, charcoal, iron_buckle
+
+[resource]
+resource_name = "Hammer Iron Buckle"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "forge_iron_buckle"
+metadata/name = "Hammer Iron Buckle"
+metadata/station_required = "edda_forge"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "iron_ingot", "qty": 1},
+    {"item_id": "charcoal", "qty": 1}
+]
+metadata/output = {"item_id": "iron_buckle", "qty": 4}
+metadata/time_seconds = 5
+metadata/fuel_cost = 1
+metadata/unlock_condition = "auto"
+metadata/failure_behavior = "none"
+metadata/category = "tool_metal"
+metadata/teach_voice = "Edda: 'Buckles. Best for the first hundred swings. Get the rhythm before the edge.'"
