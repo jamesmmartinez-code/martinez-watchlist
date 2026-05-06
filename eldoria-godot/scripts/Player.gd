@@ -1379,11 +1379,21 @@ func save_game() -> bool:
 	if not f:
 		push_warning("[Save] could not open " + SAVE_PATH + " for write")
 		return false
-	f.store_string(JSON.stringify(_gather_save_data(), "	"))
+	var data := _gather_save_data()
+	data["ts"] = int(Time.get_unix_time_from_system())
+	f.store_string(JSON.stringify(data, "	"))
 	f.close()
+	# KV cloud sync 2026-05-05: mirror to Cloudflare Worker so saves follow
+	# the kid across devices. Fire-and-forget — local is source of truth.
+	if OS.has_feature("web"):
+		_kv_push_save(data)
 	return true
 
 func load_game() -> bool:
+	# KV cloud sync 2026-05-05: try cloud first if web build (kid may be on a
+	# device where they've never played before). Falls through to local on miss.
+	if OS.has_feature("web"):
+		_kv_pull_save()  # async; non-blocking. Fills in if newer than local.
 	if not FileAccess.file_exists(SAVE_PATH):
 		return false  # first run, no save yet
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -1397,6 +1407,56 @@ func load_game() -> bool:
 		return false
 	_apply_save_data(data)
 	return true
+
+# Cloudflare KV save sync — uses the per-kid char_choice as user key so
+# Alden's save and Owen's save never overwrite each other. Fire-and-forget.
+const KV_BASE := "https://eldoria-api.james-m-martinez.workers.dev"
+
+func _kv_user_key() -> String:
+	var id: String = "alden"
+	if Engine.has_meta("char_choice"):
+		id = str(Engine.get_meta("char_choice", "alden"))
+	return id.to_lower().strip_edges()
+
+func _kv_push_save(data: Dictionary) -> void:
+	var req := HTTPRequest.new()
+	add_child(req)
+	req.timeout = 5.0
+	var body := JSON.stringify({
+		"user": _kv_user_key(),
+		"slot": "main",
+		"data": data,
+	})
+	req.request(KV_BASE + "/api/save", ["Content-Type: application/json"],
+		HTTPClient.METHOD_POST, body)
+	# auto-cleanup after request finishes (fire-and-forget)
+	req.request_completed.connect(func(_r,_c,_h,_b): req.queue_free())
+
+func _kv_pull_save() -> void:
+	var req := HTTPRequest.new()
+	add_child(req)
+	req.timeout = 5.0
+	req.request_completed.connect(func(_result, code, _headers, body):
+		if code == 200:
+			var parsed = JSON.parse_string(body.get_string_from_utf8())
+			if parsed is Dictionary and parsed.get("ok", false) and parsed.has("data"):
+				var cloud_data = parsed["data"]
+				if cloud_data is Dictionary:
+					# Only adopt cloud save if there's no local OR cloud is newer
+					var adopt := true
+					if FileAccess.file_exists(SAVE_PATH):
+						var local_t := int(FileAccess.get_modified_time(SAVE_PATH))
+						var cloud_t := int(cloud_data.get("ts", 0))
+						adopt = cloud_t > local_t
+					if adopt:
+						var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+						if f:
+							f.store_string(JSON.stringify(cloud_data, "\t"))
+							f.close()
+							_apply_save_data(cloud_data)
+		req.queue_free())
+	var url := KV_BASE + "/api/load?user=" + _kv_user_key().uri_encode() + "&slot=main"
+	req.request(url)
 
 # Title setter — called by World._apply_title_to_player when an
 # achievement unlocks a higher-priority title. Empty string hides.
