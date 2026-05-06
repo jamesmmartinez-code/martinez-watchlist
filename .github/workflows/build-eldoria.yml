@@ -132,3 +132,38 @@ jobs:
           done
           echo "❌ push failed after 5 retries"
           exit 1
+
+      - name: Push /eldoria/ to Cloudflare R2 (sync the live game URL)
+        if: always()
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "⚠️  CF_TOKEN or CF_ACCOUNT_ID secret not set — skipping R2 sync"
+            exit 0
+          fi
+          BUCKET="eldoria-game"
+          API="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/r2/buckets/$BUCKET/objects"
+          mime_for() {
+            case "$1" in
+              *.html) echo "text/html; charset=utf-8" ;;
+              *.js)   echo "application/javascript" ;;
+              *.wasm) echo "application/wasm" ;;
+              *.png)  echo "image/png" ;;
+              *.json) echo "application/json" ;;
+              *)      echo "application/octet-stream" ;;
+            esac
+          }
+          OK=0; FAIL=0
+          for f in eldoria/*; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            mime=$(mime_for "$f")
+            CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
+              -X PUT -H "Authorization: Bearer $CF_TOKEN" \
+              -H "Content-Type: $mime" --data-binary "@$f" \
+              "$API/$name")
+            if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ $name"; else FAIL=$((FAIL+1)); echo "  ❌ $name → HTTP $CODE"; fi
+          done
+          echo "🚢 R2 sync: $OK ok, $FAIL failed"
