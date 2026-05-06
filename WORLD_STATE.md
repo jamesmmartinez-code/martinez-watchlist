@@ -3054,3 +3054,254 @@ permission is a kindness ("then, only then, may you sleep").
 **Branch:** `auto/lore`. **Single artifact this run:** yes. **No
 overwrites:** verified — only this WORLD_STATE.md append and the new
 codex file `eldoria-godot/data/codex/longnight_vigil.md`.
+
+
+---
+
+## Lore Keeper run — 2026-05-06 — bandits faction shipped
+
+**Artifact:** `eldoria-godot/lore/factions/bandits.md` (priority 6 — faction
+politics, the **second** faction-politics canon of Eldoria-realm, sister to
+`three_crowns.md` and `wardens_of_the_mark.md`).
+
+**Why now:** Run-22 Builder shipped the bandit camp prop, the
+`_bandit_camp_size` inverted-pressure helper, and the south-road `Vector3(2,
+0, -55)` placement. Run-23 Builder shipped the bandit faction, the
+`bandit_road_for_roan` quest, the `bandit_captain` mini-boss, and named the
+captain *"a captain in a sodden cloak"* in `quest_text/bandit_road_for_roan.md`.
+Three Lore-Keeper hooks queued from run-23 onward — *(1) Roan's `road_warden`
+warm_lines, (2) the captain's name-beat, (3) the TOLL rune decal canon* — all
+called for a single faction document. This run ships that document.
+
+**Canonical commitments (load-bearing, downstream agents may build on):**
+
+- **Bandits are *company-broken* Halevant pikemen, not Iron Crown heralds.**
+  The Listening's clock (`three_crowns.md`) is **NOT** advanced by the
+  bandit faction. They are off the slate. Future writers MUST NOT use the
+  bandit faction to herald the magistrate-arrives quest before the
+  Listening-month.
+- **The captain is canonically Vrith of the Sodden Cloak,** former
+  pike-corporal of *Captain-of-Pikes Hervel's* Reap-line company,
+  fifty-one. The name fulfills the run-23 Hook B "Bandit Captain
+  name-beat" pickup. Vrith is **reserved for the present camp**
+  (`Vector3(2, 0, -55)`); future camps pull from a four-name canonical
+  table in order of severity (Vrith → Hesto → Olen → Maerc).
+- **The Reap-line mutiny of three Foxthaws ago** is the canonical origin
+  of the present *company-broken* drift north. Halevant Lambmoon-pay was
+  twice given in clipped silver; eleven men walked north on the rumour
+  of the unbought valley; six remain in the camp. The five others
+  scattered along the Reap-line; **two now walk through Briarwood paying
+  honest copper at Bram's** and the village does not know they were
+  pikemen. Future writers MUST NOT have Bram, Maeve, or Roan recognize
+  them.
+- **The toll-mark is chalk.** Horizontal stroke with a single vertical
+  bar struck through it, on the leaning plank south of the village.
+  Chalked, not burned, not carved, not painted. Two decal-states queued
+  for the rune-texture pipeline: *toll_mark_chalk* (default, half-faded
+  third re-chalking) and *toll_mark_faded* (post-`road_warden`-flag,
+  two Reapmoons of pressure below 0.20). Polisher run.
+- **Roan canonically leaves the leaning plank standing** after the
+  closing. *"A village should be able to look at what it almost lost."*
+  The plank becomes a village memory-prop. Future Polisher runs may
+  light it; future writers MUST NOT remove it.
+- **The bandits do not have allies.** Not the goblins. Not the
+  Stag-Court. Not the dire-wolves. Not the smoke-cities. The dire-wolves'
+  *contempt* for the toll-mark is the canonical reason a bandit camp
+  cannot last beyond a single Reapmoon-into-Wolfwake season; wolves do
+  not read chalk.
+- **The bandits do not enslave, do not ambush, and do not surrender.**
+  Vrith *stands the line.* No deathbed speech, no conversion, no
+  redemption arc, no ghost-of-Vrith codex. Future writers MUST NOT add
+  any of the four. *The dignity is the standing.*
+- **The captain's pommel-mark and seal** are the canonical drop. Roan
+  takes the pommel-mark on the stable rail; Maeve takes the seal in the
+  small iron box on her hearth-shelf. Maeve does **not** break the
+  seal. The two pieces of Halevant steel sit together. This wires
+  cleanly into the queued `captain_seal_for_maeve` chain.
+- **The clipped silver under the cold ash** is canonical. Three
+  Foxthaws old, wrong-weight Halevant Lambmoon-pay, wrapped in oilcloth
+  six inches under the bandit camp's cold-ash ring. Roan finds it. Roan
+  re-buries it under a flat covering stone. *Kerrithen* in the
+  *covering* sense — laid down so the land holds it, **not** so the
+  land remembers it. Mara would read the coins; Roan does not show her.
+  Future writers MUST NOT have Mara learn of the buried strip; she
+  may, *in a single optional warmed-dialogue beat* gated on the
+  player presenting her a single clipped silver coin (a withheld
+  drop), receive *one* canonical line and set the coin in her stall's
+  bottom drawer. The line and the drawer are both withheld pending
+  a future Mara-arc run.
+
+**New vocabulary (Common dialect only — no new languages):**
+
+- **"By the slate."** Halevant pikeman affirmation. Half-oath,
+  half-shrug. Vrith says it twice in the canonical encounter beat.
+  Vrith-class only; a non-pikeman saying it is canonically wrong.
+- **"Stand the line."** Halevant pikeman address to one's own company
+  on the eve of a hard count. Vrith says it once when the player
+  closes the camp; he is addressing himself, not his men. Future
+  writers MUST NOT have a Briarwood NPC say *stand the line.* Roan,
+  who has heard it across nine years of courier-strings, has never
+  said it aloud.
+- **"The toll-mark."** The bandits' chalked sigil. A *poor man's
+  slate-mark.* Bandit-invention; no magistrate would recognize it.
+
+**Old Faerie / Stone-Tongue / Goblin Cant — none extended this run.**
+The bandits are Common-tongue mortals with no fey or stone vocabulary.
+Per the running tally:
+- Old Faerie holds at fifteen items: *thirre, ai-velin, kerrithen*
+  (`world.md`); *vael-tor, thressa-mai* (`elder_maeve.md`); *haethe,
+  unnen* (`smith_edda.md`); *thalen-ai* (`herbalist_lyra.md`);
+  *vael-i-thirren, ai-mhorren, velhain-tor* (`stag_courts_courtesy.md`);
+  *mhordin* (`quest_text/wolf_heart_for_bram.md`); *haelen, mor-vaere,
+  thrennen* (`items_flavor.json`); *mhirren* (`pale_wyrm_beneath.md`);
+  *thithrae* (`pond_and_lanterns.md`); *thrian-mor, aen-thirre,
+  aen-velin-corr* (`three_crowns.md`); *drevenn-i-haern*
+  (`steppe_riders_refusal.md`).
+- Stone-Tongue holds at three: *korthain, thrunn, korr*
+  (`steppe_riders_refusal.md`).
+- Goblin Cant remains uncoined.
+- New canonical Common dialect terms: *by the slate, stand the line,
+  the toll-mark.*
+
+**Builder hooks proposed (lore-only this run, not wired):**
+
+1. **Roan's `road_warden` warm_lines (4 lines)** — fully authored in
+   the artifact's "Hooks queued for future runs" section. LIFO append
+   on `road_warden` to outrank `first_bounty_done` per the run-23
+   tier-2 resolver behaviour. Pure-data add to `WorldBuilder.NPCS`.
+   No new schema.
+2. **The bandit captain name dict** — pull from {Vrith, Hesto, Olen,
+   Maerc} in order of camp severity for `WorldBuilder._build_enemies`'
+   per-spawn name dict. Vrith reserved for present camp at `Vector3(2,
+   0, -55)`. Mirrors *"Pippin"-the-horse* per-spawn pattern.
+3. **The TOLL rune decal** — chalk-white horizontal stroke with a
+   vertical bar struck through it, on the leaning plank in
+   `_make_bandit_camp`. Two states (`toll_mark_chalk` default,
+   `toll_mark_faded` post-`road_warden`). Polisher run; full
+   ship-spec in artifact §"The toll-mark" → "Polisher / Builder
+   hook — the decal."
+4. **A Bram one-line on the ewe-back-from-the-south Reapmoon** — for
+   any future Bram seasonal-flavor tier on the Reapmoon-after-
+   `road_warden` flag. Ledger-anchored to `pond_and_lanterns.md`'s
+   grandmother's-ledger continuity. Pure data.
+5. **A Lyra warmed-dialogue beat on the buried silver** — gated on
+   `road_warden` flag + Lyra's full-warm tier. Surfaces *kerrithen*
+   in its *covering* sense (canonical extension; not a new word).
+   Pure data.
+6. **Maeve's `roan_bandit_road_clear` cross-NPC mention** — *(carried
+   forward from the run-23 Hook A on Maeve's open `warm_world_flag`
+   slot.)* Joins `mara_bounty_paid`, `lyra_potion_brew`,
+   `bram_nights_quiet`. Lore-Keeper authoring the four new lines is
+   a future-run pickup; this run does **not** ship them, but the
+   bandits-faction canon now provides the reading-frame Maeve speaks
+   into. Pure data.
+
+**Cross-anchors (no edits required):**
+
+- `lore/world.md` — Three Crowns, Calendar (Reapmoon, Lambmoon,
+  Foxthaw, Wolfwake), Old Faerie. No overwrite. The bandits are
+  canonically *outside* the Wild Pantheon's reach (no faith) and
+  *outside* the Three Crowns' coordination (off the Iron Crown's
+  slate, not measured by the Antler Crown, not *kerritha-ed* by the
+  Stone Crown). The world.md frame holds.
+- `lore/factions/three_crowns.md` — Halevant-on-the-Reap, the
+  Listening, *thrian-mor,* *aen-velin-corr.* No overwrite. The
+  bandits are the canonical first **mortal** test of the held quiet
+  the Three Crowns frame. The Listening's clock is **NOT** advanced.
+- `lore/factions/wardens_of_the_mark.md` — the four unwritten
+  oaths. The bandit clearance is, in the Wardens' terms, a Warden
+  act; the village does not say so. Future writers may, when the
+  Wardens' faction matures, make the lineage explicit *only* in
+  retrospective codex pages.
+- `lore/npcs/stablemaster_roan.md` — Roan's whole bible holds
+  verbatim. The captain in a sodden cloak is now canonically *Vrith,*
+  but Roan does not name him aloud, ever. The pommel-mark on the
+  stable rail next to the wolf-fangs is canonical; the *quiet shelf*
+  of the stable's tack-room (chalk-stone, unused cudgel, things-the-
+  man-keeps-but-does-not-use) is **new prop-only canon** seeded by
+  this run. Withholding ledger preserved.
+- `lore/npcs/elder_maeve.md` — Maeve's small iron box on the
+  hearth-shelf now holds Vrith's wax-press alongside Roan's
+  pommel-mark. Maeve does **not** break the seal; she does **not**
+  comment on it. The withholding holds. The queued
+  `captain_seal_for_maeve` chain has its narrative anchor in this
+  document.
+- `lore/npcs/herbalist_lyra.md` — *unnen* extended in its
+  *unnamed-and-unthanked round of small kindness* sense; the
+  re-buried clipped silver and the returned ewe are both *unnen*
+  acts. Lyra learns of the silver only in a future warmed-dialogue
+  beat, across a salve-jar. The slow horse, the salve, and the
+  empty jar at the meadow-edge stone all hold verbatim; no new
+  Lyra canon this run, only context.
+- `lore/npcs/mara_merchant.md` — Mara's Halevant-route history
+  (`three_crowns.md`) is the canonical reason she would *immediately*
+  read the clipped silver. She does not see the buried strip. The
+  withheld single-clipped-coin warmed-dialogue beat is queued for
+  a future Mara-arc Lorekeeper run.
+- `lore/npcs/smith_edda.md` — Edda's neighbour's flock, the black-
+  faced ewe, and the half-pound of cheese for Roan's saddle are all
+  pre-existing canon; this run uses them, does not extend them. No
+  new Edda canon.
+- `lore/npcs/innkeeper_bram.md` — the grandmother's ledger now has
+  one canonical Reapmoon entry hook (the south-road's first-stolen
+  ewe back) for a future Builder seasonal-flavor tier. No new Bram
+  canon this run; the ledger is the relic.
+- `data/codex/stag_courts_courtesy.md` — *aen-thirre* / *ai-mhorren*
+  rules hold; the bandits cannot be measured by the Court (no Old
+  Faerie, no forest-line presence). Confirmed; no overwrite.
+- `data/codex/steppe_riders_refusal.md` — *korr* / *kerrithen* used
+  in their established senses; *thrunn* explicitly NOT extended to
+  Roan. Confirmed; no overwrite.
+- `data/codex/pond_and_lanterns.md` — the grandmother's ledger
+  continuity preserved; one canonical new entry-hook seeded but
+  *not* surfaced.
+- `data/codex/pale_wyrm_beneath.md` — *mhirren* untouched; no codex
+  extension this run.
+- `quest_text/bandit_road_for_roan.md` — every line of the existing
+  quest text holds verbatim. The "captain in a sodden cloak" is now
+  canonically *Vrith;* Roan does not name him in dialogue. The
+  pommel-mark and seal are now load-bearing items with full canon.
+  Reapmoon completion-line canon preserved.
+- `quest_text/wolf_fang_for_roan.md` — chain-link integrity
+  preserved (`wolf_fang_for_roan` → `bandit_road_for_roan` →
+  `captain_seal_for_maeve`). The `first_bounty_done` flag remains
+  the canonical promotion key from faction-tier-only to fully-warmed
+  Roan; `road_warden` LIFO-appends on top.
+
+**Withholding (held back deliberately):**
+
+- The Halevant magistrate's clerk's name (per `three_crowns.md`).
+- *Captain-of-Pikes Hervel*'s present location and present voice
+  (queued for a future Hervel-side codex page; Halevant-route map
+  not yet shipped).
+- *How* Vrith came by Hervel's wax-press. Most-canonical possibility
+  (Hervel handed it over in disgust on the Reapmoon mis-pay night)
+  is **available** but not committed.
+- *Vrith's first name* — *Vrith* may be a given name or a
+  pikeman's third-Lambmoon working-name. The sodden cloak is
+  the man.
+- The five other *company-broken* men's stories (two now walk
+  through Briarwood as unbought-road citizens). Withheld.
+- The chalk-stone in the bandits' pack — pond-bed limestone,
+  Halevant-milled. Roan re-pockets it, sets it on the *quiet shelf*
+  in the tack-room beside the unused cudgel. Prop-only;
+  not a quest item.
+- The stolen ewe's name. *Unnen.*
+- The third-camp *Maerc* shipment — withheld pending the
+  bandit-pressure track maturing to multi-camp scale.
+- The Foxthaw withholding *thrunn* in Roan's bones. He does not
+  say it; he does not write it. The withholding is the dignity.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark.
+The bandits are framed as *company-broken* mortals with a small wrong
+idea, not as monstrous adversaries. Vrith's standing-the-line is
+courageous-tragic, not heroic; the closing is a count, not a slaughter.
+The cleared camp leaves no captives, no detailed gore, and no
+deathbed speeches. The *clearing* verb is preserved over *slaying.*
+The plank is the kindness. The withholdings are the dignity.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes — only the new
+`eldoria-godot/lore/factions/bandits.md` file plus this WORLD_STATE.md
+append. **No overwrites:** verified — all referenced existing files hold
+verbatim; only this WORLD_STATE.md append and the new faction file are
+written.
