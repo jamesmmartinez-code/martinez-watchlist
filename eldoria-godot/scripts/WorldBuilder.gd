@@ -515,35 +515,49 @@ const BUILDINGS = [
 func _ready() -> void:
 	if _buildings_built: return
 	_buildings_built = true
+	print("[WB] _ready START")
 	_populate_npc_models()
-	_build_ground_overlay()
-	_build_path_network()
-	_build_village()
-	_scatter_trees(140)
-	_scatter_rocks(36)
-	# THEME §11, §12 — Whisperwood undergrowth + village dressing.
-	_scatter_ferns(48)
-	_scatter_mushrooms(24)
-	_build_village_barrels()
-	_build_mountain_ring()
-	_build_market_stalls()
-	_build_windmill()
-	_build_lanterns()
-	_build_banners()
-	_build_npcs()
-	_build_grass_tufts(220)
-	_build_well()
-	_build_pond()
-	_build_firefly_particles()
-	_build_falling_leaves()
-	_build_smoke_chimneys()
-	_build_campfire()
-	_build_enemies()
-	_build_pet()
-	_build_stable_horse()
-	_build_loot_chests()
+	print("[WB] NPC_MODELS=%d" % NPC_MODELS.size())
+	# Bisect: each step prints before/after so DevTools console reveals which call halts.
+	_safe_call("_build_ground_overlay")
+	_safe_call("_build_path_network")
+	_safe_call("_build_village")
+	_safe_call("_scatter_trees", [140])
+	_safe_call("_scatter_rocks", [36])
+	_safe_call("_scatter_ferns", [48])
+	_safe_call("_scatter_mushrooms", [24])
+	_safe_call("_build_village_barrels")
+	_safe_call("_build_mountain_ring")
+	_safe_call("_build_market_stalls")
+	_safe_call("_build_windmill")
+	_safe_call("_build_lanterns")
+	_safe_call("_build_banners")
+	_safe_call("_build_npcs")
+	_safe_call("_build_grass_tufts", [220])
+	_safe_call("_build_well")
+	_safe_call("_build_pond")
+	_safe_call("_build_firefly_particles")
+	_safe_call("_build_falling_leaves")
+	_safe_call("_build_smoke_chimneys")
+	_safe_call("_build_campfire")
+	_safe_call("_build_enemies")
+	_safe_call("_build_pet")
+	_safe_call("_build_stable_horse")
+	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
-	_build_crystal_caves(Vector3(-50, 0, -40))
+	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
+	print("[WB] _ready DONE — children=%d" % get_child_count())
+
+# _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
+# the script (runtime error), we'll see [WB] -> X without a matching [WB] OK X.
+# Godot's print() goes to stdout which the Web export pipes to console.log.
+func _safe_call(method_name: String, args: Array = []) -> void:
+	if not has_method(method_name):
+		print("[WB] MISSING method: " + method_name)
+		return
+	print("[WB] -> " + method_name)
+	callv(method_name, args)
+	print("[WB] OK  " + method_name)
 
 # ============================================================================
 # A textured ground patch is added on TOP of the existing flat ground so the
