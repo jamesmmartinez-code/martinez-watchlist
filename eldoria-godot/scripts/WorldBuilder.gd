@@ -515,9 +515,9 @@ const BUILDINGS = [
 func _ready() -> void:
 	if _buildings_built: return
 	_buildings_built = true
-	print("[WB] _ready START")
+	_dlog("_ready START")
 	_populate_npc_models()
-	print("[WB] NPC_MODELS=%d" % NPC_MODELS.size())
+	_dlog("NPC_MODELS=%d" % NPC_MODELS.size())
 	# Bisect: each step prints before/after so DevTools console reveals which call halts.
 	_safe_call("_build_ground_overlay")
 	_safe_call("_build_path_network")
@@ -546,7 +546,7 @@ func _ready() -> void:
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
-	print("[WB] _ready DONE — children=%d" % get_child_count())
+	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
 # the script (runtime error), we'll see [WB] -> X without a matching [WB] OK X.
@@ -558,14 +558,30 @@ func _safe_call(method_name: String, args: Array = []) -> void:
 	# bare ground plane with no village. Deferred calls log entry/exit
 	# from the deferred handler so the bisect output stays intact.
 	if not has_method(method_name):
-		print("[WB] MISSING method: " + method_name)
+		_dlog("MISSING " + method_name)
 		return
 	call_deferred("_safe_call_now", method_name, args)
 
 func _safe_call_now(method_name: String, args: Array) -> void:
-	print("[WB] -> " + method_name)
+	_dlog("-> " + method_name)
 	callv(method_name, args)
-	print("[WB] OK  " + method_name)
+	_dlog("OK  " + method_name)
+
+# _dlog: write to print() AND document.title AND window.WB_LOG so the
+# bisect output is reachable without DevTools (just take an OS screenshot
+# of the Chrome tab strip — the last spawn call appears in the title bar).
+var _wb_log_lines: Array[String] = []
+func _dlog(msg: String) -> void:
+	print("[WB] " + msg)
+	_wb_log_lines.append(msg)
+	if _wb_log_lines.size() > 24:
+		_wb_log_lines.pop_front()
+	if Engine.has_singleton("JavaScriptBridge"):
+		var js = Engine.get_singleton("JavaScriptBridge")
+		var joined: String = " | ".join(_wb_log_lines)
+		# Tab title shows last spawn call — visible in any browser screenshot.
+		js.eval("document.title='⚙ ' + " + JSON.stringify(joined) + ".slice(-280);")
+		js.eval("window.WB_LOG=(window.WB_LOG||[]); window.WB_LOG.push(" + JSON.stringify(msg) + ");")
 
 # ============================================================================
 # A textured ground patch is added on TOP of the existing flat ground so the
