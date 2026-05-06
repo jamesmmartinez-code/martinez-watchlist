@@ -1752,3 +1752,141 @@ resolves:
 5. **Achievements.gd predicate eval** — any future
    `[["bandits_emergent", true]]` predicate composes with the existing
    `all_world_flags` checker without code changes.
+
+
+---
+
+## captain_seal material + Maeve sequence (run 24 — Builder)
+
+### Schema
+
+| Item id        | Type       | Rarity | Value | Stack | Drops from        |
+|----------------|------------|--------|-------|-------|-------------------|
+| `captain_seal` | material   | rare   |  60   | true  | bandit_captain    |
+
+`captain_seal` is the FIRST new material since run-21 wolf_heart. The
+inventory-tooltip blue chip (rarity "rare") fires the moment it drops —
+silhouette beat distinct from the bandit pocket-lint floor
+(cloth/leather/rusty_sword) and the captain's mid-tier weapon roll
+(steel_blade/chainmail). Value 60 sits cleanly between wolf_heart (32)
+and warlord_horn (250) on the rarity ladder.
+
+### Drop weight rebalance — `bandit_captain` (Items.gd)
+
+| id             | run-23 weight | run-24 weight | delta |
+|----------------|---------------|---------------|-------|
+| steel_blade    | 24            | 24            |   —   |
+| chainmail      | 18            | 18            |   —   |
+| ember_axe      | 12            |  8            |  -4   |
+| crystal_shard  | 12            | 12            |   —   |
+| hp_potion_l    | 12            | 10            |  -2   |
+| crit_amulet    |  8            |  8            |   —   |
+| leather        |  8            |  4            |  -4   |
+| shadow_dagger  |  6            |  0            |  -6   |
+| **captain_seal** | (—)         | **16**        | NEW   |
+| **Total**      | **100**       | **100**       |       |
+
+shadow_dagger removal from this single table is fail-soft — the item
+remains in the ITEMS catalog and continues to drop from the wolf and
+crystal_elemental tables (Items.gd line ~187 wolf table, line ~311
+crystal_elemental table).
+
+### Maeve's two-quest sequence (cross-NPC `prerequisite_npc_flag`)
+
+| Order | Quest id                  | Prereq                                 | World flag set         |
+|-------|---------------------------|----------------------------------------|------------------------|
+| 1st   | `whisperwood_cleansing`   | (none — fresh-save default)            | `whisperwood_safer`    |
+| 2nd   | `captain_seal_for_maeve`  | `["Stablemaster Roan", "road_warden"]` | `maeve_seal_kept`      |
+
+This is the FIRST cross-NPC application of run-23's
+`prerequisite_npc_flag` schema. Maeve's `quest` role now chains TWO
+authored quests, AND the second quest's prerequisite cites a DIFFERENT
+NPC's flag (Roan, set by `bandit_road_for_roan`). The schema's
+single-role-iteration resolver (run 23) handles this without
+modification — first-defined wins, prerequisite check is per-quest, not
+per-role.
+
+### Why no faction `pressure_delta`
+
+`captain_seal_for_maeve` deliberately omits the `consequence.faction`
+field (Step 1 of `apply_consequence` skips when faction_id is empty).
+Two reasons:
+
+1. **Bandits faction is INVERTED + DERIVED.** `update_bandit_pressure()`
+   is the SOLE writer of `factions["bandits"].pressure` (run 21,
+   Step 5a). Any pressure_delta on bandits in a quest consequence is
+   immediately overwritten on the same `apply_consequence` call. Adding
+   one would be cosmetic noise.
+2. **Goblins / wolves are unrelated to the seal.** The captain commanded
+   a hooded camp, not a goblin or wolf war-band. A pressure_delta on
+   either would mis-attribute Maeve's memorial gesture to a
+   faction-warfare beat — wrong narrative shape.
+
+The quest's consequence is therefore `npc_flag` + `world_flag` + `toast`
++ xp/gold ONLY — canonically the same shape as a memorial errand.
+Future memorial-errand quests should mirror this shape rather than
+defaulting to faction-tilt.
+
+### `seal_keeper` achievement
+
+| Predicate | `world_flag: maeve_seal_kept` |
+|-----------|-------------------------------|
+| Title     | "Seal-Keeper"                 |
+| Priority  | 47                            |
+| Slot      | between Road-Warden (45) and Trusted (50) |
+| Icon      | 🕯 (emoji fallback) / `seal_keeper.png` |
+
+Auto-equipper picks Seal-Keeper on quest completion, then yields to
+Trusted once the third villager flag flips (assuming Lyra/Roan/Mara are
+all bountied). The title's gravity sits above road_warden (a one-quest
+beat) but below trusted_three (a multi-NPC accumulation), matching the
+canonical weighting: clearing a road is one act; trusting the
+neighbors-cycle is many.
+
+### Lights up (immediate)
+
+1. **The `prerequisite_npc_flag` schema's CROSS-NPC contract.** Run 23
+   proved intra-NPC sequencing; run 24 proves cross-NPC. The schema is
+   now production-ready for any future authored quest sequence (Maeve
+   chains, faction-leader chains, ceremonial-quest chains, etc.).
+2. **Maeve's second-quest pacing.** Until run 24, Maeve issued ONE
+   quest (`whisperwood_cleansing`) and ran out. Now her role yields a
+   late-game pitch tied to road politics — closes the
+   "Maeve has nothing for me anymore" UX gap.
+3. **`maeve_seal_kept` joins the world-flag ledger** as the EIGHTH
+   quest-issued flag (after mara_bounty_paid / lyra_potion_brew /
+   whisperwood_safer / roan_bounty_paid / hala_wolf_form_done /
+   bram_nights_quiet / roan_bandit_road_clear). Future cross-NPC
+   warm_world_flag tiers can read it without code changes.
+4. **`captain_seal` appears in the inventory tooltip** with the
+   blue-chip rarity color the moment it drops — silhouette beat for
+   "you killed something *named*" distinct from the captain's mid-tier
+   weapon rolls.
+
+### Future seams (next-run hooks)
+
+- **Maeve's `seal_kept` warm_lines** (Lore Keeper). The flag is set on
+  quest completion; NPC.gd's tier-2 resolver picks the FIRST flag in
+  npc_flags. Authoring 4 `seal_kept` warm_lines AHEAD of the existing
+  `first_quest_done` block in WorldBuilder.NPCS would make them
+  outrank the older lines once both flags are set.
+- **Edda's first warm tier reads `maeve_seal_kept`** (Builder). Edda is
+  the only 0-tier NPC. `warm_world_flag: "maeve_seal_kept"` + 4
+  cross-NPC lines compounds Edda into the warm-tier club AND validates
+  the new flag's cross-NPC reach. Wardens-of-the-Mark canon: Edda (the
+  keeping-warm) sees Maeve (the keeping-vigil) keeping the seal.
+- **Mara reads `roan_bandit_road_clear` or `maeve_seal_kept`**
+  (Builder). Mara has an open warm_world_flag slot — a market-trader's
+  commentary on the road becoming travelable again would compound the
+  flag economy across a 4th NPC.
+- **Captain_seal as a Builder-prop on Maeve's mantle.** Currently the
+  captain_seal is an inventory-only item once handed in. A future
+  Builder run could surface it as a visible mantle-prop in Maeve's hut
+  (gated on `world_flags.has("maeve_seal_kept")`) — closes the
+  symbolic loop ("she keeps it") into a literal one.
+- **`maeve_seal_kept` on the realm_warden predicate.** The current
+  `realm_warden` (Achievements.gd) requires both faction reductions +
+  three NPC trusts. A future Builder run could elevate the bar by
+  ALSO requiring `maeve_seal_kept`, codifying the political beat into
+  the mastery-rung achievement.
+

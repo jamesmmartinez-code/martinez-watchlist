@@ -483,6 +483,75 @@ const QUEST_CATALOG := {
 			"toast": "🛡️ The south road is yours. Roan tips his hat.",
 		},
 	},
+	# COMPOUND (run 24 — Builder): Maeve's SECOND quest. The first cross-NPC
+	# application of run-23's `prerequisite_npc_flag` schema — Roan's wolf
+	# bounty unlocks Roan's bandit-road quest (run 23, intra-NPC chain), which
+	# unlocks Maeve's seal quest (this run, INTER-NPC chain). Tests that the
+	# resolver scales beyond a single-role chain into village-wide narrative
+	# sequencing. Author intent: the captain's seal is a political artifact,
+	# not a faction tilt — Maeve takes it onto her hut mantle and the road's
+	# name is hers to remember (THEME §7 stewardship; Wardens of the Mark
+	# canon: Maeve = the keeping-vigil). Pure flag work — NO faction
+	# pressure_delta because:
+	#   1. Bandits faction is INVERTED + DERIVED (run-21 `update_bandit_pressure`
+	#      is the SOLE writer; any bandits pressure_delta in a quest gets
+	#      overwritten by Step 5a). Adding one would be cosmetic noise.
+	#   2. Whisperwood goblins / dire wolves are unrelated to the seal —
+	#      delta on those would mis-attribute Maeve's memorial gesture to a
+	#      faction-warfare beat.
+	# So the quest delivers world_flag + npc_flag + toast + xp/gold ONLY —
+	# canonically the same shape as a memorial errand. The `seal_keeper`
+	# Achievement (Achievements.gd run 24) reads the world_flag.
+	#
+	# Lights up:
+	#   * The `prerequisite_npc_flag` schema's CROSS-NPC scaling proof. Roan
+	#     issues the bandit clear; Maeve unlocks AFTER Roan's flag fires.
+	#     A single role (`quest`) now chains TWO authored quests for Maeve
+	#     (`whisperwood_cleansing` then `captain_seal_for_maeve`) AND honors
+	#     a prereq from a DIFFERENT NPC. This is the schema's most ambitious
+	#     contract — if it scales here, it scales everywhere.
+	#   * Maeve becomes the SECOND multi-quest NPC (Roan was 1st in run 23).
+	#   * `maeve_seal_kept` is the EIGHTH quest-issued world flag (after
+	#     mara/lyra/whisperwood/roan_bounty/hala/bram/roan_bandit_road).
+	#     Future cross-NPC dialogue tiers (Edda/Mara/Bram's open
+	#     warm_world_flag slots) can read it without code changes.
+	#   * `seal_kept` is Maeve's SECOND personal flag (after `first_quest_done`
+	#     from `whisperwood_cleansing`). NPC.gd's tier-2 resolver picks the
+	#     FIRST flag in npc_flags (LIFO append on `apply_consequence` Step 3),
+	#     so the existing `first_quest_done` warm_lines stay correct until a
+	#     future Lore Keeper run authors `seal_kept` warm_lines that outrank
+	#     them via authoring order.
+	#
+	# Reward economy: 90 xp + 50 gold. Higher xp than `wolf_fang_for_roan` (65)
+	# or `ears_for_mara` (60) because this is a LATE-GAME quest (gated behind
+	# Roan's bandit clear, which itself is gated behind Roan's wolf bounty).
+	# Lower gold than `ears_for_mara` (90) because Maeve doesn't pay — she
+	# keeps the seal, the gold is purse-money offered by the village. Mid-tier
+	# fetch reward, fitting a memorial errand. `needed: 1` because the seal
+	# is unique-feel (one captain, one seal — the table's 16% drop weight
+	# makes it a 1–2-captain grind on average).
+	"captain_seal_for_maeve": {
+		"giver": "Elder Maeve",
+		"actor": "Elder Maeve",
+		"role": "quest",
+		"kind": "fetch",
+		"item": "captain_seal",
+		"needed": 1,
+		"title": "The Captain's Seal",
+		"text": "Bring the south-road captain's seal to Elder Maeve — she will keep it",
+		"xp_reward": 90,
+		"gold_reward": 50,
+		"motivation": "duty",
+		"location": "Briarwood",
+		"urgency": "calm",
+		"world_trigger": {"kind": "player_level", "value": 1},
+		"prerequisite_npc_flag": ["Stablemaster Roan", "road_warden"],
+		"consequence": {
+			"npc_flag": ["Elder Maeve", "seal_kept"],
+			"world_flag": "maeve_seal_kept",
+			"toast": "🕯️ Maeve takes the seal. The road's name is hers to remember.",
+		},
+	},
 }
 
 
