@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "ember_wing_boots",
+  "name": "Ember Striders",
+  "category": "armor",
+  "subtype": "boots",
+  "tier": "rare",
+  "level_req": 25,
+  "stats": {
+    "atk": 5,
+    "def": 10,
+    "spd": 5
+  },
+  "flavor": "Forged from the fiery hearts of ancient volcanoes, these boots ignite the path ahead.",
+  "realm": "ashenmere"
+}
+"""
