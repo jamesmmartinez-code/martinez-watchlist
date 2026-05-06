@@ -67,6 +67,12 @@ const LANTERN_GLB_PATH: String  = "res://assets/models/props/lantern.glb"
 # hearth or well. (THEME §1, §11)
 const CAMPFIRE_GLB_PATH: String = "res://assets/models/props/campfire.glb"
 const WELL_GLB_PATH: String     = "res://assets/models/props/stone_well.glb"
+# Env: 2026-05-06 — wire the last unused prop GLB. The procedural
+# windmill (cone-stack tower + box blades) reads as a primitive next
+# to the new GLB-bodied campfire/well/lantern. Same fallback contract:
+# any missing asset silently falls through to the procedural primitive
+# path so the village always has its mill. (THEME §1, §11, §12)
+const WINDMILL_GLB_PATH: String = "res://assets/models/props/windmill.glb"
 
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
@@ -955,42 +961,97 @@ func _build_windmill() -> void:
 	var pos := Vector3(0, 0, 12)
 	var mill := Node3D.new()
 	mill.position = pos
-	# scale-eng 2026-05-05: measured roof-tip 5.7m, canon windmill floor 8m
-	# (target 12m, cap 18m). Sweep clamps DOWN over-cap but cannot grow UP —
-	# under-floor windmills must be fixed at source. Uniform 1.55x → ~8.8m.
-	mill.scale = Vector3(1.55, 1.55, 1.55)
+	mill.add_to_group("windmills")
 	add_child(mill)
-	# Stone tower base
-	var base := MeshInstance3D.new()
-	var bcm := CylinderMesh.new()
-	bcm.top_radius = 0.85; bcm.bottom_radius = 1.1
-	bcm.height = 2.0
-	base.mesh = bcm
-	base.material_override = MAT_STONE(1.5)
-	base.position.y = 1.0
-	mill.add_child(base)
-	# Wood upper tower
-	var tower := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 0.7; cm.bottom_radius = 0.85
-	cm.height = 2.5
-	tower.mesh = cm
-	tower.material_override = MAT_WOOD(2)
-	tower.position.y = 3.25
-	mill.add_child(tower)
-	# Roof
-	var roof := MeshInstance3D.new()
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.0; cone.bottom_radius = 0.85
-	cone.height = 1.2
-	roof.mesh = cone
-	roof.material_override = MAT_ROOF(1.5)
-	roof.position.y = 5.1
-	mill.add_child(roof)
-	# Blade hub
+
+	# THEME §1, §11 — try the Sketchfab CC-BY windmill GLB first. Fall through
+	# to the procedural cone-tower + box-blade path if the asset isn't loadable
+	# so the village never loses its mill. The "Blades" pivot stays attached
+	# to `mill` regardless of which path renders, and joins group
+	# "windmill_blades" so THEME §12 rotation in _process always plays.
+	var mill_packed: PackedScene = _load_glb_safe(WINDMILL_GLB_PATH)
+	var mill_used_glb: bool = false
+	# Hub Y for procedural blade overlay. The procedural fallback fixes this
+	# to 4.0 (matching the legacy tower) — the GLB path overrides it after
+	# AABB measurement to sit just below the roof apex.
+	var hub_y: float = 4.0
+	# Default forward offset of the blade hub from the tower centerline (so
+	# blades sit on the front face of the windmill, not inside it).
+	var hub_z: float = 1.0
+	if mill_packed != null:
+		var mill_inst: Node = mill_packed.instantiate()
+		if mill_inst != null:
+			mill.add_child(mill_inst)
+			if mill_inst is Node3D:
+				# Most stylized Sketchfab windmills export at ~3-6m tall.
+				# 1.55x matches the procedural ~8.8m total — settle + spawn
+				# clamp tame any leftover floor/ceiling drift.
+				(mill_inst as Node3D).scale = Vector3(1.55, 1.55, 1.55)
+			mill_used_glb = true
+			# Coarse cylindrical collider so the player can lean on the
+			# tower but not walk through it. Sized for the procedural
+			# canon (radius ~1.1, height ~5).
+			var mill_body: StaticBody3D = StaticBody3D.new()
+			var mill_col: CollisionShape3D = CollisionShape3D.new()
+			var mill_cyl: CylinderShape3D = CylinderShape3D.new()
+			mill_cyl.radius = 1.4
+			mill_cyl.height = 5.0
+			mill_col.shape = mill_cyl
+			mill_col.position.y = 2.5
+			mill_body.add_child(mill_col)
+			mill.add_child(mill_body)
+			# THEME §13 — settle so the stone base contacts ground rather
+			# than half-sinking into the plaza.
+			call_deferred("_settle_to_ground", mill)
+			# After AABB resolves, lift the procedural blade pivot to sit at
+			# ~85% of the GLB's height (the typical hub location on a
+			# stylized windmill silhouette).
+			call_deferred("_position_windmill_blades_after_settle", mill)
+			# If the GLB ships with its own baked blades, hide them so they
+			# don't double-up with the procedural rotating overlay. Looks
+			# for child nodes whose name suggests a blade/sail/wing mesh.
+			call_deferred("_hide_baked_blades", mill_inst)
+
+	if not mill_used_glb:
+		# scale-eng 2026-05-05: measured roof-tip 5.7m, canon windmill floor 8m
+		# (target 12m, cap 18m). Sweep clamps DOWN over-cap but cannot grow UP —
+		# under-floor windmills must be fixed at source. Uniform 1.55x → ~8.8m.
+		mill.scale = Vector3(1.55, 1.55, 1.55)
+		# Stone tower base
+		var base := MeshInstance3D.new()
+		var bcm := CylinderMesh.new()
+		bcm.top_radius = 0.85; bcm.bottom_radius = 1.1
+		bcm.height = 2.0
+		base.mesh = bcm
+		base.material_override = MAT_STONE(1.5)
+		base.position.y = 1.0
+		mill.add_child(base)
+		# Wood upper tower
+		var tower := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.7; cm.bottom_radius = 0.85
+		cm.height = 2.5
+		tower.mesh = cm
+		tower.material_override = MAT_WOOD(2)
+		tower.position.y = 3.25
+		mill.add_child(tower)
+		# Roof
+		var roof := MeshInstance3D.new()
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.0; cone.bottom_radius = 0.85
+		cone.height = 1.2
+		roof.mesh = cone
+		roof.material_override = MAT_ROOF(1.5)
+		roof.position.y = 5.1
+		mill.add_child(roof)
+
+	# ── Blade hub (overlay on both paths so THEME §12 rotation is consistent)
+	# Procedural blades + sail cloth ride on a pivot Node3D rotated by
+	# _process via group "windmill_blades". For the GLB path, baked blades
+	# (if any) are hidden by _hide_baked_blades so they don't double up.
 	var blades := Node3D.new()
 	blades.name = "Blades"
-	blades.position = Vector3(0, 4.0, 1.0)
+	blades.position = Vector3(0, hub_y, hub_z)
 	mill.add_child(blades)
 	for i in 4:
 		var b := MeshInstance3D.new()
@@ -1016,6 +1077,47 @@ func _build_windmill() -> void:
 		cloth.position = Vector3(cos(ang + PI/2) * 1.3, sin(ang + PI/2) * 1.3, 0.05)
 		blades.add_child(cloth)
 	blades.add_to_group("windmill_blades")
+
+# Env: 2026-05-06 — windmill GLB helpers. Called via call_deferred so the
+# AABB is valid (sub-resources finish loading on the next frame).
+#
+# Lifts the procedural blade pivot so it sits ~85% up the GLB-bodied
+# windmill rather than at the legacy-procedural Y=4.0. Without this the
+# blades read as floating mid-tower on tall stylized windmill exports.
+func _position_windmill_blades_after_settle(mill: Node3D) -> void:
+	if not is_instance_valid(mill):
+		return
+	var pivot: Node = mill.get_node_or_null("Blades")
+	if pivot == null:
+		return
+	var aabb: AABB = _measure_aabb(mill)
+	if aabb.size == Vector3.ZERO:
+		return
+	# Convert global AABB to local-space delta from the mill's origin.
+	var top_global: float = aabb.position.y + aabb.size.y
+	var pivot_y_global: float = mill.global_transform.origin.y + (top_global - mill.global_transform.origin.y) * 0.85
+	(pivot as Node3D).global_position.y = pivot_y_global
+	# Push the hub forward to sit on the front face of the tower (radius
+	# ~half the AABB's X-size feels right for a windmill silhouette).
+	var hub_z: float = aabb.size.x * 0.5 + 0.15
+	(pivot as Node3D).position.z = hub_z
+
+# Hides any node inside the windmill GLB whose name suggests baked blade /
+# sail / wing geometry. Without this, the rotating procedural overlay
+# reads as duplicate blades next to the static GLB ones.
+# Match is case-insensitive, substring-based, and only touches direct
+# VisualInstance3D children — no risk to skeletons or root pivots.
+func _hide_baked_blades(root: Node) -> void:
+	if not is_instance_valid(root):
+		return
+	var keywords: Array = ["blade", "sail", "wing", "vane", "rotor", "fan"]
+	var visuals: Array = root.find_children("*", "VisualInstance3D", true, false)
+	for v in visuals:
+		var nm: String = String(v.name).to_lower()
+		for kw in keywords:
+			if nm.find(kw) != -1:
+				(v as Node3D).visible = false
+				break
 
 # ============================================================================
 # Lanterns
