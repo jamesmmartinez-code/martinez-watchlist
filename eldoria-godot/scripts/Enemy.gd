@@ -781,12 +781,13 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 			local_has = true
 		else:
 			local_min_y = min(local_min_y, a2.position.y)
-	if local_has and local_min_y < -0.05:
-		# Model bottom is BELOW its own pivot — center-pivot GLB. Lift it so
-		# bottom == 0 in body-local frame. Cap the lift to a sane range so a
-		# pathological measurement can't catapult a model into the sky.
-		var lift: float = clamp(-local_min_y, 0.0, 2.0)
-		(model as Node3D).position.y = lift
+	# scale-eng 2026-05-05: SYMMETRIC ground-snap. Was only LIFTING when bottom
+	# sat below pivot. New Meshy GLBs sometimes have feet ABOVE pivot (crotch-
+	# pivot biped). Snap feet to body-local y=0 in EITHER direction so the
+	# camera doesn't end up looking at the model's boots from below.
+	if local_has and abs(local_min_y) > 0.05:
+		var shift: float = clamp(-local_min_y, -10.0, 2.0)
+		(model as Node3D).position.y = (model as Node3D).position.y + shift
 
 # ──────────────────────────────────────────────────────────────────────────
 # REFINE: adaptive — Run-9: Adaptive damage (FIFTH output on the
