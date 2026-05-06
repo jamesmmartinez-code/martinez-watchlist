@@ -1,0 +1,422 @@
+{
+  "_meta": {
+    "generated_by": "auto/canon-qa",
+    "generated_on": "2026-05-05",
+    "scope": "lore/, data/, qa/ — read-only audit",
+    "schema_version": 1
+  },
+  "npcs": {
+    "Elder Maeve": {
+      "id": "elder_maeve",
+      "bio": "eldoria-godot/lore/npcs/elder_maeve.md",
+      "dialogue": "eldoria-godot/data/dialogue/elder_maeve.json"
+    },
+    "Smith Edda": {
+      "id": "smith_edda",
+      "bio": "eldoria-godot/lore/npcs/smith_edda.md",
+      "dialogue": "eldoria-godot/data/dialogue/smith_edda.json"
+    },
+    "Mara the Merchant": {
+      "id": "mara_merchant",
+      "bio": "eldoria-godot/lore/npcs/mara_merchant.md",
+      "dialogue": "eldoria-godot/data/dialogue/mara_merchant.json"
+    },
+    "Herbalist Lyra": {
+      "id": "herbalist_lyra",
+      "bio": "eldoria-godot/lore/npcs/herbalist_lyra.md",
+      "dialogue": "eldoria-godot/data/dialogue/herbalist_lyra.json"
+    },
+    "Innkeeper Bram": {
+      "id": "innkeeper_bram",
+      "bio": "eldoria-godot/lore/npcs/innkeeper_bram.md",
+      "dialogue": "eldoria-godot/data/dialogue/innkeeper_bram.json"
+    },
+    "Stablemaster Roan": {
+      "id": "stablemaster_roan",
+      "bio": "eldoria-godot/lore/npcs/stablemaster_roan.md",
+      "dialogue": "eldoria-godot/data/dialogue/stablemaster_roan.json"
+    },
+    "Trainer Hala": {
+      "id": "trainer_hala",
+      "bio": "eldoria-godot/lore/npcs/trainer_hala.md",
+      "dialogue": "eldoria-godot/data/dialogue/trainer_hala.json"
+    }
+  },
+  "items": {
+    "rusty_sword": {
+      "name": "Rusty Sword",
+      "attribution": "narrator",
+      "origin": "Briarwood field-find, maker unknown"
+    },
+    "iron_sword": {
+      "name": "Iron Sword",
+      "attribution": "Smith Edda",
+      "origin": "Briarwood forge, Edda-made"
+    },
+    "steel_blade": {
+      "name": "Steel Blade",
+      "attribution": "Smith Edda",
+      "origin": "Briarwood forge, Edda-made; the first blade that rang true after Halsa"
+    },
+    "frost_saber": {
+      "name": "Frost Saber",
+      "attribution": "Smith Edda",
+      "origin": "Briarwood forge, wyrm-touched ore; rare"
+    },
+    "ember_axe": {
+      "name": "Ember Axe",
+      "attribution": "narrator",
+      "origin": "Briarwood forge, hot-side work; Brigid-marked"
+    },
+    "shadow_dagger": {
+      "name": "Shadow Dagger",
+      "attribution": "narrator",
+      "origin": "Erris-blessed; smith uncertain"
+    },
+    "dragonfang": {
+      "name": "Dragonfang",
+      "attribution": "narrator",
+      "origin": "Pre-Sundering relic; Pale Wyrm-touched"
+    },
+    "cloth": {
+      "name": "Cloth Tunic",
+      "attribution": "narrator",
+      "origin": "Briarwood village hand-me-down"
+    },
+    "leather": {
+      "name": "Leather Vest",
+      "attribution": "Stablemaster Roan",
+      "origin": "Briarwood stable, saddler-cut"
+    },
+    "chainmail": {
+      "name": "Chainmail",
+      "attribution": "narrator",
+      "origin": "Iron Crown make; Briarwood-mended"
+    },
+    "steel_plate": {
+      "name": "Steel Plate",
+      "attribution": "narrator",
+      "origin": "Iron Crown make; Edda-marked at the seam"
+    },
+    "emberforge": {
+      "name": "Emberforge Plate",
+      "attribution": "narrator",
+      "origin": "Briarwood forge, Edda-made; Brigid-touched"
+    },
+    "dragonscale": {
+      "name": "Dragonscale",
+      "attribution": "narrator",
+      "origin": "Pre-Sundering; Pale Wyrm-shed; Crystal Caves verge"
+    },
+    "ring_focus": {
+      "name": "Ring of Focus",
+      "attribution": "Mara the Merchant",
+      "origin": "Mara-traded; Edda-hammered; Crystal Caves shard"
+    },
+    "talisman_oak": {
+      "name": "Oak Talisman",
+      "attribution": "Herbalist Lyra",
+      "origin": "Whisperwood-fallen oak; Lyra-harvested"
+    },
+    "crit_amulet": {
+      "name": "Hawk's Amulet",
+      "attribution": "Stablemaster Roan",
+      "origin": "High Steppe; Stone Crown rider-make"
+    },
+    "guardian_core": {
+      "name": "Guardian's Core",
+      "attribution": "Elder Maeve",
+      "origin": "Crystal Caves; pre-Sundering; thirre-borne"
+    },
+    "hp_potion_s": {
+      "name": "Lesser Health Potion",
+      "attribution": "Herbalist Lyra",
+      "origin": "Briarwood herb-shed; Lyra-pressed"
+    },
+    "hp_potion_l": {
+      "name": "Greater Health Potion",
+      "attribution": "Herbalist Lyra",
+      "origin": "Briarwood herb-shed; Lyra-pressed; Wennet's coat-pocket recipe"
+    },
+    "mp_potion": {
+      "name": "Mana Draught",
+      "attribution": "Herbalist Lyra",
+      "origin": "Briarwood herb-shed; Honeysong-stilled"
+    },
+    "wolf_pelt": {
+      "name": "Wolf Pelt",
+      "attribution": "Herbalist Lyra",
+      "origin": "Whisperwood; dire-wolf"
+    },
+    "wolf_fang": {
+      "name": "Wolf Fang",
+      "attribution": "Stablemaster Roan",
+      "origin": "Whisperwood; dire-wolf"
+    },
+    "goblin_ear": {
+      "name": "Goblin Ear",
+      "attribution": "Mara the Merchant",
+      "origin": "Whisperwood; goblin"
+    },
+    "crystal_shard": {
+      "name": "Crystal Shard",
+      "attribution": "Smith Edda",
+      "origin": "Crystal Caves; Sundering-wound"
+    },
+    "warlord_horn": {
+      "name": "Warlord's Horn",
+      "attribution": "Elder Maeve",
+      "origin": "Whisperwood; Goblin Warlord trophy"
+    }
+  },
+  "codex": {
+    "steppe_riders_refusal": {
+      "file": "eldoria-godot/data/codex/steppe_riders_refusal.md",
+      "region": "crystal_caves",
+      "prerequisite_codex": "stag_courts_courtesy"
+    },
+    "stag_courts_courtesy": {
+      "file": "eldoria-godot/data/codex/stag_courts_courtesy.md",
+      "region": "crystal_caves",
+      "prerequisite_codex": null
+    }
+  },
+  "gods": {
+    "Brigid the Forge-Mother": {
+      "defined_in": "lore/world.md"
+    },
+    "Thiar the Stag": {
+      "defined_in": "lore/world.md"
+    },
+    "Vellum the Patient Stone": {
+      "defined_in": "lore/world.md"
+    },
+    "The Hollow King": {
+      "defined_in": "lore/world.md"
+    },
+    "Erris of the Two Roads": {
+      "defined_in": "lore/world.md"
+    }
+  },
+  "places": {
+    "Briarwood": {},
+    "Whisperwood": {},
+    "Crystal Caves": {},
+    "Mountain Ring": {},
+    "High Steppe": {},
+    "Briar's Run": {},
+    "Cinder Reach": {},
+    "Aurel": {},
+    "Long Lantern": {},
+    "Walker House": {}
+  },
+  "crowns": {
+    "The Iron Crown": {
+      "defined_in": "lore/world.md"
+    },
+    "The Antler Crown": {
+      "defined_in": "lore/world.md"
+    },
+    "The Stone Crown": {
+      "defined_in": "lore/world.md"
+    }
+  },
+  "moons": [
+    "Dawnmoot",
+    "Lambmoon",
+    "Greenshield",
+    "Sunpetal",
+    "Honeysong",
+    "Thornripe",
+    "Reapmoon",
+    "Emberfall",
+    "Smokerise",
+    "Wolfwake",
+    "Longnight",
+    "Foxthaw"
+  ],
+  "lexicon_old_faerie": {
+    "torrest": {
+      "pron": "TOR-est",
+      "sense": "the held edge.",
+      "source": "eldoria-godot/lore/npcs/trainer_hala.md"
+    },
+    "vethran": {
+      "pron": "VETH-run",
+      "sense": "the lesson taught against the\n  hand.",
+      "source": "eldoria-godot/lore/npcs/trainer_hala.md"
+    },
+    "maelorn": {
+      "pron": "MAY-lorn",
+      "sense": "the ride for another's grief.",
+      "source": "eldoria-godot/lore/npcs/stablemaster_roan.md"
+    },
+    "ostren": {
+      "pron": "OS-tren",
+      "sense": "the kept stall.",
+      "source": "eldoria-godot/lore/npcs/stablemaster_roan.md"
+    },
+    "haethe": {
+      "pron": "HEY-thuh",
+      "sense": "the song iron remembers.",
+      "source": "eldoria-godot/lore/npcs/smith_edda.md"
+    },
+    "unnen": {
+      "pron": "UH-nun",
+      "sense": "the work of two hands.",
+      "source": "eldoria-godot/lore/npcs/smith_edda.md"
+    },
+    "pendrel": {
+      "pron": "PEN-druhl",
+      "sense": "the third coin in the till that does not\n  belong to the day's count.",
+      "source": "eldoria-godot/lore/npcs/mara_merchant.md"
+    },
+    "mhairen": {
+      "pron": "MAR-en",
+      "sense": "what the satchel carries that is not for\n  sale.",
+      "source": "eldoria-godot/lore/npcs/mara_merchant.md"
+    },
+    "vethar": {
+      "pron": "VEH-thar",
+      "sense": "the candle in the window.",
+      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
+    },
+    "haisten": {
+      "pron": "HAY-stuhn",
+      "sense": "the song with no last verse.",
+      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
+    },
+    "breos": {
+      "pron": "BREE-oss",
+      "sense": "what the bowl remembers.",
+      "source": "eldoria-godot/lore/npcs/innkeeper_bram.md"
+    },
+    "mossaen": {
+      "pron": "MOSS-ain",
+      "sense": "the listening you do with both hands in\n  the dirt.",
+      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
+    },
+    "thalen-ai": {
+      "pron": "THAH-len AYE",
+      "sense": "the herb that grows where it is\n  needed.",
+      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
+    },
+    "wennen": {
+      "pron": "WEN-uhn",
+      "sense": "to leave something growing for someone\n  else to find.",
+      "source": "eldoria-godot/lore/npcs/herbalist_lyra.md"
+    },
+    "vael-tor": {
+      "pron": "VAY-l tor",
+      "sense": "the gathered hearth.",
+      "source": "eldoria-godot/lore/npcs/elder_maeve.md"
+    },
+    "thressa-mai": {
+      "pron": "THRESS-uh MY",
+      "sense": "the unanswered letter.",
+      "source": "eldoria-godot/lore/npcs/elder_maeve.md"
+    },
+    "thrunn": {
+      "pron": "THRUHN",
+      "sense": "the Stone-oath kept in writing.",
+      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
+    },
+    "korr": {
+      "pron": "KOR",
+      "sense": "what you owe to weather.",
+      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
+    },
+    "drevenn-i-haern": {
+      "pron": "DREV-en ee HAYRN",
+      "sense": "the watching-stones already\n  hold her.",
+      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
+    },
+    "vael-i-thirren": {
+      "pron": "VAY-l ee THEER-en",
+      "sense": "we are remembering you.",
+      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
+    },
+    "ai-mhorren": {
+      "pron": "eye MOR-en",
+      "sense": "the gift that is the asking.",
+      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
+    },
+    "velhain-tor": {
+      "pron": "VEL-hayn tor",
+      "sense": "go warmly.",
+      "source": "eldoria-godot/data/codex/stag_courts_courtesy.md"
+    },
+    "thirre": {
+      "pron": "THEER-uh",
+      "sense": "memory of stone.",
+      "source": "eldoria-godot/lore/world.md"
+    },
+    "ai-velin": {
+      "pron": "eye-VEL-in",
+      "sense": "the long path.",
+      "source": "eldoria-godot/lore/world.md"
+    },
+    "kerrithen": {
+      "pron": "KAIR-ih-thun",
+      "sense": "to lay something down so the land\n  may hold it.",
+      "source": "eldoria-godot/lore/world.md"
+    }
+  },
+  "lexicon_stone_tongue": {
+    "korthain": {
+      "pron": "KOR-thayn",
+      "sense": "I refuse, but warmly.",
+      "source": "eldoria-godot/data/codex/steppe_riders_refusal.md"
+    }
+  },
+  "references": [
+    {
+      "from": "smith_edda.md",
+      "to": "innkeeper_bram.md",
+      "type": "longnight_stew",
+      "note": "Bram brings Edda stew every Longnight"
+    },
+    {
+      "from": "innkeeper_bram.md",
+      "to": "elder_maeve.md",
+      "type": "longnight_round",
+      "note": "Bram brings Maeve stew after Edda"
+    },
+    {
+      "from": "innkeeper_bram.md",
+      "to": "stablemaster_roan.md",
+      "type": "longnight_round",
+      "note": "Bram brings Roan stew at the third hour"
+    },
+    {
+      "from": "trainer_hala.md",
+      "to": "innkeeper_bram.md",
+      "type": "longnight_stew",
+      "note": "Bram brings Hala stew on Longnight"
+    },
+    {
+      "from": "items_flavor.json#frost_saber",
+      "to": "smith_edda.md",
+      "type": "attribution",
+      "note": "Edda credited as forger; bio asserts she has never named a blade Frost — CONTRADICTION"
+    },
+    {
+      "from": "items_flavor.json#frost_saber",
+      "to": "trainer_hala.md",
+      "type": "implicit_origin",
+      "note": "Frost saber laid on cairn — Hala canon attributes this to Tarric's southern saber, not Edda's forge"
+    },
+    {
+      "from": "trainer_hala.json#after_first_quest_complete",
+      "to": "items_flavor.json",
+      "type": "missing_item",
+      "note": "hand-bound practice cudgel referenced as reward; no entry in items catalog"
+    },
+    {
+      "from": "stablemaster_roan.json#after_first_quest_complete",
+      "to": "items_flavor.json",
+      "type": "missing_item",
+      "note": "Steppe-Patterned Halter referenced; no entry in items catalog"
+    }
+  ]
+}
