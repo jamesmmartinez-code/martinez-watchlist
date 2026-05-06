@@ -2673,6 +2673,21 @@ func _process(delta: float) -> void:
 		var light: OmniLight3D = lan.get_node_or_null("OmniLight3D")
 		if light:
 			light.light_energy = 1.4 + sin(_t * 5.0 + lan.position.x) * 0.35
+		# Env: 2026-05-06 — lantern physical rock (THEME §12). The §12
+		# motion mandate explicitly names "lanterns rock"; until now
+		# only the light energy flickered while the fixture itself
+		# stayed bolted-still, which reads as a static "should-move"
+		# prop. A slow ±2.6° Z-tilt with per-lantern phase (lifted
+		# from world position) pushes the iron+glass fixture like wind
+		# catches it — small enough that the post stays anchored, big
+		# enough that the spotlight pool the light casts on cobble
+		# wobbles visibly. Frequencies (0.9 + 1.7) sum to a slightly
+		# noisy beat so neighbouring lanterns don't oscillate in unison.
+		var lan3d: Node3D = lan as Node3D
+		if lan3d != null:
+			var lphase: float = lan3d.position.x * 0.31 + lan3d.position.z * 0.47
+			var lrock: float = sin(_t * 0.9 + lphase) * 0.045 + sin(_t * 1.7 + lphase * 1.3) * 0.020
+			lan3d.rotation.z = lrock
 	# Subtle tree sway
 	for tree in get_tree().get_nodes_in_group("trees"):
 		var s = sin(_t * 0.8 + tree.position.x * 0.3) * 0.015
