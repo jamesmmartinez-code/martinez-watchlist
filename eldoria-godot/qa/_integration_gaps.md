@@ -1,39 +1,72 @@
-# Integration Gaps — Integrator Audit
-generated_at: 2026-05-06T19:05:00Z
-integrator_run: post-merge cycle
+# Integration Gaps — 2026-05-06T19:49:12Z
 
-## Cycle summary
+Auto-detected cross-agent gaps after integrator merge of 4 branches:
+auto/character, auto/bestiary, auto/event, auto/recipe.
 
-- Canon QA gate status: PASS_WITH_DEBT (no S1, 7 S2 logged)
-- Branches discovered: 10 (auto/art, auto/audio, auto/builder, auto/character, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix)
-- Branches merged this cycle: auto/environment (1 commit), auto/audio (1 commit)
-- Branches with no new commits: auto/art (already integrated upstream), auto/builder, auto/character, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
-- All 9 worker auto/* branches reset to main after merge.
-- Merge method: GitHub merges API (HTTP 201 confirmed for environment + audio).
+Scope: files newly added in this integrator run.
 
-## [GAP: orphan asset]
+## NEW .glb assets
 
-- `eldoria-godot/assets/models/Fox.glb` — present under `assets/` but no spawn logic in `WorldBuilder.gd`, `Items.gd`, `Enemy.gd`, or `Player.gd`. Either route Fox into a creature/pet spawn table or move out of `assets/models/`. (Carry-over.)
+Newly added: 4
+  - eldoria-godot/assets/models/enemies/goblin.glb
+  - eldoria-godot/assets/models/enemies/wolf.glb
+  - eldoria-godot/assets/models/npcs/maeve.glb
+  - eldoria-godot/assets/models/npcs/smith_edda.glb
 
-## [GAP: orphan quest]
+Not referenced in eldoria-godot/scripts/: 0
+(none — all new GLBs referenced)
 
-- `eldoria-godot/data/quests/crystal_caves/bones_in_the_choirstone.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
-- `eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
-  (Both are crystal_caves region quests; likely awaiting NPC dialogue authoring. Owner: @quest-writer. Carry-over.)
+## NEW data resources
 
-## [GAP: orphan animation]
+Creatures added: 2
+  - eldoria-godot/data/creatures/briar_chat_validate_thorn_stalker.tres
+  - eldoria-godot/data/creatures/briar_chat_validate_willow_wisp.tres
+**Orphan (not referenced in dialogue/lore/scripts):**
+```
+[GAP: orphan creature] eldoria-godot/data/creatures/briar_chat_validate_thorn_stalker.tres
+[GAP: orphan creature] eldoria-godot/data/creatures/briar_chat_validate_willow_wisp.tres
+```
 
-- `eldoria-godot/assets/animations/` contains 0 `.tres` AnimationLibraries (435 source FBX files unbuilt).
-  Consistent with CQ-S2-07 from canon-qa; tracked there. No new gap.
+Recipes added: 2
+  - eldoria-godot/data/recipes/cooking_pot/chat_validate_moonlit_morsel.tres
+  - eldoria-godot/data/recipes/cooking_pot/chat_validate_starlight_stew.tres
+**Orphan:**
+```
+[GAP: orphan recipe] eldoria-godot/data/recipes/cooking_pot/chat_validate_moonlit_morsel.tres
+[GAP: orphan recipe] eldoria-godot/data/recipes/cooking_pot/chat_validate_starlight_stew.tres
+```
 
-## [GAP: orphan material]
+Events added: 1
+  - eldoria-godot/data/events/festivals/chat_validate_briarwood_festival.tres
+**Orphan:**
+```
+[GAP: orphan event] eldoria-godot/data/events/festivals/chat_validate_briarwood_festival.tres
+```
 
-- 36 `.tres` materials under `assets/materials/` show no static reference from project `.tscn` scenes or core scripts. Expected — materials are loaded dynamically by constructed paths in WorldBuilder.gd's `_make_*` family. Flag suppressed; if a runtime material miss shows up in QA, revisit per-material.
+Rumors added: 1
+  - eldoria-godot/data/rumors/briarwood_chat_validate.tres
+**Orphan:**
+```
+[GAP: orphan rumor] eldoria-godot/data/rumors/briarwood_chat_validate.tres
+```
 
-## Notes for next integrator cycle
+## NEW AnimationLibrary / Materials
 
-- All 9 auto/* branches were reset to main after this cycle. Next integrator run will start clean.
-- auto/environment and auto/audio were the only divergent (ahead) branches; both merged via GitHub merges API (no local checkout, due to repo size).
-- All other auto/* branches were "behind ahead=0" — content-equivalent dupes from prior runs that never got reset. Now cleaned up.
-- No conflicts encountered. Manual-flag list is empty.
-- This integrator run intentionally did NOT do a static cross-agent gap re-scan (no full local checkout was possible this cycle). Carry-over gaps above are preserved from the previous cycle's report.
+(none added in this integrator run)
+
+## Canon QA debt carried (S2)
+
+From PASS_WITH_DEBT status:
+
+## S2 issues (logged for integrator audit)
+
+- `data/items_flavor.json` — missing `briar_shortbow`, `mossbound_buckler`, `roan_woodbow`, `wolf_heart` (catalog flags `needs_flavor: yes`) [CQ-S2-01, owner @lorekeeper]
+- `scripts/Items.gd` — legacy ITEMS dict missing `briar_shortbow`, `mossbound_buckler`, `roan_woodbow` (defined as `.tres` only) [CQ-S2-02, owner @builder]
+- `data/dialogue/trainer_hala.json` — `practice_cudgel` reward, no flavor entry [CQ-S2-03, carry-over from 2026-05-05]
+- `data/dialogue/stablemaster_roan.json` + `lore/npcs/stablemaster_roan.md` — `Steppe-Patterned Halter`, no flavor entry [CQ-S2-04, carry-over from 2026-05-05]
+- `data/items/_catalog.csv` row `mossbound_buckler` — `acquired_via:craft` with no recipe under `data/recipes/**` [CQ-S2-05, owner @recipe-author]
+- `scripts/WorldBuilder.gd:3028-3052` — tree collision radius vs visual trunk parity unverifiable from static source; in-engine AABB print needed [CQ-S2-06, owner @scale-engineer]
+- `eldoria-godot/assets/animations/` — 435 source FBX files, 0 `.tres` AnimationLibraries built; first batch not shipped [CQ-S2-07, owner @animation-sourcer]
+
+## S3 issues (future-debt)
+
