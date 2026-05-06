@@ -1,0 +1,161 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra Moonwhisper",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I'm Lyra Moonwhisper. What brings you to our enchanted forest?",
+      "options": [
+        {
+          "player_text": "I'm on a quest to help the forest creatures.",
+          "goto": "helping_creatures",
+          "tags": [
+            "polite",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm just exploring.",
+          "goto": "exploring",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "helping_creatures",
+      "npc_text": "That's wonderful! We could use all the help we can get. The rabbits have been struggling to find food, and the birds are in need of new nests.",
+      "options": [
+        {
+          "player_text": "I'd love to help the rabbits find food.",
+          "goto": "rabbit_food",
+          "tags": [
+            "kind"
+          ]
+        },
+        {
+          "player_text": "I'll help the birds build new nests.",
+          "goto": "bird_nests",
+          "tags": [
+            "crafty"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exploring",
+      "npc_text": "The forest is full of wonders! Be sure to visit the sparkling stream and the ancient tree. But beware of the mischievous pixies.",
+      "options": [
+        {
+          "player_text": "I'll be careful around the pixies.",
+          "goto": "pixie_warning",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'd love to learn more about the ancient tree.",
+          "goto": "ancient_tree",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rabbit_food",
+      "npc_text": "The rabbits would be ever so grateful if you could help them find some juicy berries. You can find them near the old oak tree.",
+      "options": [
+        {
+          "player_text": "I'll go find the berries right away.",
+          "goto": "END",
+          "tags": [
+            "kind"
+          ]
+        },
+        {
+          "player_text": "Can you show me where the old oak tree is?",
+          "goto": "old_oak_tree",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bird_nests",
+      "npc_text": "The birds would be delighted if you could help them build some new nests. You can find the materials near the sparkling stream.",
+      "options": [
+        {
+          "player_text": "I'll go gather the materials.",
+          "goto": "END",
+          "tags": [
+            "crafty"
+          ]
+        },
+        {
+          "player_text": "Can you teach me how to build a nest?",
+          "goto": "nest_building",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pixie_warning",
+      "npc_text": "Remember, the pixies love to play tricks on travelers. Just be sure to keep your wits about you, and you'll be fine.",
+      "options": [
+        {
+          "player_text": "I'll be careful.",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "What kind of tricks do the pixies play?",
+          "goto": "pixie_tricks",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ancient_tree",
+      "npc_text": "The ancient tree is a wise and gentle soul. It holds many secrets and stories of the forest. Listen carefully, and you might just learn something new.",
+      "options": [
+        {
+          "player_text": "I'll go listen to the ancient tree.",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "What kind of secrets does the ancient tree hold?",
+          "goto": "tree_secrets",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "old_oak_tree",
+      "npc_text": "The old oak tree is just through that path. You can't miss it! The berries are ripe and ready to be picked.",
+      "options": [
+        {
+          "player_text": "Thank you, I'll go find the berries.",
+          "goto": "END",
+          "tags": [
+            "kind"
+          ]
+        }
+      ]
+    }
+  ]
+}
