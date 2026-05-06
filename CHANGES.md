@@ -1,3 +1,57 @@
+## 2026-05-06T14:18Z — QA: trim treasure_chest.glb (orphaned Meshy export) + log Hero.glb §15 violation
+
+**QA watchdog 3-min run. Build green; legacy Pages errored on commit
+b86dbfea (1.36 GB repo, near GitHub Pages 1 GB site cap).**
+
+### Trim action (Priority A)
+
+Deleted `eldoria-godot/assets/models/props/treasure_chest.glb` (4.0 MB).
+Verified unreferenced before deletion:
+
+- Zero hits for `treasure_chest`, `TreasureChest`, `treasure-chest`, or
+  `treasurechest` across all 168 `.gd` / `.tscn` / `.tres` files in
+  `eldoria-godot/`.
+- `eldoria-godot/scripts/Chest.gd` self-documents the situation: header
+  comment reads "Procedurally built (no external GLB required)." The
+  chest body, lid, lock plate, iron banding, and glow light are all
+  built in `_build_visuals()` with `BoxMesh` + `StandardMaterial3D`.
+- The Meshy export was committed by an Environment / Builder run that
+  predates the procedural Chest implementation; it has been dead weight
+  ever since.
+
+Commit `75ab35c4` (`QA: drop unreferenced treasure_chest.glb (4.0 MB) —
+Chest.gd is procedurally built`).
+
+### Tech debt — oversized-asset Hero.glb (Priority B, OPERATIONS §15)
+
+`eldoria-godot/assets/models/Hero.glb` is **29.5 MB**, exceeding the new
+**20 MiB soft cap / 25 MiB hard cap** from OPERATIONS.md §15 by ~5 MB
+above the hard ceiling. Heavily referenced (`fname=7`, `base=19` across
+scripts/scenes) — almost certainly the canonical player Hero — so QA
+will NOT delete it.
+
+**[ARCHITECT-PRIORITY] for Character / Builder:** re-export Hero.glb at
+lower poly density and/or with smaller embedded textures to bring it
+under 20 MiB. The Cloudflare Pages 25 MiB per-file cap is a HARD blocker
+for the future migration; right now the file would be rejected at
+deploy. Tag: `oversized-asset-eldoria-godot/assets/models/Hero.glb`.
+
+Suggested approach (Character agent):
+1. Decimate to ≤30k tris if currently higher.
+2. Compress embedded textures to 1024² JPEG (Meshy export defaults to
+   2048² PNG which inflates GLB size).
+3. Re-export and confirm size <18 MiB to leave headroom.
+
+### Notes
+
+- Repo size is now ~1.358 GB (was 1.362 GB before this trim). Legacy
+  GitHub Pages still erroring at the source — likely the cumulative
+  source-tree size, not any single file. Future Cloudflare migration
+  per OPERATIONS §15 will be the real fix; QA continues to enforce the
+  per-file ceiling in the meantime.
+- Per OPERATIONS §15, single Hero.glb still violates the hard cap. No
+  other source asset under `eldoria-godot/assets/` is over 20 MiB.
+
 ## 2026-05-06T12:08Z — QA: trim hero_lange.glb (orphaned old hero) + Pages diagnostic
 
 **QA watchdog 3-min run. Build green; legacy Pages errored on commits
