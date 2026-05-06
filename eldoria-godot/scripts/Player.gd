@@ -193,8 +193,9 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	var __forced_dir := Vector3.ZERO
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    __forced_dir.z -= 1.0
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  __forced_dir.z += 1.0
+	# 2026-05-06: SWAPPED W and S per user — model was rotated 180° so forward read as backward
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):    __forced_dir.z += 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):  __forced_dir.z -= 1.0
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):  __forced_dir.x -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): __forced_dir.x += 1.0
 	if __forced_dir.length() > 0.05:

@@ -758,6 +758,7 @@ func _make_building(pos: Vector3) -> void:
 # Trees — bark-textured trunk + multi-tier stylized foliage with rim lighting
 # ============================================================================
 func _scatter_trees(count: int) -> void:
+	return  # NUCLEAR-DISABLED _scatter_trees 2026-05-06: big-trees-stupid
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in count:
