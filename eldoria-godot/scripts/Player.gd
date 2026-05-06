@@ -1522,7 +1522,7 @@ func _apply_character_choice() -> void:
 	var choice: String = str(Engine.get_meta("char_choice", "")).to_lower().strip_edges()
 	var hero_paths := {
 		"alden":  "res://assets/models/Hero.glb",                       # default Meshy biped (5 anims)
-		"owen":   "res://assets/models/heroes/owen_vanguard.glb",       # 45 MB Meshy textured biped
+		"owen":   "res://assets/models/heroes/owen_vanguard.glb",       # Sketchfab "Crimson Guardian" CC-BY (0.43 MiB, 5 anims)
 	}
 	var new_path: String = hero_paths.get(choice, "")
 	if new_path == "" or not ResourceLoader.exists(new_path):
