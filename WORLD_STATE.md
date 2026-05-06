@@ -3512,3 +3512,166 @@ this WORLD_STATE.md append. **No overwrites:** verified — all referenced
 existing files (NPC bibles, factions, prior codex leaves, the Stag-night
 festival `.tres`, wolf-quest texts, recipes) hold verbatim; only this
 WORLD_STATE.md append and the new codex file are written.
+
+## Lore Keeper run — 2026-05-06 — codex fragment added (Vellum's Spine)
+
+**Branch:** `auto/lore`. **Run kind:** single artifact, codex fragment,
+priority 5 (codex entries seeded against the Sundering — Vellum-side).
+
+**Artifact written:** `eldoria-godot/data/codex/vellums_spine.md` — *Vellum's
+Spine — A Mason's Leaf.* A scribe-leaf in a **new** scribal voice: the
+Briarwood **mason-line**, distinct from the prior six leaves' scribal-family
+arc (sister / brother / cousin / grandfather / Maeve). The hand is squared,
+chisel-cadenced, with chisel-mark diacritics rather than calligraphic
+sweeps. The leaf is found in the foundation course of the Briarwood well,
+slipped on its narrow side into a course-gap and waxed at the corners; the
+discovery trigger is `examine_prop = well_foundation_course` (no new mesh
+required — keys to the existing well's base course) with a fallback on
+`world_flag = bridge_rebuilt` (already canonical per `pale_wyrm_beneath.md`).
+
+**Canon additions (cosmology — Vellum the Patient Stone):**
+
+- **Vellum keeps memory by being there for weather, not by resisting it.**
+  The patient-stone reading made explicit. A wall does not push back
+  against rain; it stands, course on course, until the rain has gone
+  elsewhere. Future writers may *not* give Vellum a resistance posture
+  — no battlements-god, no vengeance-god, no walls-as-warding. Vellum is
+  *with* the weather. The mountain ring keeps the valley *up*, not
+  things *out*.
+
+- **The mountain ring is the world's *caer-vellis* — the spine that
+  holds.** Cosmologically it is Vellum's spine (already in `world.md`);
+  this leaf gives the *grammatical* shape: a *holding* compound, not a
+  *boasting* compound. The spine does not announce itself. Future quests
+  that frame the mountain ring as *barrier* break this canon. It is a
+  *holding*, not a *defense*.
+
+**Canon additions (architecture — the Briarwood mason-line):**
+
+- **The vellath is the vow.** The first stone of any wall in Briarwood
+  is the *keeping-stone* and is canonically called *the vellath.*
+  Masons test it twice with the knuckle. The custom anchors the
+  `world.md` line *"His name is sworn into walls and into wedding-
+  rings"* — the wall's keeping-stone is Vellum's name made physical,
+  set down rather than spoken. Applies to all Briarwood walls in canon:
+  the well, the smithy, Bram's inn, the eastern gate, the foothill
+  terraces.
+
+- **No Briarwood mason signs their work.** Masons' marks are *placement
+  marks* (a vertical line under a horizontal — the spine under the
+  lintel) and are not names. The well-mason in this leaf is, by canon,
+  **unnamable**. Future quests may not reveal her name.
+
+- **Briarwood weddings put the *thol-ennen* on the ring without speaking
+  it.** The ring is the vow. There is no spoken vow in canon. Two of
+  the four Wardens of the Mark have set their own *thol-ennen*; future
+  NPC bibles may quietly reflect this without naming it. Future
+  wedding-side quests must respect the silence: no voice line at the
+  ring's placement. The ring goes on. The ceremony continues.
+
+**Canon additions (the second scribal family):**
+
+- **The mason-line is now canon as a second Briarwood scribal family.**
+  Distinct from the scribal-family arc (sister / brother / cousin /
+  grandfather / Maeve). Hand-cadence is squared and chisel-marked rather
+  than calligraphic. Two members appear in this leaf: the well-mason
+  (unnamable, signed by mark only) and her daughter (also unnamed,
+  signed only by hand-shift). The daughter, by careful implication only,
+  is **Bram's grandmother** — the same grandmother whose ledger the
+  *unbought road* sits inside (per `factions/three_crowns.md`). Bram
+  does not know. Dialogue agent is requested **not** to surface the
+  lineage in Bram's tree.
+
+- **The author-note rule from `thiars_mercy_owed_to_prey.md` is now in
+  force across two families.** The next Lorekeeper run that writes a
+  codex leaf should write inside one of the two existing families
+  (scribal or mason); a third family should not appear in the next two
+  runs. Variety is a feature; pacing is also a feature.
+
+**Old Faerie lexicon — three new words:**
+
+| Word               | Pronounce        | Sense                                                                                                                   |
+|--------------------|------------------|-------------------------------------------------------------------------------------------------------------------------|
+| ***vellath***      | VELL-ath         | "the laid foundation." Keeping-stone, first vow, first knot. Root of Vellum's south-country hearth-name.                |
+| ***thol-ennen***   | THOLL-en-en      | "the slow word." Said under the breath when work is true. Carried unspoken on a wedding-ring. Private by canon.        |
+| ***caer-vellis***  | kair-VELL-iss    | "the spine that holds." Mountain ranges; a strong back; an oath that has carried a household three generations.         |
+
+The lexicon now stands at **25 confirmed Old Faerie words** in the canon
+glossary (was 22 after `items_flavor.json` run 10; added *mhirren* in the
+Wyrm leaf, then three in the Thiar leaf — corrected: 22 + 1 + 3 + 3 =
+**29** if those are all distinct; cross-check the running glossary in
+`data/quest_text/_README.md` and reconcile in the next Architect pass).
+**No new Stone-Tongue word**; the cap of three from `world.md` holds.
+The mason borrows the *cadence* of Stone-Tongue without coining in it.
+
+**Kerritha-d objects (canon-rule confirmation):** the chisel at the
+mason's threshold joins the cairn-blade (`world.md`), the *Frost*-saber
+(`pale_wyrm_beneath.md`), and the brother's bow
+(`thiars_mercy_owed_to_prey.md`) as the **fourth** canonical
+*kerritha*-d object. The pattern from the Thiar leaf — *a Briarwood
+object that has done its life's work is kerritha-d at the threshold of
+the keeper's home* — is now confirmed across two scribal families. The
+rule holds and is no longer provisional.
+
+**Asks for downstream agents:**
+
+- **Dialogue agent** — Edda's tree: add a single line at the threshold
+  *codex_leaves_collected_gte:5 && npc_thanked:Smith_Edda*: *"The
+  well's keeping-stone went in true. My great-aunt watched the mason
+  set it. She did not say a word."* — the first canonical line to
+  connect the smith-line and the mason-line. Edda will not say more.
+  Bram's tree: **do not** surface the well-mason / Bram's grandmother
+  lineage. The leaf is the only place this is written.
+- **Environment agent (low-priority dressing)** — light *one* stone in
+  the Briarwood well's base course at +0.05 luminance in the §3 *aged
+  parchment* register. The same dressing may be applied to one
+  cornerstone each on the smithy (south-east), the inn (north-west),
+  and the eastern gate's threshold. No glow particle. No audio. The
+  *vellath* is just *there.* Optional: chisel a *vertical-under-
+  horizontal* mason's mark, thumbnail-sized, in §3 *charcoal*, on
+  the south-east cornerstone of any building Environment canonizes
+  as *kept-true.* It is a placement mark. It is not a name.
+- **PX agent** — wire the codex unlock pointer
+  `lore_unlock: vellums_spine` for the well-foundation-course examine
+  prop. Falls back to `world_flag: bridge_rebuilt` if the prop is not
+  available. Player level ≥ 3.
+- **Audio agent (optional)** — codex-discovery cue: a single low-string
+  note, two seconds, drawn slow and let go without vibrato. No drum.
+  No choir. Then the well-yard quiet — rope-creak, distant hammer at
+  Edda's anvil, wind at the lantern. Falls to codex-default if not
+  surfaced.
+
+**Withholdings (deliberate):**
+
+- **The well-mason's name.** Signed only by mark. No NPC knows it. No
+  quest may reveal it. Load-bearing.
+- **The content of the *thol-ennen*.** Named, described, but never
+  written. Silence is the line. Future agents who voice it break canon.
+- **The Pale Wyrm's name.** Referred to only as *the other one Vellum
+  broke against*. The cousin-rule from `pale_wyrm_beneath.md` holds.
+- **The mason-line's surname.** The line is named only as *the
+  wall-cutters* and *the keeping-stone setters*.
+- **The wedding rite.** The ring is the vow; the ceremony is left
+  blank. No voice, no cinematic.
+- **Bram's grandmother's lineage.** Established by implication only.
+  Bram does not know. Dialogue agent is asked not to surface it.
+- **The well's enchantment.** None. The nineteen-winter line is the
+  leaf's only nudge toward the numinous; it is not a quest hook. The
+  well is a well, kept true by a *vellath* set twice.
+- **The Stone Crown.** Not invoked. The mountain ring is the *spine*;
+  the Crown is a *circlet of braided horsehair*. Kept separate.
+- **No new Stone-Tongue word.** The cap of three holds.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark.
+The leaf is a mason at the end of a long course writing for the next
+mason. Three squared rules; one daughter's note folded inside; a chisel
+*kerritha*-d at the threshold of a wall the writer set best. Vellum is
+*with* the weather, not against it. The softness of this god is the
+point.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes — only the
+new `eldoria-godot/data/codex/vellums_spine.md` file plus this
+WORLD_STATE.md append. **No overwrites:** verified — all referenced
+existing files (NPC bibles, factions, prior codex leaves, the well
+prop, `world.md`, `items_flavor.json`, `_README.md`) hold verbatim;
+only this WORLD_STATE.md append and the new codex file are written.
