@@ -40,7 +40,8 @@ func _ready() -> void:
 
 	# Visual model
 	_model = pet_model.instantiate()
-	call_deferred("_normalize_to_height", _model, 0.7)  # foxes are short
+	# char-spec 2026-05-06: 0.7 → 0.55 per SIZE_STANDARDS.md §1 (pet canon below kid knee).
+	call_deferred("_normalize_to_height", _model, 0.55)  # foxes are short
 	_model.scale = Vector3(0.018, 0.018, 0.018)
 	add_child(_model)
 
@@ -53,8 +54,12 @@ func _ready() -> void:
 	# REFINE: character — slightly hotter ember tone so Ember's nameplate reads as fire-fox in dusk.
 	_label.modulate = Color(1.0, 0.55, 0.18)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	# REFINE: character — nameplate Y 1.2 → 1.10. Ember's fox is normalized to 0.7m tall (`_normalize_to_height(_model, 0.7)` above), so a label at world-relative Y=1.2 floats roughly 0.5m above the fox's head — disconnected. 1.10m sits the label ~0.40m above a 0.7m-tall back, reading as "tucked above the ear" instead of "hovering halo." Direct THEME §13 ground-contact framing (extended to nameplates: a label that floats off the model breaks ground-contact silhouette read at a distance).
-	_label.position = Vector3(0, 1.10, 0)
+	# REFINE: character — nameplate Y 1.10 → 0.95. char-spec 2026-05-06 dropped Ember's
+	# fox normalize target 0.7→0.55 to match SIZE_STANDARDS.md §1 (pet canon below kid knee).
+	# At 0.55m tall, the previous Y=1.10 label sat 0.55m above the fox's back — disconnected
+	# halo. Y=0.95 keeps the same ~0.40m offset over the new fox-back, restoring the
+	# "tucked above the ear" read (THEME §13 ground-contact framing).
+	_label.position = Vector3(0, 0.95, 0)
 	add_child(_label)
 
 func _physics_process(delta: float) -> void:
