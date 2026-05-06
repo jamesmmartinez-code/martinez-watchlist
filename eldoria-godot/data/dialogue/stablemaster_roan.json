@@ -22,6 +22,13 @@
       "*(huh)* — Heard the wolves moved off the lower fold. Heard from a leaf, not a man. Ride the leaves, traveler.",
       "Hands are easier this Reapmoon. Don't ask me why."
     ],
+    "warm_promoted_after_road_warden": {
+      "_comment": "The road_warden tier — Roan's third warming layer, queued in WORLD_STATE.md (top-priority next, run 24+) and now shipped. Authored AFTER the first_bounty_done tier with intentional LIFO order so Tier-2 of NPC.gd's warm_flag resolver picks road_warden FIRST when the player carries both flags. Anchors: data/quest_text/bandit_road_for_roan.md (the runner-line, the captain in the sodden cloak, Pippin in the south paddock). Voice constraints: (a) the *between two stones* idiom — held in reserve in lexicon_held_in_reserve, called by lore/npcs/stablemaster_roan.md as spoken ~3x a year — surfaces here for the FIRST time in any of Roan's lines; this is the canonical first surfacing and it has been earned by the player having ridden the south road for him. (b) The captain stays unnamed; if a future Lore-Keeper run names him, only the warm_b shape below is rewritten — Roan would not name a man twice. (c) warm_d drops the parenthetical entirely; the closeness has earned the quieter bodily presence (matches the warmest-of-four rule from lore/npcs/stablemaster_roan.md → Author note for downstream agents). (d) Pippin is the canonical horse name introduced by the bandit quest text; she joins Bay/Ember/Smoke/Grain/Maeve as Roan's named six. (e) The Wardens' frame (lore/factions/wardens_of_the_mark.md) gets its quiet Roan beat: the keeping-running. Never named in line.",
+      "warm_a_first_runner_back": "Aye. First runner came through this morning — three weeks since the last. *(curry-comb pass.)* — Pippin's ears went up before mine did.",
+      "warm_b_captain_weighed_unnamed": "Captain in the sodden cloak. — Took one ride south to weigh him. *(huh)* — He weighed less than the bay's saddle.",
+      "warm_c_between_two_stones_surfaces": "Asked me on the cobble what the road owed the captain. — *Between two stones,* traveler. The road owes the captain nothing. The road owes the runners.",
+      "warm_d_pippin_south_paddock": "Pippin grazed the south paddock at first light. — Three weeks since she'd been on that side of the gate."
+    },
     "warm_promoted_after_first_bounty_done": {
       "_comment": "The fully-warmed Roan tier — four lines, per the author-note in lore/npcs/stablemaster_roan.md → Hooks queued for future runs. Constraints: (a) drops the *(adjusts a strap.)* parenthetical because it is the warmest of the four — the closeness has earned the quieter bodily presence. (b) MUST gate on bram_present == false; the road-name 'Bron' is for the player's ear only. (c) is the white-aspen weather-read; the line uses the Steppe idiom verbatim. (d) MUST NOT name Lyra and MUST NOT name the salve — the unnen breaks if either surfaces.",
       "warm_a_bay_named_aloud": "Aye. Bay's settled when you walk in now. — She doesn't usually.",
@@ -42,7 +49,8 @@
       "*(huh)* through the nose, once, when amused. Never as a sentence end. Never twice in one line.",
       "Hands are always busy: strap, buckle, curry-comb, saddle-lift. The work is his speech.",
       "Old Faerie words used SPARINGLY: ai-velin (the long path / a complete life) only at parting in the boss_slain beat; ride the leaves (Steppe idiom) only in the white-aspen warm tier; between two stones (a refusal to answer) is held in reserve and not yet surfaced — the spec calls for it ~3x a year, not once per dialogue tick.",
-      "Invokes no god aloud. The copper-coin gate-lantern is his prayer; the wick is renewed at every Sunpetal turn. The Vellum nod at the Reapmoon thirre is bodily, never verbal."
+      "Invokes no god aloud. The copper-coin gate-lantern is his prayer; the wick is renewed at every Sunpetal turn. The Vellum nod at the Reapmoon thirre is bodily, never verbal.",
+      "First canonical surface of *between two stones* is warm_promoted_after_road_warden.warm_c_between_two_stones_surfaces. Per lore/npcs/stablemaster_roan.md, the idiom is spoken ~3x a year — Builder MUST NOT promote it to a generic refusal beat or fire it more than once per in-game month. The idiom names the question as bigger than Roan's mouth, not as refused."
     ],
     "withholdings": [
       "Cailen's name is NEVER spoken by Roan. Not in any line, not in any tier, not in any quest text. The whetstone in Roan's left coat pocket is the canonical absence; do not surface it as dialogue, item, or codex.",
@@ -51,7 +59,8 @@
       "Lyra is NEVER named in the salve-acknowledgement line (warm_d). The salve is NEVER named. The whole arc is unnen and breaks if any of the three withholdings is lifted.",
       "The black mare 'Maeve' name surfaces ONLY in gated_solo_lines.warm_e_black_mare_named_alone_solo, ONLY when ALL gates are true. Roan MUST NOT answer the question 'what is the black mare's name' truthfully in front of the human Maeve, ever.",
       "Nessa is NEVER named by Roan. He does not know about her. The Cailen-shaped lost-Steppe-rider triangle (Cailen / Nessa / the rider Mara watches the south road for) is a load-bearing silence; do not lift it.",
-      "Roan's third maelorn is off-page. He does not announce it. If a late-game Maeve-approves-the-player-to-ride beat surfaces, Roan still does not name his own ride. *The withholding is the dignity.*"
+      "Roan's third maelorn is off-page. He does not announce it. If a late-game Maeve-approves-the-player-to-ride beat surfaces, Roan still does not name his own ride. *The withholding is the dignity.*",
+      "The bandit captain is NEVER named in warm_b_captain_weighed_unnamed. If a future Lore-Keeper run names him (the run-23 / run-24 hook in WORLD_STATE.md), warm_b is rewritten to use the name ONCE — Roan would not name a man twice in the same beat. The pitch line in data/quest_text/bandit_road_for_roan.md is the second name-permitted surface; everywhere else stays unnamed."
     ],
     "consequence_hooks": [
       "after_first_quest_complete is intentionally agnostic across which first quest the player finished — it scans as a stableman's notice of any change in the Whisperwood. Safe to fire on whisperwood_cleansing OR ears_for_mara turn-ins. The Steppe-Patterned Halter handoff is the canonical reward shape per the author note; flag the gift on roan_halter_gifted.",
@@ -60,9 +69,23 @@
       "reapmoon_meadow_hour fires once per in-game year on the Reapmoon tick at the meadow-hour. The 'ask the bay' is the cue that the player is being trusted with the stable, which is, for Roan, the largest welcome he gives. The line MUST NOT name Maeve and must not name Cailen.",
       "warm_dire_wolves_below_0.5 is the faction-tier warming queued in WORLD_STATE.md run 8. Until the wolf-bounty quest ships, this is Roan's ONLY warming surface. Builder may rotate the four lines round-robin or weight them against time-of-day.",
       "warm_promoted_after_first_bounty_done unlocks when the first_bounty_done flag is set (after Roan's queued wolf-bounty turn-in). Per the author note, this promotes Roan from faction-tier-only to fully 4-tier. Faction-tier lines remain live — the promoted lines layer on top.",
-      "gated_solo_lines.warm_e_black_mare_named_alone_solo is the deepest reveal in Roan's tree. ALL gates required: dire_wolves_pressure < 0.5, first_bounty_done == true, scene_solo_with_player == true, maeve_present == false. Surfaces ONCE; flag mare_name_revealed after the first delivery and revert to warm_promoted shapes thereafter."
+      "gated_solo_lines.warm_e_black_mare_named_alone_solo is the deepest reveal in Roan's tree. ALL gates required: dire_wolves_pressure < 0.5, first_bounty_done == true, scene_solo_with_player == true, maeve_present == false. Surfaces ONCE; flag mare_name_revealed after the first delivery and revert to warm_promoted shapes thereafter.",
+      "warm_promoted_after_road_warden unlocks when the road_warden flag is set (after Roan's bandit_road_for_roan turn-in — see data/quest_text/bandit_road_for_roan.md). Authored AFTER first_bounty_done so the Tier-2 warm_flag resolver picks road_warden FIRST when both flags are carried (LIFO append, per WORLD_STATE.md run 23). The first_bounty_done tier remains live for players who completed the wolf bounty but not the bandit road; the road_warden tier replaces it as Roan's surface once both quests are done. warm_dire_wolves_below_0.5 (faction tier) and gated_solo_lines.warm_e_black_mare_named_alone_solo (gated reveal) stay independently routed. Builder MAY rotate warm_a..warm_d round-robin or weight against time-of-day; warm_d is the warmest of the four (no parenthetical) and should be reached for in scenes where the player has spent a tick in the stable without prompting Roan."
     ],
-    "lexicon_used": ["aye", "huh", "ride the leaves", "ai-velin"],
-    "lexicon_held_in_reserve": ["between two stones", "maelorn", "ostren", "kerrithen", "thirre", "unnen", "haethe"]
+    "lexicon_used": [
+      "aye",
+      "huh",
+      "ride the leaves",
+      "ai-velin",
+      "between two stones"
+    ],
+    "lexicon_held_in_reserve": [
+      "maelorn",
+      "ostren",
+      "kerrithen",
+      "thirre",
+      "unnen",
+      "haethe"
+    ]
   }
 }
