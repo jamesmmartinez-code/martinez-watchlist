@@ -148,3 +148,18 @@ Total audio bundle: **~4.9 MB** (well under the 50 MB budget).
   `Enemy.gd::KIND_MODELS["skeleton"]`. Ends the THEME §4 "until dedicated
   skeleton GLB is sourced" placeholder note in that file. Source URL:
   https://sketchfab.com/3d-models/skeleton-warrior-aa225d17845e4d84b582646b7573114f
+
+## Bandit upgrade (Character run — 2026-05-06)
+
+- `assets/models/enemies/bandit.glb` — "Animated Stylized Character - Rogue
+  Warrior" by [Karthiknaidu97](https://sketchfab.com/Karthiknaidu97), Sketchfab
+  CC-BY-4.0. UID `e49c999cc7ce4668a7fdeff328ad0b93`.
+  5.77 MiB, 38,450 faces, 1 skin, 4 embedded animations (Idle, Walk, Run,
+  Attack). A Prince-of-Persia-inspired hooded rogue with cloth outfit, leather
+  armor, and dual sword/dagger — matches THEME §4 ("Bandits — human, hooded,
+  leather, scarves over face") at 30m silhouette read. Replaces the
+  `npcs/warrior.glb` placeholder previously bound in
+  `Enemy.gd::KIND_MODELS["bandit"]` AND `["bandit_captain"]`. The captain
+  stays on the same model at 1.40× scale + deeper purple-leather tint
+  (boss-variant pattern, mirrors goblin → goblin_warlord). Source URL:
+  https://sketchfab.com/3d-models/animated-stylized-character-rogue-warrior-e49c999cc7ce4668a7fdeff328ad0b93

@@ -68,27 +68,41 @@ const KIND_MODELS := {
 	"crystal_elemental": preload("res://assets/models/npcs/warrior.glb"),
 	"crystal_guardian":  preload("res://assets/models/npcs/warrior.glb"),
 	# THEME §4 (Bandits — human, hooded, leather, scarves over face).
-	# Run 22 (Builder): wires the bandit kind to warrior.glb (humanoid
-	# silhouette, Sketchfab CC-BY, embedded idle anim → satisfies §12
-	# MOTION via _play_model_idle_anim). The KIND_TINT_OVERRIDE entry
-	# below recolors the warrior model dark-leather charcoal so the
-	# silhouette reads "hooded road-ambusher" at 30m, not "warrior".
-	# The drop_table (Items.gd "bandit" key) and KIND_TO_FACTION mapping
-	# ("bandit" → "bandits") were both pre-wired by run 21 — this entry
-	# closes the loop. WorldBuilder._make_bandit_camp + _build_enemies
-	# add the south-road spawn pattern in this same run.
-	"bandit":            preload("res://assets/models/npcs/warrior.glb"),
-	# COMPOUND (run 23 — Builder): bandit_captain mini-boss. Same warrior.glb
-	# placeholder reuse as the regular bandit, scaled up at the visual layer
-	# (1.40× via the `bandit_captain` match branch below) and re-tinted to
-	# a deeper purple-leather (KIND_TINT_OVERRIDE forces the override). The
-	# `bandit_captain` kind shares the `bandits` faction (KIND_TO_FACTION
-	# mapping below) so kills count toward Roan's road-clear quest target
-	# `bandit` — see World.QUEST_CATALOG.bandit_road_for_roan note about
-	# captain-as-bandit in the kill counter. Spawns ONLY at extreme bandit
-	# pressure (≥0.70) where regular bandit_count is also 4 — see
-	# WorldBuilder._bandit_captain_should_spawn.
-	"bandit_captain":    preload("res://assets/models/npcs/warrior.glb"),
+	# Character run (2026-05-06): bandit kind PROMOTED from warrior.glb
+	# (placeholder reuse) to a dedicated rogue/bandit GLB sourced from
+	# Sketchfab uid e49c999cc7ce4668a7fdeff328ad0b93 ("Animated Stylized
+	# Character - Rogue Warrior" by Karthiknaidu97, CC-BY-4.0 — see
+	# CREDITS.md). The model is a Prince-of-Persia-inspired hooded rogue
+	# with cloth outfit, leather armor, and dual sword/dagger — exactly
+	# the THEME §4 silhouette ("human, hooded, leather, scarves over
+	# face"). 5.77 MiB GLB (well under §15's 20 MiB cap), 6 meshes,
+	# 1 skin, 4 embedded animations: "Idle", "Walk", "Run", "Attack" —
+	# every §12 MOTION need covered by one source. Idle auto-plays via
+	# the case-insensitive substring match in _play_model_idle_anim()
+	# (the GLTF track name is "Character_animated_warrior|Idle"; Godot's
+	# importer typically renames to "Idle" or keeps the suffix — the
+	# substring fallback catches both). Real role-correct model →
+	# "bandit" was REMOVED from KIND_TINT_OVERRIDE below so the hand-
+	# painted leather/cloth textures show through unmodulated. The
+	# drop_table (Items.gd "bandit" key), KIND_TO_FACTION mapping
+	# ("bandit" → "bandits"), and WorldBuilder._make_bandit_camp /
+	# south-road spawn pattern all stay wired exactly as before — this
+	# is a model-only swap.
+	"bandit":            preload("res://assets/models/enemies/bandit.glb"),
+	# COMPOUND: bandit_captain mini-boss. Now reuses the same dedicated
+	# bandit.glb as the regular bandit (was warrior.glb), scaled up at
+	# the visual layer (1.40× via the `bandit_captain` match branch
+	# below) and re-tinted to a deeper purple-leather (KIND_TINT_OVERRIDE
+	# stays on for captain — the silhouette differentiator from regular
+	# bandits is scale + tint, mirroring the goblin → goblin_warlord
+	# boss-variant pattern). The `bandit_captain` kind shares the
+	# `bandits` faction (KIND_TO_FACTION mapping below) so kills count
+	# toward Roan's road-clear quest target `bandit` — see
+	# World.QUEST_CATALOG.bandit_road_for_roan note about
+	# captain-as-bandit in the kill counter. Spawns ONLY at extreme
+	# bandit pressure (≥0.70) where regular bandit_count is also 4 —
+	# see WorldBuilder._bandit_captain_should_spawn.
+	"bandit_captain":    preload("res://assets/models/enemies/bandit.glb"),
 }
 
 # THEME §4 — kinds whose KIND_MODELS entry is a *placeholder reuse* (warrior.glb
@@ -104,15 +118,23 @@ const KIND_TINT_OVERRIDE := {
 	# override because warrior.glb is still being repurposed for them.
 	"crystal_elemental": true,
 	"crystal_guardian":  true,
-	# Run 22 — bandit reuses warrior.glb; the dark-leather Color passed
-	# in by WorldBuilder._spawn_enemy IS the silhouette differentiator.
-	# Without this entry the warrior model would render in its painted
-	# armor-knight palette and read as a friendly fighter, not an outlaw.
-	"bandit":            true,
-	# Run 23 — bandit_captain reuses warrior.glb at +1.40 scale; the deeper
-	# purple-leather Color passed by WorldBuilder._spawn_enemy IS the
-	# silhouette differentiator. Without this entry the captain would
-	# render in the friendly armor-knight palette and fail THEME §4 read.
+	# THEME §4 — "bandit" was REMOVED from this map (Character run
+	# 2026-05-06) when its KIND_MODELS entry promoted from warrior.glb
+	# (placeholder reuse) to bandit.glb (the dedicated Sketchfab CC-BY
+	# rogue — Prince-of-Persia-inspired hooded outlaw). The hand-painted
+	# leather/cloth/hood textures ARE the silhouette signal we want at
+	# 30m; modulating them with WorldBuilder's dark-leather Color washed
+	# out the painted hood and read as flat charcoal blob, not "rogue
+	# outlaw". The Color passed in by WorldBuilder._spawn_enemy is now
+	# ignored for the regular `bandit` kind (the real model carries
+	# its own silhouette).
+	#
+	# `bandit_captain` STAYS in this override map — captain reuses the
+	# same bandit.glb at 1.40× scale and re-tints to a deeper
+	# purple-leather to differentiate from regular bandits at 30m
+	# (mirrors the goblin → goblin_warlord boss-variant pattern; the
+	# tint is the boss-tier silhouette differentiator since the
+	# underlying model is shared).
 	"bandit_captain":    true,
 }
 
