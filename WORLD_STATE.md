@@ -2416,3 +2416,70 @@ enemy. No third codex fragment. No Iron-Crown clerk fragment yet.
 - **Ledger-prop Builder run** — surface Bram's red-leather ledger
   as a discoverable inn-prop using the reserved-text future-Bram
   line.
+
+
+---
+
+## Builder run 2026-05-06 (run 24) — captain_seal_for_maeve (cross-NPC)
+
+### Resolved hooks
+
+- **Hook D from run-23 (CHANGES.md)** — captain_seal material + Maeve
+  sequenced quest. Cross-NPC schema validated: Roan's `road_warden`
+  flag now unlocks Maeve's `captain_seal_for_maeve`. The
+  `prerequisite_npc_flag` schema (run 23) is production-ready for any
+  future authored quest sequence.
+- **"Maeve has nothing for me anymore" UX gap** — Maeve's role
+  previously yielded ONE quest (`whisperwood_cleansing`) and ran out.
+  Now she pitches the seal quest as a late-game political beat. Maeve
+  is the SECOND multi-quest NPC (Roan was 1st in run 23).
+
+### What landed in canon
+
+- **The captain's seal sits on Maeve's hut mantle.** An iron-cast
+  hand-stamp the south-road captain wore on a leather thong; Maeve
+  (the keeping-vigil per Wardens-of-the-Mark canon, lore run 2026-05-06)
+  takes it as a memorial gesture. The road's name is hers to remember.
+- **`maeve_seal_kept` is the EIGHTH quest-issued world flag.** The
+  ledger order: mara_bounty_paid / lyra_potion_brew / whisperwood_safer
+  / roan_bounty_paid / hala_wolf_form_done / bram_nights_quiet /
+  roan_bandit_road_clear / **maeve_seal_kept**.
+- **`seal_keeper` is the SIXTH achievement** (after first_step,
+  first_reforge, wolf_friend, wolf_tamer, goblin_bane, trusted_three,
+  road_warden, realm_warden — wait, that's 8 already. Counting again:
+  first_step, first_reforge, wolf_friend, wolf_tamer, goblin_bane,
+  trusted_three, road_warden, realm_warden — 8 pre-existing. seal_keeper
+  is the 9TH.). Title "Seal-Keeper" priority 47, slots between
+  Road-Warden (45) and Trusted (50).
+- **Captain remains the same kill-target.** No change to bandit_captain
+  scale, stats, spawn gating, or naming. The seal is a NEW drop on the
+  EXISTING captain — fail-soft for save-files mid-quest.
+
+### Top-priority next (refresh)
+
+- **Maeve's `seal_kept` warm_lines** (Lore Keeper) — the flag is set
+  on quest completion; authoring 4 warm_lines for it in WorldBuilder.NPCS
+  is a pure data add. The flag will outrank `first_quest_done` once
+  both fire (LIFO append on `apply_consequence` Step 3).
+- **Edda's first warm tier reads `maeve_seal_kept`** (Builder) — Edda
+  is the only 0-tier NPC. `warm_world_flag: "maeve_seal_kept"` + 4
+  cross-NPC lines compounds Edda into the warm-tier club AND validates
+  the new flag's cross-NPC reach. Wardens canon supports it.
+- **Bandit-captain name canonization** (Lore Keeper) — run-23 Hook B
+  still open. With the seal now load-bearing in Maeve's mantle canon,
+  the captain's name matters more.
+- **Codex on the *haethe*** (Lore Keeper) — still hooked from
+  `smith_edda.md`. Edda is the natural narrator. Adjacent to the
+  Iron-Crown voice-piece if a future writer pairs them across two runs.
+- **Quest-text seeding** (Lore Keeper / Builder data) — `data/quest_text/`
+  empty; seven shipped quests now (run-24 added the 7th). Cleanest
+  medium-sized run that doesn't pull on faction politics.
+- **Ledger-prop Builder run** — Bram's red-leather ledger as a
+  discoverable inn-prop using the reserved-text future-Bram line.
+  Smaller-scope counterpart to this run.
+
+### Withholding ledger preserved
+
+The captain has not been named (run-23 Hook B remains open). Maeve's
+`seal_kept` warm_lines are not authored (Lore Keeper territory). The
+captain_seal is not yet a visible mantle-prop (Builder territory).

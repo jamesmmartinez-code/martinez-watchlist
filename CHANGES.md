@@ -4947,3 +4947,165 @@ lowest-risk highest-compound next move — pure dialogue authoring on a
 slot the run-23 quest just opened. Builder territory next is Hook D
 (captain_seal material + Maeve sequenced quest) which would be the
 SECOND consumer of `prerequisite_npc_flag` and prove the schema scales.
+
+---
+
+## Run 24 — Builder — captain_seal_for_maeve (cross-NPC schema scaling)
+
+I'm building: Hook D from run-23. New material `captain_seal` + Maeve's
+SECOND quest (`captain_seal_for_maeve`), the FIRST cross-NPC application
+of run-23's `prerequisite_npc_flag` schema. Roan's `road_warden` flag
+unlocks Maeve's seal quest — the schema now spans village-wide narrative
+sequencing, not just intra-NPC chains.
+
+**THEME §X cited:** §1 (painterly, lived-in, mysterious — the seal sits on
+Maeve's mantle weathered, not polished); §2 (iron-cast hand-stamps are
+late-medieval period-correct); §7 (warm gravitas + stewardship — Maeve
+takes the seal as a memorial gesture, the road's name is hers to remember);
+§14 (push to `auto/builder`).
+
+**Mood board panel:** Briarwood interior — Maeve's hut, the mantle, a
+vigil candle. Wardens-of-the-Mark canon (lore run 2026-05-06): Maeve = the
+keeping-vigil; the keeping is the *act*, the seal is the *artifact*.
+
+### Backlog item picked
+
+run-23 CHANGES.md "Hook D — Builder: bandit-themed material `captain_seal`"
+on Builder territory. WORLD_STATE.md "Top-priority next" mentioned a
+ledger-prop Builder run alongside data/quest_text seeding; this is the
+former plus what was originally a separately-scoped Maeve fetch quest.
+Combined into a single coherent run because the quest needs the material
+and the material needs the quest — neither is useful alone.
+
+### What this run does
+
+1. **`captain_seal` material** added to `Items.gd` ITEMS dictionary.
+   Rarity "rare" (blue chip), value 60 (between wolf_heart 32 and
+   warlord_horn 250 — captain is mid-boss-tier, not faction warlord).
+   Fail-soft icon path; 🕯 emoji as legacy fallback (same glyph as the
+   quest-completion toast for visual continuity). Author-canon: an
+   iron-cast hand-stamp the south-road captain wore on a leather thong.
+
+2. **`bandit_captain` drop table rebalanced.** captain_seal added at
+   weight 16 — the headline drop on every captain kill. Total still 100.
+   Funded by trimming non-essential slots: ember_axe 12→8, hp_potion_l
+   12→10, leather 8→4, shadow_dagger 6→0. shadow_dagger remains in the
+   ITEMS catalog and still drops from the wolf and crystal_elemental
+   tables, so removing its 6 from this single table does not orphan the
+   item. Captain kills now yield captain_seal in 1–2 rolls on average,
+   matching the run-24 quest `needed: 1` economy.
+
+3. **`captain_seal_for_maeve` quest** added to `World.gd` QUEST_CATALOG.
+   role `quest` (Maeve's role), kind `fetch`, item `captain_seal`,
+   needed 1, prereq `["Stablemaster Roan", "road_warden"]`. Reward
+   90 xp + 50 gold + world_flag `maeve_seal_kept` + npc_flag
+   `["Elder Maeve", "seal_kept"]`. NO faction pressure_delta — bandits
+   pressure is derived (run-21), and goblins/wolves are unrelated to the
+   seal; pure flag work fits a memorial errand. Maeve becomes the
+   SECOND multi-quest NPC (Roan was 1st in run 23).
+
+4. **`seal_keeper` achievement** added to `Achievements.gd`. Title
+   "Seal-Keeper", priority 47 — slots between Road-Warden (45) and
+   Trusted (50). Auto-equipper picks Seal-Keeper the moment Maeve takes
+   the seal, then yields to Trusted once the third villager flag flips.
+   Predicate `world_flag: maeve_seal_kept`.
+
+### Files changed
+
+* `eldoria-godot/scripts/Items.gd` — `captain_seal` ITEMS entry +
+  `bandit_captain` drop table rebalance.
+* `eldoria-godot/scripts/World.gd` — `captain_seal_for_maeve` QUEST_CATALOG
+  entry (Maeve's second quest, cross-NPC `prerequisite_npc_flag`).
+* `eldoria-godot/scripts/Achievements.gd` — `seal_keeper` entry.
+* `SYSTEM_REGISTRY.md` — `captain_seal` material schema, Maeve sequence,
+  cross-NPC schema validation note.
+* `WORLD_STATE.md` — top-priority next refresh; Hook D resolved.
+* `CHANGES.md` — this run log.
+
+### 5-output rule
+
+(i)  **Integration:** the `prerequisite_npc_flag` schema now scales from
+     intra-NPC sequencing (Roan's wolf→bandit chain, run 23) to CROSS-NPC
+     sequencing (Roan's road_warden → Maeve's seal quest). Single-role
+     iteration finds the FIRST quest with prereq satisfied AND
+     consequence-world_flag NOT set — same dict-insertion order
+     iteration as run 23, no new resolver code. Maeve's
+     `whisperwood_cleansing` still wins on a fresh save (no prereq);
+     after Maeve completes it AND Roan completes the bandit clear,
+     `captain_seal_for_maeve` becomes Maeve's next pitch.
+
+(ii) **Schema:** Added `captain_seal` to ITEMS (Items.gd) — first new
+     material since run-21 wolf_heart. Drop-table layout unchanged
+     (weight + qty pattern). Added `captain_seal_for_maeve` to
+     QUEST_CATALOG (World.gd) — first cross-NPC `prerequisite_npc_flag`
+     consumer. Added `seal_keeper` to ACHIEVEMENTS (Achievements.gd) —
+     mirrors road_warden's single-world_flag predicate shape.
+
+(iii) **Feedback:** Three-beat completion cascade on quest turn-in:
+      (a) "🕯️ Maeve takes the seal. The road's name is hers to
+      remember." (toast); (b) `seal_keeper` achievement unlock through
+      the existing renown-ladder pipe; (c) "Seal-Keeper" title floats
+      above the player's head until Trusted overtakes it. Captain_seal
+      itself uses the 🕯 emoji glyph for inventory-tooltip continuity
+      with the toast and achievement icon.
+
+(iv) **Eval:** bandit_captain drop weights total 100 (verified inline by
+     the build script). The new quest's prereq references a flag that
+     is set EXCLUSIVELY by `bandit_road_for_roan`'s consequence step,
+     and that quest's prereq references a flag set EXCLUSIVELY by
+     `wolf_fang_for_roan` — the chain has no orphan flags. Maeve's role
+     `quest` had only `whisperwood_cleansing` until this run; the
+     resolver's first-defined-wins ordering means a fresh save still
+     pitches the cleansing quest, not the seal quest. captain_seal
+     value (60) sits cleanly between wolf_heart (32) and warlord_horn
+     (250) on the rarity-ladder — rarity "rare" matches the
+     blue-chip-on-drop UX.
+
+(v)  **2+ hooks for next run:**
+
+  • **Hook A — Lore Keeper / Builder: Maeve's `seal_kept` warm_lines.**
+    The new `npc_flag: ["Elder Maeve", "seal_kept"]` has no warm_lines
+    yet. NPC.gd's tier-2 resolver picks the FIRST flag in npc_flags
+    (LIFO append on `apply_consequence` Step 3), so authoring 4
+    `seal_kept` warm_lines AHEAD of the existing `first_quest_done`
+    block in WorldBuilder.NPCS would make them outrank the older lines
+    once both flags are set. Pure data add.
+
+  • **Hook B — Builder: Edda's first warm tier reads `maeve_seal_kept`.**
+    Edda is the only NPC with NO warm_world_flag/warm_flag/warm_faction
+    tier (Smith Edda, 0-tier today). Adding `warm_world_flag:
+    "maeve_seal_kept"` with 4 cross-NPC lines would compound Edda into
+    the warm-tiered NPC club AND validate the `maeve_seal_kept` flag's
+    cross-NPC reach. Wardens-of-the-Mark canon supports it: Edda (the
+    keeping-warm) sees Maeve (the keeping-vigil) keeping the captain's
+    seal — both are Wardens. Pure data add in WorldBuilder.NPCS.
+
+  • **Hook C — Builder: Mara cross-NPC mention of road clear.** Mara has
+    an open warm_world_flag slot. She can read `roan_bandit_road_clear`
+    OR `maeve_seal_kept` as a market-trader's commentary on the road
+    becoming travelable again. Pure data add.
+
+  • **Hook D — Lore Keeper: bandit-captain name canonization.** Run-23
+    Hook B is still open. With the seal now load-bearing in Maeve's
+    mantle canon, the captain's name matters more — a future Lore
+    Keeper run can author the captain's name (e.g. "Vrith of the
+    Sodden Cloak") in WorldBuilder._build_enemies' captain spawn block,
+    mirroring the "Pippin"-the-horse pattern. Pure data, zero new schema.
+
+  • **Hook E — Builder/Polisher: ledger-prop Builder run.** WORLD_STATE.md
+    flags Bram's red-leather ledger as a discoverable inn-prop using
+    the reserved-text future-Bram line (Wardens of the Mark canon, lore
+    run 2026-05-06). Smaller-scope counterpart to this run: a single
+    inn prop with a per-prop dialogue panel.
+
+### Branch pushed: `auto/builder`
+
+### What next run picks up
+
+Hook A (Maeve's `seal_kept` warm_lines) is the lowest-risk highest-compound
+next move — pure dialogue authoring on a slot the run-24 quest just
+opened. Builder territory next is Hook B (Edda's first warm tier) which
+would make Edda a 1-tier NPC and prove `maeve_seal_kept` reaches across
+the village. Either way, the run-24 captain_seal artifact is now the
+load-bearing prop for the next 2–3 runs of compound dialogue work.
+

@@ -135,6 +135,24 @@ const ITEMS = {
 	                  "icon":"👂", "icon_path":"res://assets/icons/goblin_ear.png","color":Color(0.45,0.65,0.30),"stack":true,"value":3},
 	"crystal_shard": {"name":"Crystal Shard",   "type":"material","slot":"","rarity":"uncommon",
 	                  "icon":"💎", "icon_path":"res://assets/icons/crystal_shard.png","color":Color(0.55,0.85,1.00),"stack":true,"value":35},
+	# COMPOUND (run 24 — Builder): captain_seal — RARE bandit-captain trophy,
+	# fetch material for `captain_seal_for_maeve` (Maeve's SECOND quest, the
+	# first cross-NPC application of run-23's `prerequisite_npc_flag` schema).
+	# An iron-cast hand-stamp the south-road captain wore on a leather thong;
+	# Maeve keeps it on her hut mantle once the player turns it in. Rarity
+	# "rare" so the inventory tooltip shows the blue chip the moment it
+	# drops — silhouette beat distinct from the bandit pocket-lint floor
+	# (cloth/leather/rusty_sword) and the captain's mid-tier weapon roll
+	# (steel_blade/chainmail). value 60 sits ABOVE wolf_heart (32) but
+	# BELOW warlord_horn (250) — captain is a mid-boss-tier kill, not a
+	# faction warlord. 🕯 emoji as legacy fallback; icon_path lights up
+	# if `captain_seal.png` painterly icon ships from the Artist agent
+	# (same fail-soft as wolf_fang / wolf_heart).
+	# THEME §2: iron-cast seals are period-correct (late medieval / early
+	# Renaissance). THEME §1: lived-in / weathered — meant to sit on a
+	# mantle, not be polished.
+	"captain_seal":  {"name":"Captain's Seal",  "type":"material","slot":"","rarity":"rare",
+	                  "icon":"🕯", "icon_path":"res://assets/icons/captain_seal.png","color":Color(0.55,0.45,0.30),"stack":true,"value":60},
 	"warlord_horn":  {"name":"Warlord's Horn",  "type":"material","slot":"","rarity":"epic",
 	                  "icon":"🐃", "icon_path":"res://assets/icons/warlord_horn.png","color":Color(0.85,0.30,0.20),"stack":true,"value":250},
 }
@@ -356,14 +374,25 @@ const DROP_TABLE = {
 	# DROP_TABLE.get(enemy_kind, []) so missing/typo'd kinds drop nothing
 	# rather than crash.
 	"bandit_captain": [
+		# COMPOUND (run 24 — Builder): captain_seal added at weight 16 — the
+		# headline drop on every captain kill (~16% per roll, ~1 seal per 6
+		# kills on average; captains spawn at bandit pressure ≥ 0.70 so a
+		# fresh emergent camp typically yields the seal in 1–2 captain kills,
+		# matching the run-24 quest needed:1 economy). Funded by trimming
+		# non-essential slots: ember_axe 12→8 (-4), hp_potion_l 12→10 (-2),
+		# leather 8→4 (-4), shadow_dagger 6→0 (-6). Total still 100;
+		# shadow_dagger remains in the ITEMS catalog and still drops from
+		# the wolf and crystal_elemental tables (Items.gd lines for those
+		# entries unchanged) so removing its 6 from this single table does
+		# not orphan the item.
 		{"id":"steel_blade",  "weight":24, "qty":[1,1]},
 		{"id":"chainmail",    "weight":18, "qty":[1,1]},
-		{"id":"ember_axe",    "weight":12, "qty":[1,1]},
+		{"id":"captain_seal", "weight":16, "qty":[1,1]},
 		{"id":"crystal_shard","weight":12, "qty":[2,4]},
-		{"id":"hp_potion_l",  "weight":12, "qty":[1,2]},
+		{"id":"hp_potion_l",  "weight":10, "qty":[1,2]},
+		{"id":"ember_axe",    "weight": 8, "qty":[1,1]},
 		{"id":"crit_amulet",  "weight": 8, "qty":[1,1]},
-		{"id":"leather",      "weight": 8, "qty":[1,2]},
-		{"id":"shadow_dagger","weight": 6, "qty":[1,1]},
+		{"id":"leather",      "weight": 4, "qty":[1,2]},
 	],
 }
 

@@ -177,6 +177,30 @@ const ACHIEVEMENTS: Dictionary = {
 		"title_priority": 45,
 		"predicate": {"kind": "world_flag", "flag": "roan_bandit_road_clear"},
 	},
+	# COMPOUND (run 24 — Builder): seal_keeper — the political beat that
+	# follows road_warden. The new run-24 quest `captain_seal_for_maeve` is
+	# the SOLE writer of `maeve_seal_kept` (cross-NPC sequenced fetch quest,
+	# gated on `road_warden`). Title slots BETWEEN Road-Warden (45, the
+	# bandit-clear beat) and Trusted (50, the three-villager NPC-flag beat).
+	# Auto-equipper picks Seal-Keeper the moment Maeve takes the seal, then
+	# yields to Trusted once the third villager flag flips. The captain's
+	# seal is a deeper political act than road clearing — the player isn't
+	# just clearing bandits, they're handing the captain's authority to a
+	# Warden of the Mark to keep (canon: Maeve = the keeping-vigil; the
+	# Wardens have no enemy, they have memory). THEME §1 painterly + §7
+	# Ghibli mentor cadence in the desc. Painterly crest icon pipeline
+	# matches the rest — Artist Agent ships the PNG later; emoji `🕯`
+	# (a vigil candle) is the legacy fallback, the same glyph as the
+	# quest-completion toast for visual continuity.
+	"seal_keeper": {
+		"name": "Keeper of the Captain's Seal",
+		"desc": "The seal lies on Maeve's mantle. The road's name is remembered.",
+		"icon": "🕯",
+		"icon_path": "res://assets/icons/achievements/seal_keeper.png",
+		"title_text": "Seal-Keeper",
+		"title_priority": 47,
+		"predicate": {"kind": "world_flag", "flag": "maeve_seal_kept"},
+	},
 	# Tier 4 — both factions humbled AND three trusts. Mastery rung. Title is
 	# the most prestigious so the auto-equipper picks it once Owen gets here.
 	"realm_warden": {
