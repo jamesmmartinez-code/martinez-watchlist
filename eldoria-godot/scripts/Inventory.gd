@@ -7,14 +7,28 @@ class_name Inventory
 
 signal inventory_changed
 signal equipment_changed
+# Equipment Visualizer (Pillar 1 — Combat) — granular per-slot signals so
+# Player.gd can do partial visual rebuilds (e.g. swap helmet without re-
+# instancing the whole sword). Both signals fire alongside equipment_changed
+# for backwards-compat with code that watches the legacy aggregate signal.
+signal item_equipped(slot, item_id)
+signal item_unequipped(slot, item_id)
 
 const MAX_SLOTS: int = 24
 
 var bag: Array = []   # [{id, qty}]
+# Equipment Visualizer added helmet/cape/shield slots (2026-05-05) so the
+# kid's hero can visually layer gear, not just brandish a weapon. Default
+# values are empty strings — Items.gd entries with the matching `slot`
+# string will route through equip()/unequip() into these keys, and Player.gd
+# rebuilds the matching bone-attached GLB on each equipment_changed.
 var equipped: Dictionary = {
 	"weapon":  "iron_sword",
 	"armor":   "leather",
 	"trinket": "",
+	"helmet":  "",
+	"cape":    "",
+	"shield":  "",
 }
 
 # ── Smith Edda forge upgrade state (run 12 — Builder) ───────────────────
@@ -110,7 +124,9 @@ func equip(item_id: String) -> void:
 	var was = equipped.get(slot_name, "")
 	if was != "":
 		add_item(was, 1)
+		item_unequipped.emit(slot_name, was)
 	equipped[slot_name] = item_id
+	item_equipped.emit(slot_name, item_id)
 	equipment_changed.emit()
 	inventory_changed.emit()
 
@@ -119,7 +135,9 @@ func unequip(slot_name: String) -> void:
 	if was == "": return
 	equipped[slot_name] = ""
 	add_item(was, 1)
+	item_unequipped.emit(slot_name, was)
 	equipment_changed.emit()
+	inventory_changed.emit()
 
 # ── Derived stats ──────────────────────────────────────────────────────────
 func bonus_damage() -> int:
@@ -161,6 +179,11 @@ func equipped_weapon_id() -> String:
 
 func equipped_armor_id() -> String:
 	return equipped.get("armor", "")
+
+# Equipment Visualizer — generic accessor so Player.gd doesn't need to grow
+# a per-slot helper for every new gear category we add.
+func equipped_id(slot: String) -> String:
+	return equipped.get(slot, "")
 
 # ── Smith Edda forge methods (run 12 — Builder) ─────────────────────────
 # Public API for the reforge UI in NPC dialogue.

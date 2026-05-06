@@ -65,6 +65,13 @@ const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 # Visible weapon attached to the player's body (re-built when equipment changes)
 var weapon_visual: Node3D = null
 
+# Equipment Visualizer agent — multi-slot gear visuals.
+# Keyed by slot name (right_hand, left_hand, head, chest_back, hip). The
+# right_hand entry mirrors `weapon_visual` for backwards-compat. Each value
+# is a Node3D parented under the matching BoneAttachment3D; rebuilt whenever
+# Inventory.equipment_changed fires. See assets/gear/README.md.
+var gear_visuals: Dictionary = {}
+
 # Floating title above the player's head — drawn as a Label3D so it
 # tracks the player in 3D space and reads from the cooperative camera at
 # any orbit angle. Hidden until World assigns a title via set_title().
@@ -620,7 +627,14 @@ func complete_quest_if_done() -> bool:
 # attached) so it works on any GLB without needing a known skeleton path.
 # ────────────────────────────────────────────────────────────────────────
 func _on_equipment_changed() -> void:
+	# Equipment Visualizer (Pillar 1 — Combat) — refresh every visible gear
+	# slot, not just the right hand. Each rebuilder prefers an authored GLB
+	# at assets/gear/<slot>/<item_id>.glb and falls back to legacy procedural
+	# primitives ONLY for the right_hand/weapon slot (see README in that dir).
 	_rebuild_weapon_visual()
+	_rebuild_shield_visual()
+	_rebuild_helmet_visual()
+	_rebuild_cape_visual()
 	# Update HP/MP caps based on equipment bonuses
 	stats_changed.emit()
 
@@ -663,22 +677,290 @@ func _rebuild_weapon_visual() -> void:
 	weapon_visual.position = local_origin
 	weapon_visual.rotation = local_rot
 	attach_parent.add_child(weapon_visual)
+	gear_visuals["right_hand"] = weapon_visual
+
+	# Equipment Visualizer — prefer authored GLB at
+	# res://assets/gear/right_hand/<weapon_id>.glb. Procedural primitives
+	# below are STOP-GAP only (THEME.md flagged) and run only when no asset
+	# has shipped yet for this weapon.
+	var glb_node: Node3D = _try_load_gear_glb("right_hand", weapon_id)
+	if glb_node != null:
+		weapon_visual.add_child(glb_node)
+		_apply_tier_tint(glb_node, item.get("rarity", "common"))
+		return
 
 	var color: Color = item.get("color", Color(0.85, 0.85, 0.85))
 	var glow: bool = item.get("rarity", "common") in ["epic", "legendary"]
 
-	# Build a sword-like or axe-like or dagger-like shape based on icon
+	# Build a weapon-shape primitive. We dispatch by item_id first (so
+	# frost_saber can get a curved blade and dragonfang can get a
+	# greatsword silhouette), then fall back to icon-based shape for any
+	# weapon Item Designer adds without an explicit shape route. This is
+	# all STOP-GAP: the moment assets/gear/right_hand/<id>.glb ships, the
+	# loader above intercepts before we ever reach this block.
+	#
+	# Equipment Visualizer (Pillar 1 — Combat) — varying silhouette by id
+	# means even the procedural fallback gives kids a visual cue that
+	# their epic/legendary weapon is BIGGER than a common iron sword.
 	var icon: String = item.get("icon", "⚔")
-	if icon == "🪓":
-		_build_axe(color, glow)
-	elif icon == "🗡":
-		_build_dagger(color, glow)
-	elif icon == "❄":
-		_build_sword(color, glow, Color(0.6, 0.85, 1.0))
-	elif icon == "🐉":
-		_build_sword(color, true, Color(1.0, 0.55, 0.10))
-	else:
-		_build_sword(color, glow)
+	match weapon_id:
+		"frost_saber":
+			# Saber: longer + curved, frost-cyan glow.
+			_build_saber(color, glow, Color(0.55, 0.85, 1.0))
+		"dragonfang":
+			# Legendary 2H greatsword: oversized, ember-orange glow.
+			_build_greatsword(color, true, Color(1.0, 0.55, 0.10))
+		"shadow_dagger":
+			_build_dagger(color, glow)
+		"ember_axe":
+			_build_axe(color, glow)
+		_:
+			# Icon-based dispatch (legacy fallback for unknown ids).
+			if icon == "🪓":
+				_build_axe(color, glow)
+			elif icon == "🗡":
+				_build_dagger(color, glow)
+			elif icon == "❄":
+				_build_saber(color, glow, Color(0.55, 0.85, 1.0))
+			elif icon == "🐉":
+				_build_greatsword(color, true, Color(1.0, 0.55, 0.10))
+			else:
+				_build_sword(color, glow)
+
+# ════════════════════════════════════════════════════════════════════════
+# Equipment Visualizer — slot-aware GLB loader + tier-tint helper.
+# ════════════════════════════════════════════════════════════════════════
+
+# Try to load an authored GLB at res://assets/gear/<slot>/<item_id>.glb.
+# Returns an INSTANCED Node3D ready to be parented to a BoneAttachment3D,
+# or null if the file doesn't exist. Caller is responsible for parenting +
+# applying tier tint.
+func _try_load_gear_glb(slot: String, item_id: String) -> Node3D:
+	if slot == "" or item_id == "":
+		return null
+	var path := "res://assets/gear/%s/%s.glb" % [slot, item_id]
+	if not ResourceLoader.exists(path):
+		return null
+	var packed: PackedScene = load(path) as PackedScene
+	if packed == null:
+		return null
+	var inst: Node = packed.instantiate()
+	if inst is Node3D:
+		return inst as Node3D
+	# GLBs always import as Node3D root; if not, bail safely.
+	inst.queue_free()
+	return null
+
+# Apply the rarity-tier tint as an albedo modulate on every MeshInstance3D
+# under `root`. Lets one base GLB serve common/uncommon/rare/epic/legendary
+# variants without shipping five copies of the asset (see README §"Tier
+# variants are a runtime tint, not a separate file").
+const TIER_TINT := {
+	"common":    Color(1.00, 1.00, 1.00),
+	"uncommon":  Color(0.75, 1.00, 0.75),
+	"rare":      Color(0.70, 0.85, 1.00),
+	"epic":      Color(0.95, 0.70, 1.00),
+	"legendary": Color(1.00, 0.85, 0.55),
+}
+
+func _apply_tier_tint(root: Node, tier: String) -> void:
+	if root == null:
+		return
+	var tint: Color = TIER_TINT.get(tier, Color.WHITE)
+	if tint == Color.WHITE:
+		return
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mi: MeshInstance3D = n
+			# Don't clobber the source material — wrap it.
+			var surf_count: int = 0
+			if mi.mesh != null:
+				surf_count = mi.mesh.get_surface_count()
+			for i in range(surf_count):
+				var mat: Material = mi.get_active_material(i)
+				var sm: StandardMaterial3D = null
+				if mat is StandardMaterial3D:
+					sm = (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
+				else:
+					sm = StandardMaterial3D.new()
+				sm.albedo_color = sm.albedo_color * tint
+				if tier in ["epic", "legendary"]:
+					sm.emission_enabled = true
+					sm.emission = tint
+					sm.emission_energy_multiplier = 0.55 if tier == "epic" else 0.85
+				mi.set_surface_override_material(i, sm)
+		for c in n.get_children():
+			stack.append(c)
+
+# ── Bone attachment helpers for non-weapon slots ────────────────────────
+# These mirror _make_right_hand_bone_attachment but target other bones.
+# Returns the attachment node parented under the player's Skeleton3D, or
+# null if no matching bone was found.
+func _make_bone_attachment(att_name: String, candidates: Array) -> BoneAttachment3D:
+	var skel: Skeleton3D = _find_first_skeleton(self)
+	if skel == null:
+		return null
+	var bone_idx: int = -1
+	for cand in candidates:
+		bone_idx = skel.find_bone(cand)
+		if bone_idx >= 0:
+			break
+	# Fuzzy match (Mixamo suffixes "_021" etc.)
+	if bone_idx < 0:
+		var wanted: Array = []
+		for cand in candidates:
+			wanted.append(cand.to_lower())
+		for i in range(skel.get_bone_count()):
+			var bn: String = skel.get_bone_name(i).to_lower()
+			for w in wanted:
+				if bn.find(w) >= 0:
+					bone_idx = i
+					break
+			if bone_idx >= 0:
+				break
+	if bone_idx < 0:
+		return null
+	for c in skel.get_children():
+		if c is BoneAttachment3D and c.name == att_name:
+			(c as BoneAttachment3D).bone_idx = bone_idx
+			return c
+	var ba := BoneAttachment3D.new()
+	ba.name = att_name
+	ba.bone_idx = bone_idx
+	skel.add_child(ba)
+	return ba
+
+func _make_left_hand_attachment() -> BoneAttachment3D:
+	return _make_bone_attachment("LeftHandShieldAttach",
+		["LeftHand", "Left_Hand", "left_hand", "Hand_L", "HandL", "hand.L", "hand_l", "mixamorigLeftHand", "mixamorig:LeftHand"])
+
+func _make_head_attachment() -> BoneAttachment3D:
+	return _make_bone_attachment("HeadGearAttach",
+		["Head", "head", "mixamorigHead", "mixamorig:Head", "head.001", "Bip01_Head"])
+
+func _make_chest_back_attachment() -> BoneAttachment3D:
+	return _make_bone_attachment("ChestBackAttach",
+		["Spine2", "Spine1", "Spine", "spine", "spine.002", "spine.001", "mixamorigSpine2", "mixamorig:Spine2", "mixamorig:Spine1"])
+
+func _make_hip_attachment() -> BoneAttachment3D:
+	return _make_bone_attachment("HipAttach",
+		["Hips", "hip", "Hip", "hips", "mixamorigHips", "mixamorig:Hips", "Bip01_Pelvis"])
+
+# ── Slot rebuilders ──────────────────────────────────────────────────────
+# Common pattern: free old visual, look up equipped item, find bone, prefer
+# GLB asset, apply tier tint, parent under bone attachment with a tuned
+# local origin/rotation. Each rebuilder no-ops cleanly if no GLB is shipped
+# yet for that slot — empty hands/head/back is correct, NOT a procedural
+# fallback (per assets/gear/README.md "Fallback behavior").
+
+func _free_gear_slot(slot: String) -> void:
+	var prev: Node = gear_visuals.get(slot)
+	if prev != null and is_instance_valid(prev):
+		prev.queue_free()
+	gear_visuals.erase(slot)
+
+func _rebuild_shield_visual() -> void:
+	_free_gear_slot("left_hand")
+	if inventory == null:
+		return
+	# Inventory currently uses a single "armor" slot; a future "shield" slot
+	# will route here. For now, only equip a shield if Items.gd defines an
+	# item with slot == "shield" AND it's equipped.
+	var shield_id: String = ""
+	if inventory.equipped.has("shield"):
+		shield_id = inventory.equipped.get("shield", "")
+	if shield_id == "":
+		return
+	var item: Dictionary = Items.get_item(shield_id)
+	if item.is_empty():
+		return
+	var glb: Node3D = _try_load_gear_glb("left_hand", shield_id)
+	if glb == null:
+		return  # No procedural fallback for shields — wait for asset.
+	var parent_node: Node = self
+	var local_origin: Vector3 = Vector3(-0.45, 1.05, 0.05)
+	var local_rot: Vector3 = Vector3(0, 0, deg_to_rad(-25))
+	var att: BoneAttachment3D = _make_left_hand_attachment()
+	if att != null:
+		parent_node = att
+		local_origin = Vector3(0.0, 0.04, 0.08)
+		local_rot = Vector3(deg_to_rad(90), 0, 0)
+	var holder := Node3D.new()
+	holder.name = "ShieldVisual"
+	holder.position = local_origin
+	holder.rotation = local_rot
+	parent_node.add_child(holder)
+	holder.add_child(glb)
+	_apply_tier_tint(glb, item.get("rarity", "common"))
+	gear_visuals["left_hand"] = holder
+
+func _rebuild_helmet_visual() -> void:
+	_free_gear_slot("head")
+	if inventory == null:
+		return
+	var helmet_id: String = ""
+	if inventory.equipped.has("helmet"):
+		helmet_id = inventory.equipped.get("helmet", "")
+	if helmet_id == "":
+		return
+	var item: Dictionary = Items.get_item(helmet_id)
+	if item.is_empty():
+		return
+	var glb: Node3D = _try_load_gear_glb("head", helmet_id)
+	if glb == null:
+		return
+	var parent_node: Node = self
+	var local_origin: Vector3 = Vector3(0, 1.75, 0)
+	var local_rot: Vector3 = Vector3.ZERO
+	var att: BoneAttachment3D = _make_head_attachment()
+	if att != null:
+		parent_node = att
+		# Hat sits on top of skull bone; small forward offset for brim
+		local_origin = Vector3(0, 0.10, 0.0)
+		local_rot = Vector3.ZERO
+	var holder := Node3D.new()
+	holder.name = "HelmetVisual"
+	holder.position = local_origin
+	holder.rotation = local_rot
+	parent_node.add_child(holder)
+	holder.add_child(glb)
+	_apply_tier_tint(glb, item.get("rarity", "common"))
+	gear_visuals["head"] = holder
+
+func _rebuild_cape_visual() -> void:
+	_free_gear_slot("chest_back")
+	if inventory == null:
+		return
+	var cape_id: String = ""
+	if inventory.equipped.has("cape"):
+		cape_id = inventory.equipped.get("cape", "")
+	if cape_id == "":
+		return
+	var item: Dictionary = Items.get_item(cape_id)
+	if item.is_empty():
+		return
+	var glb: Node3D = _try_load_gear_glb("chest_back", cape_id)
+	if glb == null:
+		return
+	var parent_node: Node = self
+	var local_origin: Vector3 = Vector3(0, 1.30, -0.18)
+	var local_rot: Vector3 = Vector3.ZERO
+	var att: BoneAttachment3D = _make_chest_back_attachment()
+	if att != null:
+		parent_node = att
+		local_origin = Vector3(0, 0, -0.12)
+		local_rot = Vector3.ZERO
+	var holder := Node3D.new()
+	holder.name = "CapeVisual"
+	holder.position = local_origin
+	holder.rotation = local_rot
+	parent_node.add_child(holder)
+	holder.add_child(glb)
+	_apply_tier_tint(glb, item.get("rarity", "common"))
+	gear_visuals["chest_back"] = holder
+
 
 func _build_sword(blade_color: Color, glow: bool, glow_color: Color = Color(1, 1, 1)) -> void:
 	# Hilt
@@ -783,6 +1065,129 @@ func _build_dagger(blade_color: Color, glow: bool) -> void:
 	blade.material_override = bmat
 	blade.position.y = 0.22
 	weapon_visual.add_child(blade)
+
+# Saber — single-edged curved blade. Visually distinct from a sword via
+# (a) longer reach (0.85 vs 0.65), (b) thinner profile, and (c) three
+# slightly-offset blade segments that fake a gentle curve. Used by
+# frost_saber and any future "saber"-like weapon. Procedural stop-gap —
+# replace with an authored GLB at assets/gear/right_hand/frost_saber.glb.
+func _build_saber(blade_color: Color, glow: bool, glow_color: Color = Color(1, 1, 1)) -> void:
+	# Hilt
+	var hilt := MeshInstance3D.new()
+	var hcm := CylinderMesh.new()
+	hcm.top_radius = 0.038; hcm.bottom_radius = 0.038; hcm.height = 0.18
+	hilt.mesh = hcm
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.18, 0.10, 0.06)
+	hm.roughness = 0.92
+	hilt.material_override = hm
+	weapon_visual.add_child(hilt)
+	# Knuckle-guard (single curved bar — approximated as a tilted box)
+	var guard := MeshInstance3D.new()
+	var gm := BoxMesh.new()
+	gm.size = Vector3(0.04, 0.18, 0.025)
+	guard.mesh = gm
+	var gmat := StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.85, 0.85, 0.90)
+	gmat.metallic = 0.85
+	gmat.roughness = 0.20
+	guard.material_override = gmat
+	guard.position = Vector3(0.05, 0.10, 0)
+	guard.rotation = Vector3(0, 0, deg_to_rad(-25))
+	weapon_visual.add_child(guard)
+	# Blade — three stacked segments, each rotated a few degrees relative
+	# to the previous, to fake a curved silhouette without a custom mesh.
+	var seg_color := blade_color.lerp(Color(0.95, 0.98, 1.0), 0.15)
+	for i in range(3):
+		var seg := MeshInstance3D.new()
+		var sm_box := BoxMesh.new()
+		sm_box.size = Vector3(0.045, 0.30, 0.012)
+		seg.mesh = sm_box
+		var bmat := StandardMaterial3D.new()
+		bmat.albedo_color = seg_color
+		bmat.metallic = 0.90
+		bmat.roughness = 0.12
+		if glow:
+			bmat.emission_enabled = true
+			bmat.emission = glow_color
+			bmat.emission_energy_multiplier = 0.9 + 0.1 * i
+		seg.material_override = bmat
+		# Stack along +Y, each slightly offset along +X to curve the blade.
+		seg.position = Vector3(0.012 * i, 0.20 + 0.27 * i, 0)
+		seg.rotation = Vector3(0, 0, deg_to_rad(-3.0 * i))
+		weapon_visual.add_child(seg)
+	# Pommel — small dome
+	var pom := MeshInstance3D.new()
+	var pcm := SphereMesh.new()
+	pcm.radius = 0.045; pcm.height = 0.07
+	pom.mesh = pcm
+	pom.material_override = gmat
+	pom.position.y = -0.11
+	weapon_visual.add_child(pom)
+
+
+# Greatsword — oversized 2H blade for legendary weapons. Visually 1.5×
+# larger than a common sword, with an ornate dragon-scale crossguard
+# (multiple stacked ridges) and dual-point fuller (two blade slabs side-
+# by-side). Used by dragonfang. Stop-gap procedural — replace with a real
+# authored asset at assets/gear/right_hand/dragonfang.glb.
+func _build_greatsword(blade_color: Color, glow: bool, glow_color: Color = Color(1, 1, 1)) -> void:
+	# Long wrapped hilt (two-hand grip)
+	var hilt := MeshInstance3D.new()
+	var hcm := CylinderMesh.new()
+	hcm.top_radius = 0.045; hcm.bottom_radius = 0.05; hcm.height = 0.32
+	hilt.mesh = hcm
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.25, 0.12, 0.08)
+	hm.roughness = 0.88
+	hilt.material_override = hm
+	weapon_visual.add_child(hilt)
+	# Ornate cross-guard — three stacked ridges of decreasing size for a
+	# "dragon scale" silhouette (still procedural but more interesting
+	# than a single bar).
+	var guard_mat := StandardMaterial3D.new()
+	guard_mat.albedo_color = Color(0.95, 0.78, 0.30)
+	guard_mat.metallic = 0.85
+	guard_mat.roughness = 0.22
+	if glow:
+		guard_mat.emission_enabled = true
+		guard_mat.emission = Color(1.0, 0.55, 0.10)
+		guard_mat.emission_energy_multiplier = 0.6
+	for i in range(3):
+		var ridge := MeshInstance3D.new()
+		var rm := BoxMesh.new()
+		var w: float = 0.32 - 0.06 * i
+		rm.size = Vector3(w, 0.05, 0.05 + 0.01 * i)
+		ridge.mesh = rm
+		ridge.material_override = guard_mat
+		ridge.position.y = 0.18 + 0.05 * i
+		weapon_visual.add_child(ridge)
+	# Dual-slab blade — two box meshes side by side with a 0.01 gap so it
+	# reads as a fullered greatsword.
+	for slab_i in range(2):
+		var blade := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(0.05, 0.95, 0.018)
+		blade.mesh = bm
+		var bmat := StandardMaterial3D.new()
+		bmat.albedo_color = blade_color
+		bmat.metallic = 0.92
+		bmat.roughness = 0.10
+		if glow:
+			bmat.emission_enabled = true
+			bmat.emission = glow_color
+			bmat.emission_energy_multiplier = 1.1
+		blade.material_override = bmat
+		blade.position = Vector3(-0.03 + 0.06 * slab_i, 0.78, 0)
+		weapon_visual.add_child(blade)
+	# Pommel — large fang-shaped sphere
+	var pom := MeshInstance3D.new()
+	var pcm := SphereMesh.new()
+	pcm.radius = 0.07; pcm.height = 0.11
+	pom.mesh = pcm
+	pom.material_override = guard_mat
+	pom.position.y = -0.20
+	weapon_visual.add_child(pom)
 
 func _quick_use_potion() -> void:
 	if not inventory: return
