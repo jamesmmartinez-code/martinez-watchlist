@@ -32,7 +32,7 @@ func _populate_npc_models() -> void:
 		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
 		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
-		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 	}
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {
