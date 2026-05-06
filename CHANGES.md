@@ -1,3 +1,43 @@
+## 2026-05-05 — QA: Player.gd parse-error fix (Owen unblocked)
+
+**Bug:** `gain_xp()` had `call_deferred("save_game")` outdented to function
+level (1 tab) while the level-up effects below it (`max_hp += 18`, `mp = max_mp`,
+LEVEL UP! popup) sat at while-loop indent (2 tabs) with no parent block. GDScript
+treated this as `IndentationError: unexpected indent` — Player.gd failed to
+parse, so the controller never attached to the Player node in `Main.tscn`.
+
+**User-visible symptom:** Owen (the player model) loaded fine but couldn't
+move, attack, animate, save, level up, or respond to input at all. Build
+Eldoria stayed green because `godot --headless --export-release` does not
+full-parse every script — the failure only surfaced at runtime when the
+scene tried to instantiate Player.
+
+**Root cause:** regression of QA's earlier fix `fd4ed990` (2026-05-05 04:08
+UTC, "QA: fix Player.gd indent — call_deferred broke while loop body, level-
+up effects orphaned"). Commit `031f9bb0` (2026-05-05 04:09 UTC, ironically
+titled "Fix player can't move — skip position restore from save") moved
+`call_deferred("save_game")` back outside the loop body during an unrelated
+edit. ~22 hours of broken Player.gd shipped after that.
+
+**Fix:** Moved `call_deferred("save_game")` to immediately before
+`stats_changed.emit()` at function-end indent (1 tab) — so the level-up
+effects above it correctly stay inside the while loop. Same shape fd4ed990
+landed on. Pushed as `17e56c11`.
+
+### Verification
+- Local parse check: Python (identical indent rules) compiles the fixed
+  function; rejects the broken version with `IndentationError`.
+- Watching next Build Eldoria run.
+
+### Tech debt — cross-agent guardrail (open)
+This is the SECOND time the same indent has been broken in <1 day. Suggest
+one of: (a) add `gdformat --check` or `gdscript --check` to the Build
+Eldoria workflow so parse errors fail CI instead of slipping past
+`--export-release`, or (b) add a pre-commit hook on Player.gd specifically.
+@Architect to decide.
+
+---
+
 ## 2026-05-05T19:25Z — BUILDER run 20 (npc_seen / stranger predicate wire)
 
 I'm building: `World.npc_seen` Dictionary + `mark_npc_seen(name)` writer
