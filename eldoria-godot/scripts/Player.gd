@@ -645,19 +645,40 @@ func _rebuild_weapon_visual() -> void:
 	var color: Color = item.get("color", Color(0.85, 0.85, 0.85))
 	var glow: bool = item.get("rarity", "common") in ["epic", "legendary"]
 
-	# Build a sword-like or axe-like or dagger-like shape based on icon
-	# (LEGACY procedural fallback — replace with an authored GLB ASAP).
+	# Build a weapon-shape primitive. We dispatch by item_id first (so
+	# frost_saber can get a curved blade and dragonfang can get a
+	# greatsword silhouette), then fall back to icon-based shape for any
+	# weapon Item Designer adds without an explicit shape route. This is
+	# all STOP-GAP: the moment assets/gear/right_hand/<id>.glb ships, the
+	# loader above intercepts before we ever reach this block.
+	#
+	# Equipment Visualizer (Pillar 1 — Combat) — varying silhouette by id
+	# means even the procedural fallback gives kids a visual cue that
+	# their epic/legendary weapon is BIGGER than a common iron sword.
 	var icon: String = item.get("icon", "⚔")
-	if icon == "🪓":
-		_build_axe(color, glow)
-	elif icon == "🗡":
-		_build_dagger(color, glow)
-	elif icon == "❄":
-		_build_sword(color, glow, Color(0.6, 0.85, 1.0))
-	elif icon == "🐉":
-		_build_sword(color, true, Color(1.0, 0.55, 0.10))
-	else:
-		_build_sword(color, glow)
+	match weapon_id:
+		"frost_saber":
+			# Saber: longer + curved, frost-cyan glow.
+			_build_saber(color, glow, Color(0.55, 0.85, 1.0))
+		"dragonfang":
+			# Legendary 2H greatsword: oversized, ember-orange glow.
+			_build_greatsword(color, true, Color(1.0, 0.55, 0.10))
+		"shadow_dagger":
+			_build_dagger(color, glow)
+		"ember_axe":
+			_build_axe(color, glow)
+		_:
+			# Icon-based dispatch (legacy fallback for unknown ids).
+			if icon == "🪓":
+				_build_axe(color, glow)
+			elif icon == "🗡":
+				_build_dagger(color, glow)
+			elif icon == "❄":
+				_build_saber(color, glow, Color(0.55, 0.85, 1.0))
+			elif icon == "🐉":
+				_build_greatsword(color, true, Color(1.0, 0.55, 0.10))
+			else:
+				_build_sword(color, glow)
 
 # ════════════════════════════════════════════════════════════════════════
 # Equipment Visualizer — slot-aware GLB loader + tier-tint helper.
@@ -997,6 +1018,129 @@ func _build_dagger(blade_color: Color, glow: bool) -> void:
 	blade.material_override = bmat
 	blade.position.y = 0.22
 	weapon_visual.add_child(blade)
+
+# Saber — single-edged curved blade. Visually distinct from a sword via
+# (a) longer reach (0.85 vs 0.65), (b) thinner profile, and (c) three
+# slightly-offset blade segments that fake a gentle curve. Used by
+# frost_saber and any future "saber"-like weapon. Procedural stop-gap —
+# replace with an authored GLB at assets/gear/right_hand/frost_saber.glb.
+func _build_saber(blade_color: Color, glow: bool, glow_color: Color = Color(1, 1, 1)) -> void:
+	# Hilt
+	var hilt := MeshInstance3D.new()
+	var hcm := CylinderMesh.new()
+	hcm.top_radius = 0.038; hcm.bottom_radius = 0.038; hcm.height = 0.18
+	hilt.mesh = hcm
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.18, 0.10, 0.06)
+	hm.roughness = 0.92
+	hilt.material_override = hm
+	weapon_visual.add_child(hilt)
+	# Knuckle-guard (single curved bar — approximated as a tilted box)
+	var guard := MeshInstance3D.new()
+	var gm := BoxMesh.new()
+	gm.size = Vector3(0.04, 0.18, 0.025)
+	guard.mesh = gm
+	var gmat := StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.85, 0.85, 0.90)
+	gmat.metallic = 0.85
+	gmat.roughness = 0.20
+	guard.material_override = gmat
+	guard.position = Vector3(0.05, 0.10, 0)
+	guard.rotation = Vector3(0, 0, deg_to_rad(-25))
+	weapon_visual.add_child(guard)
+	# Blade — three stacked segments, each rotated a few degrees relative
+	# to the previous, to fake a curved silhouette without a custom mesh.
+	var seg_color := blade_color.lerp(Color(0.95, 0.98, 1.0), 0.15)
+	for i in range(3):
+		var seg := MeshInstance3D.new()
+		var sm_box := BoxMesh.new()
+		sm_box.size = Vector3(0.045, 0.30, 0.012)
+		seg.mesh = sm_box
+		var bmat := StandardMaterial3D.new()
+		bmat.albedo_color = seg_color
+		bmat.metallic = 0.90
+		bmat.roughness = 0.12
+		if glow:
+			bmat.emission_enabled = true
+			bmat.emission = glow_color
+			bmat.emission_energy_multiplier = 0.9 + 0.1 * i
+		seg.material_override = bmat
+		# Stack along +Y, each slightly offset along +X to curve the blade.
+		seg.position = Vector3(0.012 * i, 0.20 + 0.27 * i, 0)
+		seg.rotation = Vector3(0, 0, deg_to_rad(-3.0 * i))
+		weapon_visual.add_child(seg)
+	# Pommel — small dome
+	var pom := MeshInstance3D.new()
+	var pcm := SphereMesh.new()
+	pcm.radius = 0.045; pcm.height = 0.07
+	pom.mesh = pcm
+	pom.material_override = gmat
+	pom.position.y = -0.11
+	weapon_visual.add_child(pom)
+
+
+# Greatsword — oversized 2H blade for legendary weapons. Visually 1.5×
+# larger than a common sword, with an ornate dragon-scale crossguard
+# (multiple stacked ridges) and dual-point fuller (two blade slabs side-
+# by-side). Used by dragonfang. Stop-gap procedural — replace with a real
+# authored asset at assets/gear/right_hand/dragonfang.glb.
+func _build_greatsword(blade_color: Color, glow: bool, glow_color: Color = Color(1, 1, 1)) -> void:
+	# Long wrapped hilt (two-hand grip)
+	var hilt := MeshInstance3D.new()
+	var hcm := CylinderMesh.new()
+	hcm.top_radius = 0.045; hcm.bottom_radius = 0.05; hcm.height = 0.32
+	hilt.mesh = hcm
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.25, 0.12, 0.08)
+	hm.roughness = 0.88
+	hilt.material_override = hm
+	weapon_visual.add_child(hilt)
+	# Ornate cross-guard — three stacked ridges of decreasing size for a
+	# "dragon scale" silhouette (still procedural but more interesting
+	# than a single bar).
+	var guard_mat := StandardMaterial3D.new()
+	guard_mat.albedo_color = Color(0.95, 0.78, 0.30)
+	guard_mat.metallic = 0.85
+	guard_mat.roughness = 0.22
+	if glow:
+		guard_mat.emission_enabled = true
+		guard_mat.emission = Color(1.0, 0.55, 0.10)
+		guard_mat.emission_energy_multiplier = 0.6
+	for i in range(3):
+		var ridge := MeshInstance3D.new()
+		var rm := BoxMesh.new()
+		var w: float = 0.32 - 0.06 * i
+		rm.size = Vector3(w, 0.05, 0.05 + 0.01 * i)
+		ridge.mesh = rm
+		ridge.material_override = guard_mat
+		ridge.position.y = 0.18 + 0.05 * i
+		weapon_visual.add_child(ridge)
+	# Dual-slab blade — two box meshes side by side with a 0.01 gap so it
+	# reads as a fullered greatsword.
+	for slab_i in range(2):
+		var blade := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(0.05, 0.95, 0.018)
+		blade.mesh = bm
+		var bmat := StandardMaterial3D.new()
+		bmat.albedo_color = blade_color
+		bmat.metallic = 0.92
+		bmat.roughness = 0.10
+		if glow:
+			bmat.emission_enabled = true
+			bmat.emission = glow_color
+			bmat.emission_energy_multiplier = 1.1
+		blade.material_override = bmat
+		blade.position = Vector3(-0.03 + 0.06 * slab_i, 0.78, 0)
+		weapon_visual.add_child(blade)
+	# Pommel — large fang-shaped sphere
+	var pom := MeshInstance3D.new()
+	var pcm := SphereMesh.new()
+	pcm.radius = 0.07; pcm.height = 0.11
+	pom.mesh = pcm
+	pom.material_override = guard_mat
+	pom.position.y = -0.20
+	weapon_visual.add_child(pom)
 
 func _quick_use_potion() -> void:
 	if not inventory: return
