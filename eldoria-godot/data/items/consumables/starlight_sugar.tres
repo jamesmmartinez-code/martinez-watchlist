@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_sugar",
+  "name": "Starlight Sugar",
+  "category": "consumable",
+  "subtype": "food",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 10,
+    "spd": 0
+  },
+  "flavor": "This sweet treat gives you a boost of energy.",
+  "realm": "tidesong"
+}
+"""
