@@ -1,24 +1,25 @@
 # Integration Gaps — Integrator Audit
-generated_at: 2026-05-06T18:53:50Z
+generated_at: 2026-05-06T19:05:00Z
 integrator_run: post-merge cycle
 
 ## Cycle summary
 
 - Canon QA gate status: PASS_WITH_DEBT (no S1, 7 S2 logged)
-- Branches discovered: 10
-- Branches merged: auto/character (1 commits), auto/lore (1 commits)
-- Branches with no new commits: auto/art, auto/audio, auto/builder, auto/environment, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
-- Final merge SHA: 093cb112a5f657e66a2ddfb679939c2570b715f4
+- Branches discovered: 10 (auto/art, auto/audio, auto/builder, auto/character, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix)
+- Branches merged this cycle: auto/environment (1 commit), auto/audio (1 commit)
+- Branches with no new commits: auto/art (already integrated upstream), auto/builder, auto/character, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
+- All 9 worker auto/* branches reset to main after merge.
+- Merge method: GitHub merges API (HTTP 201 confirmed for environment + audio).
 
 ## [GAP: orphan asset]
 
-- `eldoria-godot/assets/models/Fox.glb` — present under `assets/` but no spawn logic in `WorldBuilder.gd`, `Items.gd`, `Enemy.gd`, or `Player.gd`. Either route Fox into a creature/pet spawn table or move out of `assets/models/`.
+- `eldoria-godot/assets/models/Fox.glb` — present under `assets/` but no spawn logic in `WorldBuilder.gd`, `Items.gd`, `Enemy.gd`, or `Player.gd`. Either route Fox into a creature/pet spawn table or move out of `assets/models/`. (Carry-over.)
 
 ## [GAP: orphan quest]
 
 - `eldoria-godot/data/quests/crystal_caves/bones_in_the_choirstone.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
 - `eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
-  (Both are crystal_caves region quests; likely awaiting NPC dialogue authoring. Owner: @quest-writer.)
+  (Both are crystal_caves region quests; likely awaiting NPC dialogue authoring. Owner: @quest-writer. Carry-over.)
 
 ## [GAP: orphan animation]
 
@@ -27,9 +28,12 @@ integrator_run: post-merge cycle
 
 ## [GAP: orphan material]
 
-- 36 `.tres` materials under `assets/materials/` show no static reference from project `.tscn` scenes or core scripts. This is expected — materials are loaded dynamically by constructed paths in WorldBuilder.gd's `_make_*` family. Flag suppressed; if a runtime material miss shows up in QA, revisit per-material.
+- 36 `.tres` materials under `assets/materials/` show no static reference from project `.tscn` scenes or core scripts. Expected — materials are loaded dynamically by constructed paths in WorldBuilder.gd's `_make_*` family. Flag suppressed; if a runtime material miss shows up in QA, revisit per-material.
 
 ## Notes for next integrator cycle
 
-- Reset complete: `auto/character` and `auto/lore` fast-forwarded to `refs/heads/main`. Other auto/* branches were already at-or-behind main and need no reset.
+- All 9 auto/* branches were reset to main after this cycle. Next integrator run will start clean.
+- auto/environment and auto/audio were the only divergent (ahead) branches; both merged via GitHub merges API (no local checkout, due to repo size).
+- All other auto/* branches were "behind ahead=0" — content-equivalent dupes from prior runs that never got reset. Now cleaned up.
 - No conflicts encountered. Manual-flag list is empty.
+- This integrator run intentionally did NOT do a static cross-agent gap re-scan (no full local checkout was possible this cycle). Carry-over gaps above are preserved from the previous cycle's report.
