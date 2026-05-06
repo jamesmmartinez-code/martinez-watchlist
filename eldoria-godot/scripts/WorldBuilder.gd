@@ -1292,6 +1292,11 @@ func _build_pond() -> void:
 		rm.roughness = 0.85
 		reed.material_override = rm
 		reed.position = Vector3(rx, 0.3, rz)
+		# Env: 2026-05-06 — reeds were static; added to "reeds" group with a
+		# per-reed phase so _process() can sway them like the ferns/grass tufts
+		# (THEME §12 — every visible thing must move).
+		reed.add_to_group("reeds")
+		reed.set_meta("phase", rng.randf() * TAU)
 		pond.add_child(reed)
 
 # ============================================================================
@@ -1928,13 +1933,25 @@ func _build_boss_arena(center: Vector3) -> void:
 	ban_mat.albedo_color = Color(0.18, 0.32, 0.10)
 	ban_mat.roughness = 0.85
 	ban_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Env: 2026-05-06 — boss banner was a static QuadMesh, violating
+	# THEME §12 ("banners must FLAP — Banned: static should-move props").
+	# Wrap the cloth in a pivot Node3D anchored at the pole top so the
+	# banner_cloths sway in _process() reads as wind passing through.
+	var boss_ban_pivot := Node3D.new()
+	boss_ban_pivot.position = Vector3(0, 5.4, 0)  # top of 5.5m pole
+	boss_ban_pivot.add_to_group("banner_cloths")
+	var _boss_ban_rng := RandomNumberGenerator.new(); _boss_ban_rng.randomize()
+	boss_ban_pivot.set_meta("phase", _boss_ban_rng.randf() * TAU)
+	pole.add_child(boss_ban_pivot)
 	var ban := MeshInstance3D.new()
 	var qm := QuadMesh.new()
 	qm.size = Vector2(2.2, 1.4)
 	ban.mesh = qm
 	ban.material_override = ban_mat
-	ban.position = Vector3(1.1, 4.3, 0)
-	pole.add_child(ban)
+	# Cloth hangs from the pivot, offset to one side so a small Y-rotation
+	# on the pivot reads as the cloth catching wind.
+	ban.position = Vector3(1.1, -1.1, 0)
+	boss_ban_pivot.add_child(ban)
 	# Spawn the boss
 	var boss := CharacterBody3D.new()
 	boss.set_script(BOSS_SCRIPT)
@@ -2195,6 +2212,25 @@ func _process(delta: float) -> void:
 	for tuft in get_tree().get_nodes_in_group("grass"):
 		var gs = sin(_t * 2.1 + tuft.position.x * 0.9 + tuft.position.z * 0.6) * 0.07
 		tuft.rotation.z = gs
+	# Env: 2026-05-06 — pond reeds (THEME §12). Reeds bend more than grass —
+	# they're rooted in mud and catch the breeze across open water — so the
+	# amplitude is the largest of the foliage family (canopy 0.015 / fern
+	# 0.04 / grass 0.07 / reeds 0.12). Per-reed phase lifted from set_meta so
+	# the cluster around the pond rim doesn't ripple in unison.
+	for reed in get_tree().get_nodes_in_group("reeds"):
+		var rphase: float = float(reed.get_meta("phase", 0.0))
+		var rs: float = sin(_t * 1.9 + rphase) * 0.12
+		var reed3d: Node3D = reed as Node3D
+		if reed3d:
+			reed3d.rotation.z = rs
+	# Env: 2026-05-06 — mushroom breathe (THEME §12). Mushrooms shouldn't
+	# sway like leaves, but "static = dead". Slow Y-scale breathe (±3%) so
+	# the cap reads as alive without wobbling like a tree.
+	for mush in get_tree().get_nodes_in_group("mushrooms"):
+		var mush3d: Node3D = mush as Node3D
+		if mush3d:
+			var mb: float = 1.0 + sin(_t * 1.1 + mush3d.position.x * 0.4 + mush3d.position.z * 0.7) * 0.03
+			mush3d.scale = Vector3(1.0, mb, 1.0)
 	# Campfire light flicker
 	for f in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
