@@ -21,7 +21,7 @@ Audio="*res://scripts/Audio.gd"
 
 config/name="Realm of Eldoria"
 config/description="Family fantasy RPG — built for Alden & Owen"
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/CharacterSelect.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

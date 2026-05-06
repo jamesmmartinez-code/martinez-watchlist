@@ -90,6 +90,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	current_speed = walk_speed
 	add_to_group("player")
+	# Character Select 2026-05-05: if the kid picked a non-default hero, swap the
+	# Hero subtree with their pick BEFORE _normalize_player_model fires. The
+	# choice was stashed by CharacterSelect.gd in Engine meta.
+	call_deferred("_apply_character_choice")
 	# PX 2026-05-05: force initial spawn (scene file may have player at village center)
 	call_deferred("set", "global_position", Vector3(15, 3, 15))  # PX initial spawn override
 	add_to_group("quest_listeners")
@@ -1446,6 +1450,34 @@ func _snap_to_ground(max_drop: float = 4.0) -> void:
 	var floor_y: float = float(hit.get("position", Vector3.ZERO).y)
 	if global_position.y - floor_y > 0.6:
 		global_position.y = floor_y + 0.05  # rest just above the floor
+
+
+# Reads Engine meta "char_choice" set by CharacterSelect.gd. Maps choice id to
+# a hero GLB path; if the file exists and isn't the current Hero subtree, swaps
+# it. Falls back silently if the choice is missing or the GLB isn't loadable —
+# the default Hero.glb already in Main.tscn keeps working.
+func _apply_character_choice() -> void:
+	if not Engine.has_meta("char_choice"):
+		return
+	var choice: String = str(Engine.get_meta("char_choice", "")).to_lower().strip_edges()
+	var hero_paths := {
+		"alden":  "res://assets/models/Hero.glb",                       # default Meshy biped (5 anims)
+		"owen":   "res://assets/models/heroes/owen_vanguard.glb",       # 45 MB Meshy textured biped
+	}
+	var new_path: String = hero_paths.get(choice, "")
+	if new_path == "" or not ResourceLoader.exists(new_path):
+		return
+	var packed: PackedScene = load(new_path) as PackedScene
+	if packed == null:
+		return
+	var old_hero: Node = get_node_or_null("Hero")
+	if old_hero:
+		old_hero.queue_free()
+	var new_hero: Node = packed.instantiate()
+	new_hero.name = "Hero"
+	add_child(new_hero)
+	# _normalize_player_model + the deferred retries already running will dial
+	# the new hero in to 1.8m on the next frame.
 
 func _normalize_player_model(target_height: float) -> void:
 	await get_tree().process_frame
