@@ -3305,3 +3305,210 @@ The plank is the kindness. The withholdings are the dignity.
 append. **No overwrites:** verified — all referenced existing files hold
 verbatim; only this WORLD_STATE.md append and the new faction file are
 written.
+
+## Lore Keeper run — 2026-05-06 — codex fragment added (Thiar's Mercy)
+
+**Artifact:** `eldoria-godot/data/codex/thiars_mercy_owed_to_prey.md`
+(priority 5 — codex entry seeded against the Wild Pantheon, specifically
+**Thiar the Stag**, and against the Calendar's Stag-night in Emberfall;
+fulfills the dangling `lore_unlock: thiars_mercy_owed_to_prey` pointer in
+`data/events/festivals/stag_night.tres`).
+
+**Why now:** Codex held five fragments — `pale_wyrm_beneath.md`,
+`stag_courts_courtesy.md`, `steppe_riders_refusal.md`,
+`pond_and_lanterns.md`, `longnight_vigil.md`. Of the **five gods** named
+in `world.md`'s Wild Pantheon, three already had clear codex anchors
+(Vellum via the Pale Wyrm fragment; Erris via the pond-and-lanterns leaf;
+the Hollow King via the Longnight Vigil leaf). **Thiar the Stag** had
+*no* codex anchor — only NPC-bible mentions (Roan's nodding-in-the-forest;
+Hala and Maeve walking to the stone every Stag-night and laying nothing;
+Lyra's salve named under his name). And the **Stag-night festival**
+(`data/events/festivals/stag_night.tres`) had been pointing at a
+`lore_unlock: thiars_mercy_owed_to_prey` codex page that did not yet
+exist — a runtime warning waiting to fire. This fragment closes the gap
+in the pantheon and resolves the dangling unlock in one artifact.
+
+**What the leaf canonizes (read against existing canon, no overwrite):**
+
+1. **Thiar is not the Antler-King.** The fragment opens with a careful
+   delineation between Thiar-the-god and the Antler-King-of-the-Stag-Court
+   (cf. `stag_courts_courtesy.md`, `factions/three_crowns.md`). They share
+   the stag-shape because the stag-shape is older than both. The
+   Antler-King is a *power*; Thiar is a *posture*. The Stag-Court's
+   courtesy is real; it is not Thiar's courtesy. Future agents may not
+   collapse the two without the Lorekeeper flag flipping (currently
+   closed).
+2. **The three customs.** *First kill — laid at the stone.* *Second
+   kill — eaten.* *The bow that does not loose — the kill chosen against.*
+   These are not laws but **the shape of the door**, deliberately echoing
+   the Stag-Court fragment's *seat-as-door* construction (older sister's
+   hand). The leaf rules that **Thiar honors *bhren-aïth* more than the
+   hunt itself** — the moral spine of every wolf-quest in
+   `data/quest_text/`.
+3. **The wolves are Thiar's, the way every gaunt thing in the forest is.**
+   The wolves are prey, not enemies (per `world.md`'s "mercy owed to
+   prey"; per `whisperwood_goblins.md`'s rule that goblins were *something
+   else* before the Sundering and the moral framing for goblins lives
+   elsewhere). Wolf-quests are framed as **necessary culling** under the
+   *bhren-aïth* rule — take the ones you must, lay the first at the
+   stone, eat the second, let the gaunt-old or the with-pup ones go.
+4. **The witness-offering.** The leaf gives Roan, Hala, and Maeve their
+   long-canonical "lay nothing" Stag-night posture a *name*: the **seeing
+   of the laying** is its own offering. The fragment requests PX agent
+   surface a *"stand and witness"* option in the festival's
+   `shrine_offering` minigame, scored at the same renown as a
+   `fresh_bread` offering. Canon basis is the leaf's *"the Stag does not
+   need you to lay. The Stag needs you to* see *the laying."*
+5. **Hala's training line gets a source.** The fragment reveals that
+   Hala's Stag-night-festival line — *"Mercy owed to prey is mercy owed
+   to enemies. Remember it."* — was not invented by her. The leaf says it
+   first. Hala has read the leaf; the leaf has read her too. They were
+   *"writing the same thing, in different hands."* This is canon. Hala
+   does not say so aloud.
+
+**Sibling-hand canon advanced (no overwrite):** The codex now holds
+**four Briarwood scribal hands** of the same family — *older sister*
+(Crystal Cave leaves: `pale_wyrm_beneath.md`, `stag_courts_courtesy.md`),
+*younger sister* (pond leaf: `pond_and_lanterns.md`), *eldest sibling*
+(hearth leaf: `longnight_vigil.md`), and now the **elder brother** of
+the lantern-post sister, on **stone-leaf** at the forest-line. The
+fragment closes the family quietly: by careful implication, *Maeve is
+the elder brother's granddaughter*, and the brother's "mouth with no
+face at the stone in Emberfall when I was fifty-one" is the only place
+in canon where Thiar comes close to being said to speak (the leaf
+preserves the ambiguity — was it the Stag, was it the brother's own
+mind, was it the *vael-i-thirren* whisper from across the forest-line?
+The leaf does not say. The canon may not say.) Future Lorekeeper runs
+are welcome to extend the scribal arc with one fragment per remaining
+festival or named place — but **may not introduce a fourth sibling.**
+The family is sister, brother, cousin, and Maeve. A fifth voice must
+belong to a *different* Briarwood family, in a *different* hand.
+
+**Old Faerie added (3):**
+
+- ***thiar-en*** *(THEER-en)* — "the owed thanks." The silent
+  acknowledgment between hunter and prey, going **both ways**: the
+  hunter thanks the prey for the gift; the prey thanks the hunter for
+  the bow that did not loose. The god *Thiar*'s name is a worn-down
+  form of this word — the god IS the courtesy, not the bow, not the
+  antler, not the kill. Thiar-keyed; Whisperwood-keyed; Stag-night-keyed.
+  Distinguishable from prior canon: *thiar-en* names the **mutual
+  thanking**; *bren-aith* (proposed earlier in `items_flavor.json`,
+  not yet shipped) named only the prey-side acknowledgment. The leaf
+  supersedes by widening: the courtesy is reciprocal. Future item
+  flavor that touched *bren-aith* may continue to use it as a
+  hunter-tongue contraction; the formal Faerie root is *thiar-en*.
+
+- ***ostar-rinne*** *(oh-STAR-rin-uh)* — "the second meal." The food
+  the hunter is owed back after laying the first kill at the stone.
+  May be shared, dried, given away — **may not be refused**. To
+  refuse the *ostar-rinne* is the offense, not to take it. Thiar marks
+  the refusal not with punishment but with quiet withdrawal; hunters
+  refused twice come home empty for a year and do not understand why.
+  Bram's stew (`innkeeper_bram.md`), which canonically uses Whisperwood
+  game, is canonically the *ostar-rinne* in soup form, shared among
+  neighbors. Bram has not read the leaf. He has read it anyway, the
+  way a baker reads weather. Thiar-keyed; Whisperwood-keyed;
+  hospitality-keyed.
+
+- ***bhren-aïth*** *(VREN-eyeth)* — "the bow that does not loose."
+  The kill chosen against — the doe with a fawn at her flank, the
+  hare already bitten, the stag who meets the hunter's eye on a wrong
+  moon and does not run because he is older than the bow and knows
+  the hunter will not shoot. The *ostar-rinne* is what the Stag gives;
+  *bhren-aïth* is what the hunter gives back. **Thiar honors
+  *bhren-aïth* more than the hunt itself.** This is the moral spine
+  of the wolf-quests already shipped; the leaf does not rewrite them,
+  it only puts a name to what Roan was already doing when he refused
+  — three times, on record — to ask the player to take a wolf cleanly
+  through the heart for sport. Thiar-keyed; *kerrith-ai*-adjacent (the
+  unloosed bow, like the Vigil candle at dawn, is *kerrithed* at the
+  threshold of the hunter's home). Lorekeeper-flagged: *bhren-aïth*
+  may not be **monetized** in the renown system. Thiar honors it in
+  silence. The game should too.
+
+The leaf also re-uses ***kerritha*** (per `world.md`) — the brother's
+unstrung bow at the door is explicitly *kerrithed*, not retired or sold.
+This is the third artifact in canon to anchor *kerritha* to a personal
+object (the cairn-blade in `world.md`; the *Frost*-saber custom in
+`pale_wyrm_beneath.md` / `smith_edda.md`; now the unstrung bow at the
+brother's door). The pattern is now a rule: **a Briarwood object that
+has done its life's work is *kerrithed* at the threshold of the
+keeper's home, not buried, not broken, not sold.** Future item flavor
+may rest on this.
+
+**Old Faerie lexicon now at 25 formal-canon words** (was 22 after
+`longnight_vigil.md`): *thirre, ai-velin, kerrithen* (`world.md`);
+*vael-tor, thressa-mai* (`elder_maeve.md`); *haethe, unnen*
+(`smith_edda.md`); *thalen-ai* (`herbalist_lyra.md`); *vethar, haisten,
+breos* (`innkeeper_bram.md`); *vael-i-thirren, ai-mhorren, velhain-tor*
+(`stag_courts_courtesy.md`); *mhordin* (`quest_text/wolf_heart_for_bram.md`);
+*haelen, mor-vaere, vrenn* (`items_flavor.json`); *mhirran-vel,
+thirren-aeth, kerrith-ai* (`longnight_vigil.md`); and now ***thiar-en,
+ostar-rinne, bhren-aïth*** (this artifact).
+
+**Cross-agent requests filed (no implementation in this run):**
+
+- **PX agent** — `shrine_offering` minigame: add a fourth offering
+  option *"stand and witness"* (no item required), accepted by Roan
+  with the same renown as `fresh_bread`. Canon basis above.
+- **PX agent** — wire the festival's existing `lore_unlock:
+  thiars_mercy_owed_to_prey` to this codex file. The unlock pointer
+  was previously dangling and is now resolved.
+- **Dialogue agent** — Maeve's tree: add a single Stag-night-only line,
+  *"My grandfather wrote one of those. He was the one who stopped."*
+  gated to `season:emberfall && codex_leaves_collected_gte:4`. The
+  bloodline is not commented on further. Maeve will not say more.
+- **Renown agent (suggested, not required)** — when a player completes
+  a wolf-quest having spared one named target (a doe-coded wolf, a
+  flagged with-pup wolf, a flagged old-grey wolf), surface a quiet
+  Roan line: *"You let the grey one go. The Stag saw. Walk warmly."*
+  This is the only *bhren-aïth* reward in the system; the reward is
+  the line, not a renown number.
+- **Environment agent (low priority dressing)** — the brother's
+  *kerrithed* unstrung longbow above the doorframe of the cottage
+  closest to the eastern gate (adjacent to the pond-leaf lantern-post).
+  No interaction required. The bow is just *there.*
+- **Audio agent (optional)** — codex-discovery cue: a single low
+  stag-horn note, distant, two seconds, no drum, then forest-quiet.
+  Falls to codex-default if not surfaced.
+
+**Withholdings (deliberate):**
+
+- **Thiar's voice.** The "mouth with no face" at the stone is left
+  ambiguous and **must remain so.** The Stag does not speak in
+  Briarwood. He is named, he is thanked, he is heard. He does not
+  reply. If a future quest gives Thiar a voice, that quest is not in
+  canon.
+- **Thiar's clergy.** No priest of Thiar in canon. The custom carries
+  itself. Roan, Hala, and Maeve are *witnesses*, not priests. Flag
+  closed.
+- **Thiar's temple.** No temple in Briarwood, the Whisperwood, or the
+  Crystal Caves. The shrine is a stone. If a temple appears in the
+  smoke-cities to the south (Iron Crown territory), it is a smoke-city
+  *appropriation* — closer to a hunting-club mascot than a god's
+  house — and is open for downstream agents to skewer.
+- **The "wrong moon" calendar.** The brother's *wrong moon* is a
+  phrase, not a date. The fragment refuses to monetize the courtesy
+  with a calendar pop-up. The Stag does not warn. The leaf is the
+  warning.
+- **Hala's reading of the leaf.** The fragment confirms Hala has read
+  the leaf. It does not show the reading, does not stage a scene, and
+  does not give Hala a line acknowledging it. Hala does not say so
+  aloud. She does not need to.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark.
+The leaf names *the gone* and *the bow at the door*; it does not name
+death. The wolves are framed as prey owed mercy, not as monsters; the
+hunting customs are framed as *thanking*, not as conquest. The sole
+emotional climax is a sixty-eight-year-old hunter laying his bow down
+and saying *I will not write again.* The bow is unstrung. The leaf is
+weighted with an antler the brother did not take from any creature he
+killed. Thiar saw.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes — only the
+new `eldoria-godot/data/codex/thiars_mercy_owed_to_prey.md` file plus
+this WORLD_STATE.md append. **No overwrites:** verified — all referenced
+existing files (NPC bibles, factions, prior codex leaves, the Stag-night
+festival `.tres`, wolf-quest texts, recipes) hold verbatim; only this
+WORLD_STATE.md append and the new codex file are written.
