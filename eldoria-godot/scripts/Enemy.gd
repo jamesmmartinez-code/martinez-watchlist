@@ -48,12 +48,23 @@ const KIND_MODELS := {
 	"wolf":   preload("res://assets/models/enemies/wolf.glb"),
 	# THEME §4 — undead and crystal-cave kinds previously fell back to
 	# worker_girl.glb (a humanoid woman in merchant apron — silhouette-broken
-	# at 30m). Until dedicated skeleton/elemental GLBs are sourced, reuse the
-	# warrior.glb humanoid silhouette and rely on KIND_TINT_OVERRIDE below to
-	# re-color it bone-white / crystal-cyan / frost-pale. warrior.glb ships
-	# with embedded idle animations, so §12 MOTION is satisfied automatically
-	# via _play_model_idle_anim().
-	"skeleton":          preload("res://assets/models/npcs/warrior.glb"),
+	# at 30m). The "skeleton" kind now resolves to a dedicated bone-textured
+	# enemy GLB (Sketchfab uid aa225d17845e4d84b582646b7573114f, "skeleton
+	# warrior" by 3dMondra, CC-BY-4.0 — see CREDITS.md). It ships with 9
+	# embedded animations including "Idle 01", "Combat Run 01", "Warrior
+	# Heavy Attack Sword 01", "Death 01" — every §12 MOTION need covered by
+	# one source. The Sketchfab "Idle 01" name is matched by the case-
+	# insensitive substring fallback in _play_model_idle_anim() (no other
+	# code change is needed; the lookup list was extended to include "Idle 01"
+	# explicitly, as a belt-and-suspenders pin for the most common Sketchfab
+	# naming convention). KIND_TINT_OVERRIDE below was relaxed for "skeleton"
+	# so the model's hand-painted bone textures show through unmodulated —
+	# tinting them muddied the silhouette.
+	#
+	# crystal_elemental / crystal_guardian still reuse warrior.glb until a
+	# dedicated crystal-being GLB is sourced. Their tint override stays on so
+	# warrior.glb gets the crystal-cyan / frost-pale modulate.
+	"skeleton":          preload("res://assets/models/enemies/skeleton.glb"),
 	"crystal_elemental": preload("res://assets/models/npcs/warrior.glb"),
 	"crystal_guardian":  preload("res://assets/models/npcs/warrior.glb"),
 	# THEME §4 (Bandits — human, hooded, leather, scarves over face).
@@ -85,7 +96,12 @@ const KIND_MODELS := {
 # MUST still apply, even though `uses_real_model` is true. Real role-correct
 # models (goblin, wolf) keep their hand-painted textures untinted.
 const KIND_TINT_OVERRIDE := {
-	"skeleton":          true,
+	# THEME §4 — "skeleton" was REMOVED from this map when its KIND_MODELS
+	# entry promoted from warrior.glb (placeholder reuse) to skeleton.glb (a
+	# real bone-textured CC-BY model). The hand-painted bone material is the
+	# silhouette signal we want at 30m; modulating it bone-white-on-bone-
+	# white washes out the rib detail. crystal_* kinds keep their tint
+	# override because warrior.glb is still being repurposed for them.
 	"crystal_elemental": true,
 	"crystal_guardian":  true,
 	# Run 22 — bandit reuses warrior.glb; the dark-leather Color passed
@@ -370,12 +386,28 @@ func _play_model_idle_anim() -> void:
 			if ap.has_animation_library("humanoid"):
 				ap.remove_animation_library("humanoid")
 			ap.add_animation_library("humanoid", _lib)
-	for n in ["humanoid/idle", "IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle"]:
+	# Exact-name lookup: the "IdleAnimation" / "Idle" / "Armature|Idle" forms
+	# are the names the existing rigged GLBs ship with. "Idle 01" was added
+	# when the Sketchfab "skeleton warrior" GLB landed — Sketchfab's exporter
+	# names animations like "Idle 01" / "Combat Run 01" / "Death 01" with a
+	# trailing space + index. Pinning the literal spares us a substring match
+	# on the hot idle path.
+	for n in ["humanoid/idle", "IdleAnimation", "Idle", "idle", "Idle 01", "ANIM_Idle", "Armature|Idle"]:
 		if ap.has_animation(n):
 			ap.play(n)
 			return
-	# Fall back to whatever animation the file ships with first.
+	# Case-insensitive substring fallback — catches future Sketchfab/Mixamo
+	# imports whose idle anim is called e.g. "idle_01", "char_idle", or
+	# "Mixamo|Idle" without forcing a code change. Picks the first match in
+	# the file's animation order (stable across saves).
 	var names := ap.get_animation_list()
+	for nm in names:
+		if "idle" in String(nm).to_lower():
+			ap.play(nm)
+			return
+	# Last resort — play whatever the file ships with first. WARNING: for
+	# Sketchfab GLBs this can be a non-idle pose (e.g. "Parry Shield 01"
+	# first in skeleton.glb), so the substring fallback above is preferred.
 	if names.size() > 0:
 		ap.play(names[0])
 

@@ -135,3 +135,16 @@ Total audio bundle: **~4.9 MB** (well under the 50 MB budget).
   not synth-driven.
 - SFX are real-instrument metallic clangs (RPG Sound Pack) and real-recorded
   sword swings (StarNinjas), plus real-recorded surface footfalls.
+
+## Skeleton enemy (auto/character 2026-05-05)
+
+- `assets/models/enemies/skeleton.glb` — "skeleton warrior" by 3dMondra
+  (https://sketchfab.com/3dMondra), Sketchfab uid
+  `aa225d17845e4d84b582646b7573114f`, CC-BY-4.0 (CC Attribution).
+  593 KiB, 4248 faces, 9 embedded animations: Parry Shield 01, Warrior
+  Block 01, Combat Run 01, Warrior Stunned 01, Heavy Charged Attack 01,
+  Idle 01, Warrior Heavy Attack Sword 01, Stunned 01, Death 01.
+  Replaces the warrior.glb placeholder previously bound in
+  `Enemy.gd::KIND_MODELS["skeleton"]`. Ends the THEME §4 "until dedicated
+  skeleton GLB is sourced" placeholder note in that file. Source URL:
+  https://sketchfab.com/3d-models/skeleton-warrior-aa225d17845e4d84b582646b7573114f
