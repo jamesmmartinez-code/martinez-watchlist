@@ -20,6 +20,9 @@ hand-painted sigil and weathered trim per THEME.md §3.
 | `embergrove_crest.png` | Embergrove (desert oasis) | layered rising flame | sienna + magma |
 | `frostpeak_crest.png` | Frostpeak Keep (north) | six-point snowflake | ice + steel |
 | `bandits_crest.png` | Bandits (outlaw faction) | crossed daggers + hooded ring | stag-blood + ink |
+| `whisperwood_goblins_crest.png` | Whisperwood Goblins (hostile) | tusked goblin skull above broken spear | moss + wine + bone |
+| `dire_wolves_crest.png` | Dire Wolves (hostile) | wolf-head profile, frost-yellow eye, bared fang | stone-blue + frost-yellow + ink |
+| `crystal_caves_crest.png` | Crystal Caves (hostile) | five-shard crystal cluster on arcane halo | fey-cyan + arcane purple |
 
 ## Pipeline
 
@@ -68,3 +71,23 @@ Deterministic — same seeds → same output.
   + `update_bandit_pressure()` + `bandits_emergent` flag + Roan tier-3
   dialogue + bandit drop_table). License: CC0 — Pillow + NumPy
   procedural, no external assets, no Adobe Stock / Firefly used.
+
+- `whisperwood_goblins_crest.png`, `dire_wolves_crest.png`,
+  `crystal_caves_crest.png` (256×256, 2026-05-05 — Art run, additive
+  patch on top of run-23) — extends `gen_sigils.py` with three new
+  draw functions (`draw_goblin_skull`, `draw_wolf_head`,
+  `draw_crystal_cluster`) and three SIGIL_SEEDS entries (14101, 14118,
+  14135 — clear of the 14001 bandit seed). Closes the remaining gap
+  between World.gd's hostile-faction roster (whisperwood_goblins,
+  dire_wolves, crystal_caves, bandits) and the heraldic art needed to
+  render them in codex headers, faction-pressure HUD chips, and
+  territory signposts. Style targets THEME §4 enemy palette anchors
+  (feral-not-cute goblin skull with wine eye-glow, frost-yellow wolf
+  eye matching §4's "glowing eyes at night", fey-cyan + arcane purple
+  for crystal constructs — the only crest that uses §3 magic-band
+  colors at >5% coverage because crystal constructs ARE magic-themed).
+  Achievements that read these factions (`pack_thinner` =
+  faction_below("dire_wolves", 0.5); `goblin_bane` =
+  faction_below("whisperwood_goblins", 0.7)) now have a sigil to
+  display alongside their crest. License: CC0 — Pillow + NumPy
+  procedural, no external assets.
