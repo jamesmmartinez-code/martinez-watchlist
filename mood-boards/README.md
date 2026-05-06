@@ -18,6 +18,7 @@ are the *visual* derivative — same canon, easier to consult mid-run.
 | [`architecture_palette.png`](architecture_palette.png) | sourcing or modeling a structure (cottage, inn, smithy, goblin tent, cave entrance, watchtower), checking that a building elevation reads in the THEME §3 palette + §8 timber-stone-thatch canon | §1 painterly, §3 palette, §8 architecture |
 | [`prop_sheet.png`](prop_sheet.png) | sourcing or modeling a Briarwood prop (well, banner pole, cart, woodpile, market stall, lantern, signpost), checking same-scale read between props + player + Maeve + goblin | §1 lived-in, §3 palette, §8 timber-stone-thatch |
 | [`magic_glow_reference.png`](magic_glow_reference.png) | tuning aura / spell / boss-glow / unique-item halo intensity, picking which of the three §3 magic hues to use, sanity-checking that a glow reads against a dusk backdrop without bleeding into warm-band canon | §1 cool-tones-for-magic-only, §3 magic palette, §5 painterly soft rim |
+| [`ui_chrome.png`](ui_chrome.png) | designing a new HUD panel, picking divider weight, theming a CTA button (idle/hover/pressed/disabled), sanity-checking that a quest dialog reads as composed Eldoria UI and not Material/iOS | §1 painterly, §3 palette, §5 typography & UI |
 
 ## How to cite
 
@@ -49,8 +50,10 @@ re-running this agent and want a high-leverage addition.
   warlock purple, frost silver auras at low / med / high intensity each, against
   a dusk backdrop. See `mood-boards/magic_glow_reference.png` and
   `_gen_magic_glow_reference.py`.
-- `ui_chrome.png` — parchment panel + wood frame + ornate divider + button states
-  composited together, so UI agents see the assembled look not just isolated atlas pieces.
+- ~~`ui_chrome.png`~~ — **shipped 2026-05-06 (run-29).** Parchment + wood-and-iron
+  frame + ornate divider + button states (idle/hover/pressed/disabled) +
+  composed quest panel, all in one 1024×1024 cell grid. See
+  `mood-boards/ui_chrome.png` and `_gen_ui_chrome.py`.
 - `world_map_sketch.png` — Eldoria on a hand-painted parchment, Briarwood / Whisperwood /
   Crystal Caves / Mountain Ring spatially arranged. Tolkien-style.
 
@@ -98,4 +101,18 @@ overlapping with this directory.
   `_gen_architecture_palette.py`); `palette.png`, `prop_sheet.png`, and
   `architecture_palette.png` left byte-identical so this run is purely
   additive.
+- 2026-05-06 (run-29) — auto/art. Added `ui_chrome.png` (1024×1024,
+  2×2 cell grid: anatomy of a panel with call-outs / three divider
+  variants / button states (idle, hover, pressed, disabled) ×
+  primary + secondary CTAs / composed quest panel). Procedural
+  Pillow, seed 411, byte-stable on re-run. THEME.md anchor: §1
+  painterly, §3 palette (parchment + wood + bronze + wine), §5
+  typography & UI (medieval serif, hand-painted banner look,
+  wood-and-iron frame; banned: Material/iOS, glassmorphism,
+  sharp corners on every panel). Standalone generator
+  `_gen_ui_chrome.py` (sibling to `_generate.py`,
+  `_gen_architecture_palette.py`, `_gen_magic_glow_reference.py`);
+  `palette.png`, `prop_sheet.png`, `architecture_palette.png`,
+  and `magic_glow_reference.png` left byte-identical so this run
+  is purely additive.
 
