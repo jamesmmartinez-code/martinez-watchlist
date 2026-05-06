@@ -86,8 +86,10 @@ All tracks/effects below are released under **CC0 / Public Domain** — no attri
 legally required, but the original artists are credited here as a courtesy.
 
 ### Music — `eldoria-godot/assets/audio/music/`
-- `village_theme.ogg` — "Celtic Loop" by alexandr-zhelanov (CC0).
-  https://opengameart.org/content/celtic-loop
+- `village_theme.ogg` — "Medieval: The Bard's Tale" by RandomMind (CC0).
+  https://opengameart.org/content/medieval-the-bards-tale
+  (Upgraded 2026-05-06 from the previous 43 s placeholder; new track is a
+  2 min 38 s acoustic medieval lute + flute melody, q=2 stereo OGG.)
 - `whisperwood_theme.ogg` — "Dark Forest Theme" by macro13 (CC0).
   https://opengameart.org/content/dark-forest-theme
 - `battle_theme.ogg` — "Battle Theme" from "It's time for adventure vol. 2" by Komiku (CC0).
