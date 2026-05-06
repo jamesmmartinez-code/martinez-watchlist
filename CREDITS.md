@@ -163,3 +163,7 @@ Total audio bundle: **~4.9 MB** (well under the 50 MB budget).
   stays on the same model at 1.40× scale + deeper purple-leather tint
   (boss-variant pattern, mirrors goblin → goblin_warlord). Source URL:
   https://sketchfab.com/3d-models/animated-stylized-character-rogue-warrior-e49c999cc7ce4668a7fdeff328ad0b93
+
+## Owen Vanguard hero (auto/character 2026-05-06)
+
+- `assets/models/heroes/owen_vanguard.glb` — "Crimson Guardian - Low-Poly Red Knight" by [CrunchCaptain](https://sketchfab.com/CrunchCaptain), Sketchfab CC-BY 4.0. https://sketchfab.com/3d-models/crimson-guardian-low-poly-red-knight-a078764eeb3c405bb72abad6e5fc57a0 — Owen Vanguard hero (replaces missing 45 MB Meshy biped that was referenced in `Player._apply_character_choice` but never shipped — old reference was an §15-violation in waiting). Final size 0.43 MiB, 5 animations (Idle, Walk, Stab, HoldShield, RaiseShield), 1056 faces. Crimson palette aligns with THEME §3 deep-crimson primary; sword & shield rig matches Owen's "Vanguard" archetype in CharacterSelect.
