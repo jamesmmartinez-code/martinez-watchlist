@@ -1,72 +1,62 @@
-# Integration Gaps — 2026-05-06T19:49:12Z
+# Eldoria Integration Gaps
+generated_at: 2026-05-06T20:07:06Z
+by: integrator (auto)
+main: 9f8b3947ecda4cb3df4ac3fbb9e258003dbb6ed5
 
-Auto-detected cross-agent gaps after integrator merge of 4 branches:
-auto/character, auto/bestiary, auto/event, auto/recipe.
+## Summary
 
-Scope: files newly added in this integrator run.
+- orphan assets (`.glb`): 7
+- orphan quests (`data/quests/*.tres`): 0 (no quest .tres present)
+- orphan animations (AnimationLibrary `.tres`): 0 (no AnimationLibrary .tres present — see CQ-S2-07)
+- orphan StandardMaterial3D `.tres`: 26
 
-## NEW .glb assets
+## [GAP: orphan asset] — `.glb` with no spawn logic in WorldBuilder.gd
 
-Newly added: 4
-  - eldoria-godot/assets/models/enemies/goblin.glb
-  - eldoria-godot/assets/models/enemies/wolf.glb
-  - eldoria-godot/assets/models/npcs/maeve.glb
-  - eldoria-godot/assets/models/npcs/smith_edda.glb
+GLB files present in `assets/models/` but the basename is not referenced in `scripts/WorldBuilder.gd`. May be wired by a different agent (CharacterSelect.gd, Player.gd, Enemy.gd) — verify owner before removing.
 
-Not referenced in eldoria-godot/scripts/: 0
-(none — all new GLBs referenced)
+- `eldoria-godot/assets/models/Fox.glb`
+- `eldoria-godot/assets/models/Hero.glb`
+- `eldoria-godot/assets/models/enemies/goblin_scout.glb`
+- `eldoria-godot/assets/models/heroes/alden_pathfinder.glb`
+- `eldoria-godot/assets/models/heroes/owen_vanguard.glb`
+- `eldoria-godot/assets/models/npcs/warrior.glb`
+- `eldoria-godot/assets/models/npcs/worker_girl.glb`
 
-## NEW data resources
+## [GAP: orphan material] — `StandardMaterial3D` `.tres` with no MeshInstance reference
 
-Creatures added: 2
-  - eldoria-godot/data/creatures/briar_chat_validate_thorn_stalker.tres
-  - eldoria-godot/data/creatures/briar_chat_validate_willow_wisp.tres
-**Orphan (not referenced in dialogue/lore/scripts):**
-```
-[GAP: orphan creature] eldoria-godot/data/creatures/briar_chat_validate_thorn_stalker.tres
-[GAP: orphan creature] eldoria-godot/data/creatures/briar_chat_validate_willow_wisp.tres
-```
+Material resources under `assets/materials/{arch,tidesong}/` and one terrain-assets resource. Not referenced in any `.tscn` or `.gd` file (excluding addons/) and not loaded via `res://`. Likely produced ahead of the MeshInstance3D wiring; assign to architect / environment / scale-engineer to apply.
 
-Recipes added: 2
-  - eldoria-godot/data/recipes/cooking_pot/chat_validate_moonlit_morsel.tres
-  - eldoria-godot/data/recipes/cooking_pot/chat_validate_starlight_stew.tres
-**Orphan:**
-```
-[GAP: orphan recipe] eldoria-godot/data/recipes/cooking_pot/chat_validate_moonlit_morsel.tres
-[GAP: orphan recipe] eldoria-godot/data/recipes/cooking_pot/chat_validate_starlight_stew.tres
-```
+- `eldoria-godot/assets/materials/arch/bronze_metal.tres`
+- `eldoria-godot/assets/materials/arch/building_door.tres`
+- `eldoria-godot/assets/materials/arch/chimney_smoke.tres`
+- `eldoria-godot/assets/materials/arch/courtyard_floor.tres`
+- `eldoria-godot/assets/materials/arch/curtain_wall_stone.tres`
+- `eldoria-godot/assets/materials/arch/gate_tower_main.tres`
+- `eldoria-godot/assets/materials/arch/gold_trim.tres`
+- `eldoria-godot/assets/materials/arch/hot_forge_metal.tres`
+- `eldoria-godot/assets/materials/arch/house_foundation.tres`
+- `eldoria-godot/assets/materials/arch/iron_metal.tres`
+- `eldoria-godot/assets/materials/arch/mossy_brick_wall.tres`
+- `eldoria-godot/assets/materials/arch/overgrown_brick.tres`
+- `eldoria-godot/assets/materials/arch/roof_moss_tiles.tres`
+- `eldoria-godot/assets/materials/arch/temple_floor.tres`
+- `eldoria-godot/assets/materials/arch/whitewashed_plaster.tres`
+- `eldoria-godot/assets/materials/arch/wood_beam.tres`
+- `eldoria-godot/assets/materials/arch/wood_flooring.tres`
+- `eldoria-godot/assets/materials/eldoria_terrain_assets.tres`
+- `eldoria-godot/assets/materials/tidesong/barnacle_rock.tres`
+- `eldoria-godot/assets/materials/tidesong/driftwood.tres`
+- `eldoria-godot/assets/materials/tidesong/fine_sand_beach.tres`
+- `eldoria-godot/assets/materials/tidesong/island_cliff.tres`
+- `eldoria-godot/assets/materials/tidesong/mossy_island_cliff.tres`
+- `eldoria-godot/assets/materials/tidesong/ocean_spray_planks.tres`
+- `eldoria-godot/assets/materials/tidesong/sand_pebble_beach.tres`
+- `eldoria-godot/assets/materials/tidesong/seaweed.tres`
 
-Events added: 1
-  - eldoria-godot/data/events/festivals/chat_validate_briarwood_festival.tres
-**Orphan:**
-```
-[GAP: orphan event] eldoria-godot/data/events/festivals/chat_validate_briarwood_festival.tres
-```
+## [GAP: orphan quest] — none
 
-Rumors added: 1
-  - eldoria-godot/data/rumors/briarwood_chat_validate.tres
-**Orphan:**
-```
-[GAP: orphan rumor] eldoria-godot/data/rumors/briarwood_chat_validate.tres
-```
+No `data/quests/*.tres` files present in main.
 
-## NEW AnimationLibrary / Materials
+## [GAP: orphan animation] — none in this scan
 
-(none added in this integrator run)
-
-## Canon QA debt carried (S2)
-
-From PASS_WITH_DEBT status:
-
-## S2 issues (logged for integrator audit)
-
-- `data/items_flavor.json` — missing `briar_shortbow`, `mossbound_buckler`, `roan_woodbow`, `wolf_heart` (catalog flags `needs_flavor: yes`) [CQ-S2-01, owner @lorekeeper]
-- `scripts/Items.gd` — legacy ITEMS dict missing `briar_shortbow`, `mossbound_buckler`, `roan_woodbow` (defined as `.tres` only) [CQ-S2-02, owner @builder]
-- `data/dialogue/trainer_hala.json` — `practice_cudgel` reward, no flavor entry [CQ-S2-03, carry-over from 2026-05-05]
-- `data/dialogue/stablemaster_roan.json` + `lore/npcs/stablemaster_roan.md` — `Steppe-Patterned Halter`, no flavor entry [CQ-S2-04, carry-over from 2026-05-05]
-- `data/items/_catalog.csv` row `mossbound_buckler` — `acquired_via:craft` with no recipe under `data/recipes/**` [CQ-S2-05, owner @recipe-author]
-- `scripts/WorldBuilder.gd:3028-3052` — tree collision radius vs visual trunk parity unverifiable from static source; in-engine AABB print needed [CQ-S2-06, owner @scale-engineer]
-- `eldoria-godot/assets/animations/` — 435 source FBX files, 0 `.tres` AnimationLibraries built; first batch not shipped [CQ-S2-07, owner @animation-sourcer]
-
-## S3 issues (future-debt)
-
+No AnimationLibrary `.tres` files in `assets/animations/` yet. Tracked separately under canon-qa CQ-S2-07 (animation-sourcer owes first batch).
