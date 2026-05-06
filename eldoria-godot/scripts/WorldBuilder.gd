@@ -3121,11 +3121,11 @@ func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
 	if not is_instance_valid(holder):
 		return
 	var aabb := _measure_aabb(holder)
-	if aabb.size.y <= 14.0 or aabb.size.y <= 0.001:
+	if aabb.size.y <= 4.5 or aabb.size.y <= 0.001:
 		return
 	if inst is Node3D:
 		var n3d: Node3D = inst as Node3D
-		var shrink: float = clamp(14.0 / aabb.size.y, 0.001, 1.0)  # scale-eng 2026-05-05: floor 0.05 → 0.001
+		var shrink: float = clamp(4.5 / aabb.size.y, 0.001, 1.0)  # 2026-05-06: dropped from 14.0 — trees were still too big to see character past
 		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
