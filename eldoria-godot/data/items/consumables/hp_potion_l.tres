@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "hp_potion_l"
+name = "Greater Health Potion"
+category = "consumable"
+rarity = "uncommon"
+tier = 2
+stats = {"heal": 130}
+flavor = "Lyra's thalen-ai salve — heart's-ease, dogwort, marshmint, and the seventh herb she will not name except in the older constructions. Reserved for the long road and the bad night. She does not sell this one to strangers; if it is in your hand, the village has decided about you."
+acquired_via = "vendor"
+value_gold = 40
+set_id = ""
+effect = "heal"
+duration = 0.0
+stack_max = 99

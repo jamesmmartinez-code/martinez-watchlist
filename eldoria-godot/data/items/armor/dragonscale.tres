@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "dragonscale"
+name = "Dragonscale"
+category = "armor"
+rarity = "legendary"
+tier = 7
+stats = {"armor": 52, "hp_bonus": 80}
+flavor = "A scale shed in the Pale Wyrm's deep sleep — found on the lip of a thirre where the cave-air smells of cold iron, and not where any honest courier ever rode. Heavier than it looks. Older than the village. The green of moss that has never been walked on."
+acquired_via = "drop"
+value_gold = 2200
+set_id = "dragon_hoard"
+slot = "body"
+armor_class = 52
+move_penalty = -0.1

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "dragonfang"
+name = "Dragonfang"
+category = "weapon"
+rarity = "legendary"
+tier = 7
+stats = {"damage": 42, "crit_bonus": 0.1}
+flavor = "Older than oath. The Wild Pantheon names it the Wyrm's parting gift; the Stone Crown's riders, more practically, call it the long tooth. It hums lower than any haethe Edda has known, and on cold mornings it sings to the mountains in a voice the mountains seem to answer."
+acquired_via = "drop"
+value_gold = 1500
+set_id = "dragon_hoard"
+damage_type = "slash"
+attack_speed = 1.0
+range_m = 1.6
+crit_mult = 1.7

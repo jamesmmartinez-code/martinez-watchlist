@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "frost_saber"
+name = "Frost Saber"
+category = "weapon"
+rarity = "rare"
+tier = 4
+stats = {"damage": 22, "crit_bonus": 0.06}
+flavor = "Smiths who name a saber Frost know what they are naming. The Pale Wyrm sleeps somewhere deep beneath the world, and its dreaming pushes cold up through certain blades. Edda has only forged two of these in her life, and laid the second one down at a cairn before it could be named."
+acquired_via = "drop"
+value_gold = 210
+set_id = ""
+damage_type = "frost"
+attack_speed = 1.05
+range_m = 1.5
+crit_mult = 1.6

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://data/items/_set_resource.gd" id="1_set"]
+
+[sub_resource type="Resource" id="set_dragon_hoard"]
+script = ExtResource("1_set")
+set_id = "dragon_hoard"
+set_name = "The Dragon's Hoard"
+flavor = "Two pieces, both legendary: the long tooth and the long scale. The Pale Wyrm's dreaming runs through both. Wear them together and the cold of the deep places will not reach you so easily."
+member_ids = PackedStringArray(["dragonfang", "dragonscale"])
+bonuses_by_pieces = {
+2: {"hp_bonus": 50, "crit_bonus": 0.05}
+}
+
+[resource]
+sets = [SubResource("set_dragon_hoard")]
