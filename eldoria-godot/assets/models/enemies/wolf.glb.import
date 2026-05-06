@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cnv0o4c3a5n06"
-path="res://.godot/imported/Horse.glb-810cc57bb906194e1f117fcb0c5bace1.scn"
+uid="uid://pi588hoy78rpv"
+path="res://.godot/imported/wolf.glb-76d878ec39539bcebbf72f686398900d.scn"
 
 [deps]
 
-source_file="res://assets/models/Horse.glb"
-dest_files=["res://.godot/imported/Horse.glb-810cc57bb906194e1f117fcb0c5bace1.scn"]
+source_file="res://assets/models/enemies/wolf.glb"
+dest_files=["res://.godot/imported/wolf.glb-76d878ec39539bcebbf72f686398900d.scn"]
 
 [params]
 
@@ -17,7 +17,7 @@ nodes/root_type=""
 nodes/root_name=""
 nodes/root_script=null
 nodes/apply_root_scale=true
-nodes/root_scale=0.00850
+nodes/root_scale=0.01020
 nodes/import_as_skeleton_bones=false
 nodes/use_name_suffixes=true
 nodes/use_node_type_suffixes=true

@@ -102,6 +102,7 @@ In order of fix:
 12. **Falling leaves + fireflies re-enabled by agent without soft textures**. Re-disabled. Same commit.
 13. **Worker cache-control too short** (5min for everything including 90MB pck). Deployed v1.3.0-cache with per-extension TTLs (HTML 60s, JS 1h, WASM/PCK 24h+swr 7d).
 14. **Player spawning below ground**. SAFE_SPAWN Y=3→5, snap raycast 4m→50m, below-Y=-2 rescue. Commit `9a34b1f9`.
+15. **Character native AABBs ranged from 1.0m to 433m** — runtime normalizers always corrected, but first frame flashed giant before deferred call. Char-Specialist 2026-05-06 added `nodes/root_scale=` clamps to every .import file, created the four missing ones (`maeve`, `smith_edda`, `goblin`, `wolf`), and recorded native AABB + root_scale in `CHARACTER_AUDIT.md`. See that file for the table; bulk source-AABB approval logged there.
 
 ---
 
