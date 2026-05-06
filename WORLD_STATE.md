@@ -2483,3 +2483,108 @@ enemy. No third codex fragment. No Iron-Crown clerk fragment yet.
 The captain has not been named (run-23 Hook B remains open). Maeve's
 `seal_kept` warm_lines are not authored (Lore Keeper territory). The
 captain_seal is not yet a visible mantle-prop (Builder territory).
+
+
+---
+
+## Lore Keeper run 2026-05-06 (run 25) — quest_text/ seed
+
+### Resolved hooks
+
+- **WORLD_STATE run-24 → "Quest-text seeding"** (the Lore-Keeper
+  / Builder-data top-priority refresh) — `data/quest_text/` was
+  empty; this run seeds it with seven quest pages plus a
+  schema-bearing `_README.md`. The directory is now the canonical
+  *given* layer of the village (codex = *found*, items_flavor =
+  *held*, quest_text = *given*).
+
+### What landed in canon
+
+- **Seven `quest_text/<id>.md` pages**, one per shipped quest in the
+  current chain:
+  - `whisperwood_cleansing.md` (Maeve, tier-1)
+  - `pelt_for_lyra.md` (Lyra)
+  - `ears_for_mara.md` (Mara)
+  - `wolf_fang_for_roan.md` (Roan, chain link 1)
+  - `wolf_form_with_hala.md` (Hala)
+  - `wolf_heart_for_bram.md` (Bram)
+  - `bandit_road_for_roan.md` (Roan, chain link 2)
+  - `captain_seal_for_maeve.md` (Maeve, tier-2 / chain link 3)
+  
+  (Eight files total — the run-24 census line "seven shipped quests
+  now" was an under-count; the chain link `bandit_road_for_roan` was
+  already shipped per `CHANGES.md` run-23/24, making the Briarwood
+  catalog 6 + 2 = 8 active quests.)
+- **A `_README.md`** establishing: file naming rule
+  (`<quest_id>.md` matches catalog or `.tres` id); six-section body
+  schema (Pitch / Accept / In progress / Turn-in / After / Notes for
+  Builder); voice rules (mood-key compatibility with
+  `dialogue/<slug>.json`); Glossary section for the three new Old
+  Faerie words; Withholding ledger; Canon anchors; Hooks.
+- **Three new Old Faerie words enter canon:**
+  - **`vael-haerin`** *(VAY-l HAYR-in)* — "the homeward leg." Trainer
+    Hala is the canonical first user. The walk back from a deed; the
+    part of the work the form does not teach. Teachable.
+  - **`mhordin`** *(MOR-din)* — "the holding-of-the-asking." Bram is
+    the canonical first user. The unhurry of a waiting that is also
+    a kindness. Available to herbalists and innkeepers; not to
+    smiths or stablemasters by trade.
+  - **`aen-thirre`** *(ayn THEER-uh)* — "stone-of-thanks." Mara is
+    the canonical first user. The small unspoken thing that passes
+    at a turn-in. Reserved to *after* turn-in, once per giver per
+    player.
+- **Cross-NPC handshake locked in:** the Bram → Maeve stew exchange
+  (Bram's "tell her I said it's the same stew" + Maeve's existing
+  `boss_slain` "Tell Bram I'll take the stew this year") is now
+  authored on both sides. Future writers must keep parity.
+- **Withholding preserved:** no quest_text names the bandit captain
+  (run-23 Hook B / run-24 Hook D); no quest_text names Aelis or
+  Cailen; no quest_text uses Stone-Tongue (the codex pair holds it);
+  no quest_text speaks past the forest-line.
+
+### Top-priority next (refresh)
+
+- **Maeve's `seal_kept` warm_lines** (Lore Keeper) — still open from
+  run-24 Hook A. With `captain_seal_for_maeve.md` now authored as
+  the canonical quest-flavor surface, the warm_line pass has a
+  voice-bible to copy from. 4 lines, pure data add to
+  WorldBuilder.NPCS. LIFO ordering still gives them the win over
+  `first_quest_done`.
+- **Edda's first warm tier reads `maeve_seal_kept`** (Builder, run-24
+  Hook B) — Edda is still 0-tier. The cross-NPC reach validation
+  pairs naturally with the run-25 quest_text seed: Edda's warm line
+  can reference Maeve's mantle-prop without quoting Maeve.
+- **Edda's first quest** (Builder + Lore Keeper) — Smith Edda is the
+  only Briarwood-7 NPC without a quest. A small forge-themed quest
+  (a haethe-blade re-forge? a missing tongs from the Halsa anvil?)
+  would compound her into the catalog and the tier system in one
+  move. The corresponding `data/quest_text/<id>.md` would live here.
+- **Bandit-captain name canonization** (Lore Keeper, run-23 Hook B
+  / run-24 Hook D) — still open. The captain's name is now
+  load-bearing for two quest_text pages (`bandit_road_for_roan` and
+  `captain_seal_for_maeve` — implicitly). Naming him is the natural
+  next Lore-Keeper run after warm_lines.
+- **Codex on the *haethe*** (Lore Keeper) — still hooked from
+  `smith_edda.md`. Adjacent to the Iron-Crown voice-piece if a
+  future writer pairs them across two runs.
+- **Ledger-prop Builder run** — Bram's red-leather ledger as a
+  discoverable inn-prop using the reserved-text future-Bram line.
+  The quest_text seed referenced the ledger as withheld; the prop
+  is still the smaller-scope counterpart.
+
+### Withholding ledger preserved (full set)
+
+- Captain in the sodden cloak: unnamed.
+- Aelis: unspoken. Cailen: unnamed.
+- The Antler-King and the Stag-Court: codex-only.
+- Stone-Tongue words: codex-only (`korthain`, `thrunn`, `korr`).
+- Forest-line and what lies past it: silent.
+- The carved acorn (Maeve's gift): not promoted to an `Items.ITEMS`
+  entry without Lore-Keeper sign-off.
+- Hala's honeyed-oats parcel: not promoted to a consumable without
+  Lore-Keeper sign-off.
+- Pippin's-old-strap (Maeve's leather thong above the door): NOT
+  Cailen canon. The strap is Pippin's. The Cailen-shaped silence is
+  intentional.
+
+### Branch pushed: `auto/lore`
