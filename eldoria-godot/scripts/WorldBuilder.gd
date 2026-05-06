@@ -552,9 +552,17 @@ func _ready() -> void:
 # the script (runtime error), we'll see [WB] -> X without a matching [WB] OK X.
 # Godot's print() goes to stdout which the Web export pipes to console.log.
 func _safe_call(method_name: String, args: Array = []) -> void:
+	# 2026-05-06: Each spawn call runs deferred (next frame) so a runtime
+	# error in one method (null asset, bad index, etc.) doesn't halt the
+	# rest of _ready. Without this, one bad call leaves the player on a
+	# bare ground plane with no village. Deferred calls log entry/exit
+	# from the deferred handler so the bisect output stays intact.
 	if not has_method(method_name):
 		print("[WB] MISSING method: " + method_name)
 		return
+	call_deferred("_safe_call_now", method_name, args)
+
+func _safe_call_now(method_name: String, args: Array) -> void:
 	print("[WB] -> " + method_name)
 	callv(method_name, args)
 	print("[WB] OK  " + method_name)
