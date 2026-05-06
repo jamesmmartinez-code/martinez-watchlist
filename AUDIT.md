@@ -179,3 +179,94 @@ Roan `road_warden` — first cross-NPC chain).
   pressure in playtests, or is the bandits faction still at 0.0
   fresh-save with no upward ramp? If the faction never pressurizes,
   the reducer is unreachable — flag for Builder.
+
+## 2026-05-06T20:00Z — Audit run (1h survey, run-3 of day)
+
+**Scope.** 17 commits in the last hour (8 substantive, 9 auto-build /
+auto-merge / integrator-gap-refresh). 100 commits in the last 6h.
+
+**Job picked: Job 7 — promote/demote backlog watch list.**
+
+Run-25's audit set a 4-item watch list. Status check this run:
+
+1. **9th quest in `World.QUEST_CATALOG`?** No. Catalog is still at 8
+   (`whisperwood_cleansing`, `pelt_for_lyra`, `ears_for_mara`,
+   `wolf_fang_for_roan`, `wolf_form_with_hala`, `wolf_heart_for_bram`,
+   `bandit_road_for_roan`, `captain_seal_for_maeve`). **Watch item
+   stays open.**
+
+2. **42nd item ID in `Items.ITEMS`?** No. Catalog is still at 41.
+   **Watch item stays open.**
+
+3. **Hooks A–E from run-24 picked up?** No. The last 6h Lore commits
+   were `Brigid's Ribbon codex` (3d97f43, captain canon — partial
+   credit toward Hook D), `Goblin Warlord boss reading` (aa7542e,
+   unrelated), and `Stag-Court faction` (68836e1, unrelated). Hook A
+   (Maeve `seal_kept` warm_lines), B (Edda warm tier reading
+   `maeve_seal_kept`), C (Mara cross-NPC mention), and E (ledger
+   inn-prop) all sit untouched. Run-25 said "demote if open >3 audits";
+   this is audit #1 of waiting. **Watch list stays open, no demotion
+   yet.** Brigid's Ribbon codex is a partial Hook D credit because it
+   establishes captain canon material — but the dialogue/world-flag
+   wiring (the actual hook) is still pending.
+
+4. **`bandit_road_for_roan` reducer playtest signal?** No telemetry
+   visible from this distance. Cannot resolve until a Builder writes
+   a playtest log or adds the bandits-pressure-ramp trigger. **Stays
+   open.**
+
+**New observations this run:**
+
+- **Three new specialist content agents** appear in the last hour:
+  `Eldoria Recipe`, `Eldoria Event`, `Eldoria Bestiary`. Each touched
+  only its own `data/<domain>/` subdirectory — clean zone discipline.
+  Output is `.tres` data files (recipes, festivals, rumors, creatures)
+  rather than code, so they extend existing systems by content rather
+  than introducing new mechanics. Compound, not sprawl. ✅
+- **Operating §1 (compound, don't sprawl):** No last-hour commit added
+  a new mechanic. All work was content extension, asset clamping
+  (`Char: clamp every character GLB`), faction lore (Stag-Court),
+  codex glyph art, ambient life (butterflies), or footstep variants.
+  ✅
+- **Operating §6 (child-safe):** No FOMO loops, monetization, or dark
+  patterns surfaced. ✅
+- **Operating §4 (zone discipline):** All 8 substantive last-hour
+  commits stayed in zone EXCEPT a minor case — `Eldoria Character`
+  (adc4f2e) touched top-level `CHARACTER_AUDIT.md` and `PROBLEMS_LOG.md`
+  alongside its `assets/models/*.glb.import` files. These two top-level
+  docs are character-domain ledgers the agent maintains, so the
+  extension is reasonable; not flagged as a block, but noting that the
+  Character zone-of-discipline definition in operations should
+  formally include those two docs (or they should be moved under
+  `eldoria-godot/character/`).
+- **Refactor scan (Job 2 numbers, even though Job 7 was picked):**
+  `GPUParticles3D.new()` × 5, `Label3D.new()` × 9 in
+  `eldoria-godot/scripts/`. Both still under refactor thresholds (>5
+  / >10). Watch — the butterflies addition (aeaa537) likely added one
+  more particle setup; if the next ambient-life feature pushes
+  `GPUParticles3D.new()` over the threshold, run-27 should extract a
+  helper.
+
+**Refactor opportunities surfaced (not done this run):**
+
+- The `[ARCHITECT-NOTE] disk discipline` from run-25 was correct: the
+  workspace was wedged at 99% on `/`, 100% on `/sessions`, 80% on
+  `/dev/shm`, with sibling-agent dirs (e.g. `/dev/shm/integ-run-...`
+  at 573 MB, `/dev/shm/env-...` at 352 MB) owned by `nobody` and
+  unable to be cleaned by this agent. This run had to operate purely
+  through the GitHub Contents API again. Not blocking, but the
+  problem is structural — recommend a janitor task that ages out
+  worker temp dirs, or a per-agent quota.
+
+**Watch list carried to next run:**
+
+- 9th quest in `World.QUEST_CATALOG`? (audit-2 of waiting)
+- 42nd item ID in `Items.ITEMS`? (audit-2 of waiting)
+- Hooks A/B/C/E still open; Hook D partially credited via Brigid's
+  Ribbon codex. (audit-2 of 3 — demote at audit-3 if still open)
+- `bandit_road_for_roan` reducer playtest signal? (audit-2)
+- Run-27 should rerun the GPUParticles3D / Label3D refactor scan to
+  see if the butterflies addition tipped over the threshold.
+
+**No commit needed for code changes this run** — only this AUDIT.md
+addendum and a parallel `[ARCHITECT-NOTE]` in CHANGES.md.
