@@ -645,8 +645,25 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 			aabb = aabb.merge(a)
 	if not has or aabb.size.y <= 0.001:
 		return
-	var s: float = clamp(target_height / aabb.size.y, 0.05, 5.0)
-	model.scale = Vector3(s, s, s)
+	# scale-eng 2026-05-05: iterative shrink. Floor 0.05 → 0.001 so wildly-oversized
+	# (100×-1000×) Sketchfab/Meshy enemy GLBs can actually reach target.
+	var _pass_n: int = 0
+	while _pass_n < 6 and aabb.size.y > 0.001 and (aabb.size.y < target_height * 0.80 or aabb.size.y > target_height * 1.20):
+		var _s: float = clamp(target_height / aabb.size.y, 0.001, 5.0)
+		if model is Node3D:
+			(model as Node3D).scale = (model as Node3D).scale * _s
+		else:
+			model.scale = Vector3(_s, _s, _s)
+		await get_tree().process_frame
+		if not is_instance_valid(model): return
+		aabb = AABB(); has = false
+		for c_re in model.find_children("*", "VisualInstance3D", true):
+			var v_re := c_re as VisualInstance3D
+			if not v_re: continue
+			var a_re := v_re.global_transform * v_re.get_aabb()
+			if not has: aabb = a_re; has = true
+			else: aabb = aabb.merge(a_re)
+		_pass_n += 1
 	# Pass 2 (THEME §13 ground contact): re-measure in MODEL-LOCAL space to
 	# find the bottom of the visible mesh relative to the model's pivot, then
 	# lift the model so the bottom sits at body-local y ≈ 0. The body's capsule

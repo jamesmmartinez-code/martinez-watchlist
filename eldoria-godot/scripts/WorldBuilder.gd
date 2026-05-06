@@ -2214,7 +2214,7 @@ func _clamp_max_height(node: Node, max_h: float) -> void:
 	var aabb := _measure_aabb(node)
 	if aabb.size.y <= max_h or aabb.size.y <= 0.001:
 		return
-	var s: float = clamp(max_h / aabb.size.y, 0.05, 1.0)
+	var s: float = clamp(max_h / aabb.size.y, 0.001, 1.0)  # scale-eng 2026-05-05: floor 0.05 → 0.001
 	n3d.scale = n3d.scale * s
 
 
@@ -2347,7 +2347,7 @@ func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
 		return
 	if inst is Node3D:
 		var n3d: Node3D = inst as Node3D
-		var shrink: float = clamp(14.0 / aabb.size.y, 0.05, 1.0)
+		var shrink: float = clamp(14.0 / aabb.size.y, 0.001, 1.0)  # scale-eng 2026-05-05: floor 0.05 → 0.001
 		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
@@ -2401,7 +2401,7 @@ func _emergency_shrink(body: Node, aabb: AABB, target_h: float) -> void:
 			var c := child as Node3D
 			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
 			var ratio: float = target_h / aabb.size.y
-			var new_s: float = clamp(avg_cur * ratio, 0.02, 3.0)
+			var new_s: float = clamp(avg_cur * ratio, 0.001, 3.0)  # scale-eng 2026-05-05: floor 0.02 → 0.001
 			c.scale = Vector3(new_s, new_s, new_s)
 			print("[ScaleSweep] EMERGENCY shrunk %s from %.1fm → %.1fm (s=%.3f)" % [body.name, aabb.size.y, target_h, new_s])
 			break
@@ -2457,6 +2457,6 @@ func _check_and_normalize(body: Node, target_height: float) -> void:
 		if child is Node3D and child.has_method("get_children"):
 			var c := child as Node3D
 			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
-			var new_s: float = clamp(avg_cur * (target_height / aabb.size.y), 0.05, 5.0)
+			var new_s: float = clamp(avg_cur * (target_height / aabb.size.y), 0.001, 5.0)  # scale-eng 2026-05-05: floor 0.05 → 0.001
 			c.scale = Vector3(new_s, new_s, new_s)
 			break
