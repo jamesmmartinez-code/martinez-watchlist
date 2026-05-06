@@ -2644,3 +2644,64 @@ captain_seal is not yet a visible mantle-prop (Builder territory).
   *toll* in Old Faerie compound (working name *thrian-toll*, "the long
   listening's toll"; final word to be set when the codex run begins, must
   rhyme tonally with *thrian-mor* in `lore/factions/three_crowns.md`).
+
+---
+
+## Lore Keeper run — 2026-05-06 — codex fragment added
+
+**Artifact:** `eldoria-godot/data/codex/pale_wyrm_beneath.md` (priority 5 — codex
+entry seeded against the Sundering, per `lore/world.md` next-runs note).
+
+**Why now:** Codex had only two fragments
+(`stag_courts_courtesy.md`, `steppe_riders_refusal.md`). World canon explicitly
+calls for "codex entries seeded against the Sundering" as next-run work. This
+adds a third fragment that anchors against three distinct canon pillars at
+once — the Sundering / Pale Wyrm pillar (`world.md`), the smith-voice pillar
+(`smith_edda.md` voice rule "never names a blade Frost"), and the Crystal
+Caves discovery zone (sibling to the existing `stag_courts_courtesy.md`
+fragment recovered from the same under-stream wall).
+
+**Old Faerie added (1):** ***mhirren*** (MEER-en — the slow-turning sleep, the
+Wyrm's dreaming; also said of a banked hearth or a kettle off the hob). Per
+the canon cap, total Old Faerie words now in formal canon: *thirre*,
+*ai-velin*, *kerrithen* (`world.md`); *vael-tor*, *thressa-mai*
+(`elder_maeve.md`); *haethe*, *unnen* (`smith_edda.md`); *thalen-ai*
+(`herbalist_lyra.md`); *vael-i-thirren*, *ai-mhorren*, *velhain-tor*
+(`stag_courts_courtesy.md`); *mhordin* (`quest_text/wolf_heart_for_bram.md`);
+*haelen*, *mor-vaere*, *thrennen* (`items_flavor.json`); *mhirren* (this
+artifact). Stone-Tongue cap of three holds — no new Stone-Tongue coined.
+
+**Cross-anchors (no edits required):**
+- `data/dialogue/smith_edda.json` — the voice rule "Never names a blade Frost.
+  The Pale Wyrm is kept asleep by silence." now has a canon source-of-truth
+  for *why*. The dialogue line continues to hold verbatim.
+- `data/codex/stag_courts_courtesy.md` — same Briarwood scribe's hand. Both
+  fragments recovered from opposite sides of the under-stream's flow. Future
+  Polisher pass may light them with matching paper-texture / pin-shadow.
+- `lore/world.md` — Sundering pillar + Pale Wyrm sleeping reference confirmed
+  in-fiction; no overwrite, only deepening.
+
+**Builder hooks proposed (lore-only this run, not wired):**
+1. `world_flag_excludes: warlord_slain_with_frost` gating — codex is an
+   *if-you-haven't-yet* artifact; if the saver-arc is sealed it still
+   surfaces via the alternate trigger.
+2. `cave_runeface_north` examine prop — alternate `also_acceptable` trigger.
+   Pure decal-tint work, no new mesh required.
+3. Optional Edda one-line addition to `boss_slain` if player slew the Warlord
+   *without* carrying the Edda-saber: *"You did not carry the Frost-thread.
+   Brigid heard you not name it. Velhain-tor."* Deferred — this run is
+   canon-only.
+
+**Withholding (held back deliberately):**
+- The Wyrm's true name is not given; *mhirren* is its sleep, not its name.
+- The Antler-King is not invoked.
+- No specific year ("the year the bridge was rebuilt" stays indeterminate
+  for future integrator anchoring).
+- No new Stone-Tongue word.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no grimdark. The
+fragment uses "careful" / "patient" instead of "fear"; the Wyrm is framed as
+a sleeper to be respectful of, not a monster to be afraid of.
+
+**Branch:** `auto/lore`. **Single artifact this run:** yes. **No overwrites:**
+verified — only this WORLD_STATE.md append and the new codex file.
