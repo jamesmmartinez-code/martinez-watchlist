@@ -412,12 +412,22 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 # exists. Boss.glb (Mountain Ogre) ships 13 anims; pick the first idle-shaped
 # name we find, fall back to whatever's first.
 func _play_model_idle_anim() -> void:
+	# Boss.glb (Mountain Ogre) ships with 13 anims — best of any character — so
+	# library merge is mostly belt-and-braces for future bosses sourced with
+	# fewer clips. RIGGING_STANDARD §Required animations.
 	if not is_instance_valid(_model):
 		return
 	var ap: AnimationPlayer = _find_animation_player(_model)
 	if ap == null:
 		return
-	for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle", "Idle_A", "idle_loop"]:
+	const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+	if ResourceLoader.exists(HUMANOID_BASE_LIB):
+		var _lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
+		if _lib != null:
+			if ap.has_animation_library("humanoid"):
+				ap.remove_animation_library("humanoid")
+			ap.add_animation_library("humanoid", _lib)
+	for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle", "Idle_A", "idle_loop", "humanoid/idle"]:
 		if ap.has_animation(n):
 			ap.play(n)
 			return

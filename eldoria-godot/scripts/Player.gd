@@ -11,6 +11,14 @@ class_name Player
 @export var camera_pivot: Node3D
 @export var animation_player: AnimationPlayer
 
+# RIGGING_STANDARD §Required animations — every humanoid loads this shared
+# library so _play_anim("humanoid/<slot>") works regardless of what the
+# source GLB happened to ship with. Built by scripts/dev/build_anim_library.gd
+# from Mixamo packs in assets/animations/source/. Missing file = graceful
+# no-op (we fall back to the candidates dict in _play_anim like before).
+const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+
+
 var gravity: float = 20.0
 var current_speed: float
 var is_attacking: bool = false
@@ -89,6 +97,13 @@ func _ready() -> void:
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
 		animation_player = _find_animation_player(self)
+	# Merge the shared humanoid AnimationLibrary into the AnimationPlayer
+	# the model came with. After this, _play_anim() can resolve
+	# "humanoid/idle" / "humanoid/walk" / "humanoid/attack_1" etc. on
+	# every character — even Trainer / NPCs whose source GLB shipped with
+	# only one anim. Per RIGGING_STANDARD: bones must match mixamorig:*.
+	if animation_player:
+		_merge_humanoid_library(animation_player)
 	# THEME §13 ground contact + size discipline — Owen.glb / hero_lange.glb are
 	# Meshy/Sketchfab exports at native units (often cm), so they spawn 3-4×
 	# normal size if not normalized. Walks the visible AABB and uniformly
@@ -432,6 +447,28 @@ func _spawn_crit_flash() -> void:
 
 func _play_anim(name: String) -> void:
 	if not animation_player:
+		return
+	# RIGGING_STANDARD §Required animations: prefer the canonical "humanoid/<slot>"
+	# clip from humanoid_base.tres if it was merged in _ready. Falls back to the
+	# legacy per-source-GLB candidate names so characters whose GLB was wired
+	# pre-library still animate correctly.
+	var canonical_map := {
+		"idle":    "humanoid/idle",
+		"walk":    "humanoid/walk",
+		"run":     "humanoid/run",
+		"attack":  "humanoid/attack_1",
+		"hurt":    "humanoid/hurt",
+		"die":     "humanoid/die",
+		"victory": "humanoid/victory",
+		"wave":    "humanoid/wave",
+		"yes":     "humanoid/yes",
+		"no":      "humanoid/no",
+		"jump":    "humanoid/jump",
+	}
+	var canonical: String = canonical_map.get(name, "")
+	if canonical != "" and animation_player.has_animation(canonical):
+		if animation_player.current_animation != canonical:
+			animation_player.play(canonical)
 		return
 	var candidates := {
 		"idle":   ["Idle", "idle", "ANIM_idle"],
@@ -1039,3 +1076,24 @@ func _normalize_player_model(target_height: float) -> void:
 	if local_has and local_min_y < -0.05:
 		var lift: float = clamp(-local_min_y, 0.0, 2.0)
 		hero.position.y = lift
+
+# ────────────────────────────────────────────────────────────────────────
+# Animation library merge — RIGGING_STANDARD §Required animations
+# ────────────────────────────────────────────────────────────────────────
+# Loads humanoid_base.tres and registers it under the "humanoid" key so
+# anim_player.play("humanoid/<slot>") works regardless of source GLB.
+# Subclasses (Pathfinder/Vanguard) can layer humanoid_pathfinder.tres or
+# humanoid_vanguard.tres on top under the same key — keys collide, last
+# write wins, so class flair overrides base where it exists.
+func _merge_humanoid_library(ap: AnimationPlayer) -> void:
+	if ap == null:
+		return
+	if not ResourceLoader.exists(HUMANOID_BASE_LIB):
+		return  # not built yet — fallback path in _play_anim still works
+	var lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
+	if lib == null:
+		return
+	if ap.has_animation_library("humanoid"):
+		ap.remove_animation_library("humanoid")
+	ap.add_animation_library("humanoid", lib)
+

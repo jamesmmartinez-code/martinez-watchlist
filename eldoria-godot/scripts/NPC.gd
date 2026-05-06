@@ -115,6 +115,10 @@ var _is_walking_schedule: bool = false
 
 @onready var label_3d: Label3D = $Label3D
 @onready var interact_area: Area3D = $InteractArea
+# RIGGING_STANDARD §Required animations — shared humanoid library so NPCs
+# can play wave / yes / no / idle / walk regardless of source-GLB.
+const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+
 @onready var anim: AnimationPlayer = get_node_or_null("AnimationPlayer")
 
 var player_in_range: bool = false
@@ -130,9 +134,13 @@ func _ready() -> void:
 	if interact_area:
 		interact_area.body_entered.connect(_on_body_entered)
 		interact_area.body_exited.connect(_on_body_exited)
-	# Idle anim if available
-	if anim and anim.has_animation("Idle"):
-		anim.play("Idle")
+	# Idle anim if available — prefer canonical humanoid/idle when the merged
+	# library brought one in; otherwise fall back to the source-GLB clip.
+	if anim:
+		if anim.has_animation("humanoid/idle"):
+			anim.play("humanoid/idle")
+		elif anim.has_animation("Idle"):
+			anim.play("Idle")
 	# REFINE: character — animation timing. Resolve and cache idle/walk
 	# clip names from whichever AnimationPlayer this NPC actually owns
 	# (the @onready `anim` only sees a *direct* child named "AnimationPlayer";
@@ -140,6 +148,15 @@ func _ready() -> void:
 	# scanning the full subtree via _find_first_anim_player() so authored
 	# Walk/Idle clips survive the import-path lottery.
 	var ap_resolved: AnimationPlayer = anim if anim != null else _find_first_anim_player(self)
+	# Merge humanoid_base.tres so the shared library is available — NPCs can
+	# play wave/yes/no on dialogue regardless of their source GLB. Graceful
+	# no-op if the .tres hasn't been built yet.
+	if ap_resolved != null and ResourceLoader.exists(HUMANOID_BASE_LIB):
+		var _lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
+		if _lib != null:
+			if ap_resolved.has_animation_library("humanoid"):
+				ap_resolved.remove_animation_library("humanoid")
+			ap_resolved.add_animation_library("humanoid", _lib)
 	if ap_resolved != null:
 		var names := ap_resolved.get_animation_list()
 		# Prefer common spellings in order of likelihood, then fall back to

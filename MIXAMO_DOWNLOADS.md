@@ -1,4 +1,9 @@
-# MIXAMO_DOWNLOADS.md — Animation Sourcing Checklist
+# MIXAMO_DOWNLOADS.md
+
+> **Status (2026-05-05):** All 12 P0 slots mapped from existing Mixamo packs in
+> `eldoria-godot/assets/animations/source/`. Run the builder (see
+> MIXAMO_RUNBOOK.md → "One-time build") to produce the .tres outputs that
+> Player/NPC/Enemy/Boss scripts auto-load. — Animation Sourcing Checklist
 
 James has a Mixamo account (Adobe-owned, free, mixamorig:* compliant per RIGGING_STANDARD.md). This file tracks which animations have been downloaded vs. still pending.
 
@@ -14,21 +19,21 @@ James has a Mixamo account (Adobe-owned, free, mixamorig:* compliant per RIGGING
 (Animation Sourcer agent reads from there, converts FBX → GLB via fbx2gltf, packs into `eldoria-godot/assets/animations/humanoid_base.tres`)
 
 ## Canonical 12 (P0 — every humanoid needs these)
-- [ ] idle ← Mixamo: "Breathing Idle"
-- [ ] walk ← Mixamo: "Walking"
-- [ ] run ← Mixamo: "Running"
-- [ ] attack_1 ← Mixamo: "Sword And Shield Slash"
-- [ ] attack_2 ← Mixamo: "Sword Attack 2" or "Standing Melee Combo Attack"
-- [ ] attack_3 ← Mixamo: "Spin Attack"
-- [ ] hurt ← Mixamo: "Standing React Small From Front"
-- [ ] die ← Mixamo: "Standing React Death Forward"
-- [ ] victory ← Mixamo: "Victory" or "Cheering"
-- [ ] wave ← Mixamo: "Waving"
-- [ ] yes ← Mixamo: "Yes"
-- [ ] no ← Mixamo: "Shaking Head No"
+- [x] idle ← Mixamo: "Breathing Idle"
+- [x] walk ← Mixamo: "Walking"
+- [x] run ← Mixamo: "Running"
+- [x] attack_1 ← Mixamo: "Sword And Shield Slash"
+- [x] attack_2 ← Mixamo: "Sword Attack 2" or "Standing Melee Combo Attack"
+- [x] attack_3 ← Mixamo: "Spin Attack"
+- [x] hurt ← Mixamo: "Standing React Small From Front"
+- [x] die ← Mixamo: "Standing React Death Forward"
+- [x] victory ← Mixamo: "Victory" or "Cheering"
+- [x] wave ← Mixamo: "Waving"
+- [x] yes ← Mixamo: "Yes"
+- [x] no ← Mixamo: "Shaking Head No"
 
 ## P1 — Adds life to NPCs and ambient world
-- [ ] jump_up ← Mixamo: "Jumping Up"
+- [x] jump_up ← Mixamo: "Jumping Up"
 - [ ] jump_loop ← Mixamo: "Falling Idle"
 - [ ] jump_land ← Mixamo: "Falling To Roll"
 - [ ] gather ← Mixamo: "Picking Fruit"
@@ -37,12 +42,12 @@ James has a Mixamo account (Adobe-owned, free, mixamorig:* compliant per RIGGING
 
 ## P2 — Class flair (Pillar 1 combat character)
 **Pathfinder (Alden):**
-- [ ] bow_draw ← Mixamo: "Standing Aim And Draw"
-- [ ] bow_release ← Mixamo: "Standing Aim Recoil"
+- [x] bow_draw ← Mixamo: "Standing Aim And Draw"
+- [x] bow_release ← Mixamo: "Standing Aim Recoil"
 - [ ] kneel ← Mixamo: "Kneeling Pointing"
 
 **Vanguard (Owen):**
-- [ ] two_hand_swing ← Mixamo: "Great Sword Slash"
+- [x] two_hand_swing ← Mixamo: "Great Sword Slash"
 - [ ] shield_bash ← Mixamo: "Bouncing Fight Idle"
 - [ ] charge ← Mixamo: "Charging"
 - [ ] salute ← Mixamo: "Salute"
