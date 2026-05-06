@@ -759,13 +759,31 @@ func _make_building(pos: Vector3) -> void:
 # Trees — bark-textured trunk + multi-tier stylized foliage with rim lighting
 # ============================================================================
 func _scatter_trees(count: int) -> void:
-	return  # NUCLEAR-DISABLED _scatter_trees 2026-05-06: big-trees-stupid
+	# Env: 2026-05-06 — trees RE-ENABLED. Whisperwood was bare because the
+	# previous emergency shutoff ("big-trees-stupid") never lifted, but the
+	# 4.5m AABB clamp added to `_clamp_tree_at_spawn` already caps every GLB
+	# below player-occluding height. THEME §1 / §11 / §12 require a forest:
+	# the village without it reads as "lawn with houses". Reduced count and
+	# bumped the inner radius so trees ring the plaza without clipping the
+	# building cluster.
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	for i in count:
+	var spawn_count: int = mini(count, 100)  # cap to 100 — the playfield is ~70m wide
+	for i in spawn_count:
 		var ang := rng.randf() * TAU
-		var dist := rng.randf_range(18, 70)
+		# Inner ring (40%) — village-edge trees at 24-40m. Outer ring (60%) —
+		# Whisperwood proper at 40-72m. The bias gives a sense of the forest
+		# pressing in without crowding the central plaza.
+		var dist: float
+		if rng.randf() < 0.4:
+			dist = rng.randf_range(24.0, 40.0)
+		else:
+			dist = rng.randf_range(40.0, 72.0)
 		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		# THEME §13 — keep trunks clear of the cobble path network and the
+		# building footprints. The path network radiates from origin out to
+		# the village edge, so a small jitter prevents perfect alignment.
+		pos += Vector3(rng.randf_range(-0.6, 0.6), 0.0, rng.randf_range(-0.6, 0.6))
 		_make_tree(pos, rng)
 
 func _make_tree(pos: Vector3, rng: RandomNumberGenerator) -> void:
