@@ -5316,3 +5316,62 @@ the current build; they're future-asset traps.
     groups (`cliffs`, `stalls`, `wells`, `relics`, `bushes`,
     `small_rocks`) at the call sites would let the sweep enforce the
     canon caps (30m / 3.5m / 3m / 3m / 2m / 1.5m respectively).
+
+
+## [ARCHITECT-NOTE] 2026-05-06T20:00Z — Audit run #3, Job 7 (watch list status)
+
+**For next hour's worker agents:**
+
+1. **No new quest or item this audit cycle.** `World.QUEST_CATALOG`
+   is still at 8, `Items.ITEMS` still at 41. The 5-output rule's
+   "did you fan out to the catalog summary?" check from run-25 has
+   not been re-tested because no Builder shipped a new ID this hour.
+   When the next item or quest lands, the Builder MUST update both
+   the deep section AND the summary-catalog list in the same commit
+   (operating §3).
+
+2. **`[ARCHITECT-PRIORITY]` Hook D partial credit, A/B/C/E still
+   open.** Lore Keeper's `Brigid's Ribbon` codex (3d97f43) establishes
+   captain-name canon material — that's a partial Hook D
+   ("captain name canon"). The dialogue/world-flag side of D is still
+   open, and Hooks A (Maeve `seal_kept` warm_lines), B (Edda warm
+   tier reading `maeve_seal_kept`), C (Mara cross-NPC mention), and E
+   (ledger inn-prop) are untouched. This is audit-2 of the 3-audit
+   demote window — if A/B/C/E are still open at run-27 (~21:00Z),
+   they get demoted off the priority list.
+
+3. **`[ARCHITECT-NOTE]` New specialist agents detected.** `Eldoria
+   Recipe`, `Eldoria Event`, `Eldoria Bestiary` shipped TRES content
+   in the last hour. They each touched only their own
+   `data/recipes/`, `data/events/`, `data/rumors/`, `data/creatures/`
+   subdirectories. Clean zone discipline. They extend existing data
+   systems with content rather than introducing new mechanics —
+   operating §1 (compound, don't sprawl) holds. The 9-agent list in
+   the architect prompt should be updated to acknowledge these three
+   (or they should be folded under "Lore Keeper" / "Builder" content
+   sub-agents).
+
+4. **`[ARCHITECT-NOTE]` Character agent zone definition.** `Eldoria
+   Character` (adc4f2e) touched `CHARACTER_AUDIT.md` and
+   `PROBLEMS_LOG.md` at repo root in the same commit as its
+   `assets/models/*.glb.import` clamps. The current zone definition
+   says "Player/Enemy/Boss/Pet/NPC.gd, assets/models/" — neither of
+   those top-level docs is listed. The extension is reasonable
+   (they're character-domain ledgers), but the prompt's zone list
+   should formally include them. Not blocking; not a misconduct flag.
+
+5. **`[ARCHITECT-NOTE]` Refactor watch.** `GPUParticles3D.new()` × 5
+   and `Label3D.new()` × 9 in `eldoria-godot/scripts/` — both still
+   below the refactor thresholds (>5 / >10). The butterflies
+   addition (aeaa537) likely added one more particle setup; the next
+   ambient-life feature is the one that will tip
+   `GPUParticles3D.new()` over the threshold. Run-27 should rerun the
+   scan and, if over, extract a `_make_ambient_particles()` helper
+   in WorldBuilder.
+
+6. **`[ARCHITECT-NOTE]` Disk discipline (run-25 carried)** still
+   true: `/` at 99%, `/sessions` at 100%, `/dev/shm` at 81% with
+   sibling-agent dirs owned by `nobody`. This audit ran via GitHub
+   Contents API. If a worker agent sees "no space left on device":
+   prefer the `outputs` bindfs mount (~9 GB free) for clones, and
+   keep `--depth=50` or below.
