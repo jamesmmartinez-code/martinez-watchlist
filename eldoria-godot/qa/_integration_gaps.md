@@ -1,30 +1,51 @@
 # Integration Gaps Log
 
-last_run: 2026-05-06T16:46Z
-canon_qa_status_at_run: PASS (no _blocking_status.md present — defaulted to PASS)
-merged_this_cycle: auto/character (1 commit)
+last_run: 2026-05-06T17:00Z
+canon_qa_status_at_run: PASS_WITH_DEBT (s1=0, s2=7, s3=3 — see eldoria-godot/qa/_blocking_status.md)
+merged_this_cycle: auto/environment (1 commit), auto/art (1 commit)
 skipped_this_cycle: (none)
-nothing_to_merge: auto/art, auto/builder, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
+nothing_to_merge: auto/builder, auto/character, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
 
 ## This cycle merged
 
-- auto/character (1 commit, 2e8c89d): Replaced Smith Edda placeholder
-  (worker_girl.glb) with Sketchfab Viking Framps Blacksmith
-  (smith_edda.glb, 2.52 MiB, 22 native anims). Per Pillar 2 / THEME §4
-  NPC silhouette table & §2 Norse-undertoned medieval era; OPERATIONS §15
-  size budget ✅ (<20MiB).
-  Conflict in eldoria-godot/scripts/WorldBuilder.gd auto-merged cleanly
-  (char's 1-line NPC_MODELS edit at L30 + main's mountain ring 220m/320m
-  upgrade and global-scale-sweep clamps were on disjoint hunks).
-  CREDITS.md taken from char branch (main hadn't touched it).
-  smith_edda.glb added (new file).
+- auto/environment (1 commit, b53e7acc): "Env: ambient wildlife — butterflies + pond dragonflies (THEME §12)".
+  Net diff against main = 0 files / 0 additions / 0 deletions — the underlying
+  changes were already present on main from a prior cycle, so this merge was a
+  no-op fast-forward of the branch tip onto main's history. Branch reset to
+  main after merge to clear the stale tip.
+
+- auto/art (1 commit, eec8102d): "Art: mood-boards — world_map_sketch.png (run-30)".
+  Added mood-boards/_gen_world_map_sketch.py and mood-boards/world_map_sketch.png.
+  Modified eldoria-godot/assets/ART_COVERAGE.md to log the new mood board.
+  Mood-board assets live outside the runtime tree (no .tscn / .gd reference
+  expected); not orphans by definition.
 
 ## Gaps surfaced this run
 
-(No new orphan-asset, orphan-quest, orphan-animation, or orphan-material
-gaps found relative to main's tree this cycle. Smith Edda's new GLB is
-referenced by WorldBuilder.gd:30 NPC_MODELS table. .glb spawn graph
-fully resolved across 35 GLBs in eldoria-godot/assets/.)
+(No new orphan-asset, orphan-quest, orphan-animation, or orphan-material gaps
+found in this cycle's diff. Only file additions were two mood-board assets in
+mood-boards/, which are reference-only and not loaded by any scene.)
+
+## S2 issues forwarded from canon-qa (PASS_WITH_DEBT contract)
+
+Per CQ cycle-2 audit (2026-05-06T11:55Z), seven S2 items remain logged for
+follow-up. Listed here so worker agents pick them up next cycle:
+
+- [CQ-S2-01 @lorekeeper] data/items_flavor.json missing flavor for
+  briar_shortbow, mossbound_buckler, roan_woodbow, wolf_heart.
+- [CQ-S2-02 @builder] scripts/Items.gd legacy ITEMS dict missing
+  briar_shortbow, mossbound_buckler, roan_woodbow (defined as .tres only).
+- [CQ-S2-03 carry-over] data/dialogue/trainer_hala.json practice_cudgel reward,
+  no flavor entry.
+- [CQ-S2-04 carry-over] data/dialogue/stablemaster_roan.json + lore/npcs/
+  stablemaster_roan.md "Steppe-Patterned Halter" no flavor entry.
+- [CQ-S2-05 @recipe-author] data/items/_catalog.csv row mossbound_buckler
+  declares acquired_via:craft but no recipe under data/recipes/**.
+- [CQ-S2-06 @scale-engineer] scripts/WorldBuilder.gd:3028-3052 tree collision
+  radius vs visual trunk parity unverifiable from static source — needs
+  in-engine AABB print.
+- [CQ-S2-07 @animation-sourcer] eldoria-godot/assets/animations/ has 435 source
+  FBX files, 0 .tres AnimationLibraries built; first batch not shipped.
 
 ## Carry-over from prior cycle (still unresolved)
 
