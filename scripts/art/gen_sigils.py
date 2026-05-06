@@ -96,6 +96,19 @@ FACTIONS = {
         "sigil": "flame",
         "tagline": "desert oasis",
     },
+    "bandits": {
+        # Outlaw road-pressure faction (wired Builder run-21). Visual cue:
+        # stag-blood crimson + ink charcoal — the colors road bandits would
+        # daub on a stolen tabard. Sigil = crossed daggers over a hooded
+        # silhouette ring, the "blade-and-cowl" mark a Roan-style ranger
+        # would carve on a milestone to warn travelers.
+        "primary": STAG_BLOOD,
+        "secondary": INK,
+        "field": (60, 25, 25),
+        "trim": (90, 60, 30),
+        "sigil": "bandit_blades",
+        "tagline": "outlaw road-pressure faction",
+    },
     "frostpeak": {
         "primary": (200, 230, 240),
         "secondary": (140, 160, 180),
@@ -103,6 +116,36 @@ FACTIONS = {
         "trim": (95, 110, 120),
         "sigil": "snowflake",
         "tagline": "northern garrison",
+    },
+    # ── Hostile factions (run: art / 2026-05-05) ─────────────────────────
+    # Three more enemy factions referenced in World.gd's `factions` dict
+    # but lacking heraldic art (run-23 shipped `bandits`; these complete
+    # the set). SKILL.md priority #3 explicitly calls out the Whisperwood
+    # goblin warning + Crystal Caves entrance crests. Inserted AFTER
+    # frostpeak so SIGIL_SEEDS keys keep their stable values.
+    "whisperwood_goblins": {
+        "primary": MOSS,
+        "secondary": WINE,
+        "field": (38, 55, 30),
+        "trim": (55, 38, 22),
+        "sigil": "goblin_skull",
+        "tagline": "feral goblin warhost",
+    },
+    "dire_wolves": {
+        "primary": STONE_BLUE,
+        "secondary": (245, 215, 80),  # frost-yellow eye accent
+        "field": (55, 60, 70),
+        "trim": (35, 38, 45),
+        "sigil": "wolf_head",
+        "tagline": "Whisperwood pack",
+    },
+    "crystal_caves": {
+        "primary": FEY_CYAN,
+        "secondary": ARCANE,
+        "field": (40, 48, 80),
+        "trim": (60, 42, 95),
+        "sigil": "crystal_cluster",
+        "tagline": "underground constructs",
     },
 }
 
@@ -427,6 +470,283 @@ def draw_snowflake(im, rng, primary, secondary):
     d.ellipse([cx - 5, cy - 6, cx - 1, cy - 2], fill=(255, 255, 255, 220))
 
 
+
+def draw_bandit_blades(im, rng, primary, secondary):
+    """Bandits' mark — two crossed daggers over a hooded silhouette ring,
+    daubed in stag-blood crimson with ink shadows. Per THEME §3 stag-blood
+    accent (10% magic/accent palette band — used here for the outlaw
+    faction since they sit *outside* the legitimate town palette). Per
+    THEME §4 silhouette-distinct: blade tip + hilt-pommel reads at 30m
+    against any backdrop.
+    """
+    d = ImageDraw.Draw(im, "RGBA")
+    cx = im.width / 2
+    cy = im.height / 2 + 4
+    blood = vary(primary, rng, 10) + (255,)
+    blood_dark = (max(0, primary[0] - 50), max(0, primary[1] - 30),
+                  max(0, primary[2] - 30), 255)
+    iron = (140, 140, 145, 255)
+    iron_dark = (75, 70, 75, 255)
+    grip = (50, 35, 25, 255)
+    pommel = vary((180, 130, 50), rng, 12) + (255,)
+
+    # Hooded-silhouette ring behind the daggers — a soft round head + cowl
+    # peak suggesting a hooded outlaw, not a full portrait.
+    hood_r = 46
+    d.ellipse([cx - hood_r, cy - hood_r - 8, cx + hood_r, cy + hood_r - 8],
+              outline=blood_dark, width=4)
+    # Cowl peak — small triangular notch over the head ring.
+    d.polygon(
+        [(cx - 14, cy - hood_r - 14),
+         (cx + 14, cy - hood_r - 14),
+         (cx, cy - hood_r - 36)],
+        fill=blood_dark,
+    )
+
+    # Crossed daggers — one tilted +28°, one -28°. Drawn as polygons so
+    # blade + hilt + pommel all read at icon scale.
+    def _dagger(ang_deg, blade_color, blade_shadow):
+        ang = math.radians(ang_deg)
+        c, s = math.cos(ang), math.sin(ang)
+
+        # Blade — long thin triangle, point AWAY from the cross center.
+        blade_len = 80
+        blade_w = 7
+        # Center of cross is at (cx, cy). Blade extends from origin
+        # along (c, s) outward, hilt extends opposite direction.
+        # Blade polygon (triangle + slight back base).
+        tip = (cx + c * blade_len, cy + s * blade_len)
+        base_a = (cx + c * 6 + s * blade_w, cy + s * 6 - c * blade_w)
+        base_b = (cx + c * 6 - s * blade_w, cy + s * 6 + c * blade_w)
+        d.polygon([tip, base_a, base_b], fill=blade_color, outline=INK)
+        # Specular highlight along blade — a thin offset line.
+        hi_a = (cx + c * 12 + s * 1, cy + s * 12 - c * 1)
+        hi_b = (cx + c * (blade_len - 8) + s * 1,
+                cy + s * (blade_len - 8) - c * 1)
+        d.line([hi_a, hi_b], fill=(245, 245, 250, 200), width=1)
+
+        # Crossguard — a short bar perpendicular to blade.
+        guard_half = 14
+        guard_a = (cx + s * guard_half, cy - c * guard_half)
+        guard_b = (cx - s * guard_half, cy + c * guard_half)
+        # Thicken into a 4px-tall bar.
+        gx = c * 3
+        gy = s * 3
+        d.polygon([
+            (guard_a[0] - gx, guard_a[1] - gy),
+            (guard_b[0] - gx, guard_b[1] - gy),
+            (guard_b[0] + gx, guard_b[1] + gy),
+            (guard_a[0] + gx, guard_a[1] + gy),
+        ], fill=blade_shadow, outline=INK)
+
+        # Hilt grip — short shaft going BACKWARD from cross, leather wrap.
+        hilt_len = 22
+        hilt_w = 4
+        hilt_back = (cx - c * hilt_len, cy - s * hilt_len)
+        ga = (cx - c * 3 + s * hilt_w, cy - s * 3 - c * hilt_w)
+        gb = (cx - c * 3 - s * hilt_w, cy - s * 3 + c * hilt_w)
+        ha = (hilt_back[0] + s * hilt_w, hilt_back[1] - c * hilt_w)
+        hb = (hilt_back[0] - s * hilt_w, hilt_back[1] + c * hilt_w)
+        d.polygon([ga, gb, hb, ha], fill=grip, outline=INK)
+
+        # Pommel — small disc at the very back of the hilt.
+        pomx, pomy = cx - c * (hilt_len + 5), cy - s * (hilt_len + 5)
+        d.ellipse([pomx - 5, pomy - 5, pomx + 5, pomy + 5],
+                  fill=pommel, outline=INK)
+
+    _dagger(-28, iron, iron_dark)
+    _dagger(28, iron, iron_dark)   # second dagger — perpendicular for X cross
+
+    # Stag-blood drip flick at the cross center — a small wash + 2 droplet
+    # streaks. THEME §1 lived-in / weathered (this is an outlaw mark).
+    drip = (blood[0], blood[1], blood[2], 180)
+    d.ellipse([cx - 5, cy - 5, cx + 5, cy + 5], fill=drip)
+    for off in (-9, 9):
+        d.line([(cx + off, cy + 4), (cx + off + rng.randint(-2, 2),
+                cy + 18 + rng.randint(-3, 3))],
+               fill=drip, width=2)
+        d.ellipse([cx + off - 2, cy + 18, cx + off + 2, cy + 22],
+                  fill=drip)
+
+
+# ── Hostile-faction sigils (run: art / 2026-05-05) ────────────────────────
+# Three new heraldic devices for hostile factions whose art was missing
+# while bandits + the seven friendly factions had already shipped. Each
+# follows the same painterly contract as the existing eight: hand-jittered
+# polygons (no crisp vector edges), THEME §3 palette only, soft brushstroke
+# weathering, and the slight drop-shadow render_crest() applies outside
+# the drawer.
+
+def draw_goblin_skull(im, rng, primary, secondary):
+    """Goblin tusk skull above a broken/jagged spear shaft.
+
+    Per THEME §4: goblins are feral, NEVER cute. Skull silhouette favors
+    angular tusks + sunken sockets over a rounded "cute" cranium. Wine
+    secondary accent goes into eye-socket glow only — keeps the moss
+    primary (greenskin) reading dominant.
+    """
+    d = ImageDraw.Draw(im, "RGBA")
+    cx = im.width / 2
+    cy = im.height / 2 + 2
+    skin = vary(primary, rng, 8) + (255,)
+    skin_dark = (max(0, primary[0] - 35), max(0, primary[1] - 35),
+                 max(0, primary[2] - 35), 255)
+    blood = vary(secondary, rng, 10) + (255,)
+    bone = (235, 220, 180, 255)
+    haft = (90, 60, 32, 240)
+    d.line([(cx - 70, cy + 64), (cx - 12, cy + 8)], fill=haft, width=6)
+    d.line([(cx + 14, cy - 10), (cx + 70, cy - 64)], fill=haft, width=6)
+    d.polygon([
+        (cx + 70, cy - 64), (cx + 86, cy - 80),
+        (cx + 80, cy - 56), (cx + 64, cy - 56),
+    ], fill=(150, 110, 80, 255), outline=INK)
+    for _ in range(6):
+        ang = rng.uniform(-math.pi, math.pi)
+        ln = rng.uniform(3, 9)
+        x0 = cx + rng.uniform(-6, 6)
+        y0 = cy + rng.uniform(-4, 4)
+        d.line([(x0, y0),
+                (x0 + math.cos(ang) * ln, y0 + math.sin(ang) * ln)],
+               fill=(60, 35, 18, 220), width=1)
+    cranium = []
+    for i in range(36):
+        a = 2 * math.pi * i / 36 - math.pi / 2
+        rx = 38 + rng.uniform(-2.0, 2.0)
+        ry = 34 + rng.uniform(-2.0, 2.0)
+        cranium.append((cx + math.cos(a) * rx, cy - 8 + math.sin(a) * ry))
+    d.polygon(cranium, fill=skin, outline=skin_dark)
+    for ex, ey in [(cx - 14, cy - 14), (cx + 14, cy - 14)]:
+        d.ellipse([ex - 7, ey - 6, ex + 7, ey + 6], fill=(20, 12, 10, 255))
+        d.ellipse([ex - 4, ey - 3, ex + 1, ey + 2],
+                  fill=(blood[0], blood[1], blood[2], 200))
+    d.line([(cx - 22, cy - 22), (cx - 4, cy - 24)], fill=skin_dark, width=3)
+    d.line([(cx + 4, cy - 24), (cx + 22, cy - 22)], fill=skin_dark, width=3)
+    d.polygon([
+        (cx - 22, cy + 6), (cx + 22, cy + 6),
+        (cx + 14, cy + 28), (cx - 14, cy + 28),
+    ], fill=skin, outline=skin_dark)
+    d.polygon([
+        (cx - 16, cy + 14), (cx - 22, cy + 24), (cx - 13, cy + 18),
+    ], fill=bone, outline=INK)
+    d.polygon([
+        (cx + 16, cy + 14), (cx + 22, cy + 24), (cx + 13, cy + 18),
+    ], fill=bone, outline=INK)
+    d.line([(cx - 18, cy - 30), (cx + 16, cy - 26)], fill=skin_dark, width=2)
+    for sx in range(-16, 14, 5):
+        d.line([(cx + sx, cy - 32), (cx + sx + 2, cy - 28)],
+               fill=skin_dark, width=1)
+
+
+def draw_wolf_head(im, rng, primary, secondary):
+    """Dire-wolf head profile, frost-yellow eye, fang bared."""
+    d = ImageDraw.Draw(im, "RGBA")
+    cx = im.width / 2
+    cy = im.height / 2 + 2
+    grey = vary(primary, rng, 8) + (255,)
+    grey_dark = (max(0, primary[0] - 40), max(0, primary[1] - 40),
+                 max(0, primary[2] - 40), 255)
+    eye_glow = vary(secondary, rng, 10) + (255,)
+    fang_white = (240, 235, 220, 255)
+    profile = [
+        (cx - 78, cy - 4),
+        (cx - 64, cy - 14),
+        (cx - 30, cy - 26),
+        (cx - 4, cy - 38),
+        (cx + 18, cy - 50),
+        (cx + 30, cy - 70),
+        (cx + 38, cy - 50),
+        (cx + 56, cy - 22),
+        (cx + 60, cy + 4),
+        (cx + 50, cy + 36),
+        (cx + 14, cy + 44),
+        (cx - 14, cy + 26),
+        (cx - 50, cy + 22),
+        (cx - 76, cy + 14),
+    ]
+    profile = [(x + rng.uniform(-1.5, 1.5), y + rng.uniform(-1.5, 1.5))
+               for (x, y) in profile]
+    d.polygon(profile, fill=grey, outline=grey_dark)
+    d.polygon([
+        (cx + 22, cy - 50), (cx + 30, cy - 64), (cx + 36, cy - 52),
+    ], fill=(grey_dark[0] + 25, grey_dark[1] + 15, grey_dark[2] + 15, 255))
+    d.line([(cx - 70, cy + 6), (cx - 22, cy + 14)], fill=INK, width=2)
+    d.polygon([
+        (cx - 50, cy + 8), (cx - 44, cy + 18), (cx - 40, cy + 8),
+    ], fill=fang_white, outline=INK)
+    d.ellipse([cx - 80, cy - 4, cx - 68, cy + 6], fill=INK)
+    ex, ey = cx - 22, cy - 18
+    halo = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    hd = ImageDraw.Draw(halo)
+    hd.ellipse([ex - 12, ey - 12, ex + 12, ey + 12],
+               fill=(eye_glow[0], eye_glow[1], eye_glow[2], 110))
+    halo = halo.filter(ImageFilter.GaussianBlur(4))
+    im.alpha_composite(halo)
+    d.ellipse([ex - 5, ey - 5, ex + 5, ey + 5], fill=eye_glow, outline=INK)
+    d.ellipse([ex - 2, ey - 3, ex + 1, ey + 0], fill=(255, 250, 220, 255))
+    d.line([(cx - 56, cy - 18), (cx - 38, cy - 24)], fill=grey_dark, width=2)
+    for _ in range(14):
+        x0 = cx + rng.uniform(20, 52)
+        y0 = cy - 22 + rng.uniform(-6, 14)
+        ln = rng.uniform(4, 10)
+        ang = -math.pi * 0.5 + rng.uniform(-0.3, 0.3)
+        d.line([(x0, y0),
+                (x0 + math.cos(ang) * ln, y0 + math.sin(ang) * ln)],
+               fill=grey_dark, width=2)
+
+
+def draw_crystal_cluster(im, rng, primary, secondary):
+    """Vertical crystal shards radiating from a base, arcane halo behind."""
+    d = ImageDraw.Draw(im, "RGBA")
+    cx = im.width / 2
+    cy = im.height / 2 + 28
+    cyan = vary(primary, rng, 8) + (255,)
+    cyan_pale = (min(255, primary[0] + 30), min(255, primary[1] + 30),
+                 min(255, primary[2] + 30), 255)
+    arc = vary(secondary, rng, 12) + (255,)
+    arc_dark = (max(0, secondary[0] - 30), max(0, secondary[1] - 30),
+                max(0, secondary[2] - 30), 255)
+    halo = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    hd = ImageDraw.Draw(halo)
+    hd.ellipse([cx - 70, cy - 110, cx + 70, cy + 30],
+               fill=(arc[0], arc[1], arc[2], 70))
+    halo = halo.filter(ImageFilter.GaussianBlur(10))
+    im.alpha_composite(halo)
+    d.polygon([
+        (cx - 40, cy + 14), (cx + 40, cy + 14),
+        (cx + 30, cy + 28), (cx - 30, cy + 28),
+    ], fill=arc_dark, outline=INK)
+    shard_specs = [
+        (-34, -42, 70, 14),
+        (-16, -16, 96, 16),
+        (  0,   2, 118, 18),
+        ( 18,  20, 100, 16),
+        ( 34,  44, 74, 14),
+    ]
+    for (bx_o, tx_o, ht, w_b) in shard_specs:
+        bx = cx + bx_o
+        tx = cx + tx_o
+        ty = cy - ht
+        d.polygon([
+            (bx - w_b, cy + 8),
+            (bx + w_b, cy + 8),
+            (tx + 2, ty + 6),
+            (tx, ty),
+        ], fill=cyan, outline=INK)
+        d.polygon([
+            (bx - w_b + 2, cy + 6),
+            (bx - 2, cy + 6),
+            (tx - 1, ty + 8),
+            (tx - 2, ty + 2),
+        ], fill=cyan_pale)
+        d.line([(bx, cy + 4), (tx, ty + 4)], fill=arc, width=1)
+    for _ in range(20):
+        sx = cx + rng.uniform(-60, 60)
+        sy = cy - rng.uniform(20, 110)
+        r = rng.uniform(1.0, 2.4)
+        c = (cyan_pale[0], cyan_pale[1], cyan_pale[2], rng.randint(140, 220))
+        d.ellipse([sx - r, sy - r, sx + r, sy + r], fill=c)
+
+
 SIGIL_DRAWERS = {
     "oak_axe": draw_oak_axe,
     "crown": draw_crown,
@@ -435,6 +755,10 @@ SIGIL_DRAWERS = {
     "anchor": draw_anchor,
     "flame": draw_flame,
     "snowflake": draw_snowflake,
+    "bandit_blades": draw_bandit_blades,
+    "goblin_skull": draw_goblin_skull,
+    "wolf_head": draw_wolf_head,
+    "crystal_cluster": draw_crystal_cluster,
 }
 
 
@@ -498,12 +822,31 @@ def render_crest(name, faction, seed):
     return canvas
 
 
+# Per-faction stable seeds — keyed by name so inserting a new faction
+# in FACTIONS doesn't shift seeds for the others (run-23 lesson: positional
+# index seed = 13130 + i*17 churned every crest after every insert).
+SIGIL_SEEDS = {
+    "briarwood":  13130,
+    "goldhaven":  13147,
+    "ironhold":   13164,
+    "silverleaf": 13181,
+    "stormwatch": 13198,
+    "embergrove": 13215,
+    "frostpeak":  13232,   # locked at original (run pre-bandits) seed
+    "bandits":    14001,   # new run-23 — fresh seed range, no collision
+    # Hostile-faction crests, run 2026-05-05. 14100+ band keeps them clear of
+    # the 13xxx friendly band and run-23's 14001 bandit seed.
+    "whisperwood_goblins": 14101,
+    "dire_wolves":         14118,
+    "crystal_caves":       14135,
+}
+
+
 def main():
     out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("eldoria-godot/assets/banners/sigils")
     out_dir.mkdir(parents=True, exist_ok=True)
-    seed_base = 13130
-    for i, (name, faction) in enumerate(FACTIONS.items()):
-        seed = seed_base + i * 17
+    for name, faction in FACTIONS.items():
+        seed = SIGIL_SEEDS.get(name, hash(name) & 0x7FFFFFFF)
         im = render_crest(name, faction, seed)
         out = out_dir / f"{name}_crest.png"
         im.save(out, "PNG", optimize=True)

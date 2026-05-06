@@ -16,9 +16,12 @@ Style targets (THEME.md §1, §3, §5):
   - §5 hand-painted look — soft Gaussian rim, brushy speckle, gentle
     drop-shadow.  No crisp vector edges.
 
-Output: 128x128 RGBA PNG with transparent background (no disc — item
-icons mirror wolf_pelt.png which is loot-on-transparent so the
-inventory grid's parchment cell shows through).
+Output: 128x128 RGBA PNG, fully painted parchment backdrop + fang on top.
+Run-23 audit corrected the premise: wolf_pelt.png is in fact 100%
+opaque (warm parchment vignette behind the pelt), as are all sister
+inventory icons (dragonfang, iron_sword, leather). Painterly parity
+with the inventory grid requires a full-frame painted background, not
+transparent silhouette.
 
 License: CC0 — generated procedurally with Pillow, no external assets.
 
@@ -144,6 +147,70 @@ def _shaded_fang(seed: int) -> Image.Image:
 
 	poly = _fang_path(W)
 
+	# --- Painterly parchment backdrop (run-23 painterly upgrade) ---
+	# Soft warm parchment vignette filling the whole icon, matching the
+	# inventory grid's full-coverage convention. Sunset-gold center fading
+	# to deeper sepia at the corners (THEME §3 dominant warm 70%). Brushy
+	# noise pass on top so it reads hand-painted, not flat.
+	bg = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	bg_draw = ImageDraw.Draw(bg, "RGBA")
+	center = (W // 2, int(W * 0.55))
+	max_r = int(W * 0.78)
+	# Radial fade from sunset-warm center to deeper sepia edge.
+	for band in range(48, 0, -1):
+		t = band / 48.0
+		rad = int(max_r * t)
+		col = _blend(
+			(255, 220, 145, 255),   # warm parchment center
+			(122, 86, 50, 255),     # darker sepia edge
+			t,
+		)
+		bg_draw.ellipse(
+			(center[0] - rad, center[1] - rad,
+			 center[0] + rad, center[1] + rad),
+			fill=col,
+		)
+	bg = bg.filter(ImageFilter.GaussianBlur(radius=W // 28))
+
+	# Brushy painterly noise on the backdrop so it reads hand-painted.
+	# Run-23 audit: tighter, softer specks — the prior 800-count polka-dot
+	# read as confetti against the painterly fang silhouette.
+	bg_noise_layer = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	bg_noise = ImageDraw.Draw(bg_noise_layer, "RGBA")
+	for _ in range(220):
+		x = r.randint(0, W - 1)
+		y = r.randint(0, W - 1)
+		rad = r.randint(1, 3) * (W // 256)
+		ch = r.random()
+		if ch < 0.55:
+			col = (PARCHMENT_DK[0], PARCHMENT_DK[1], PARCHMENT_DK[2],
+			       6 + r.randint(0, 12))
+		elif ch < 0.88:
+			col = (BRASS[0], BRASS[1], BRASS[2], 5 + r.randint(0, 10))
+		else:
+			col = (INK[0], INK[1], INK[2], 4 + r.randint(0, 8))
+		bg_noise.ellipse((x - rad, y - rad, x + rad, y + rad), fill=col)
+	bg_noise_layer = bg_noise_layer.filter(ImageFilter.GaussianBlur(radius=W // 220))
+	bg = Image.alpha_composite(bg, bg_noise_layer)
+
+	# Soft dark vignette ring at the very edge (frame the icon).
+	vig = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	vd = ImageDraw.Draw(vig, "RGBA")
+	for band in range(20):
+		t = band / 19.0
+		rad = int(max_r + t * W * 0.18)
+		alpha = int(70 * t)
+		vd.ellipse(
+			(center[0] - rad, center[1] - rad,
+			 center[0] + rad, center[1] + rad),
+			outline=(0, 0, 0, alpha),
+			width=int(W * 0.012),
+		)
+	vig = vig.filter(ImageFilter.GaussianBlur(radius=W // 30))
+	bg = Image.alpha_composite(bg, vig)
+
+	canvas = Image.alpha_composite(canvas, bg)
+
 	# Drop shadow — soft, offset down-right per THEME warm-light convention.
 	shadow = Image.new("RGBA", (W, W), (0, 0, 0, 0))
 	sd = ImageDraw.Draw(shadow, "RGBA")
@@ -198,7 +265,7 @@ def _shaded_fang(seed: int) -> Image.Image:
 	wear = Image.new("RGBA", (W, W), (0, 0, 0, 0))
 	wd = ImageDraw.Draw(wear, "RGBA")
 	cx = W // 2
-	for streak in range(5):
+	for streak in range(10):
 		x_off = int((r.random() - 0.5) * W * 0.16)
 		y0 = int(W * 0.32 + r.random() * W * 0.10)
 		y1 = int(W * 0.55 + r.random() * W * 0.25)
@@ -238,7 +305,7 @@ def _shaded_fang(seed: int) -> Image.Image:
 	# Brushy speckle inside fang for hand-painted texture (very subtle).
 	speck = Image.new("RGBA", (W, W), (0, 0, 0, 0))
 	spd = ImageDraw.Draw(speck, "RGBA")
-	for _ in range(160):
+	for _ in range(900):
 		x = r.randint(0, W - 1)
 		y = r.randint(0, W - 1)
 		rad = r.randint(1, 3) * (W // 128)
@@ -255,6 +322,91 @@ def _shaded_fang(seed: int) -> Image.Image:
 	speck.putalpha(ImageChops_multiply_alpha(speck.split()[-1], sm))
 	canvas = Image.alpha_composite(canvas, speck)
 
+
+	# --- Painterly upgrade pass (run-23): tooth ridges, warm-tip glow,
+	# faint clan-mark notch at the root. Targets ~20KB parity with
+	# wolf_pelt.png so the inventory grid reads consistently per
+	# THEME §1 (lived-in painterly) + §3 (sunset warm-light + ivory).
+
+	# Tooth ridges — faint horizontal striations across the fang body,
+	# evoking dentine growth lines you see on canine teeth in nature.
+	ridges = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	rd2 = ImageDraw.Draw(ridges, "RGBA")
+	cx_r = W // 2
+	for i in range(22):
+		t = (i + 0.5) / 22.0
+		y = int(W * 0.34 + t * W * 0.55)
+		# width tapers from gum -> tip following the fang silhouette
+		half_w = int(W * 0.18 * (1.0 - t * 0.78))
+		drift = int((r.random() - 0.5) * W * 0.012)
+		alpha = 18 + int(r.random() * 22)
+		col = (PARCHMENT_DK[0], PARCHMENT_DK[1], PARCHMENT_DK[2], alpha)
+		rd2.line(
+			[(cx_r - half_w + drift, y), (cx_r + half_w + drift, y + 1)],
+			fill=col,
+			width=int(W * 0.004),
+		)
+	ridges = ridges.filter(ImageFilter.GaussianBlur(radius=W // 320))
+	rgm = Image.new("L", (W, W), 0)
+	ImageDraw.Draw(rgm).polygon(poly, fill=255)
+	rgm = rgm.filter(ImageFilter.MinFilter(5))
+	ridges.putalpha(ImageChops_multiply_alpha(ridges.split()[-1], rgm))
+	canvas = Image.alpha_composite(canvas, ridges)
+
+	# Warm sunset-light glow at the tip — a soft, low-alpha ember wash
+	# blooming up from the tip per THEME §3 sunset-gold accent.
+	glow = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	gld = ImageDraw.Draw(glow, "RGBA")
+	tip_cx = cx_r - int(W * 0.08)
+	tip_cy = int(W * 0.88)
+	for radius_band in (W * 0.18, W * 0.13, W * 0.08, W * 0.04):
+		rb = int(radius_band)
+		alpha = int(28 * (1.0 - radius_band / (W * 0.18)) + 22)
+		gld.ellipse(
+			(tip_cx - rb, tip_cy - rb, tip_cx + rb, tip_cy + rb),
+			fill=(255, 175, 90, alpha),
+		)
+	glow = glow.filter(ImageFilter.GaussianBlur(radius=W // 22))
+	ggm = Image.new("L", (W, W), 0)
+	ImageDraw.Draw(ggm).polygon(poly, fill=255)
+	glow.putalpha(ImageChops_multiply_alpha(glow.split()[-1], ggm))
+	canvas = Image.alpha_composite(canvas, glow)
+
+	# Maker's-mark notch — three tiny ink ticks at the root, evoking the
+	# wolf-tribe count-mark THEME §6 references for trophies.
+	mark = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	mkd = ImageDraw.Draw(mark, "RGBA")
+	root_y = int(W * 0.21)
+	for j in range(3):
+		off = (j - 1) * int(W * 0.038)
+		mkd.line(
+			[(cx_r + off, root_y - int(W * 0.018)),
+			 (cx_r + off + int(W * 0.012), root_y + int(W * 0.022))],
+			fill=(INK[0], INK[1], INK[2], 130),
+			width=int(W * 0.006),
+		)
+	mark = mark.filter(ImageFilter.GaussianBlur(radius=W // 350))
+	mm = Image.new("L", (W, W), 0)
+	ImageDraw.Draw(mm).polygon(poly, fill=255)
+	mark.putalpha(ImageChops_multiply_alpha(mark.split()[-1], mm))
+	canvas = Image.alpha_composite(canvas, mark)
+
+	# Inner sepia wash — a warm parchment glow inside the fang body to
+	# pull the whole icon into the THEME §3 warm dominant 70%.
+	wash = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+	wshd = ImageDraw.Draw(wash, "RGBA")
+	for band in range(50):
+		t = band / 49.0
+		y0 = int(W * 0.14 + t * W * 0.78)
+		y1 = y0 + int(W * 0.78 / 50) + 1
+		col = (PARCHMENT[0], PARCHMENT[1], PARCHMENT[2], 14 + int(t * 10))
+		wshd.rectangle((0, y0, W, y1), fill=col)
+	wash = wash.filter(ImageFilter.GaussianBlur(radius=W // 90))
+	wm2 = Image.new("L", (W, W), 0)
+	ImageDraw.Draw(wm2).polygon(poly, fill=255)
+	wash.putalpha(ImageChops_multiply_alpha(wash.split()[-1], wm2))
+	canvas = Image.alpha_composite(canvas, wash)
+
 	return canvas.resize((SIZE, SIZE), Image.LANCZOS)
 
 
@@ -264,12 +416,33 @@ def ImageChops_multiply_alpha(a, b):
 	return ImageChops.multiply(a, b)
 
 
+def _palette_quantize(img, colors=128):
+	"""Floyd-Steinberg palettize an RGBA image while preserving alpha,
+	then posterize alpha to 16 levels. Targets parity with wolf_pelt.png's
+	~650-color/~20KB compression class so the painterly icon doesn't bloat
+	the asset bundle.
+	"""
+	rgb = img.convert("RGB").quantize(colors=colors,
+		method=Image.Quantize.FASTOCTREE,
+		dither=Image.Dither.FLOYDSTEINBERG).convert("RGBA")
+	r, g, b, _ = rgb.split()
+	_, _, _, a = img.split()
+	# Posterize alpha to 16 discrete levels (16 KB savings over full 256).
+	import numpy as _np
+	a_arr = _np.array(a)
+	a_arr = (a_arr // 16) * 16
+	from PIL import Image as _PI
+	a2 = _PI.fromarray(a_arr, "L")
+	return _PI.merge("RGBA", (r, g, b, a2))
+
+
 def main():
 	out_dir = sys.argv[1] if len(sys.argv) > 1 else "."
 	os.makedirs(out_dir, exist_ok=True)
 
 	# wolf_fang — single deterministic seed so re-runs produce identical bytes.
 	img = _shaded_fang(seed=20260505)
+	img = _palette_quantize(img, colors=96)
 	out = os.path.join(out_dir, "wolf_fang.png")
 	img.save(out, "PNG", optimize=True)
 	print(f"wrote {out} ({os.path.getsize(out)} bytes)")
