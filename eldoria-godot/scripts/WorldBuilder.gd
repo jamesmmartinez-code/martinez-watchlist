@@ -539,6 +539,7 @@ func _ready() -> void:
 	_safe_call("_build_firefly_particles")
 	_safe_call("_build_falling_leaves")
 	_safe_call("_build_butterflies")  # Env 2026-05-06: daytime ambient life — THEME §12
+	_safe_call("_build_bird_flocks")  # Env 2026-05-06: ambient life — V-formation birds, THEME §12
 	_safe_call("_build_smoke_chimneys")
 	_safe_call("_build_campfire")
 	_safe_call("_build_enemies")
@@ -1629,6 +1630,116 @@ func _build_falling_leaves() -> void:
 		p.add_to_group("falling_leaves")
 		add_child(p)
 
+
+# ============================================================================
+# Env: 2026-05-06 — Bird V-formation flocks (THEME §12)
+# THEME §12 explicitly lists "birds in V-formations" as required ambient life.
+# A previous comment on _build_butterflies acknowledged the gap. This adds
+# 3 small flocks of stylized bird silhouettes that drift across the sky in
+# tight V wedges, with each bird wing-bobbing on its own phase. No emission
+# or glow (THEME §3 — birds are silhouettes against sky, not lanterns).
+#
+# Birds are tiny dark BoxMesh slivers (0.30 x 0.04 x 0.10) with a faint
+# painterly tint (charcoal-warm from THEME §3). Cull-disabled so they read
+# from any angle. The flock parent Node3D drifts at ~6 m/s on a heading
+# stored in meta; once a flock crosses the world bounds it teleports to the
+# opposite side, which is invisible at 40m altitude with the Mountain Ring
+# silhouette breaking up the horizon.
+#
+# Group: "bird_flocks" — driven by _process for translation & yaw.
+# Per-bird group: "bird_wings" — driven by _process for wing-bob.
+# ============================================================================
+const BIRD_FLOCK_COUNT: int = 3
+const BIRD_PER_FLOCK: int = 7
+const BIRD_FLOCK_ALTITUDE_MIN: float = 38.0
+const BIRD_FLOCK_ALTITUDE_MAX: float = 52.0
+# World half-extent for wrap-around. Chosen to match the Mountain Ring (220m)
+# so flocks loop behind silhouette rather than popping in mid-frame.
+const BIRD_WORLD_BOUND: float = 240.0
+# Charcoal-warm silhouette (THEME §3 ink black + a touch of warmth so it
+# doesn't read as pure black against the sunset palette).
+const BIRD_BODY_COLOR: Color = Color(0.10, 0.085, 0.080)
+
+func _build_bird_flocks() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	for f in BIRD_FLOCK_COUNT:
+		var flock := Node3D.new()
+		flock.name = "BirdFlock%d" % f
+		# Spread flocks around the village so they don't all read at once.
+		var ang: float = rng.randf() * TAU
+		var dist: float = 80.0 + rng.randf() * 120.0
+		var alt: float = lerp(BIRD_FLOCK_ALTITUDE_MIN, BIRD_FLOCK_ALTITUDE_MAX, rng.randf())
+		flock.position = Vector3(cos(ang) * dist, alt, sin(ang) * dist)
+		# Heading vector — direction the V points and travels in. Re-used
+		# in _process for both translation and yaw alignment.
+		var heading_ang: float = rng.randf() * TAU
+		var heading: Vector3 = Vector3(cos(heading_ang), 0, sin(heading_ang))
+		flock.set_meta("heading", heading)
+		# Speed scales gently per flock so the sky reads as multi-layered.
+		flock.set_meta("speed", 5.0 + rng.randf() * 2.5)
+		# Per-flock phase so wing-bobs across flocks don't lock-step.
+		flock.set_meta("phase", rng.randf() * TAU)
+		flock.add_to_group("bird_flocks")
+		add_child(flock)
+		# Build the V — lead bird at index 0, two trailing wings spreading
+		# back on each side. Spacing is 1.6m back-and-out per row.
+		var spacing: float = 1.6
+		for i in BIRD_PER_FLOCK:
+			var bird := Node3D.new()
+			bird.name = "Bird%d" % i
+			# Row 0 = lead, row 1 = (-1, +1), row 2 = (-2, +2), row 3 = (-3, +3)…
+			var row: int = (i + 1) / 2
+			var side: int = 1 if (i % 2 == 0) else -1
+			# Index 0 is the lead — clamp to centerline.
+			if i == 0:
+				row = 0; side = 0
+			# Local frame: heading points along +X (rotated by flock); birds
+			# trail along -X and fan out along Z.
+			bird.position = Vector3(-row * spacing, 0, side * row * spacing * 0.85)
+			# Per-bird phase keeps the V from beating in unison.
+			bird.set_meta("phase", rng.randf() * TAU)
+			bird.set_meta("base_y", bird.position.y)
+			bird.add_to_group("bird_wings")
+			# Body — small flat sliver of dark mesh.
+			var body := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.30, 0.04, 0.10)
+			body.mesh = bm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = BIRD_BODY_COLOR
+			mat.roughness = 0.95
+			mat.metallic = 0.0
+			# Slight vertex-color allowance so future tints don't fight us.
+			mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+			body.material_override = mat
+			bird.add_child(body)
+			# Two wing quads, hinged at the body, that fold up and down on
+			# the wing-bob phase in _process. Quads are billboard-disabled so
+			# they read as actual wings, not flat sprites.
+			for wside in [-1, 1]:
+				var wing := MeshInstance3D.new()
+				var qm := QuadMesh.new()
+				qm.size = Vector2(0.32, 0.10)
+				wing.mesh = qm
+				var wmat := StandardMaterial3D.new()
+				wmat.albedo_color = BIRD_BODY_COLOR
+				wmat.roughness = 0.92
+				wmat.metallic = 0.0
+				wmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+				wing.material_override = wmat
+				# Hinge wing out from body centerline. Local +Z is "out", so
+				# rotation Z controls flap (up = positive Z bend).
+				wing.position = Vector3(0, 0.0, wside * 0.20)
+				# Wings face up by default — quad is XY-aligned in Godot.
+				wing.rotation = Vector3(0, 0, 0)
+				wing.name = "Wing%s" % ("R" if wside == 1 else "L")
+				bird.add_child(wing)
+			# Yaw the bird so its body points along the flock heading.
+			bird.rotation.y = heading_ang
+			flock.add_child(bird)
+
+
 func _build_smoke_chimneys() -> void:
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for b in get_tree().get_nodes_in_group("buildings"):
@@ -2562,6 +2673,21 @@ func _process(delta: float) -> void:
 		var light: OmniLight3D = lan.get_node_or_null("OmniLight3D")
 		if light:
 			light.light_energy = 1.4 + sin(_t * 5.0 + lan.position.x) * 0.35
+		# Env: 2026-05-06 — lantern physical rock (THEME §12). The §12
+		# motion mandate explicitly names "lanterns rock"; until now
+		# only the light energy flickered while the fixture itself
+		# stayed bolted-still, which reads as a static "should-move"
+		# prop. A slow ±2.6° Z-tilt with per-lantern phase (lifted
+		# from world position) pushes the iron+glass fixture like wind
+		# catches it — small enough that the post stays anchored, big
+		# enough that the spotlight pool the light casts on cobble
+		# wobbles visibly. Frequencies (0.9 + 1.7) sum to a slightly
+		# noisy beat so neighbouring lanterns don't oscillate in unison.
+		var lan3d: Node3D = lan as Node3D
+		if lan3d != null:
+			var lphase: float = lan3d.position.x * 0.31 + lan3d.position.z * 0.47
+			var lrock: float = sin(_t * 0.9 + lphase) * 0.045 + sin(_t * 1.7 + lphase * 1.3) * 0.020
+			lan3d.rotation.z = lrock
 	# Subtle tree sway
 	for tree in get_tree().get_nodes_in_group("trees"):
 		var s = sin(_t * 0.8 + tree.position.x * 0.3) * 0.015
@@ -2663,6 +2789,45 @@ func _process(delta: float) -> void:
 		var mat: StandardMaterial3D = mi.material_override as StandardMaterial3D
 		if mat:
 			mat.emission_energy_multiplier = 0.18 + sin(_t * 1.8 + mi.position.x) * 0.06
+	# Env: 2026-05-06 — bird V-formation drift + wing-bob (THEME §12).
+	# Each flock parent translates along its heading meta and wraps around
+	# the world bound so flocks loop forever. Per-bird wing-bob hinges the
+	# left/right WingL / WingR meshes around their hinge axis on the bird's
+	# own phase. The lead bird (index 0) bobs slightly less than the
+	# trailing birds so the V reads as following the leader.
+	for flock in get_tree().get_nodes_in_group("bird_flocks"):
+		var f3d: Node3D = flock as Node3D
+		if f3d == null:
+			continue
+		var heading: Vector3 = f3d.get_meta("heading", Vector3.FORWARD)
+		var speed: float = float(f3d.get_meta("speed", 6.0))
+		f3d.position += heading * speed * delta
+		# Wrap around the world bound so the flock loops behind silhouette.
+		if absf(f3d.position.x) > BIRD_WORLD_BOUND or absf(f3d.position.z) > BIRD_WORLD_BOUND:
+			f3d.position.x = -f3d.position.x * 0.95
+			f3d.position.z = -f3d.position.z * 0.95
+		# Subtle altitude bob so the flock reads as catching thermals.
+		var fphase: float = float(f3d.get_meta("phase", 0.0))
+		f3d.rotation.z = sin(_t * 0.4 + fphase) * 0.04
+	# Per-bird wing flap. Wing meshes named "WingL" / "WingR" hinge around X
+	# in the bird's local frame, so a positive rotation lifts the wing tip.
+	for bird in get_tree().get_nodes_in_group("bird_wings"):
+		var b3d: Node3D = bird as Node3D
+		if b3d == null:
+			continue
+		var bphase: float = float(b3d.get_meta("phase", 0.0))
+		var flap: float = sin(_t * 6.5 + bphase) * 0.55
+		var wl: MeshInstance3D = b3d.get_node_or_null("WingL") as MeshInstance3D
+		var wr: MeshInstance3D = b3d.get_node_or_null("WingR") as MeshInstance3D
+		# Mirror the wing rotation so they meet at the body centerline.
+		if wl:
+			wl.rotation.x = -flap
+		if wr:
+			wr.rotation.x = flap
+		# Tiny vertical bob so the bird body itself reads as alive.
+		var base_y: float = float(b3d.get_meta("base_y", 0.0))
+		b3d.position.y = base_y + sin(_t * 6.5 + bphase) * 0.05
+
 
 
 # ============================================================================
