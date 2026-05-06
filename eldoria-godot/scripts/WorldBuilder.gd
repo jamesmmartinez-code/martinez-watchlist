@@ -2200,7 +2200,13 @@ func _build_boss_arena(center: Vector3) -> void:
 	add_child(boss)
 
 func _make_goblin_camp(center: Vector3) -> void:
-	# Small fire pit (no particles to keep perf — just a glowing log)
+	# Env: 2026-05-06 — fires must flicker (THEME §12). The goblin camp fire
+	# previously rendered as a constant-glow ember log + constant-energy point
+	# light, which read as static props (banned). Now: ember log emission and
+	# point light energy are pulsed in _process via the existing
+	# "goblin_fires" group, plus a tiny spark/ember particle emitter (8 quads,
+	# perf-bounded) gives the pit visible upward heat-shimmer. Bandit camps
+	# stay deliberately cold (ash + no light) — narrative choice, not a bug.
 	var pit := Node3D.new()
 	pit.position = center
 	add_child(pit)
@@ -2216,8 +2222,10 @@ func _make_goblin_camp(center: Vector3) -> void:
 		stone.position = Vector3(cos(ang) * 0.7, 0.12, sin(ang) * 0.7)
 		stone.scale = Vector3(1.0, 0.7, 1.0)
 		pit.add_child(stone)
-	# Glowing ember log
+	# Glowing ember log — named "EmberLog" so the _process flicker loop can
+	# pulse its emission_energy_multiplier alongside the point light.
 	var log := MeshInstance3D.new()
+	log.name = "EmberLog"
 	var lcm := CylinderMesh.new()
 	lcm.top_radius = 0.10; lcm.bottom_radius = 0.10; lcm.height = 0.9
 	log.mesh = lcm
@@ -2238,7 +2246,42 @@ func _make_goblin_camp(center: Vector3) -> void:
 	lt.omni_range = 8.0
 	lt.position.y = 0.5
 	pit.add_child(lt)
+	# Tiny spark/ember particles. Smaller than the village campfire (8 vs 30)
+	# to keep perf on a worst-case world with multiple goblin camps. Reuses
+	# the soft radial alpha texture so sparks read as wisps, not squares.
+	var sparks := GPUParticles3D.new()
+	sparks.position.y = 0.35
+	sparks.amount = 8
+	sparks.lifetime = 1.2
+	sparks.preprocess = 0.8
+	var spm := ParticleProcessMaterial.new()
+	spm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	spm.emission_sphere_radius = 0.18
+	spm.gravity = Vector3(0, 1.0, 0)
+	spm.initial_velocity_min = 0.3
+	spm.initial_velocity_max = 0.9
+	spm.scale_min = 0.10
+	spm.scale_max = 0.28
+	spm.color = Color(1.0, 0.55, 0.12)
+	spm.color_ramp = _make_fire_gradient()
+	sparks.process_material = spm
+	var sqm := QuadMesh.new()
+	sqm.size = Vector2(0.10, 0.10)
+	var sdm := StandardMaterial3D.new()
+	sdm.albedo_color = Color(1.0, 0.65, 0.20)
+	sdm.albedo_texture = _make_soft_particle_texture()
+	sdm.emission_enabled = true
+	sdm.emission = Color(1.0, 0.45, 0.10)
+	sdm.emission_energy_multiplier = 1.5
+	sdm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sdm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	sqm.material = sdm
+	sparks.draw_pass_1 = sqm
+	pit.add_child(sparks)
 	pit.add_to_group("goblin_fires")
+	# THEME §13 — settle so stone ring rests on ground regardless of where
+	# `center` was sampled (no half-buried embers).
+	call_deferred("_settle_to_ground", pit)
 
 # Bandit camp prop (run 22) — silhouette of an outlaw lookout: cold ash
 # pit + cracked plank. Deliberately DIMMER and SMALLER than the goblin
@@ -2505,6 +2548,28 @@ func _process(delta: float) -> void:
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
 		if fl:
 			fl.light_energy = 2.4 + sin(_t * 17.0) * 0.4 + sin(_t * 31.0) * 0.25
+	# Env: 2026-05-06 — goblin camp fire flicker (THEME §12). The point
+	# light AND the ember log emission both pulse on the same noisy phase
+	# so the visible mesh and the cast light tell the same story. Per-camp
+	# phase (lifted from pit world position) keeps a cluster of camps from
+	# flickering in lockstep.
+	for gf in get_tree().get_nodes_in_group("goblin_fires"):
+		var gf3d: Node3D = gf as Node3D
+		if gf3d == null:
+			continue
+		var gphase: float = gf3d.position.x * 0.31 + gf3d.position.z * 0.47
+		var gnoise: float = sin(_t * 14.0 + gphase) * 0.30 + sin(_t * 27.0 + gphase * 1.3) * 0.18
+		var gfl: OmniLight3D = gf3d.get_node_or_null("GoblinFireLight")
+		if gfl:
+			# Base 1.4 with ±0.5 swing. Range pulses too so the cast pool
+			# of warm light feels like it breathes with the embers.
+			gfl.light_energy = 1.4 + gnoise
+			gfl.omni_range = 8.0 + sin(_t * 5.0 + gphase) * 0.6
+		var ember: MeshInstance3D = gf3d.get_node_or_null("EmberLog") as MeshInstance3D
+		if ember:
+			var emat: StandardMaterial3D = ember.material_override as StandardMaterial3D
+			if emat:
+				emat.emission_energy_multiplier = 1.8 + gnoise * 0.6
 	# THEME §12 — banner flap. Each banner pivot sways around Y (wind passing
 	# through) plus a small Z-roll for "billow". Per-banner phase keeps every
 	# banner from moving in unison.
