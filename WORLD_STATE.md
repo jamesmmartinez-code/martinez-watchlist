@@ -3675,3 +3675,259 @@ WORLD_STATE.md append. **No overwrites:** verified — all referenced
 existing files (NPC bibles, factions, prior codex leaves, the well
 prop, `world.md`, `items_flavor.json`, `_README.md`) hold verbatim;
 only this WORLD_STATE.md append and the new codex file are written.
+
+---
+
+## Run 24 (Lore Keeper) — *Brigid's Ribbon* codex leaf shipped
+
+**Date:** Lambmoon, third dawn (in-canon authoring date) — real-world
+2026-05-06.
+
+**Branch:** `auto/lore`. Pushed atop fresh `origin/main` per branch
+discipline.
+
+**Single artifact this run:** yes — only the new
+`eldoria-godot/data/codex/brigids_ribbon.md` plus this WORLD_STATE.md
+append. **No overwrites:** verified — all referenced existing files (NPC
+bibles, factions, prior codex leaves, items_flavor, the smithy prop,
+`world.md`, `_README.md`) hold verbatim; only this WORLD_STATE.md append
+and the new codex file are written.
+
+**What this canonizes:**
+
+- **Brigid the Forge-Mother** now has her first codex leaf. She is the
+  god of the **kept warm** — the banked coal, the stayed-up mother, the
+  smithy that has not gone cold. *Not* a war-fire god, *not* a
+  forge-as-furnace god, *not* a fortune-god. The leaf is on record
+  refusing each of these registers.
+
+- **The Lambmoon hearth-relighting rite.** A new Briarwood festival,
+  small and gentle and child-safe, on the **third dawn of Lambmoon.**
+  The village re-lights every hearth that went *gone-warm* in the year,
+  not by striking new fire but by *carrying* a coal from a household
+  that is *anamh-ron* — a hearth-line unbroken across three generations.
+  No combat, no minigame. A bundle of pine kindling, a strip of red
+  lambswool, and a walk from one door to the next.
+
+- **The smith-line as Brigid's *anamh-ron.*** Halsa's smithy was, and
+  Edda's smithy still is, an *anamh-ron.* The two-year stretch of
+  Edda forging-in-grief did **not** break the *anamh-ron* — the leaf
+  rules canonically that Edda banked the coals every night even in
+  those years. The grief was real; the *anamh-ron* was unbroken. Both
+  hold. Future writers may not contradict this without a Lorekeeper
+  reauthoring run.
+
+- **The *velhin-anam* / *mhirran-vel* grammar pair.** Brigid's word for
+  the watched coal (*velhin-anam,* every-day, every-spring, woken at
+  dawn) is the **grammar-twin, not the cosmology-twin,** of the Hollow
+  King's Vigil candle (*mhirran-vel,* once a year, let go at dawn). The
+  leaf is on record three times that the two gods do not share a
+  cosmology. Future agents may not collapse them into a winter/spring
+  duo. The Hollow King is the Vigil's god. Brigid is the kept-coal's
+  god. Same grammar, different mouths.
+
+- **Smith Edda's anvil-mark resolved as a Brigid-ribbon condensed to a
+  brand.** The horizontal-under-vertical brand on Edda's anvil and on
+  the inside of her left wrist is the strip of red lambswool, abstracted
+  to its two-strand twist. The mark is the *anamh-ron,* condensed.
+  Halsa's anvil had it because her mother's anvil had it. Edda's wrist
+  has it at fingertip-size, scaled from the anvil. Art / Environment
+  agents may nudge the existing anvil-texture toward this read; most
+  CC0 anvil-marks already meet it. **No glow. No particle. The mark is
+  banked, not lit.**
+
+- **Halsa's hand on the page.** A two-line charcoal note at the foot of
+  the leaf, signed *— H,* in Halsa's slope before she was a smith. The
+  bundle on the smithy's secondary hearth has been *kerritha*-d there,
+  by canonical implication, since at least the year Halsa first read
+  the leaf, and Edda has kept it un-burned since Halsa died. **Edda
+  does not yet know her mother's hand is on the page.** This is
+  load-bearing. The mother-recognition beat is **held** for a future
+  Lorekeeper run, gated to *codex_leaves_collected_gte:7 && Lambmoon
+  && npc_thanked:Smith_Edda.* No agent before that run may surface it.
+
+- **Two corners, two gods, one threshold.** The smithy's south-east
+  cornerstone is, per `vellums_spine.md`'s WORLD_STATE rider, a
+  kept-true *vellath* (Vellum's). The anvil sits on that cornerstone.
+  Brigid keeps the fire above it. The leaf names this pairing without
+  blurring the gods. **The mason-line and the smith-line meet at the
+  cornerstone.** They do not blur. The chisel was *kerritha*-d at the
+  threshold of the mason's daughter's wall (`vellums_spine.md`); the
+  bundle is *kerritha*-d on the smithy's rack (this leaf). Both are
+  the word *kerrithen,* in two registers — the keeping-against-forever
+  and the keeping-against-tomorrow.
+
+**Old Faerie lexicon — three new words:**
+
+| Word               | Pronounce        | Sense                                                                                                                                  |
+|--------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| ***velhin-anam***  | VEL-hin-AH-nam   | "the watched coal." Brigid's spring-and-every-day kept flame. Grammar-twin of the Hollow King's *mhirran-vel.*                          |
+| ***anamh-ron***    | AH-namh-rohn     | "the kept hearth-line." Descriptive, not honorific. The smithy is. The inn is. The well-yard, by older usage, is.                       |
+| ***brighra***      | BREE-grah        | "she-who-banks-the-coal." Said gently, in passing, of any keeper-of-the-kept-warm. Brigid's longer form *brighra-an* is the god's alone. |
+
+The lexicon now stands at **32 confirmed Old Faerie words** in the canon
+glossary (was 29 after `vellums_spine.md` run; +3 here). Architect is
+asked to reconcile the running glossary in
+`data/quest_text/_README.md` and in any per-NPC dialogue bibles that
+may be cross-referencing the count. **No new Stone-Tongue word**; the
+cap of three from `world.md` holds. Brigid's hearth has nothing to say
+in mountain-Stone.
+
+**Kerritha-d objects (canon-rule update):** the kindling-bundle on the
+smithy's secondary hearth joins the cairn-blade (`world.md`), the
+*Frost*-saber (`pale_wyrm_beneath.md`), the brother's bow
+(`thiars_mercy_owed_to_prey.md`), and the chisel
+(`vellums_spine.md`) as the **fifth** canonical *kerritha*-d object.
+**Pattern extension:** the prior four were objects that had done
+their life's work and were laid down at the *threshold of the keeper's
+home.* The bundle is the **softer kerritha** — laid down so the land
+may hold it *until it is needed again,* on the *rack of the smithy's
+secondary hearth* (a threshold of a kind, by the leaf's own argument).
+The keeping-against-forever and the keeping-against-tomorrow are now
+both canonical uses of *kerrithen.* The brother's bow at the door
+will not be lifted. The bundle will. Both are the word.
+
+**Scribal-family arc — closing on its calendar:**
+
+- *Foxthaw / cave* — older sister (`stag_courts_courtesy.md`)
+- *Lambmoon / smithy* — younger sister (this leaf, `brigids_ribbon.md`)
+- *Honeysong / pond* — younger sister (`pond_and_lanterns.md`)
+- *Emberfall / Thiar's stone* — elder brother (`thiars_mercy_owed_to_prey.md`)
+- *Longnight / cedar box* — cousin (`longnight_vigil.md`)
+
+The younger sister now holds **two seasons** (spring + summer). The
+canonical four hands hold the arc — sister, brother, cousin, and (by
+careful implication) Maeve. **Halsa is NOT a fifth sibling.** She is a
+**reader who became a writer,** signing *— H* at the foot of a leaf
+that is not her own. Her signature in canon is exactly that one
+charcoal mark. It may not be extended. The remaining uncovered moons
+— Dawnmoot, Greenshield, Sunpetal, Thornripe, Reapmoon, Smokerise,
+Wolfwake — are open to future Lorekeeper runs, in any of the four
+canonical hands.
+
+**Asks for downstream agents:**
+
+- **Dialogue agent** — Edda's tree: add a single line at the threshold
+  *codex_leaves_collected_gte:5 && Lambmoon && npc_thanked:Smith_Edda*:
+  *"The bundle on the cold rack has been there since I was small. I
+  do not lift it. The next will."* This is the one place in canon
+  where Edda gestures at the leaf without naming what is on it. Edda
+  will not say more. The mother-recognition beat (Halsa's hand on the
+  page) is **held** and may not be authored before the gating
+  threshold above. Bram's tree: **do not** surface the well-mason /
+  Bram's grandmother lineage hinted in the prior run; **do not** name
+  the un-named young woman of this leaf as Bram's grandmother. Two
+  withholdings, one principle. Maeve's tree: **do not** add a new
+  scribal-family beat — Maeve is the *keeper* of leaves, not a writer
+  of them; the brother's leaf already gave Maeve her one acknowledging
+  line.
+
+- **Quest / Festival agent** — seed `data/events/festivals/lambmoon_dawn.tres`
+  with a single carry-the-coal beat: a kindling-bundle pickup at the
+  inn's hearth, a walk to one of the village's *waiting* hearths, a
+  drop. No combat, no minigame. Reward: a small renown bump and a
+  cosmetic *Brigid-ribbon* item (no stats). Wardens-of-the-Mark ledger
+  may auto-entry on completion. Festival is **gentle** — child-safe,
+  no procession, no offering.
+
+- **PX agent** — wire the codex unlock pointer
+  `lore_unlock: brigids_ribbon` for the **smithy's secondary hearth**
+  examine prop. Add the prop if it does not already exist; the prop is
+  the **lower iron rack only,** not the active forge. Two hearths in
+  the smithy from this leaf onward. Gating:
+  `npc_flag_required:["Smith Edda","first_quest_done"]`. Player level
+  ≥ 3. Fallback: `enter_region = briarwood && season = lambmoon` for
+  any Lambmoon dawn the player is in the village.
+
+- **Audio agent (optional)** — codex-discovery cue: a single dampened
+  anvil-tap, two seconds, with the pause after the tap held a beat
+  longer than feels natural. No bell. No string. Then the smithy-quiet
+  — bellows-leather creak, distant kettle, wind at the lantern. Falls
+  to codex-default if not surfaced. The cue is keyed to *the haethe
+  of the anvil before it has woken* — the iron's song still cool,
+  almost-not-yet.
+
+- **Environment agent (low-priority dressing)** — tie one strip of
+  thumb-thick, knot-soft, weather-faded **red-lambswool ribbon** to
+  the smithy's door-lintel, and one to the inn's south-window lintel
+  (the same lintel Bram puts the *vethar* candle in on Longnight). The
+  ribbons are not props the player may interact with. They are *just
+  there.* This composes with `vellums_spine.md`'s ask for a chisel-
+  mark on the smithy's south-east cornerstone — stone below, fire
+  above, ribbon at the door. Two gods, one corner, one threshold.
+
+- **Art agent** — nudge the existing anvil-mark texture toward the
+  horizontal-under-vertical, two-strand-twist read, **if the
+  silhouette will tolerate it.** Most CC0 anvil-marks already do. The
+  same brand at fingertip-size on the inside of Edda's left wrist;
+  the wrist-mark and the anvil-mark must match if either is ever
+  exposed. **No glow. No particle. The mark is banked, not lit.**
+
+- **Item flavor (suggested, not required)** — a *Brigid-ribbon*
+  cosmetic item in `data/items_flavor.json`, one-line flavor: *"Wool
+  the warming-toward."* No stats. No drop. Reward only from the
+  Lambmoon hearth-relighting festival, if the festival is wired.
+
+- **Architect** — reconcile the running Old Faerie glossary in
+  `data/quest_text/_README.md` to **32 words** (29 + 3). Cross-check
+  against per-NPC dialogue bibles that may carry the count. The
+  lexicon's pacing remains roughly three words per artifact and is
+  holding.
+
+**Withholdings (deliberate):**
+
+- **Halsa's mother's name.** The un-named *brighra* of the leaf's
+  second mention is Halsa's mother by careful implication. The leaf
+  does not name her. No quest may name her. Load-bearing. Joins the
+  well-mason's name (`vellums_spine.md`) and the Pale Wyrm's name
+  (`pale_wyrm_beneath.md`) as the **third** load-bearing un-name in
+  the canon.
+
+- **The un-named young woman who tied the ribbon and walked back to
+  her own door.** A future agent may **not** make her Bram's
+  grandmother. She might be. She might not be. The leaf is comfortable
+  not knowing. The implication-chain from `vellums_spine.md` is **not**
+  extended here.
+
+- **Edda's recognition of her mother's hand on the page.** Held. Gated
+  to *codex_leaves_collected_gte:7 && Lambmoon && npc_thanked:Smith_Edda*
+  for a future Lorekeeper run. No agent before that run may surface
+  it.
+
+- **Brigid's voice.** Brigid does not speak in leaves. The leaf
+  preserves the existing canon (`smith_edda.md`'s dream-blood-drop)
+  without expanding it. If a future quest requires a divine voice in
+  the smithy, that voice is **Halsa's** (per `smith_edda.md`'s author
+  hooks), not Brigid's.
+
+- **A temple to Brigid in Briarwood.** Forbidden. Brigid's hearth is
+  every hearth that is *anamh-ron.* No temple may be built in
+  Briarwood, in the Whisperwood, or in the Crystal Caves. The southern
+  smoke-cities of the Iron Crown have something *like* a Brigid-cult;
+  a future faction-politics run is permitted to name and gently skewer
+  that, in the voice of `three_crowns.md`. The Briarwood Brigid is
+  not the southern Brigid. They share a name.
+
+- **A clergy of Brigid.** Forbidden. The carrying carries itself. No
+  priest. The smith carries the mark; the inn carries the
+  carrying-coal; the un-related neighbor ties the ribbon. None is
+  ordained.
+
+- **A mechanical bonus for *velhin-anam.*** None. Brigid honors the
+  kept-warm in silence. The game should too. (Cf. the brother's
+  *bhren-aïth* rule — same principle, different grace.)
+
+- **A "hammer that does not strike" or "blade that is not made"
+  pattern.** Forbidden. The leaf will not flatten the brother's
+  *bhren-aïth* into a smith-side mirror. The kept-warm is the
+  kept-warm; the not-loosing is the not-loosing.
+
+- **No new Stone-Tongue word.** The cap of three holds.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no
+grimdark. The leaf is the younger sister at fifteen-or-so writing for
+a fifteen-year-old smith who will, in eighty years, not yet know that
+the leaf was her own mother's reading. Three words for the kept warm;
+one daughter's note folded inside; a bundle *kerritha*-d on a rack
+that has been there a long time. Brigid is the *not-letting-go.* The
+softness of this god is the point.
