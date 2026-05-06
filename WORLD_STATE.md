@@ -2318,3 +2318,61 @@ no new Stone-Tongue this run, per the prior run's withholding ledger.
   but only after the *haethe* codex or a Wardens-of-the-Mark seeding
   run. Three fragments form a series; please do not ship the third
   reflexively.
+
+---
+
+## Lore run 2026-05-06 — Wardens of the Mark
+
+### Artifact shipped this run
+
+`eldoria-godot/lore/factions/wardens_of_the_mark.md` (~22 KB).
+Inside-out twin of `factions/three_crowns.md`. Closes the priority-1
+hook in the prior run's "Top-priority next" — *Wardens of the Mark
+seeding (priority 6 inside-out).*
+
+### What landed in canon
+
+- **The four Wardens, one posture each:** Edda (the keeping-warm),
+  Roan (the keeping-watch), Maeve (the keeping-vigil), Hala (the
+  keeping-still). The Mark = the village's attention, held in four
+  directions (Roan-south, Hala-north, Maeve-west, Edda-east). Bram,
+  Mara, Lyra explicitly NOT Wardens (hearth, eyes, forest's listener).
+- **Four civic unwritten oaths,** inherited like recipes:
+  *"The candle waits."* / *"The bay sees."* / *"The hammer answers."*
+  / *"The staff keeps."*
+- **Bram's grandmother's red-leather ledger** is the only written
+  instance of the phrase *Wardens of the Mark.* The grandmother's
+  entry is canonized verbatim in the artifact; Bram's reserved-text
+  future entry is held as a Builder-prop hook.
+- **The brothers are *apprentices to the Mark,* not Wardens.** Word
+  *Warden* held back; reserved for the ledger-discovery long-arc beat.
+- **The Wardens have no enemy.** Hard rule from this run forward.
+- **Bench rule:** Wardens grow only when one of the four cannot carry
+  their tool; the next is named by the four. Aelis (Maeve's daughter,
+  smoke-cities-silent) is the canonical fifth-posture hook — NOT
+  resolved.
+
+### Withholding ledger preserved
+
+No new Old Faerie or Stone-Tongue (caps hold at 14 / 3 from
+`three_crowns.md`). Brothers not named Wardens. Aelis-as-fifth not
+resolved. Walker-house woman not named. Magistrate not named. Crown-
+Holder not named. No Wardens' banner / hall / oath-ceremony / rally /
+enemy. No third codex fragment. No Iron-Crown clerk fragment yet.
+
+### Top-priority next (refresh)
+
+- **Codex on the *haethe*** — Edda is the natural narrator; Wardens-
+  frame supports it (the keeping-warm hears the *haethe* when the
+  work is honest).
+- **Mara-arc beat** (the unopened letter + the unspoken slate-mark)
+  — character-deep, no system-touching.
+- **An Iron-Crown clerk codex fragment** — third leaf in the cave;
+  now permitted by the prior run's queue (Wardens has landed).
+  Recommended *after* the *haethe.*
+- **Quest-text seeding** — `data/quest_text/` empty; six shipped
+  quests have no quest_text files. Cleanest medium-sized run that
+  doesn't pull on faction politics.
+- **Ledger-prop Builder run** — surface Bram's red-leather ledger
+  as a discoverable inn-prop using the reserved-text future-Bram
+  line.
