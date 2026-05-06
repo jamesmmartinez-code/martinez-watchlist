@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=2 format=3 uid="uid://eldoria_loot_crystal_elemental"]
+
+[ext_resource type="Script" path="res://data/creatures/_loot_table.gd" id="1_loot_table"]
+
+[resource]
+script = ExtResource("1_loot_table")
+creature_id = &"crystal_elemental"
+entries = [
+	{ "id": &"crystal_shard","weight": 0.5357, "qty_min": 1, "qty_max": 2 },
+	{ "id": &"mp_potion",    "weight": 0.2054, "qty_min": 1, "qty_max": 2 },
+	{ "id": &"hp_potion_l",  "weight": 0.1161, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"ring_focus",   "weight": 0.1071, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"frost_saber",  "weight": 0.0357, "qty_min": 1, "qty_max": 1 },
+]
