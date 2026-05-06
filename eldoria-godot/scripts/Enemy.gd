@@ -303,12 +303,21 @@ func _spawn_model() -> void:
 func _play_model_idle_anim() -> void:
 	# Walks the spawned model subtree for an AnimationPlayer and plays an idle-flavored
 	# animation if one exists. Names vary by source GLB — try a few common spellings.
+	# Also merges humanoid_base.tres so canonical "humanoid/idle" works for any
+	# enemy whose source GLB shipped without an idle (RIGGING_STANDARD §Required).
 	if not is_instance_valid(_model):
 		return
 	var ap: AnimationPlayer = _find_animation_player(_model)
 	if ap == null:
 		return
-	for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle"]:
+	const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+	if ResourceLoader.exists(HUMANOID_BASE_LIB):
+		var _lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
+		if _lib != null:
+			if ap.has_animation_library("humanoid"):
+				ap.remove_animation_library("humanoid")
+			ap.add_animation_library("humanoid", _lib)
+	for n in ["humanoid/idle", "IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle"]:
 		if ap.has_animation(n):
 			ap.play(n)
 			return

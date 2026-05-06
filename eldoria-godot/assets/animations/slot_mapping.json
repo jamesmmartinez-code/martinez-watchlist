@@ -1,0 +1,58 @@
+{
+  "_doc": "Canonical-slot to source-FBX mapping for Realm of Eldoria humanoid animations. Drives scripts/dev/build_anim_library.gd. Paths are relative to eldoria-godot/assets/animations/source/. When the source FBX changes (e.g. James swaps in a better Mixamo pick), update this file and re-run the builder.",
+  "_version": 1,
+  "_updated": "2026-05-05",
+
+  "humanoid_base": {
+    "_purpose": "Shared library every humanoid loads. Picks are UNARMED / weapon-neutral so characters without weapons read correctly; hand-held weapon flair lives in the per-class overrides.",
+    "slots": {
+      "idle":     "Pro_Melee_Axe_Pack/unarmed_idle.fbx",
+      "walk":     "Pro_Melee_Axe_Pack/unarmed_walk_forward.fbx",
+      "run":      "Pro_Melee_Axe_Pack/unarmed_run_forward.fbx",
+      "attack_1": "Pro_Melee_Axe_Pack/standing_melee_attack_horizontal.fbx",
+      "attack_2": "Pro_Melee_Axe_Pack/standing_melee_attack_downward.fbx",
+      "attack_3": "Pro_Melee_Axe_Pack/standing_melee_combo_attack_ver._3.fbx",
+      "hurt":     "Pro_Longbow_Pack/standing_react_small_from_front.fbx",
+      "die":      "Pro_Longbow_Pack/standing_death_forward_01.fbx",
+      "victory":  "Pro_Melee_Axe_Pack/standing_taunt_chest_thump.fbx",
+      "wave":     "Gestures_Pack_Basic/happy_hand_gesture.fbx",
+      "yes":      "Gestures_Pack_Basic/head_nod_yes.fbx",
+      "no":       "Gestures_Pack_Basic/shaking_head_no.fbx",
+      "jump":     "Pro_Melee_Axe_Pack/unarmed_jump.fbx"
+    }
+  },
+
+  "humanoid_pathfinder": {
+    "_purpose": "Alden's class. Bow-held variants of locomotion + draw/release.",
+    "slots": {
+      "idle":      "Pro_Longbow_Pack/standing_idle_01.fbx",
+      "walk":      "Pro_Longbow_Pack/standing_walk_forward.fbx",
+      "run":       "Pro_Longbow_Pack/standing_run_forward.fbx",
+      "attack_1":  "Pro_Longbow_Pack/standing_aim_overdraw.fbx",
+      "attack_2":  "Pro_Longbow_Pack/standing_aim_recoil.fbx",
+      "hurt":      "Pro_Longbow_Pack/standing_react_small_from_headshot.fbx",
+      "die":       "Pro_Longbow_Pack/standing_death_forward_01.fbx",
+      "bow_draw":  "Pro_Longbow_Pack/standing_draw_arrow.fbx",
+      "bow_equip": "Pro_Longbow_Pack/standing_equip_bow.fbx",
+      "dodge":     "Pro_Longbow_Pack/standing_dodge_backward.fbx"
+    }
+  },
+
+  "humanoid_vanguard": {
+    "_purpose": "Owen's class. Great-sword variants — heavier, more spectacle.",
+    "slots": {
+      "idle":       "Great_Sword_Pack/great_sword_idle.fbx",
+      "walk":       "Great_Sword_Pack/great_sword_walk.fbx",
+      "run":        "Great_Sword_Pack/great_sword_run.fbx",
+      "attack_1":   "Great_Sword_Pack/great_sword_slash.fbx",
+      "attack_2":   "Great_Sword_Pack/great_sword_slash__2_.fbx",
+      "attack_3":   "Great_Sword_Pack/great_sword_high_spin_attack.fbx",
+      "power_up":   "Great_Sword_Pack/great_sword_power_up.fbx",
+      "block":      "Great_Sword_Pack/great_sword_blocking.fbx",
+      "impact":     "Great_Sword_Pack/great_sword_impact.fbx",
+      "jump":       "Great_Sword_Pack/great_sword_jump.fbx",
+      "die":        "Great_Sword_Pack/two_handed_sword_death.fbx",
+      "draw_sword": "Great_Sword_Pack/draw_a_great_sword_1.fbx"
+    }
+  }
+}
