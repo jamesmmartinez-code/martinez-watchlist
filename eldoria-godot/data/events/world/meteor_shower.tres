@@ -1,0 +1,37 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "meteor_shower",
+"name": "Ai-Velin Falls",
+"category": "world",
+"region": "all",
+"trigger": {
+  "kind": "calendar",
+  "moon": "Wolfwake",
+  "day": 19,
+  "time_of_day": "midnight_to_2am",
+  "repeats_yearly": true
+},
+"duration_hours": 2,
+"participants": ["herbalist_lyra", "elder_maeve", "stablemaster_roan"],
+"setup": "The night the river-of-stars (ai-velin) leans low to the world. Three or four Briarwood villagers find reasons to be outside between midnight and second-watch. Lyra is in her herb garden. Maeve is at her doorstep. Roan is on the pasture fence.",
+"mechanics": [
+  {"id": "stargazing", "kind": "minigame_id", "label": "Watch the stars fall", "flag_for": "px_team", "note": "Player who stands still in any outdoor area for the full 2 hours sees the canon: 19 falling stars, one per six minutes, plus three larger ones at the half-hour, hour, and end."},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "celesta_slow_alone", "sky_starfield_density_mult": 4.0, "ground_glow_pale_blue_mult": 1.2, "lantern_volume_mult": 0.5}
+],
+"rewards": {
+  "participation": {"renown": 1, "items": []},
+  "watch_full_2_hours": {"renown": 5, "items": ["pressed_starlight_petal"], "lore_unlock": "ai_velin_canon_for_player"},
+  "with_lyra": {"renown": 6, "lore_unlock": "lyra_ai_velin_blessing", "note": "Standing in Lyras herb garden during the shower triggers a one-line Lyra blessing: \"*Ai-velin*, traveler. May yours be long.\""},
+  "miss": {"renown": 0, "morning_after_line": "bram_did_not_notice_but_lyra_did"}
+},
+"hooks": {
+  "kid_specific": "If both kids watch together, the 19th falling star is bright enough that both subtitle their wishes (player input — typed or chosen). Wishes are saved as canon flags but never referenced again by anyone. (Lorekeeper-flagged: this is intentional.)",
+  "caught_with_maeve": "If the player stands beside Maeve at her doorstep for the full 2 hours, Maeve says only: \"*Ai-velin*, traveler.\" Sets npc_flag maeve_blessed_long_path = true permanently."
+},
+"lore_anchor": "world.md → Old Faerie *ai-velin* — the river of stars and a mortals life from cradle to cairn.",
+"banned": ["loud_audio_cues_for_each_falling_star", "ui_popups_per_star", "achievement_chimes"],
+"audio_brief": "A celesta, far away, three notes that repeat slowly. No score change. The wind drops to nothing during the central hour.",
+"px_team_notes": "The 19+3 star count is canon (19 = age of Maeve and Cailen leaving Briarwood, 3 = the Three Crowns). PX may not change the count. Visual stub: simple particle trails across the sky, blue-cyan, fade at horizon."
+}

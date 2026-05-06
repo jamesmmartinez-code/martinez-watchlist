@@ -1,0 +1,39 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "errant_bard",
+"name": "An Errant Bard at the Inn",
+"category": "world",
+"region": "briarwood",
+"trigger": {
+  "kind": "random_pool",
+  "weight": 2,
+  "cooldown_hours": 240,
+  "max_per_year": 6,
+  "only_at_time_of_day": "evening_to_late_night",
+  "season_any": true
+},
+"duration_hours": 4,
+"participants": ["innkeeper_bram", "errant_bard_offstage_unique_per_visit"],
+"setup": "A traveling bard arrives at the inn near sundown. Bram clears a stool. The bard tunes for ten in-game minutes, then plays. Villagers drift in.",
+"mechanics": [
+  {"id": "song_listen", "kind": "minigame_id", "label": "Listen to the bards song", "flag_for": "px_team", "note": "Each visit the bard plays one song. Song is rolled from a pool of 8: village-glory, lost-love, road-warning, fox-and-fire, the-hollow-king, three-crowns-mocked, sundering-fragment, riddle-song. Song unlocks a codex stub matching its theme."},
+  {"id": "tip_jar", "kind": "modified_drop_table", "table": "village_tip_jar", "tip_options": ["1_copper", "5_copper", "1_silver"], "note": "Tip is optional. The bard does not require it. A tipped bard returns sooner."},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "live_lute_unique_per_song", "inn_lantern_warmth_mult": 1.2, "villager_count_in_inn_during_event": "+3"}
+],
+"rewards": {
+  "participation": {"renown": 1, "items": []},
+  "tipped_a_silver": {"renown": 3, "items": ["bards_signature_song_token"], "lore_unlock_one_of": ["village_glory_song", "lost_love_song", "road_warning_song", "fox_and_fire_song", "hollow_king_song", "three_crowns_mocked_song", "sundering_fragment_song", "riddle_song"]},
+  "miss": {"renown": 0, "morning_after_line": "bram_says_the_bard_was_good"}
+},
+"hooks": {
+  "caught_riddle_song": "If the bard plays the riddle-song and the player listens fully (no skip), the bard at the songs end looks at the player and says: \"Youll know the answer when you need it, traveler.\" Sets npc_flag riddle_song_heard = true. The riddles answer is canon to the next world-event the player encounters.",
+  "kid_specific": "If both kids are in the inn, Alden (mint-themed) gets a sprig of mint from the bard at the songs end. \"For the smaller one. Mint travels well.\" Sets alden_lore_traveler_blessing = true. Owen does not get a token; the bard winks at him: \"Youll catch up.\"",
+  "tipped_returns_sooner": "Tipping the bard a full silver reduces the bards next-visit cooldown by 50%. Bards tell other bards."
+},
+"lore_anchor": "world.md → Wild Pantheon → Erris of the Two Roads (bards leave a coin for her at every crossroads).",
+"banned": ["amplified_music", "modern_pop_lyrics", "anything_that_breaks_warm_gravitas"],
+"audio_brief": "Live lute, picked clean. The bards voice mid-low, warm, slightly weathered. One song per visit. Each song MUST be Celtic/medieval/folk-coded — see THEME.md §6.",
+"px_team_notes": "Eight unique songs is FLAGGED. PX/Audio team to source or commission. Reusing one or two for v1 is acceptable; a stub that shuffles two existing tracks ships the event without blocking."
+}

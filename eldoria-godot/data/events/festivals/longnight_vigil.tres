@@ -1,0 +1,39 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "longnight_vigil",
+"name": "Longnight Vigil",
+"category": "festival",
+"region": "briarwood",
+"trigger": {
+  "kind": "calendar",
+  "moon": "Longnight",
+  "day": 14,
+  "time_of_day": "sundown_to_dawn"
+},
+"duration_hours": 14,
+"repeats_yearly": true,
+"participants": ["elder_maeve", "innkeeper_bram", "herbalist_lyra", "smith_edda", "stablemaster_roan", "trainer_hala", "mara_merchant"],
+"setup": "Every household lights a candle for someone gone. The well at village center is the gathering hearth — Maeve stands beside it, candle in hand. Briarwood does not sleep until dawn.",
+"mechanics": [
+  {"id": "candle_for_a_name", "kind": "minigame_id", "label": "Light a candle for someone gone", "flag_for": "px_team", "note": "Player chooses NPC name from a list (Halsa, Aelis if unlocked, Cailen if unlocked) or types free. Candle rests on the well rim. Persists for 24 in-game hours."},
+  {"id": "stew_vendor", "kind": "special_vendor", "vendor": "innkeeper_bram", "stock": ["vigil_stew", "winter_bread", "warm_cider"], "free": true, "only_during_event": true, "note": "No coin tonight. Bram refuses payment."},
+  {"id": "ambient_change", "kind": "ambient_change", "music_track": "longnight_choir_flute", "sky": "deep_winter_starfield", "snow_density_mult": 1.5, "candle_count_at_well": 40, "ambient_volume_mult": 0.6, "wolves_silenced": true},
+  {"id": "no_combat_zone", "kind": "modified_drop_table", "table": "global_combat_spawns", "removed_during": ["whisperwood_goblins", "wolves_dire", "bandits"], "note": "The Whisperwood is silent on Longnight. Tomorrow it returns."}
+],
+"rewards": {
+  "participation": {"renown": 3, "items": ["braided_wick_keepsake"]},
+  "stand_with_maeve_til_dawn": {"renown": 10, "items": ["maeve_acorn_carved"], "lore_unlock": "vigil_keepers_first_line"},
+  "miss": {"renown": 0, "morning_after_line": "you_missed_longnight"}
+},
+"hooks": {
+  "missed": "Maeve will not look up when greeted the next day. Will say only: \"You slept. That was your right.\" Sets npc_flag maeve_disappointed = true (clears after one full season).",
+  "caught": "Standing at the well from sundown to dawn (no fast-forward) unlocks one previously-locked Maeve line: \"Vael-tor-i. The gathered hearth keeps you. Walk warmly.\" Sets npc_flag maeve_let_you_in = true permanently.",
+  "kid_specific": "If the player has lost a pet (Ember dies in any prior session), an extra candle appears on the well rim at midnight, lit by no one the player can see. Bram will not comment. Maeve will not comment. The candle persists until dawn. (PX: please honor this. Do not announce.)"
+},
+"lore_anchor": "world.md → Calendar → Longnight; smith_edda dialogue references Halsa-candle-near-the-well; elder_maeve.md → Cailen + Esca grief structure.",
+"banned": ["fireworks", "loud_music", "combat_within_village", "shouting", "purchase_from_bram_on_this_night"],
+"audio_brief": "A single voice, low alto, holding a long Celtic vowel. One fiddle far behind it. No percussion. Wind. The well-bucket creaks once an hour and that creak is canon.",
+"px_team_notes": "Candle minigame is FLAGGED. The candles MUST persist visually for the full in-game night — if PX shortens the night, the candles still last 14 in-game hours. If a candle is for a name the game tracks (Halsa / Aelis / Cailen), set npc_flag <name>_remembered_<year> = true; downstream NPCs may surface variant lines."
+}

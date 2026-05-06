@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "firewood_haul",
+"name": "Briarwood: Haul Firewood",
+"category": "daily",
+"region": "briarwood",
+"giver": "village_well",
+"objective": "Bring 8 firewood bundles to the central well. Distributed to the elderly households.",
+"duration_hours": 24,
+"rewards": {"renown": 2, "items": ["village_thanks_warm_bread"], "coin": 4},
+"variant_lines": {
+  "accept": "Notice on the well: \"Wood needed for Maeve, the widow Olen, and the Holt sisters. Stack at the well by sundown.\"",
+  "complete": "Maeve, passing by: \"The hearth keeps you, traveler.\"",
+  "miss": "The widow Olen lights only one log tonight."
+}
+}
