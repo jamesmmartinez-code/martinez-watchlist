@@ -1,71 +1,157 @@
-# Realm of Eldoria — Size Standards
+# Realm of Eldoria — Size Standards (CANON, LOCKED)
 
-All measurements are **visible AABB height in meters** (model's `_global_scale_sweep` target).
+> **Status:** LOCKED. Any agent commit that modifies these values without
+> a `[CANON-APPROVED: <reason>]` tag in the commit message is auto-rejected
+> by Canon QA. Player sees the world through the lens of this file. Get it
+> wrong, the world feels wrong.
+
+All measurements are **visible AABB height in meters** unless otherwise specified.
 Authority: this file. If a script disagrees, the script is wrong — fix the script.
 
+Last canonical update: **2026-05-06** — kid-sized player (1.10m), aggressive
+foreground caps, per-realm scale specifications added.
+
 ---
 
-## Characters
+## §1 — Characters (the most-violated category)
 
-| Category               | Target | Tolerance | Notes |
-|------------------------|--------|-----------|-------|
-| **Player**             | 1.80m  | ±10%      | Lange / Hero / CesiumMan all normalize to this |
-| **Adult NPC**          | 1.80m  | ±15%      | Edda, Bram, Mara, Maeve, Roan, Hala, Lyra |
-| **Child / youth NPC**  | 1.40m  | ±15%      | Worker girl, apprentices |
-| **Pet companion**      | 0.70m  | ±20%      | Fox, mushroom familiar |
-| **Mount (horse)**      | 1.70m  | ±10%      | Measured at withers |
+| Category               | Target | Tolerance | Hard cap | Notes |
+|------------------------|--------|-----------|----------|-------|
+| **Player (kid)**       | 1.10m  | ±5%       | 1.30m    | **Alden (9) and Owen (11) are children, NOT adults.** Locked at 1.10m. |
+| **Adult NPC**          | 1.65m  | ±10%      | 1.80m    | Maeve, Edda, Bram, Mara, Roan, Hala, Lyra. Visibly taller than player. |
+| **Youth NPC**          | 1.30m  | ±10%      | 1.45m    | Apprentices, child villagers. Slightly taller than player. |
+| **Pet companion**      | 0.55m  | ±15%      | 0.70m    | Fox, squirrel, owl. Below knee-height of player. |
+| **Mount — horse**      | 1.55m  | ±10%      | 1.75m    | Measured at withers. Tall, but kid-rideable. |
+| **Mount — dragon**     | 2.40m  | ±15%      | 2.80m    | Riding-size, not boss-size. |
 
-## Enemies
+## §2 — Enemies
 
-| Category               | Target | Tolerance | Notes |
-|------------------------|--------|-----------|-------|
-| **Enemy — small**      | 1.40m  | ±20%      | Goblin scout, wolf |
-| **Enemy — medium**     | 1.80m  | ±15%      | Goblin warrior, bandit |
-| **Enemy — elite**      | 2.60m  | ±15%      | Ogre, troll |
-| **Boss**               | 3.20m  | ±20%      | Hard floor 2.6m, hard ceiling 4.5m |
-| **Crystal Guardian**   | 3.40m  | ±10%      | Pillar-form, special-cased |
-
-## Props
-
-| Category               | Target | Tolerance | Examples |
+| Category               | Target | Tolerance | Hard cap |
 |------------------------|--------|-----------|----------|
-| **Tiny prop**          | 0.40m  | ±50%      | Mushroom, lantern, skull |
-| **Small prop**         | 1.00m  | ±30%      | Barrel, chest, stool, well-rim |
-| **Medium prop**        | 2.00m  | ±25%      | Stone well, market stall, cart |
-| **Large prop**         | 5.00m  | ±40%      | Windmill body, large statue |
+| **Critter (rat, bird)**| 0.30m  | ±25%      | 0.50m    |
+| **Small enemy**        | 1.20m  | ±15%      | 1.40m    |
+| **Medium enemy**       | 1.55m  | ±15%      | 1.80m    |
+| **Elite enemy**        | 2.30m  | ±15%      | 2.60m    |
+| **Boss — standard**    | 2.80m  | ±15%      | 3.40m    |
+| **Boss — gargantuan**  | 4.00m  | ±15%      | 5.00m    | Crystal Guardian, Mountain Ogre, end-realm boss only. |
 
-## Trees / vegetation
+## §3 — Buildings (Briarwood + every settlement)
 
-| Category               | Target | Notes |
+| Category               | Target | Hard floor | Hard cap |
+|------------------------|--------|------------|----------|
+| **Hut (1-room)**       | 3.20m  | 2.50m      | 4.00m    |
+| **House (2-story)**    | 5.50m  | 4.00m      | 7.00m    |
+| **Tavern / smithy**    | 6.50m  | 5.00m      | 8.00m    |
+| **Temple / hall**      | 8.50m  | 6.50m      | 10.0m    |
+| **Tower / windmill**   | 12.0m  | 8.00m      | 14.0m    |
+| **Curtain wall**       | 6.00m  | 5.00m      | 8.00m    |
+| **Gate tower**         | 12.0m  | 10.0m      | 15.0m    |
+
+## §4 — Trees & vegetation (FOREGROUND, kept short)
+
+| Category               | Target | Hard cap |
+|------------------------|--------|----------|
+| **Grass tuft / fern**  | 0.30m  | 0.60m    |
+| **Bush**               | 0.80m  | 1.20m    |
+| **Sapling**            | 1.50m  | 2.00m    |
+| **Small tree (oak)**   | 3.00m  | 4.00m    |
+| **Tall tree (pine)**   | 4.00m  | 4.50m    |
+| **Dead tree**          | 3.50m  | 4.50m    |
+| **Ancient/landmark**   | 6.00m  | 8.00m    | One per region max — story marker only. |
+
+**Why low:** at the camera default (16m back, 26° pitch) trees fill the frame
+quickly. Foreground caps kept aggressive so the village/NPCs aren't blocked.
+
+## §5 — Props
+
+| Category               | Target | Hard cap | Examples |
+|------------------------|--------|----------|----------|
+| **Tiny**               | 0.30m  | 0.50m    | Mushroom, candle, gem |
+| **Small**              | 0.80m  | 1.20m    | Barrel, chest, stool, log |
+| **Medium**             | 1.60m  | 2.20m    | Well, market stall, cart |
+| **Large**              | 3.50m  | 5.00m    | Forge, statue, large bell |
+| **Landmark**           | 8.00m  | 12.0m    | Briarwood bell tower, monument |
+
+## §6 — Terrain features (per-realm world geometry)
+
+| Category               | Target | Hard cap | Notes |
+|------------------------|--------|----------|-------|
+| **Hill (gentle)**      | 6.00m  | 12.0m    | Briarwood plateau, Whisperwood undulation |
+| **Cliff (small)**      | 8.00m  | 15.0m    | Tidesong shore, cave entrance |
+| **Cliff (large)**      | 25.0m  | 40.0m    | Crystal Caves entrance, Ashenmere ridge |
+| **Mountain (mid)**     | 60.0m  | 90.0m    | Skyreave foothills |
+| **Mountain (peak)**    | 120m   | 180m     | Skyreave summit, end-realm landmark |
+
+**Mountain ring rule:** the surrounding-the-village mountain ring is a SKYBOX
+substitute, must sit at 200m+ from village center, never closer than 150m.
+
+## §7 — World-space dimensions per realm
+
+| Realm                  | Plaza dia. | Walkable radius | Mountain horizon | Notes |
+|------------------------|------------|-----------------|------------------|-------|
+| **Eldoria (Lv 1-50)**  | 50m        | 250m            | 350m             | Briarwood + Whisperwood + Crystal Caves |
+| **Ashenmere (50-100)** | 60m        | 350m            | 450m             | Volcanic plain |
+| **Tidesong (100-150)** | 70m        | 500m            | open ocean       | Coast + sea drake roost |
+| **Shadewood (150-200)**| 40m        | 300m            | 400m             | Dense fey forest, smaller plazas |
+| **Skyreave (200-250)** | 80m        | 400m            | 500m             | Dragon caves, large open vistas |
+| **Hollow (250-300)**   | 100m       | 600m            | infinite         | Endgame, deliberately vast and lonely |
+
+## §8 — Path & road widths
+
+| Category               | Width  | Notes |
 |------------------------|--------|-------|
-| **Bush**               | 0.90m  | |
-| **Small tree (oak)**   | 4.00m  | |
-| **Tall tree (pine)**   | 8.00m  | |
-| **Dead tree**          | 5.00m  | |
+| **Footpath**           | 1.20m  | Single-file kid passage |
+| **Cobble path**        | 2.40m  | Two kids side-by-side |
+| **Main road**          | 4.00m  | Cart-wide |
+| **Plaza margin**       | 1.00m  | Buffer between props and walkways |
 
-## Buildings
+## §9 — Camera defaults (locked unless [CANON-APPROVED] tag)
 
-| Category               | Target |
-|------------------------|--------|
-| **Hut / shed**         | 3.50m  |
-| **House**              | 5.00m  |
-| **Tavern / smithy**    | 6.50m  |
-| **Tower / windmill**   | 10.0m  |
+| Property               | Value  | Notes |
+|------------------------|--------|-------|
+| **Distance — default** | 11.0m  | |
+| **Distance — min**     | 3.4m   | |
+| **Distance — max**     | 35.0m  | |
+| **Pitch — default**    | 0.45 rad (~26°) | Comfortable 3rd-person, NOT isometric |
+| **Pitch — clamp**      | 0.20 to 1.30 rad | |
+| **Scroll step**        | 1.5m   | |
+
+## §10 — Particle effect size limits (when re-enabled)
+
+| Effect                 | Particle size | Emission spread | Notes |
+|------------------------|---------------|-----------------|-------|
+| **Firefly**            | 0.04 m²       | 6m box          | Glow, not chunky |
+| **Falling leaf**       | 0.10 m²       | 8m box          | Must use a real leaf texture, not white quad |
+| **Smoke chimney**      | 0.50 m² → 1.5m² over lifetime | spawns AT chimney top, never ground | Texture: real smoke, not white |
+| **Magic spark**        | 0.06 m²       | 1m              | Bright but small |
+
+**Currently disabled** (rendering as oversized white blobs, see commit `efd0d61b`).
+Re-enable only after textures are wired and sizes audited.
 
 ---
 
-## Rules
+## §99 — How agents must use this file
 
-1. **One scale source.** Per-NPC overrides go in `WorldBuilder.NPC_SCALES`. Per-class targets go in `WorldBuilder._expected_height_for()`. Don't bake scale into `.tscn` transforms unless the model genuinely needs an asymmetric stretch.
-2. **Sweep is authoritative.** `_global_scale_sweep` runs 0.5s after `_ready` and re-checks every CharacterBody3D / StaticBody3D against this table. Anything outside tolerance gets rescaled.
-3. **Player is included.** The `player` group is in the sweep — don't bypass it.
-4. **No 1.2× tweaks in `Main.tscn`.** If a model lands too small, fix it in the GLB import settings or in `NPC_SCALES`, not by inflating the scene transform.
-5. **Tolerance bands matter.** A model inside its band is left alone (preserves artistic variance). Outside the band, it's snapped to the target.
+1. **Before changing any scale value in any script**, check this file. If your
+   intended value violates the canon, write a `[CANON-APPROVED: <reason>]` tag
+   in your commit message OR don't make the change.
+2. **Canon QA enforces this file.** Any commit that introduces a value outside
+   the canon ranges is flagged S1 (block) unless [CANON-APPROVED:] is present.
+3. **Don't bake scale into `.tscn` transforms.** Use `WorldBuilder.NPC_SCALES`
+   or per-class targets. The runtime `_global_scale_sweep` is authoritative.
+4. **One scale source per category.** If you find duplicate scale tables in
+   different scripts, consolidate them and reference this file.
+5. **Add new categories here first**, then in code. If you spawn something
+   that doesn't fit any category, document it here as a new row before
+   shipping.
 
-## When you add a new model
+## §100 — Recently observed violations (audit log)
 
-1. Drop the `.glb` into `assets/models/...`
-2. Add it to a scene via instance — leave its scale at `(1, 1, 1)`
-3. Run the build. Open the live page and look at the model.
-4. If it's wrong-sized, **first** check whether the sweep caught it. If not, the body might not be in the right group — fix that. If yes but it still looks off, add a per-name entry to `NPC_SCALES` (a fine-tune ratio, not a giant multiplier).
+- 2026-05-06: trees rendered at 14m+ visual height — capped to 4.5m at runtime
+- 2026-05-06: player normalized to 1.80m (adult) — locked to 1.10m (kid)
+- 2026-05-06: equipment (boots, helmets) rendered at native GLB scale instead
+  of inheriting player scale — fixed via SCALE GUARD on BoneAttachment3D
+- 2026-05-06: white-blob particle effects (smoke/leaves/fireflies) blocking
+  entire view — temporarily disabled until textures audited
 
+Add a new row here whenever a scale fix lands. Helps detect recurring drift.
