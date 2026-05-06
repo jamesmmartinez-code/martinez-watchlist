@@ -53,6 +53,15 @@ const TREE_VARIANTS: Array = [
 # sphere primitives. Same fallback contract as TREE_VARIANTS above.
 const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
 
+# ─── THEME §12 — Whisperwood undergrowth + village dressing GLBs ────────────
+# Three currently-unused CC-BY GLBs that bring the world from "open lawn with
+# trees" to "lived-in fantasy forest". Loaded the same way as TREE_VARIANTS:
+# any missing asset is silently skipped so the world never crashes.
+const FERN_GLB_PATH: String     = "res://assets/models/props/fern.glb"
+const MUSHROOM_GLB_PATH: String = "res://assets/models/props/mushroom_red.glb"
+const BARREL_GLB_PATH: String   = "res://assets/models/props/wooden_barrel.glb"
+const LANTERN_GLB_PATH: String  = "res://assets/models/props/lantern.glb"
+
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
 
@@ -483,6 +492,10 @@ func _ready() -> void:
 	_build_village()
 	_scatter_trees(140)
 	_scatter_rocks(36)
+	# THEME §11, §12 — Whisperwood undergrowth + village dressing.
+	_scatter_ferns(48)
+	_scatter_mushrooms(24)
+	_build_village_barrels()
 	_build_mountain_ring()
 	_build_market_stalls()
 	_build_windmill()
@@ -1007,6 +1020,27 @@ func _make_lantern(pos: Vector3) -> void:
 	lan.position = pos
 	lan.add_to_group("lanterns")
 	add_child(lan)
+	# THEME §1, §11 — try the Sketchfab CC-BY lantern GLB first; fall through to
+	# the legacy procedural path so the village never goes dark.
+	var packed: PackedScene = _load_glb_safe(LANTERN_GLB_PATH)
+	if packed != null:
+		var inst: Node = packed.instantiate()
+		if inst != null:
+			lan.add_child(inst)
+			if inst is Node3D:
+				(inst as Node3D).scale = Vector3(1.0, 1.0, 1.0)
+			# Warm omni light at fixture height. Name MUST stay "OmniLight3D"
+			# so the flicker loop in _process keeps finding it.
+			var glb_light := OmniLight3D.new()
+			glb_light.light_color = Color(1.0, 0.62, 0.28)
+			glb_light.light_energy = 1.6
+			glb_light.omni_range = 8.0
+			glb_light.position.y = 1.9
+			glb_light.shadow_enabled = false
+			lan.add_child(glb_light)
+			call_deferred("_settle_to_ground", lan)
+			return
+	# ─── Procedural fallback (legacy primitive path) ─────────────────────────
 	var post := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
 	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.4
@@ -1977,6 +2011,11 @@ func _process(delta: float) -> void:
 	for tree in get_tree().get_nodes_in_group("trees"):
 		var s = sin(_t * 0.8 + tree.position.x * 0.3) * 0.015
 		tree.rotation.z = s
+	# THEME §12 — fern frond sway. Slightly faster + smaller amplitude than
+	# trees so the undergrowth reads as "lighter" than the canopy.
+	for frond in get_tree().get_nodes_in_group("ferns"):
+		var fs = sin(_t * 1.6 + frond.position.x * 0.7 + frond.position.z * 0.4) * 0.04
+		frond.rotation.z = fs
 	# Campfire light flicker
 	for f in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
@@ -2359,6 +2398,112 @@ func _clamp_max_height(node: Node, max_h: float) -> void:
 # Loads a GLB safely, returning null if the path doesn't exist or doesn't
 # resolve to a PackedScene. Used by tree / boulder / future prop spawners
 # so a missing asset NEVER breaks the world build.
+# ─── THEME §11, §12 — Whisperwood undergrowth + village dressing ────────────
+# Three additive scatter passes that wire up the previously-unused fern,
+# mushroom, and barrel GLBs. All three add purely to the visual layer:
+# - ferns join group "ferns" so _process gives them a subtle leaf-sway
+# - mushrooms are static low cover (small scale, a few clustered pods)
+# - barrels are walk-around-able cargo near houses + stable
+# Every spawn gets a deferred _settle_to_ground call so nothing floats or
+# sinks (THEME §13). All paths fail silently if the GLB isn't loadable.
+func _scatter_ferns(count: int) -> void:
+	var packed: PackedScene = _load_glb_safe(FERN_GLB_PATH)
+	if packed == null:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	for i in count:
+		var ang := rng.randf() * TAU
+		var dist := rng.randf_range(14, 60)
+		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var inst: Node = packed.instantiate()
+		if inst == null:
+			continue
+		var holder := Node3D.new()
+		holder.position = pos
+		holder.rotation.y = rng.randf() * TAU
+		holder.add_to_group("ferns")
+		add_child(holder)
+		holder.add_child(inst)
+		if inst is Node3D:
+			var s: float = rng.randf_range(0.65, 1.10)
+			(inst as Node3D).scale = Vector3(s, s, s)
+		call_deferred("_settle_to_ground", holder)
+
+func _scatter_mushrooms(count: int) -> void:
+	var packed: PackedScene = _load_glb_safe(MUSHROOM_GLB_PATH)
+	if packed == null:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	# Mushrooms cluster in pods of 2–4 instead of single instances — feels
+	# more natural under tree canopies.
+	var pods: int = max(1, count / 3)
+	for pi in pods:
+		var ang := rng.randf() * TAU
+		var dist := rng.randf_range(16, 55)
+		var center := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var pod_size: int = rng.randi_range(2, 4)
+		for mi in pod_size:
+			var inst: Node = packed.instantiate()
+			if inst == null:
+				continue
+			var holder := Node3D.new()
+			var off := Vector3(rng.randf_range(-0.6, 0.6), 0, rng.randf_range(-0.6, 0.6))
+			holder.position = center + off
+			holder.rotation.y = rng.randf() * TAU
+			holder.add_to_group("mushrooms")
+			add_child(holder)
+			holder.add_child(inst)
+			if inst is Node3D:
+				var s: float = rng.randf_range(0.55, 0.95)
+				(inst as Node3D).scale = Vector3(s, s, s)
+			call_deferred("_settle_to_ground", holder)
+
+func _build_village_barrels() -> void:
+	var packed: PackedScene = _load_glb_safe(BARREL_GLB_PATH)
+	if packed == null:
+		return
+	# Hand-placed barrel positions near houses + stable + market.
+	# Y stays at 0 — the GLB has its own pivot at base; _settle_to_ground
+	# fixes any per-asset offset.
+	var spots: Array = [
+		Vector3( 4.5, 0, -3.5),
+		Vector3( 5.2, 0, -3.2),
+		Vector3(-7.0, 0,  4.5),
+		Vector3(-6.4, 0,  5.1),
+		Vector3( 9.0, 0,  6.0),
+		Vector3( 9.6, 0,  5.6),
+		Vector3(-3.5, 0, -7.5),
+		Vector3(-9.5, 0, -2.0),
+	]
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	for pos in spots:
+		var inst: Node = packed.instantiate()
+		if inst == null:
+			continue
+		var holder := Node3D.new()
+		holder.position = pos
+		holder.rotation.y = rng.randf() * TAU
+		holder.add_to_group("village_barrels")
+		add_child(holder)
+		holder.add_child(inst)
+		if inst is Node3D:
+			var s: float = rng.randf_range(0.95, 1.10)
+			(inst as Node3D).scale = Vector3(s, s, s)
+		# Coarse cylindrical collider so the player can't walk through them.
+		var body: StaticBody3D = StaticBody3D.new()
+		var col: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.42
+		cyl.height = 0.95
+		col.shape = cyl
+		col.position.y = 0.475
+		body.add_child(col)
+		holder.add_child(body)
+		call_deferred("_settle_to_ground", holder)
+
 func _load_glb_safe(path: String) -> PackedScene:
 	if not ResourceLoader.exists(path):
 		return null
