@@ -95,3 +95,21 @@ is acoustic, Celtic / chamber / folk, or real-instrument SFX. Specifically:
 
 Total `eldoria-godot/assets/audio/` is **~4.8 MiB** on disk —
 well under the 50 MiB budget set in the audio engineering brief.
+
+---
+
+## Godot import sidecars
+
+As of 2026-05-06 every `.ogg` and `.mp3` in this tree ships with a
+matching `.import` sidecar (38 files: 31 OGG + 7 MP3). Without these
+sidecars, the headless web export pipeline (`eldoria-godot/EXPORT_TO_WEB.md`)
+cannot resolve `res://` paths and `Audio.gd::_load_stream()` falls through
+to `push_warning("[Audio] Missing ...")` for every track. The editor
+regenerates sidecars on first open, but CI/headless runs need them
+checked in.
+
+UIDs are deterministic — `sha1(res://path)[:8]` reduced to Godot's
+13-char base32 alphabet — so re-running the generator produces stable
+diffs. Loop behaviour is set at runtime by `Audio.gd` (music + ambient
+streams toggle `stream.loop = true` after load), so all sidecars import
+with `loop=false`.
