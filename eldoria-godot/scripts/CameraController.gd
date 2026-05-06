@@ -7,7 +7,7 @@ class_name CameraController
 
 @export var follow_target: Node3D
 # REFINE: combat feel — camera: default distance 7.5 → 8.0 — slightly wider painterly frame at rest (Alden Exploration affinity reads more of the §11 BotW-style vista) without losing combat clarity for Owen.
-@export var distance: float = 16.0
+@export var distance: float = 13.0
 # REFINE: combat feel — camera: min_distance 3.0 → 3.4 — prevents camera clipping through the player model when fully zoomed in against a wall (the previous 3.0 occasionally put the camera inside the cape).
 @export var min_distance: float = 3.4
 # REFINE: combat feel — camera: max_distance 16.0 → 13.5 — at 16m the painterly LODs and HDRI sky-band fill the frame and combat reads collapse; 13.5m keeps the player silhouette legible while still allowing a wide reveal.
@@ -19,7 +19,7 @@ class_name CameraController
 
 var yaw: float = 0.0
 # REFINE: combat feel — camera: initial pitch 0.45 → 0.42 — at the new distance 8.0 this lands the rest frame ~3.27m above / ~7.30m behind the player, ~0.55m more horizontal than before so the mountain ring and the new sunset HDRI sky-band both read in default frame (THEME §11 BotW painterly reference).
-var pitch: float = 0.70
+var pitch: float = 0.50
 var dragging: bool = false
 
 @onready var _cam: Camera3D = $Camera3D
