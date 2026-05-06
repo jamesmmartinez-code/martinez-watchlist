@@ -180,6 +180,12 @@ func _ready() -> void:
 	add_child(inventory)
 	inventory.equipment_changed.connect(_on_equipment_changed)
 	inventory.inventory_changed.connect(_on_inventory_changed)
+	# Equipment Visualizer (Pillar 1 — Combat) — granular per-slot signals
+	# let us do partial rebuilds (swap helmet without re-instancing the sword).
+	# The aggregate equipment_changed connection above stays wired for any
+	# code that needs a full refresh; these route to slot-specific rebuilders.
+	inventory.item_equipped.connect(_on_item_equipped)
+	inventory.item_unequipped.connect(_on_item_unequipped)
 	# Build initial visible weapon
 	call_deferred("_rebuild_weapon_visual")
 	# Load save on first frame (after inventory wires up)
@@ -673,6 +679,36 @@ func _on_equipment_changed() -> void:
 	_rebuild_cape_visual()
 	call_deferred("_clamp_all_attachments_scale")
 	# Update HP/MP caps based on equipment bonuses
+	stats_changed.emit()
+
+# Granular per-slot handlers — Inventory.gd emits these alongside the
+# aggregate equipment_changed signal. We only re-run the rebuilder for the
+# slot that actually changed, which is cheaper than the full refresh and
+# avoids briefly de-spawning the sword when the player swaps a helmet.
+# Slot strings come from Items.gd::ITEMS[*].slot — keep this dispatch in
+# sync if Item Designer adds a new slot type.
+func _on_item_equipped(slot: String, _item_id: String) -> void:
+	_rebuild_slot(slot)
+
+func _on_item_unequipped(slot: String, _item_id: String) -> void:
+	_rebuild_slot(slot)
+
+func _rebuild_slot(slot: String) -> void:
+	match slot:
+		"weapon":
+			_rebuild_weapon_visual()
+		"shield":
+			_rebuild_shield_visual()
+		"helmet":
+			_rebuild_helmet_visual()
+		"cape":
+			_rebuild_cape_visual()
+		_:
+			# armor / trinket / future slots have no dedicated 3D visual yet
+			# (armor is baked into the hero GLB). Stats refresh still flows
+			# through the aggregate equipment_changed connection.
+			pass
+	call_deferred("_clamp_all_attachments_scale")
 	stats_changed.emit()
 
 func _rebuild_weapon_visual() -> void:
