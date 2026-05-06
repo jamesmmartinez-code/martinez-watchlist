@@ -36,7 +36,7 @@ it to completion, marks it done.
 | factions/tidekeepers.md | missing | — | P3 |
 | factions/hollow_court.md | missing | — | P3 |
 | factions/cloudwalkers.md | missing | — | P3 |
-| bosses/goblin_warlord.md | missing | — | P1 |
+| bosses/goblin_warlord.md | done — `eldoria-godot/lore/bosses/goblin_warlord.md` | 2026-05-06 | P1 |
 | festivals/midsummer.md | missing | — | P2 |
 | festivals/harvest.md | missing | — | P2 |
 | festivals/sundering_remembrance.md | missing | — | P2 |

@@ -3931,3 +3931,301 @@ the leaf was her own mother's reading. Three words for the kept warm;
 one daughter's note folded inside; a bundle *kerritha*-d on a rack
 that has been there a long time. Brigid is the *not-letting-go.* The
 softness of this god is the point.
+
+---
+
+## Lore Keeper run — 2026-05-06 — Goblin Warlord boss reading shipped
+
+### Artifact shipped this run
+
+`eldoria-godot/lore/bosses/goblin_warlord.md` (600 lines) — the first
+boss-lore page in the canon, sister-document to
+`lore/factions/whisperwood_goblins.md`, `lore/factions/bandits.md`,
+`lore/factions/three_crowns.md`, and `data/quest_text/whisperwood_cleansing.md`.
+The page writes the **voice** of the encounter (not the kit — that is
+Bestiary Designer territory in `data/bosses/`) and lays down
+load-bearing canon for the three phases, the borrowed crown, the
+banner-figures, the horn-at-the-hip, the closing-of-the-call, and the
+village's posture toward the after.
+
+### What is now canon (load-bearing)
+
+- **The Goblin Warlord is *aen-irren* with a crown on.** The
+  faction-side rule from `whisperwood_goblins.md` is canonized at the
+  boss-page level. The Warlord is **not** a chieftain; he is **the
+  wound** the fold gathers to when no other figure is left to follow.
+- **The Warlord is always of the fold he leads.** His mother was a
+  Whisperwood goblin; her mother was. *aen-irren* is the inheritance.
+  Future agents may **not** write a foreign Warlord, a wandering
+  Warlord, or a Warlord of multiple folds. **One fold, one wound, one
+  Warlord at a time.** The hydra is in the *recurring,* not in the
+  *plural.*
+- **The crown's red aura is the *want* of un-*kerrithen* iron.** The
+  Halevant pike-captain's circlet was forged hot and never properly
+  laid down; the iron *wants* its naming; the Warlord wears the want
+  without knowing what it is wanting. The aura is the **shape of the
+  absence,** brightest just before the crown rolls.
+- **The three chevrons.** The Warlord's torn pike-company silks are
+  named: lower (dropped angle, "company-walks-first"), middle (stacked
+  pair, "captain-held-the-road-a-moon"), upper (single broad angle
+  broken at the point — *the captain himself*, the break being where
+  the captain's last second signed his name through the silk in
+  lamp-soot and the silk tore). The Warlord wears the broken-point
+  one without knowing the point is broken. He is wearing the captain's
+  last unsigned name as decoration.
+- **The horn.** The Warlord knows two of the three pike-company horn
+  calls — the *start* and the *cresting* — and has never blown the
+  *recall,* because he has no home to recall a company to. *aen-irren*
+  on the side of the missing third. Maeve's name for the horn is
+  *the horn that does not call back.* When the Warlord falls, the
+  horn passes to the village; Mara buys it at honest weight; Maeve
+  looks at it once. The horn is laid in the **Vigil shelf, behind the
+  cedar box, not on it.** This is **set** canon. (The crown's destiny
+  remains the held-open kerrithen-or-Edda-reforging question of
+  `whisperwood_goblins.md`.)
+- **The drum.** The drum-figure (*three short, one long*) and the
+  Warlord's break-figure (overlapped figure when the brute-line
+  cracks) are canonized here. The drum is **silent** when the Warlord
+  falls — the brutes do not beat it on his behalf. The drum is left
+  in the Whisperwood where it falls. The forest takes it. The drum
+  may not be laid on the Vigil shelf. The drum's older Faerie name
+  is **still reserved.**
+- **The wind-call.** The Warlord believes the wind through the
+  canopy on the long beat is *answering him.* The wind is **not**
+  answering him. The wind has its own business. The Warlord's belief
+  is the warmer part of the wound. **No god speaks at the closing.**
+- **The closing-of-the-call.** The village's verb for the after is
+  *closing,* not *killing.* The Wardens of the Mark ledger the
+  closing under **keeping-watch** (not keeping-still). Maeve advances
+  the eighty-ninth-knot counter by one. Mara records nothing of what
+  she paid. Roan tips his head and finishes the buckle. The brothers
+  walk back **through the village** before they return to the inn —
+  past the south-plank chisel, the inn-lintel candle, the smithy's
+  secondary-hearth bundle, and the well's *vellath*-keep stone. None
+  of these speaks. All of these have *mhain-thra* enough to hold the
+  closing without flinching. **If the players walk past without
+  noticing, the silence holds anyway. The silence is not for them.**
+- **The three encounter phases (lore-side).**
+  - *Phase one* — the figure, struck plain. Drop-chevron cue, first
+    brute follows, Warlord swings on the long beat.
+  - *Phase two* — the figure, broken. Overlapped break-figure, no
+    horn yet, Warlord louder because *aen-irren* is louder when its
+    certainty has been nicked.
+  - *Phase three* — the figure, dropped. The Warlord drops the drum
+    (does not throw it), lifts the horn, blows the cresting call,
+    war-axe wind-up extends visibly, aura brightens on the brow.
+    Crown rolls when he falls.
+
+### New compounds entering canon this run
+
+| Word               | Pronounce        | Sense                                                                                                                                  |
+|--------------------|------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| ***mhain-thra***   | MAYN-thra        | "the held silence after the last call." The rest a horn earns when it has been laid down. Distinct from *kerrithen* (the verb of laying-down): *mhain-thra* is the **silence that earns the laying-down.** You make room for it; you do not do it. |
+| ***thrael-hoir***  | THRAYL-hoyr      | "the call that has shaped its caller." Stag-Court reading of an object-shapes-person dynamic. Reserved for **objects-shaping-people,** never people-shaping-objects, and only when the shaping object carries an older un-listened-to want (un-*kerrithen* iron, un-named captain, un-recalled company). |
+
+The lexicon now stands at **thirty-four** confirmed Old Faerie words
+in the canon glossary (was 32 after `brigids_ribbon.md`; +2 here, not
++3). The pacing-slot for a third word **is deliberately not used** in
+this artifact — the third would be the older Faerie name of the
+Warlord's drum, which is reserved by `whisperwood_goblins.md` and may
+not be set down here. The empty slot is, in its own small way, a
+*mhain-thra.*
+
+The goblin-side glossary remains at three (*aen-irren,*
+*vell-mor-shau,* and the broken-form *vellmorsh*). **No new
+Stone-Tongue word**; the cap of three holds. Brigid's hearth has
+nothing to say in mountain-Stone, and neither does the Whisperwood.
+
+Architect is asked to reconcile the running glossary in
+`data/quest_text/_README.md` to **34 words** (32 + 2).
+
+### *thrael-hoir* — application rule (load-bearing)
+
+*thrael-hoir* requires three properties of the shaping object, all
+canonical:
+
+1. The object must carry an **older un-listened-to want** — an
+   un-*kerrithen* forging, an un-named maker, an un-completed
+   intention.
+2. The object must have **passed out of its proper keeper's hand**
+   (the Halevant captain's company never came home; the un-recalled
+   company is the proper keeper).
+3. The shaping must be **slow** — across years or seasons, not in a
+   single moment. *thrael-hoir* is not a curse-strike. It is a
+   patient pressure.
+
+**Qualifying objects, by canon:** the Warlord's iron circlet
+(qualifies, all three). The Pale Wyrm's shed scale (`pale_wyrm_beneath.md`) **may**
+qualify — held question, not yet decided. The bandit's coal-ash brand
+(`bandits.md`) **does not** qualify — the brand is the bandit's own
+making, properly held by the bandit, not un-listened-to.
+
+**Disqualified by canon:** Edda's hammer (smith's own work, held);
+Halsa's anvil (smith-line is *anamh-ron,* the inheritance is
+listened-to); Roan's strap-tin (saddler-line, intact); Maeve's
+walking-stick (held); Lyra's mortar-and-pestle (held); the Vigil
+candle in Bram's lintel (the candle's *mhirran-vel* is *let-go-at-
+dawn,* not un-listened-to). **The smithy and the inn and the
+herb-shed and the stables are *thrael-hoir*-immune by canon.** Future
+agents may not surface a *thrael-hoir* read on any village-keeper's
+working tool.
+
+### *mhain-thra* objects — canon ledger
+
+The kept-true silent witnesses now include, by canon:
+
+- The chisel at the threshold of the mason's daughter's wall
+  (`vellums_spine.md`) — *kerrithen,* now also *mhain-thra*-d there.
+- The brother's bow at the door (`thiars_mercy_owed_to_prey.md`) —
+  *kerrithen,* *mhain-thra*-d.
+- The kindling-bundle on the smithy's secondary hearth
+  (`brigids_ribbon.md`) — *kerrithen* (softer register), *mhain-thra*-d
+  *until needed again.*
+- The cedar box on the Vigil shelf (`longnight_vigil.md`) — was
+  always *mhain-thra* by implication; now named.
+- **NEW: the Warlord's horn, behind the cedar box on the Vigil
+  shelf.** *mhain-thra*-d after the first clearing. **The horn is
+  set; the crown is held open.**
+
+The cairn-blade (`world.md`) and the *Frost*-saber (`pale_wyrm_beneath.md`)
+are *kerrithen* but **not** *mhain-thra*-d — the saber's silence is
+the silence of *frost dreaming,* which is a different register
+(reserved for any future Pale Wyrm run). Future agents may not
+confuse the two.
+
+### Withholding ledger (preserved unchanged)
+
+- **The pre-Sundering name of the first Warlord.** Held.
+- **The fourth Old Faerie word of the goblin-fold's lost tongue**
+  (the older drum-name). Held. Not lifted by this run.
+- **The Halevant pike-captain's name.** Joins the well-mason
+  (`vellums_spine.md`), Halsa's mother (`brigids_ribbon.md`), and the
+  Pale Wyrm (`pale_wyrm_beneath.md`) as the **fourth load-bearing
+  un-name** in the canon. The captain's last unsigned name is on the
+  broken-point chevron the Warlord wears as decoration. No future
+  agent may name the captain.
+- **The lifting of *aen-irren.*** Reserved as a late-game arc.
+- **What the village does with the iron crown after the first
+  clearing.** Held open (kerrithen-at-south-plank or
+  Edda-reforging-as-hearth-shaped both still permitted). Only the
+  horn's destiny is set this run.
+- **A divine voice in the encounter.** Forbidden. The wind that
+  answers the long beat is **not** Erris, **not** Brigid, **not**
+  Thiar, **not** the Hollow King, **not** Vellum.
+- **A noble Warlord.** Forbidden. Pity is permitted; forgiveness is
+  not the village's to give.
+- **The drum on the Vigil shelf.** Forbidden. The drum is left in
+  the Whisperwood. The forest takes it.
+- **A *thrael-hoir* read on any village-keeper's working tool.**
+  Forbidden by the application rule above.
+
+### Cross-canon anchors used (full list)
+
+- `lore/world.md` (Sundering, older powers, *velin/thirre/kerrithen/
+  ai-velin/thalen-ai,* Stone-Tongue cap-of-three, Goblin Cant line)
+- `lore/factions/whisperwood_goblins.md` (*aen-irren,* the borrowed
+  circlet, the drum-figure, the Warlord-as-wound, the recurring
+  hydra, the reserved fourth Faerie word)
+- `lore/factions/bandits.md` (the Halevant pike-company, the
+  *clearing* verb, the captain whose company never came home)
+- `lore/factions/three_crowns.md` (Iron Crown's *thrian-mor* slate
+  and the *re-listen in seven* chalk-point; Antler Crown's
+  *aen-thirre*)
+- `lore/factions/wardens_of_the_mark.md` (the four village postures;
+  *keeping-watch* as the ledger-register for clearings)
+- `lore/npcs/elder_maeve.md` (the eighty-ninth knot, the Vigil shelf,
+  the cedar box, *we count for them*)
+- `lore/npcs/herbalist_lyra.md` (*they are still being courteous;
+  to no-one*)
+- `lore/npcs/smith_edda.md` (Brigid's mark, *kerrithen* of hot iron,
+  the *want* of un-*kerrithen* iron, the haethe)
+- `lore/npcs/stablemaster_roan.md` (double-loop pike-company knot,
+  the gate-tip and buckle-finish, *Briar's Run*)
+- `lore/npcs/mara_merchant.md` (*honest count, honest pay*)
+- `data/codex/vellums_spine.md` (south-plank *vellath,* the chisel
+  *kerrithen* at the threshold)
+- `data/codex/brigids_ribbon.md` (smithy's secondary hearth,
+  *velhin-anam* bundle, lexicon-count anchor 32→34)
+- `data/codex/longnight_vigil.md` (the cedar box, Vigil-shelf posture)
+- `data/codex/pale_wyrm_beneath.md` (*Frost*-saber as wound-iron;
+  the Pale Wyrm un-name)
+- `data/items_flavor.json` (*Warlord's Horn,* *Goblin Ear,*
+  *crystal_shard,* *frost_saber,* *dragonscale*)
+- `data/quest_text/whisperwood_cleansing.md` (*the Warlord is no
+  chieftain; he is a wound; five will quiet the fold*)
+
+### Asks for downstream agents
+
+- **Bestiary Designer** — translate the three voice-phases into
+  `data/bosses/goblin_warlord.kit.tres`. Wind-up timings as canonized
+  (≥ 1000 ms first-encounter, ≥ 900 ms break-figure, longer at the
+  cresting-horn moment). TTK 90–180s; level 6 nominal. Loot must
+  reference `data/items/_catalog.csv` only — no new items invented
+  in the kit.
+- **Environment agent** — the Warlord arena (deep-Whisperwood
+  clearing, mossed boulders, three half-fallen oaks) needs the
+  green-ash drum-stand at the back and **one** ochre torn-silk
+  ribbon (the broken-point chevron) tied to the centre oak's lowest
+  bough. Not interactable. Composes with the Brigid-ribbons at the
+  smithy/inn lintels (red), the captain's silk being ochre.
+- **Audio agent** — drum cue (palm-and-heel on bull-hide / green-ash
+  hoop), cresting-horn cue (rough not melodic), closing cue
+  (canopy-quiet → one owl, two breaths → forest ambient). **No
+  triumph music.** **The recall-horn must not be in the bank.**
+- **Dialogue agent** — five short lines on the
+  `warlord_cleared_count_gte:1` gate, one per village-keeper. See
+  the boss-page asks-section for verbatim text. Edda hands stew, no
+  line. (Warm gravitas; no triumph in any voice.)
+- **Item agent (optional)** — *broken-point chevron* cosmetic in
+  `data/items_flavor.json` if and only if the centre-oak ribbon is
+  Examined post-closing; one-receipt; one-line flavor specified in
+  the boss page.
+- **PX agent** — wire the Vigil-shelf-behind-the-cedar-box examine
+  prop after the first clearing. One-line tooltip: *the horn that
+  does not call back.* No long codex page yet.
+
+### Top-priority next (refresh)
+
+1. **Wolfwake-side scribal-family leaf** in the elder brother's hand,
+   on *the closing-of-the-call,* anchored to the Warlord-clearing
+   season. Composes with this run's boss page. The four canonical
+   hands now hold five of twelve moons — a sixth would advance the
+   arc cleanly without breaking the *Halsa is not a fifth sibling*
+   rule.
+2. **The Edda dialogue patch** still pending from Run 24 (the
+   Brigid's Ribbon arc): single line at the threshold
+   *codex_leaves_collected_gte:5 && Lambmoon && npc_thanked:Smith_Edda*
+   — *"The bundle on the cold rack has been there since I was small.
+   I do not lift it. The next will."* Dialogue agent territory; can
+   be picked up by either Lore Keeper or Dialogue agent next run.
+3. **The Stag-Court / Antler Crown** as a dedicated faction file
+   (currently held only at the codex level via
+   `stag_courts_courtesy.md` and at the inter-Crown level via
+   `three_crowns.md`). Would compose with this run's *thrael-hoir*
+   word, which is Stag-Court-reserved.
+4. **Erris of the Two Roads** — no codex page yet, only flavor
+   anchors across items_flavor and *pond_and_lanterns.md*. A
+   crossroads-coin codex fragment in the Stag-Court-fragment voice
+   register would balance the existing standalone fragments
+   (*pale_wyrm_beneath, vellums_spine, steppe_riders_refusal*).
+5. **The Halevant captain's slate** — a faction-politics run on the
+   Iron Crown's *thrian-mor* slate-room, with the chalk-point that
+   means *re-listen in seven* depicted but the captain's name still
+   not set down.
+
+### Branch pushed: `auto/lore`
+
+Single artifact this run, per SKILL.md operating rule. Markdown only —
+no JSON validation needed. WORLD_STATE.md appended (this section);
+INDEX.md status updated for `bosses/goblin_warlord.md` (missing → done,
+with the path correction `eldoria-godot/lore/bosses/goblin_warlord.md`).
+QUEST_GRAMMAR.md is **not** appended this run — no new quest type
+emerged; the Warlord-clearing follows the existing
+*whisperwood_cleansing* grammar.
+
+**Voice compliance:** THEME §7 — warm gravitas, child-safe, no
+grimdark. The Warlord is a wound, not a villain; the closing is a
+quieting, not a triumph; the crown is borrowed, not won. Two Old
+Faerie words enter canon (*mhain-thra,* *thrael-hoir*); the third
+pacing-slot is held in its own *mhain-thra.* The Warlord-side
+glossary holds at three. The Stone-Tongue cap holds at three.
