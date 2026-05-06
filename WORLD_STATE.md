@@ -4391,3 +4391,66 @@ closing without celebrating it. Two Old Faerie words enter canon
 Stone-Tongue cap holds at three. The cave's unhealed wound remains
 unhealed by `world.md`'s long canon — quieter by one keeping-stone's
 laying-down, which is the canonical advance.
+
+- ✅ **Resolved 2026-05-06 (run 24 — Lore Keeper):** White-Aspen
+  Warning codex fragment shipped at
+  `eldoria-godot/data/codex/white_aspen_warning.md`. Discoverable via a
+  `white_aspen_pale_leaves` examineable prop at the south-Whisperwood
+  forest edge (Foxthaw / Wolfwake seasons or first-visit). Narrator:
+  **Yorick** — the *kerritha-named* Steppe rider seeded in
+  `lore/npcs/stablemaster_roan.md`, now established as a canonical
+  codex narrator slot parallel to Halsa, Caedr, Reseda. The fragment
+  introduces TWO Old Faerie words — ***haerel*** (the leaf-reading)
+  and ***haerel-vethen*** (leaf-trusted) — and codex-anchors Roan's
+  `warm_promoted_after_first_bounty_done.warm_c_white_aspen_weather_read`
+  dialogue line ("Ride the leaves, traveler. Three days."). The
+  Stone-Tongue cap of three is **held** (no fourth Stone-Tongue word
+  introduced). The Briarwood-scribe family closes its three-leaf
+  triangle here — pond-and-lanterns + longnight-vigil + white-aspen
+  are now named "all of one *ai-velin*" by the eldest sibling's
+  second-hand note appended to Yorick's leaf. New canon flag for a
+  future Builder run: `briarwood_scribe_triangle_closed` (set on the
+  read of all three fragments — no UI required, the achievement is
+  the reading).
+- **Top-priority next (Lore Keeper, run 25+):** Item-flavor pass for
+  the **Steppe-Patterned Halter** in `eldoria-godot/data/items_flavor.json`.
+  The halter is Roan's gift on `first_bounty_done` per the author note
+  in `lore/npcs/stablemaster_roan.md`; it has no flavor entry. Single
+  short *haerel*-tier sentence in Roan's voice, attribution
+  `stablemaster_roan`, origin `roan_first_bounty`. Pure data, zero
+  new lexicon (uses run-24's *haerel* in its inaugural item-flavor
+  surface).
+- **Top-priority next (Lore Keeper, run 25+):** Author the **cradle
+  codex** in Maeve's voice. Authoring pressure is relieved now that
+  Yorick has his own codex slot — the cradle page can sit in Maeve's
+  voice without bleed. Anchor: `lore/npcs/stablemaster_roan.md` →
+  Hooks → "The cradle as a discoverable codex object" (the
+  `roan_cradle_seen` flag fires if Builder ever ships a loft scene).
+  Maeve's voice, present tense, no body, no death named. MUST NOT
+  resolve the cradle's *ostren* — the page exists to be read; the
+  cradle remains *ostren* after the reading.
+- **Top-priority next (Lore Keeper, run 25+):** Author the ***ostren***
+  **codex page** in Yorick's voice. Yorick is now canonically a codex
+  narrator, so the page can land. Natural anchor: the empty stall
+  beside Mara's cart in Roan's loft. The page MUST NOT enumerate every
+  *ostren* in the village; that flattens the word. List one or two
+  and let the rest be felt.
+- **Adjacent next (Builder, run 25+):** Spawn the
+  `white_aspen_pale_leaves` examineable prop at the forest-edge bend
+  toward the cobble in the south Whisperwood. One white-aspen,
+  flag-driven shader variant: green leaves on default; pale-side-up
+  sit on `Foxthaw`/`Wolfwake` season ticks AND on a SECOND tick gated
+  on Roan's `road_warden` flag being at-least-one-day old. The prop
+  carries the codex `discover_trigger.kind = examine_prop` per
+  `data/codex/white_aspen_warning.md` frontmatter. Pure WorldBuilder
+  edit + one shader variant. Composes with the run-23 bandit-camp
+  spatial neighborhood (same area, opposite mood).
+- **Hook for Lore Keeper (slow burn):** A Yorick fragment for the
+  Long Mound at Briar's Run — narrated by Yorick again, present
+  tense, no body, no death confirmed. The *thirre*-stone above
+  Briar's Run is referenced in `lore/npcs/stablemaster_roan.md`. MUST
+  NOT name Cailen, MUST NOT name the boy. The fragment is for the
+  Mound, not for the riders in it. This is the natural fourth Yorick
+  surface and should not land before the cradle codex and the
+  *ostren* codex have shipped — three Yorick fragments in three
+  consecutive Lore-Keeper runs would over-saturate the voice.
