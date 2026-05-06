@@ -2141,3 +2141,155 @@ contradicted.
   could grow optional `lore_unlock` and `seasonal_flavor` fields if a
   Builder run wants them. Current schema accommodates additions
   without breaking; next writer should add fields, not change keys.
+
+---
+
+## Lore run — faction politics (priority 6) — three Crowns landed
+
+### Artifact shipped this run
+
+- `eldoria-godot/lore/factions/three_crowns.md` (3,956 words). The first
+  faction-politics canon of Eldoria. Establishes the political frame in
+  which Briarwood lives — three Crowns, three postures, one clock.
+  Closes the priority-6 gap explicitly called out at the end of the
+  prior run's "Top-priority next (refresh)."
+
+### What landed in canon
+
+- **The Iron Crown's *Listening*** — formal seven-Lambmoon review of
+  unbought hamlets, run from **Halevant-on-the-Reap.** Three slate-marks
+  (point / stroke / cross). Briarwood carries the *point* and has
+  carried it three times in living memory. **Next Listening: three
+  Lambmoons from now.** This is the canonical political clock under
+  every Briarwood quest.
+- **The Antler Crown's *aen-thirre* posture** — the Court has *named*
+  Briarwood a "small *thirre,*" watched-not-entered. *Vael-i-thirren,
+  aen* is the Court's whole feeling about the valley. The Court will
+  not protect, will not threaten, will not enter. *Ai-mhorren*
+  (`stag_courts_courtesy.md`) still holds at the political scale.
+- **The Stone Crown's *no-stance, weather-only* posture** — three
+  answers exhaust the politics: *open / closed / korr.* Riders take a
+  meal at Bram's, pay copper, ride on. The clans know about Cailen and
+  do not speak of him to Maeve.
+- **Roan's *unsaid korr*** — the Stone Crown has not *kerritha-ed* him.
+  He is held on the slate of the clans' attention with the soft
+  posture-word, unsaid. Canonical anchor for any future
+  Roan-and-the-clans arc.
+- **Mara's silence about the third re-listening** — Mara watched a
+  magistrate lay the *point* mark four Foxthaws ago and has not told
+  the village. Authoring permission, not a command; future writers
+  may surface this in a Mara-arc beat.
+- **The Three Crowns do not coordinate.** Three weathers in one air,
+  not three branches of one council. A council-of-Crowns scene is
+  canon-breaking.
+- **The valley as *aen-velin-corr,* the unbought road.** A privilege
+  and a cost. The brothers' arrival matters because the slate goes
+  back to the magistrate in three years.
+
+### New compounds entering canon this run
+
+- ***thrian-mor*** *(THREE-an mor)* — Old Faerie, "the long listening."
+  Iron-Crown priest-class word for the formal pre-tax-rolls attention.
+- ***aen-thirre*** *(ayn THEER-uh)* — Old Faerie, "small *thirre.*" The
+  Antler Crown's word for places-it-watches-without-entering.
+- ***aen-velin-corr*** *(ayn VEL-in cor)* — Old Faerie, "the
+  small-long-path that has not been bought." The Antler-King's own word
+  for an unbought settlement.
+- ***the Listening*** — Common, the Iron Crown's seven-Lambmoon review
+  of an unbought hamlet's slate-mark.
+
+Old Faerie now stands at **fourteen** committed words / phrases (was
+eleven). Stone-Tongue **holds at three** (`korthain, thrunn, korr`);
+no new Stone-Tongue this run, per the prior run's withholding ledger.
+
+### Withholding ledger (preserved this run)
+
+- The Iron Crown's decision is *not made.* The clock, the venue, and
+  the vocabulary are seeded; the outcome is reserved.
+- The magistrate is *not named.* Future writers may name a single
+  magistrate for arc-purposes; please do not name a *line.*
+- The Antler-King is *not named* (continues
+  `stag_courts_courtesy.md` rule).
+- Cailen is *not named* by the Stone Crown to Maeve. The clans know;
+  they do not say.
+- The Wardens of the Mark are **not** introduced. Reserved per
+  `LOREKEEPER_AGENT.md` for a future seeding run that takes
+  Briarwood's own postures (Edda's anvil, Roan's bay, Maeve's lantern,
+  Hala's staff) as foundation.
+- No Crown-versus-Crown conflict written. The triangle is not a
+  council.
+- No third codex fragment shipped. The pair sits, per the prior run's
+  withholding ledger.
+- The cave has **not** received an Iron-Crown leaf. Foreshadowed in
+  `steppe_riders_refusal.md`; deferred again here.
+- *Korthain* not used at the political level. *Thrunn* not written
+  about the valley by any rider.
+
+### Cross-canon anchors used
+
+- `lore/world.md` — Three Crowns, Sundering, Wild Pantheon, Calendar,
+  Tongues, *thirre / ai-velin / kerrithen.*
+- `data/codex/stag_courts_courtesy.md` — *ai-mhorren, vael-i-thirren,
+  velhain-tor;* the Court's softness; the seat-not-withdrawn rule.
+- `data/codex/steppe_riders_refusal.md` — *korthain, thrunn, korr;*
+  the cairns; *drevenn-i-haern;* Stone-Tongue's binding-not-describing
+  rule.
+- `lore/npcs/elder_maeve.md` — Aelis, the Lambmoon letter, the
+  Stag-Court offer, the Vigil candles.
+- `lore/npcs/mara_merchant.md` — Halevant route, the unopened letter,
+  the third re-listening (canonized this run as a Mara-witnessed
+  beat).
+- `lore/npcs/stablemaster_roan.md` — the Long Ride, Briar's Run, the
+  Steppe-iron nail, *kerritha-ed* Yorick.
+- `lore/npcs/trainer_hala.md` — Aurel between the Crowns; the
+  Stone-Schools / Walker House; the unbought-road pattern.
+- `lore/npcs/smith_edda.md` — Brigid's mark, the forge older than the
+  Code.
+- `lore/npcs/herbalist_lyra.md` — Lyra's Old Faerie reading; *thirre*
+  and *kerrithen* in her register.
+- `data/items_flavor.json` — *talisman_oak* and Lyra's register
+  referenced as a hook anchor; no edits made.
+
+### Hooks queued for future runs (refresh)
+
+- **A Listening-clock seasonal NPC line** — Mara has the wooden coin
+  with the year-mark scratched; one new Lambmoon-only line is queued
+  for the runs that bring the next Listening within two Foxthaws.
+  Pure data once a seasonal-flavor dialogue tier ships.
+- **A Lyra *thrian-mor* dialogue beat** — gated on both codex
+  fragments read AND a *talisman_oak* trade. Authored above; ready
+  for a future Builder run to wire as a custom dialogue predicate.
+- **A Roan-and-the-clans bridge quest** — natural anchor is the
+  *kerrithen* of Cailen's Horseshoe to a *thirre*-stone on the High
+  Steppe. Listening-clock and Roan-arc must not be braided.
+- **A Wardens of the Mark seeding run** — foundation is the village's
+  own postures (Edda's anvil, Roan's bay, Maeve's lantern, Hala's
+  staff) read against *aen-velin-corr.* Reserved.
+- **An Iron-Crown voice-piece codex page** — a magistrate's clerk's
+  hand. Voice canonized this run: careful, measured, not unkind, not
+  warm. The cave is the natural carrier.
+- **A Listening-Lambmoon Maeve festival beat** — one extra Vigil
+  candle for *"a road that has not been bought."* Withheld until the
+  Listening-month is the live month in `WORLD_STATE.md`.
+- **An Edda Listening-clerk soup beat** — authoring permission only.
+  The clerk arrives, Edda feeds soup, forges nothing different.
+
+### Top-priority next (refresh)
+
+- **Wardens of the Mark seeding** (priority 6 inside-out) — now that
+  the *outside* political frame is canon, the natural next big lore
+  beat is the *inside* one. The Wardens are what the village calls
+  itself when it remembers it has been left to itself. Foundation:
+  Edda's anvil, Roan's bay, Maeve's lantern, Hala's staff, and the
+  four civic unwritten oaths.
+- **Mara-arc beat: the unopened letter + the unspoken slate-mark**
+  (priority 2/6 hybrid). Both are Mara's canonical secrets; this run
+  makes the slate-mark *load-bearing political* canon. A future
+  Lorekeeper run could write the Mara-arc proper without contradiction.
+- **Codex on the *haethe*** (still hooked from `smith_edda.md`).
+  Edda is the natural narrator. Adjacent to the Iron-Crown
+  voice-piece if a future writer pairs them across two runs.
+- **An Iron-Crown clerk codex fragment** — third leaf in the cave,
+  but only after the *haethe* codex or a Wardens-of-the-Mark seeding
+  run. Three fragments form a series; please do not ship the third
+  reflexively.
