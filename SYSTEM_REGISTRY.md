@@ -58,6 +58,51 @@ Type-specific:
 
 Rarity colors → standard MMO palette (white/green/blue/purple/orange).
 
+## Item ID Catalog (live, audited 2026-05-06 — Architect)
+
+Canonical list of every ID currently defined in `Items.ITEMS`. Drift between
+this catalog and `Items.gd` is a §3 ledger violation — fix the ledger or
+remove the item, never let them diverge.
+
+**Weapons** (slot=`weapon`, `damage` int, optional `crit_bonus` float):
+- `rusty_sword` (common, dmg 3) — starter
+- `iron_sword` (common, dmg 6)
+- `steel_blade` (uncommon, dmg 12)
+- `frost_saber` (rare, dmg 22, +6% crit)
+- `ember_axe` (rare, dmg 26)
+- `shadow_dagger` (epic, dmg 18, +18% crit)
+- `dragonfang` (legendary, dmg 42, +10% crit)
+
+**Armor** (slot=`armor`, `armor` int, optional `hp_bonus` int):
+- `cloth` (common, armor 2) — starter
+- `leather` (common, armor 6)
+- `chainmail` (uncommon, armor 12)
+- `steel_plate` (rare, armor 22)
+- `emberforge` (epic, armor 34, +35 HP)
+- `dragonscale` (legendary, armor 52, +80 HP)
+
+**Trinkets** (slot=`trinket`, mix of `hp_bonus`/`mp_bonus`/`crit_bonus`):
+- `ring_focus` (uncommon, +15 MP)
+- `talisman_oak` (uncommon, +18 HP)
+- `crit_amulet` (rare, +10% crit) — display name "Hawk's Amulet"
+- `guardian_core` (legendary, +60 HP / +40 MP / +8% crit)
+
+**Consumables** (slot=`""`, `stack:true`):
+- `hp_potion_s` (common, heal 40) — display "Lesser Health Potion"
+- `hp_potion_l` (uncommon, heal 130) — display "Greater Health Potion"
+- `mp_potion` (common, mana 45) — display "Mana Draught"
+
+**Materials** (slot=`""`, `stack:true`, used by fetch quests & loot):
+- `wolf_pelt` (common) — `pelt_for_lyra`
+- `wolf_fang` (common) — `wolf_fang_for_roan`
+- `wolf_heart` (rare) — `wolf_heart_for_bram`
+- `goblin_ear` (common) — `ears_for_mara`
+- `warlord_horn` (epic) — Goblin Warlord boss drop
+- `crystal_shard` (epic) — Crystal Caves placeholder
+
+**Adding an item:** new IDs MUST be appended here in the same commit that
+edits `Items.ITEMS`; otherwise the next architect audit will flag drift.
+
 ## Drop Tables
 
 Defined in `Items.DROP_TABLE`. Entries: `{id, weight, qty:[min,max]}`.

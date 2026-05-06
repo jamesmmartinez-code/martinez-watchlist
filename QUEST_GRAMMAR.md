@@ -61,6 +61,16 @@ fit this grammar; do not invent ad-hoc shapes per quest.
 1. `whisperwood_cleansing` — Elder Maeve · kill 5 goblins · +80 XP / +60 gold
 2. `pelt_for_lyra`         — Herbalist Lyra · fetch 4 wolf_pelt · +70 XP / +45 gold + 2× Greater Health Potion
 3. `ears_for_mara`         — Mara the Merchant · fetch 6 goblin_ear · +60 XP / +90 gold
+4. `wolf_fang_for_roan`    — Stablemaster Roan · fetch 5 wolf_fang · +65 XP / +50 gold
+5. `wolf_form_with_hala`   — Trainer Hala · kill 4 wolf · +90 XP / +35 gold
+6. `wolf_heart_for_bram`   — Innkeeper Bram · fetch 3 wolf_heart · +70 XP / +55 gold
+
+**Faction-pressure ladder (compound design — 4 reducers stack on `dire_wolves`):**
+- `pelt_for_lyra` -0.1, `wolf_fang_for_roan` -0.1, `wolf_form_with_hala` -0.1,
+  `wolf_heart_for_bram` -0.1 → fresh-save 0.5 → 0.1 (run-6 third cliff < 0.15
+  collapses pack size to 1; only the apex/scarred survivor remains).
+- `whisperwood_cleansing` -0.2, `ears_for_mara` -0.15 → goblin reducers
+  (two reducers; further pressure-relief via faction events).
 
 ## Migration Notes
 

@@ -1,3 +1,75 @@
+## 2026-05-06T03:00Z — ARCHITECT audit (1h survey @ 03:00 UTC)
+
+**Job picked:** Job 3 — Detect drift in 5 ledger files.
+
+### Last hour summary
+
+7 commits / 2 distinct authors:
+- `james-via-claude` × 4 — `PX EMERGENCY` series (kid-playtest fallout):
+  spawn point moved out of campfire (`d13f8a3`), CI auto-push to R2
+  (`82fc2a2`), Owen.glb 29MB → Hero.glb 1.8MB swap (`cbe88d1`),
+  index.html canvas-focus fix so kids can type WASD (`8fcac4c`).
+- `github-actions[bot]` × 3 — auto-builds chained off the above.
+
+No worker-agent commits in the last hour. Owner-driven emergency repair only.
+
+### Findings
+
+#### `[ARCHITECT-DRIFT]` SYSTEM_REGISTRY.md missing 11 of 26 item IDs
+`Items.gd` defines 26 IDs; only 15 of them appeared in `SYSTEM_REGISTRY.md`
+prose. Missing: `crit_amulet`, `dragonscale`, `ember_axe`, `emberforge`,
+`guardian_core`, `mp_potion`, `ring_focus`, `shadow_dagger`, `steel_plate`,
+`talisman_oak`, `warlord_horn`. **Fixed** this run by adding a canonical
+**Item ID Catalog** subsection (between `## Item Schema` and `## Drop
+Tables`). Going forward, new item IDs MUST be appended there in the same
+commit that edits `Items.ITEMS`.
+
+#### `[ARCHITECT-DRIFT]` QUEST_GRAMMAR.md "Currently Active Quests" stale
+`World.QUEST_CATALOG` ships 6 quests; `QUEST_GRAMMAR.md` listed only the
+original 3 (`whisperwood_cleansing`, `pelt_for_lyra`, `ears_for_mara`).
+Missing: `wolf_fang_for_roan` (Roan / fetch wolf_fang × 5),
+`wolf_form_with_hala` (Hala / kill wolf × 4), `wolf_heart_for_bram`
+(Bram / fetch wolf_heart × 3). **Fixed** this run by appending the three
+quests to the active list and documenting the dire-wolf compound reducer
+ladder (4 × -0.1 → 0.1 floor → run-6 third cliff).
+
+#### `[ARCHITECT-NOTE]` PX-EMERGENCY commits are NOT zone-violations
+The four `james-via-claude` commits crossed multiple zones (Player.gd,
+Main.tscn, index.html, build-eldoria.yml). These are **owner-tier**
+emergency hotfixes during a real kid playtest, not agent commits, so
+Job 4 (zone discipline) does not apply. Worker agents should not adopt
+this pattern; only the human owner gets to cross zones in one commit.
+
+#### `[ARCHITECT-NOTE]` Owen.glb resolution closed
+QA's run-20 §15 violation log (`801c436` — "Owen.glb at 29.4 MiB,
+referenced, Char to re-export") was resolved by the `cbe88d1` swap
+to `Hero.glb` (1.8 MiB). Character agent can deprioritize the Owen
+re-export task.
+
+#### `[ARCHITECT-NOTE]` Hero.glb re-bloated to ~30 MB (owner-tier swap)
+Mid-audit, the owner pushed `23cfbd7` ("Char: replace Hero.glb with
+11-year-old fantasy boy hero, Meshy biped, ~30 MB — actual kid
+character per user request"). The size win from `cbe88d1` (1.8 MB) is
+gone — Hero.glb is now 30,830,512 bytes. **Not flagging as §15
+violation** — owner explicitly chose personalization-for-kid over the
+web-perf budget, which is a valid override. **Suggested follow-up for
+Character agent:** decimate the Meshy mesh (Blender → Decimate to
+~5–8k tris) and re-export to keep the kid's likeness while restoring
+the perf headroom; LOD0 stays detailed, LOD1 swaps in beyond ~15m
+camera distance. Track in QA backlog, do not block.
+
+### Next-hour worker-agent guidance
+
+- `[ARCHITECT-PRIORITY]` Builder: keep adding new item IDs to
+  `Items.ITEMS` AND the new Item ID Catalog in the same commit.
+- `[ARCHITECT-PRIORITY]` Lore Keeper: when a new quest enters
+  `World.QUEST_CATALOG`, also append to QUEST_GRAMMAR.md "Currently
+  Active Quests".
+- `[ARCHITECT-NOTE]` Polisher / Character / Art: PX-EMERGENCY focus
+  shifted to playability for kids. Don't introduce new mechanics; let
+  the spawn-point + canvas-focus + Hero.glb fixes settle for a few
+  build cycles before adding scope.
+
 ## 2026-05-05 — QA: Player.gd parse-error fix (Owen unblocked)
 
 **Bug:** `gain_xp()` had `call_deferred("save_game")` outdented to function
