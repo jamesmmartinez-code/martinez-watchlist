@@ -102,3 +102,28 @@ audit and are honored under a one-time bulk grandfather:
 `mushroom_merchant` (7.3m), `smith_edda` (154.5m), `goblin` (62.2m),
 `wolf` (98.0m), `owen_vanguard` (4.2m). All of them are now
 `root_scale`-clamped at import to within canon for their category.
+
+---
+
+## 2026-05-06 follow-up — Char-Specialist run (Boss .import file)
+
+Added missing `assets/models/Boss.glb.import` so the Mountain Ogre boss
+gets a deterministic import-time `nodes/root_scale=1.0` (Boss native AABB
+Y = 2.448 m, target boss-standard 2.80 m per SIZE_STANDARDS §2 — within
+the ±15% tolerance band, no shrink needed). Without this `.import` file,
+headless CI builds fail to import the asset (same failure mode that hit
+`maeve`, `smith_edda`, `goblin`, `wolf` in the earlier audit run).
+
+The runtime `Boss.gd::_normalize_to_height(3.0)` clamp continues to dial
+in the final size; the `.import` file just stops the first-frame flash
+and the editor-on-fresh-checkout regeneration warning.
+
+**Source-AABB approval:** `Boss.glb` native 2.448 m sits well below the
+2.5 m threshold that requires `[CANON-APPROVED:]`, so no tag needed.
+
+### Verified (no drift this run)
+
+Every `root_scale` value listed in the table above was re-read from the
+current `.import` files — all match the recorded values to four decimal
+places. No silent drift detected; no changes required to any existing
+character `.import`.
