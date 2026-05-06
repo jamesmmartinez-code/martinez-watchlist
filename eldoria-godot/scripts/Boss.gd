@@ -72,12 +72,17 @@ func _ready() -> void:
 	cm.top_radius = 0.30; cm.bottom_radius = 0.34; cm.height = 0.18
 	crown.mesh = cm
 	var crown_mat := StandardMaterial3D.new()
-	crown_mat.albedo_color = Color(0.85, 0.65, 0.20)
-	crown_mat.metallic = 0.8
-	crown_mat.roughness = 0.2
+	# REFINE: visual — boss crown §3 sunset-gold convergence: albedo (0.85, 0.65, 0.20) → (1.0, 0.85, 0.42). The crown's old albedo was off-palette mustard (B=0.20 ≈ #33). §3 specifies sunset-gold #FFD86B (1.0, 0.847, 0.42). Same drift the UITheme polish run fixed on `GOLD`, the WorldMap polish run fixed on `COL_TITLE`, the Chest.gd polish run fixed on `glow_color`, the NPC nameplate run fixed on its modulate, and the Player.gd 3D-overlay polish run fixed on `title_label.modulate` + `LEVEL UP!` popup. The Warlord's crown — Owen's mastery-rung "this is THE boss" beat per PLAYER_MODEL — now reads in the same painterly gold as every other §3 'this matters' surface.
+	crown_mat.albedo_color = Color(1.0, 0.85, 0.42)
+	# REFINE: visual — boss crown §1 painterly + §3 hammered-bronze read: metallic 0.8 → 0.72. 0.8 read as chrome-mirror; THEME §3 specifies hammered bronze #B0742A as the metal accent and §1 is painterly, not photoreal. 0.72 keeps it metallic-feeling without the AAA-rendered-photoreal sheen the §1 ban-list calls out.
+	crown_mat.metallic = 0.72
+	# REFINE: visual — boss crown §1 painterly + §3 hammered-bronze read: roughness 0.2 → 0.32. 0.2 was high-gloss / mirror-finish; the §3 brass + §1 painterly target wants a faintly hammered, hand-tooled surface. 0.32 reads as warm hand-painted metal — same painterly intent the Crystal Caves polish run landed on its rock floor (roughness 0.95 → 0.78) and the Chest.gd polish run landed on its body literals.
+	crown_mat.roughness = 0.32
 	crown_mat.emission_enabled = true
-	crown_mat.emission = Color(1.0, 0.55, 0.10)
-	crown_mat.emission_energy_multiplier = 0.5
+	# REFINE: visual — boss crown §3 sunset-gold convergence on emission color: (1.0, 0.55, 0.10) → (1.0, 0.62, 0.22). The old emission glow leaned burnt-orange (B=0.10 ≈ #1A) which drifted off the crown's albedo target (B=0.42 ≈ #6B); the warm-glow fix lifts B toward sunset-gold #FFD86B without losing the warlord's threat-warm temperature. Now reads as crown-gold catching torchlight rather than bare-flame orange.
+	crown_mat.emission = Color(1.0, 0.62, 0.22)
+	# REFINE: visual — boss crown §1 painterly + cinematic-presence beat: emission_energy_multiplier 0.5 → 0.85. The Warlord's crown sits ON-MODEL at scale 1.6× and is the only piece of him not painted by Boss.glb's source textures — at 0.5× emission it visually "disappeared" against the BossAura light_energy 2.9 (the run that lifted aura energy) and the telegraph emission_multiplier 2.6 (the run that lifted ring/line emission). 0.85 lets the crown hold its own as a cinematic gold beat without competing with the aura red — boss reads as gold-crown-on-red-aura, the silhouette §4 calls for. Still well under 2.9/2.6 so the threat-red dominates the lighting register.
+	crown_mat.emission_energy_multiplier = 0.85
 	crown.material_override = crown_mat
 	crown.position = Vector3(0, 3.1, 0)
 	add_child(crown)
@@ -86,9 +91,11 @@ func _ready() -> void:
 	_label = Label3D.new()
 	_label.text = "✦ %s ✦" % enemy_name
 	_label.font_size = 30
-	_label.outline_size = 6
+	# REFINE: visual — boss nameplate §3-bloom-era outline-7 convergence: outline_size 6 → 7. Player.gd 3D-overlay polish run converged the player title_label on outline_size 7; UITheme polish run converged `OL_TOAST` on 7; this is the *boss* title-tier label and was authored at outline 6 before the post-processing pass lifted background luminance. 7 reads cleaner on the new bright sky-band/dappled-forest light without losing legibility — and now the player's earned-title floating Label3D and the boss's floating nameplate beat at the same painterly weight tier (one §3-aligned outline weight for all title-tier text in the project).
+	_label.outline_size = 7
 	_label.outline_modulate = Color(0, 0, 0)
-	_label.modulate = Color(1.0, 0.30, 0.20)
+	# REFINE: visual — boss nameplate red-family convergence: modulate (1.0, 0.30, 0.20) → (1.0, 0.30, 0.10). The BossAura light_color is (1.0, 0.30, 0.10), the telegraph ring/line emission is (1.0, 0.30, 0.10), the `_show_boss_msg` popup color is (1.0, 0.30, 0.10) — the title was the LONE outlier at B=0.20 (a 0.10 drift). All four red surfaces (title nameplate, aura light, ring telegraph, line telegraph, msg popup) now read as ONE red family — five surfaces beat on the same threat hue, the same way the Player.gd 3D-overlay run aligned five surfaces on the §12 painterly heartbeat. Owen's "✦ %s ✦" boss banner now matches the lighting/danger-zone hue exactly. Color stays warm and well off the §3 banned-color list (no neon, no fluorescent).
+	_label.modulate = Color(1.0, 0.30, 0.10)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label.position = Vector3(0, 3.6, 0)
 	_label.no_depth_test = true
