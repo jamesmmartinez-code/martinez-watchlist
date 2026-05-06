@@ -61,6 +61,12 @@ const FERN_GLB_PATH: String     = "res://assets/models/props/fern.glb"
 const MUSHROOM_GLB_PATH: String = "res://assets/models/props/mushroom_red.glb"
 const BARREL_GLB_PATH: String   = "res://assets/models/props/wooden_barrel.glb"
 const LANTERN_GLB_PATH: String  = "res://assets/models/props/lantern.glb"
+# Env: 2026-05-06 — wire up two more CC-BY GLBs that were sitting unused on
+# disk. Same fallback contract: if the asset isn't loadable the legacy
+# procedural primitive path runs, so the village never spawns without a
+# hearth or well. (THEME §1, §11)
+const CAMPFIRE_GLB_PATH: String = "res://assets/models/props/campfire.glb"
+const WELL_GLB_PATH: String     = "res://assets/models/props/stone_well.glb"
 
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
@@ -1163,15 +1169,49 @@ func _build_well() -> void:
 	var well := Node3D.new()
 	well.position = Vector3(0, 0, 6)
 	add_child(well)
-	# Base ring
-	var ring := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius = 1.1; cm.bottom_radius = 1.2
-	cm.height = 1.0
-	ring.mesh = cm
-	ring.material_override = MAT_STONE(1.5)
-	ring.position.y = 0.5
-	well.add_child(ring)
+
+	# THEME §1, §11 — try the Sketchfab CC-BY stone_well GLB first. Fall
+	# through to the procedural stone-cylinder-with-posts-and-beam path if
+	# the asset isn't loadable, so the village always has its well. The
+	# water plane below is always added regardless of which path runs so
+	# THEME §12 ripple animation (driven by group "water_planes") still
+	# plays on the GLB version.
+	var well_packed: PackedScene = _load_glb_safe(WELL_GLB_PATH)
+	var well_used_glb: bool = false
+	if well_packed != null:
+		var well_inst: Node = well_packed.instantiate()
+		if well_inst != null:
+			well.add_child(well_inst)
+			if well_inst is Node3D:
+				# Most stylized stone-well exports sit ~2m tall; nudge to
+				# match the procedural ~1.0m ring + 1.8m posts (≈2.8m total).
+				(well_inst as Node3D).scale = Vector3(1.15, 1.15, 1.15)
+			well_used_glb = true
+			# Trunk-ring collider so the player can lean against the well
+			# but not fall into the water plane through the sides.
+			var well_body: StaticBody3D = StaticBody3D.new()
+			var well_col: CollisionShape3D = CollisionShape3D.new()
+			var well_cyl: CylinderShape3D = CylinderShape3D.new()
+			well_cyl.radius = 1.25
+			well_cyl.height = 1.0
+			well_col.shape = well_cyl
+			well_col.position.y = 0.5
+			well_body.add_child(well_col)
+			well.add_child(well_body)
+			# THEME §13 — settle to ground so the rim doesn't half-sink.
+			call_deferred("_settle_to_ground", well)
+
+	if not well_used_glb:
+		# ─── Procedural fallback (legacy primitive path) ─────────────────────
+		# Base ring
+		var ring := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 1.1; cm.bottom_radius = 1.2
+		cm.height = 1.0
+		ring.mesh = cm
+		ring.material_override = MAT_STONE(1.5)
+		ring.position.y = 0.5
+		well.add_child(ring)
 	# Water
 	var water_mat := StandardMaterial3D.new()
 	water_mat.albedo_color = Color(0.05, 0.18, 0.28)
@@ -1191,22 +1231,25 @@ func _build_well() -> void:
 	water.set_meta("ripple_amp", 0.018)
 	water.set_meta("ripple_freq", 1.4)
 	well.add_child(water)
-	# Posts + crossbeam (the rope and bucket frame)
-	for dx in [-1.0, 1.0]:
-		var p := MeshInstance3D.new()
-		var pcm := CylinderMesh.new()
-		pcm.top_radius = 0.08; pcm.bottom_radius = 0.08; pcm.height = 1.8
-		p.mesh = pcm
-		p.material_override = MAT_DARK_WOOD(0.4)
-		p.position = Vector3(dx, 1.9, 0)
-		well.add_child(p)
-	var beam := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(2.4, 0.16, 0.16)
-	beam.mesh = bm
-	beam.material_override = MAT_DARK_WOOD(0.5)
-	beam.position.y = 2.85
-	well.add_child(beam)
+	# Posts + crossbeam (the rope and bucket frame) — only when the GLB
+	# didn't render its own. The campfire/lantern/tree paths follow the
+	# same fallback contract.
+	if not well_used_glb:
+		for dx in [-1.0, 1.0]:
+			var p := MeshInstance3D.new()
+			var pcm := CylinderMesh.new()
+			pcm.top_radius = 0.08; pcm.bottom_radius = 0.08; pcm.height = 1.8
+			p.mesh = pcm
+			p.material_override = MAT_DARK_WOOD(0.4)
+			p.position = Vector3(dx, 1.9, 0)
+			well.add_child(p)
+		var beam := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(2.4, 0.16, 0.16)
+		beam.mesh = bm
+		beam.material_override = MAT_DARK_WOOD(0.5)
+		beam.position.y = 2.85
+		well.add_child(beam)
 
 # ============================================================================
 # Pond — small reflective water plane
@@ -1995,33 +2038,57 @@ func _build_campfire() -> void:
 	fire.add_to_group("campfires")
 	add_child(fire)
 
-	# Stone ring (8 small rocks in a circle)
-	for i in 8:
-		var ang := (float(i) / 8.0) * TAU
-		var r := 0.9
-		var stone := MeshInstance3D.new()
-		var sm := SphereMesh.new()
-		sm.radius = 0.18; sm.height = 0.28
-		stone.mesh = sm
-		stone.material_override = MAT_STONE(0.5)
-		stone.position = Vector3(cos(ang) * r, 0.12, sin(ang) * r)
-		stone.scale = Vector3(1.0, 0.7, 1.0)
-		fire.add_child(stone)
+	# THEME §1, §11 — try the Sketchfab CC-BY campfire GLB first (real stones
+	# + crossed logs with painted bark + ash). Fall through to the procedural
+	# stone-ring + cylinder-logs path so the hearth never disappears.
+	# Particles, FireLight, and group membership stay attached to `fire`
+	# regardless of which path renders so THEME §12 motion (flicker, smoke)
+	# always plays.
+	var camp_packed: PackedScene = _load_glb_safe(CAMPFIRE_GLB_PATH)
+	var camp_used_glb: bool = false
+	if camp_packed != null:
+		var camp_inst: Node = camp_packed.instantiate()
+		if camp_inst != null:
+			fire.add_child(camp_inst)
+			if camp_inst is Node3D:
+				# Tame the export — Sketchfab campfires often come in at 1.5–2m
+				# wide which dominates the plaza. 0.85x reads as a small,
+				# huddleable cookfire matching the procedural footprint.
+				(camp_inst as Node3D).scale = Vector3(0.85, 0.85, 0.85)
+			camp_used_glb = true
+			# THEME §13 — make sure the rim of stones contacts ground rather
+			# than half-sinking, regardless of where the GLB's pivot lives.
+			call_deferred("_settle_to_ground", fire)
 
-	# Charred logs (3 crossing each other)
-	for i in 3:
-		var log := MeshInstance3D.new()
-		var lcm := CylinderMesh.new()
-		lcm.top_radius = 0.10; lcm.bottom_radius = 0.10
-		lcm.height = 1.4
-		log.mesh = lcm
-		var lm := StandardMaterial3D.new()
-		lm.albedo_color = Color(0.10, 0.06, 0.04)
-		lm.roughness = 0.95
-		log.material_override = lm
-		log.rotation = Vector3(0, (float(i) / 3.0) * TAU, PI / 2)
-		log.position.y = 0.25
-		fire.add_child(log)
+	if not camp_used_glb:
+		# ─── Procedural fallback (legacy primitive path) ─────────────────────
+		# Stone ring (8 small rocks in a circle)
+		for i in 8:
+			var ang := (float(i) / 8.0) * TAU
+			var r := 0.9
+			var stone := MeshInstance3D.new()
+			var sm := SphereMesh.new()
+			sm.radius = 0.18; sm.height = 0.28
+			stone.mesh = sm
+			stone.material_override = MAT_STONE(0.5)
+			stone.position = Vector3(cos(ang) * r, 0.12, sin(ang) * r)
+			stone.scale = Vector3(1.0, 0.7, 1.0)
+			fire.add_child(stone)
+
+		# Charred logs (3 crossing each other)
+		for i in 3:
+			var log := MeshInstance3D.new()
+			var lcm := CylinderMesh.new()
+			lcm.top_radius = 0.10; lcm.bottom_radius = 0.10
+			lcm.height = 1.4
+			log.mesh = lcm
+			var lm := StandardMaterial3D.new()
+			lm.albedo_color = Color(0.10, 0.06, 0.04)
+			lm.roughness = 0.95
+			log.material_override = lm
+			log.rotation = Vector3(0, (float(i) / 3.0) * TAU, PI / 2)
+			log.position.y = 0.25
+			fire.add_child(log)
 
 	# Fire particles
 	var p := GPUParticles3D.new()
@@ -2120,6 +2187,14 @@ func _process(delta: float) -> void:
 	for frond in get_tree().get_nodes_in_group("ferns"):
 		var fs = sin(_t * 1.6 + frond.position.x * 0.7 + frond.position.z * 0.4) * 0.04
 		frond.rotation.z = fs
+	# Env: 2026-05-06 — grass tufts join group "grass" (see _build_grass_tufts)
+	# but were left static. THEME §12 bans static "should-move" props, and the
+	# 220 tufts ringing the village absolutely qualify. Tilt amplitude is the
+	# smallest of the foliage trio (canopy 0.015 / fern 0.04 / grass 0.07) but
+	# also the most spatially varied, so the meadow ripples like wind.
+	for tuft in get_tree().get_nodes_in_group("grass"):
+		var gs = sin(_t * 2.1 + tuft.position.x * 0.9 + tuft.position.z * 0.6) * 0.07
+		tuft.rotation.z = gs
 	# Campfire light flicker
 	for f in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
