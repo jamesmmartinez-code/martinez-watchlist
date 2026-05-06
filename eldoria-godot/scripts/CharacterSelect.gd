@@ -102,13 +102,37 @@ func _make_hero_card(id: String, name_str: String, class_str: String, weapons: S
 	vbox.add_theme_constant_override("separation", 16)
 	card.add_child(vbox)
 
-	# Big emoji avatar (placeholder until hero portrait images ship)
-	var avatar := Label.new()
-	avatar.text = emoji
-	avatar.add_theme_font_size_override("font_size", 220)
-	avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	avatar.custom_minimum_size = Vector2(0, 320)
-	vbox.add_child(avatar)
+	# Hero portrait (painterly 256x256 PNG shipped by the Art Director run).
+	# Fail-soft fallback to the giant emoji glyph so the screen stays
+	# functional if the PNG is missing, corrupted, or absent in a partial
+	# checkout. Slugs match `Player.gd` hero_paths basenames so the same
+	# id space drives both the GLB swap and the portrait.
+	var portrait_slug: String = ""
+	match id:
+		"alden": portrait_slug = "alden_pathfinder"
+		"owen":  portrait_slug = "owen_vanguard"
+	var portrait_path: String = ""
+	if portrait_slug != "":
+		portrait_path = "res://assets/portraits/%s.png" % portrait_slug
+	var portrait_tex: Texture2D = null
+	if portrait_path != "" and ResourceLoader.exists(portrait_path):
+		portrait_tex = load(portrait_path) as Texture2D
+	if portrait_tex != null:
+		var portrait := TextureRect.new()
+		portrait.texture = portrait_tex
+		portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		portrait.custom_minimum_size = Vector2(0, 320)
+		portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.add_child(portrait)
+	else:
+		# Emoji-glyph fallback — original behaviour preserved exactly.
+		var avatar := Label.new()
+		avatar.text = emoji
+		avatar.add_theme_font_size_override("font_size", 220)
+		avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		avatar.custom_minimum_size = Vector2(0, 320)
+		vbox.add_child(avatar)
 
 	var nm := Label.new()
 	nm.text = name_str
