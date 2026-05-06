@@ -1,0 +1,36 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Press Greater Health Potion
+; Tier-2 — Lyra's "thalen-ai" seventh-herb pressing.
+; Whisperwood materials: wolf_heart (rare drop, Whisperwood warband) AND herb_thalen_ai
+;   (the seventh herb that only ripens once a Whisperwood season has been honored).
+; OUTPUT exists in catalog: hp_potion_l (Greater Health Potion, consumable, tier 2).
+; Stronger than tier-1 hp_potion_s, gentler than future tier-3 caves-water blessing.
+; # NEEDS:item:herb_thalen_ai (Whisperwood-cycled seventh herb)
+; # NEEDS:item:beeswax_dab, clay_flask_empty, well_water_clear (already flagged)
+; INPUTS exist: wolf_heart, herb_marshmint (NEEDS), herb_hearts_ease (NEEDS)
+
+[resource]
+resource_name = "Press Greater Health Potion"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_hp_potion_l"
+metadata/name = "Press Greater Health Potion"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "herb_thalen_ai", "qty": 1},
+    {"item_id": "herb_hearts_ease", "qty": 2},
+    {"item_id": "herb_marshmint", "qty": 2},
+    {"item_id": "wolf_heart", "qty": 1},
+    {"item_id": "beeswax_dab", "qty": 1},
+    {"item_id": "clay_flask_empty", "qty": 1}
+]
+metadata/output = {"item_id": "hp_potion_l", "qty": 1}
+metadata/time_seconds = 18
+metadata/fuel_cost = 2
+metadata/unlock_condition = "quest_complete"
+metadata/unlock_quest = "thalen_ai_seventh_herb"
+metadata/unlock_hint = "Walk the Whisperwood with Lyra after a warband. The seventh herb will ripen for those who carried the apology."
+metadata/failure_behavior = "none"
+metadata/category = "potion"
+metadata/teach_voice = "Lyra, easing the cork: 'A wolf's heart is small. So is yours. Both keep too much. We help.'"
