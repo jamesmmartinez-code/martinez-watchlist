@@ -935,6 +935,10 @@ func _build_windmill() -> void:
 	var pos := Vector3(0, 0, 12)
 	var mill := Node3D.new()
 	mill.position = pos
+	# scale-eng 2026-05-05: measured roof-tip 5.7m, canon windmill floor 8m
+	# (target 12m, cap 18m). Sweep clamps DOWN over-cap but cannot grow UP —
+	# under-floor windmills must be fixed at source. Uniform 1.55x → ~8.8m.
+	mill.scale = Vector3(1.55, 1.55, 1.55)
 	add_child(mill)
 	# Stone tower base
 	var base := MeshInstance3D.new()
@@ -1009,17 +1013,20 @@ func _make_lantern(pos: Vector3) -> void:
 	add_child(lan)
 	var post := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
-	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.4
+	# scale-eng 2026-05-05: post 2.4m -> 2.2m. Measured lantern top at
+	# spawn = 2.71m (post 2.4 + box top 2.5+0.21). Canon lantern cap = 2.5m.
+	# Sweep would clamp every spawn; better to spawn in spec.
+	cm.top_radius = 0.05; cm.bottom_radius = 0.07; cm.height = 2.2
 	post.mesh = cm
 	post.material_override = MAT_DARK_WOOD(0.4)
-	post.position.y = 1.2
+	post.position.y = 1.1
 	lan.add_child(post)
 	var box := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(0.32, 0.42, 0.32)
 	box.mesh = bm
 	box.material_override = MAT_DARK_WOOD(0.3)
-	box.position.y = 2.5
+	box.position.y = 2.25  # scale-eng 2026-05-05: -0.25 -> top 2.46m (under canon cap 2.5m)
 	lan.add_child(box)
 	# Glowing glass
 	var glass_mat := StandardMaterial3D.new()
@@ -1034,7 +1041,7 @@ func _make_lantern(pos: Vector3) -> void:
 	gm.size = Vector3(0.22, 0.30, 0.22)
 	glass.mesh = gm
 	glass.material_override = glass_mat
-	glass.position.y = 2.5
+	glass.position.y = 2.25  # scale-eng 2026-05-05
 	glass.name = "Glow"
 	lan.add_child(glass)
 	# Light
@@ -1042,7 +1049,7 @@ func _make_lantern(pos: Vector3) -> void:
 	light.light_color = Color(1.0, 0.62, 0.28)
 	light.light_energy = 1.6
 	light.omni_range = 8.0
-	light.position.y = 2.5
+	light.position.y = 2.25  # scale-eng 2026-05-05
 	light.shadow_enabled = false
 	lan.add_child(light)
 
