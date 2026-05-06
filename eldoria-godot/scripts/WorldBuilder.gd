@@ -1903,7 +1903,10 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 	for i in shard_count:
 		var shard := MeshInstance3D.new()
 		var pm := PrismMesh.new()
-		pm.size = Vector3(0.45 * base_scale, rng.randf_range(1.2, 2.6) * base_scale, 0.45 * base_scale)
+		# scale-eng 2026-05-05: canon crystal cluster cap 4.0m. Boss-room
+		# base_scale=2.2 used to allow shard.y up to 2.6*2.2 = 5.72m (43% over cap).
+		var shard_y: float = clamp(rng.randf_range(1.2, 2.6) * base_scale, 0.5, 4.0)
+		pm.size = Vector3(0.45 * base_scale, shard_y, 0.45 * base_scale)
 		shard.mesh = pm
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = color
@@ -2421,6 +2424,9 @@ const SIZE_STANDARDS := {
 	"pets":    [0.70, 0.20],
 	"enemies": [1.40, 0.20],   # default to small-enemy band
 	"bosses":  [3.20, 0.20],
+	# scale-eng 2026-05-05: wolf canon target 1.0m cap 1.4m floor 0.7m. Was
+	# matching "enemies" target 1.40 ±0.20 → band [1.12, 1.68], over canon cap.
+	"wolves":  [1.00, 0.30],
 }
 
 func _expected_height_for(body: Node) -> float:
@@ -2429,6 +2435,7 @@ func _expected_height_for(body: Node) -> float:
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][0]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][0]
 	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][0]
+	if body.is_in_group("wolves"):  return SIZE_STANDARDS["wolves"][0]
 	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][0]
 	return 1.8
 
@@ -2437,6 +2444,7 @@ func _tolerance_for(body: Node) -> float:
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][1]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][1]
 	if body.is_in_group("npcs"):    return SIZE_STANDARDS["npcs"][1]
+	if body.is_in_group("wolves"):  return SIZE_STANDARDS["wolves"][1]
 	if body.is_in_group("enemies"): return SIZE_STANDARDS["enemies"][1]
 	return 0.15
 
