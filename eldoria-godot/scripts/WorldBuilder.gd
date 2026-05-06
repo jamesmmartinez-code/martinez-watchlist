@@ -1461,7 +1461,7 @@ func _build_pond() -> void:
 # Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
-	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
+	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	var spots = [Vector3(0, 0, 0), Vector3(15, 0, 12), Vector3(-15, 0, -12), Vector3(0, 0, 18)]
 	for s in spots:
 		var p := GPUParticles3D.new()
@@ -1489,7 +1489,8 @@ func _build_firefly_particles() -> void:
 		dm.emission_energy_multiplier = 4.0
 		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-		qm.material = dm
+		dm.albedo_texture = _make_soft_particle_texture()
+	qm.material = dm
 		p.draw_pass_1 = qm
 		add_child(p)
 
@@ -1524,7 +1525,7 @@ const LEAF_PALETTE: Array = [
 ]
 
 func _build_falling_leaves() -> void:
-	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
+	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for i in FALLING_LEAF_SPOTS.size():
 		var spot: Vector3 = FALLING_LEAF_SPOTS[i]
 		var leaf_color: Color = LEAF_PALETTE[i % LEAF_PALETTE.size()]
@@ -1565,13 +1566,14 @@ func _build_falling_leaves() -> void:
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		dm.cull_mode = BaseMaterial3D.CULL_DISABLED
 		dm.vertex_color_use_as_albedo = true
-		qm.material = dm
+		dm.albedo_texture = _make_soft_particle_texture()
+	qm.material = dm
 		p.draw_pass_1 = qm
 		p.add_to_group("falling_leaves")
 		add_child(p)
 
 func _build_smoke_chimneys() -> void:
-	return  # 2026-05-06: disabled — was rendering as giant white blobs blocking visibility
+	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
 	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
 		if not chim: continue
@@ -1597,7 +1599,8 @@ func _build_smoke_chimneys() -> void:
 		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		dm.no_depth_test = false
-		qm.material = dm
+		dm.albedo_texture = _make_soft_particle_texture()
+	qm.material = dm
 		smoke.draw_pass_1 = qm
 		b.add_child(smoke)
 
@@ -2409,6 +2412,32 @@ func _build_campfire() -> void:
 	light.position.y = 0.7
 	light.shadow_enabled = false
 	fire.add_child(light)
+
+
+# ============================================================================
+# Env: 2026-05-06 — soft radial alpha for particle quads (THEME §12)
+# Without a texture, GPUParticles3D quads using StandardMaterial3D + emission
+# render as opaque rectangles. A radial GradientTexture2D gives each particle
+# a soft circular alpha falloff so fireflies, leaves, and smoke read as wisps
+# instead of giant white blobs. Cached so the three atmosphere builders share
+# one texture (cheap GPU memory, identical look).
+# ============================================================================
+var _soft_particle_tex: GradientTexture2D = null
+func _make_soft_particle_texture() -> GradientTexture2D:
+	if _soft_particle_tex != null:
+		return _soft_particle_tex
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 1))      # bright opaque center
+	grad.set_color(1, Color(1, 1, 1, 0))      # transparent edge
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to   = Vector2(0.5, 0.0)         # radius = 0.5
+	tex.width = 64
+	tex.height = 64
+	_soft_particle_tex = tex
+	return tex
 
 func _make_fire_gradient() -> GradientTexture1D:
 	var g := Gradient.new()
