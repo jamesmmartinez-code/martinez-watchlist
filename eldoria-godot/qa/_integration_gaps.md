@@ -1,29 +1,35 @@
-# Integration Gaps — Eldoria
+# Integration Gaps — Integrator Audit
+generated_at: 2026-05-06T18:53:50Z
+integrator_run: post-merge cycle
 
-generated_at: 2026-05-06T18:27:00Z
-integrator_run: 20260506T182805Z
+## Cycle summary
 
-## Summary
+- Canon QA gate status: PASS_WITH_DEBT (no S1, 7 S2 logged)
+- Branches discovered: 10
+- Branches merged: auto/character (1 commits), auto/lore (1 commits)
+- Branches with no new commits: auto/art, auto/audio, auto/builder, auto/environment, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
+- Final merge SHA: 093cb112a5f657e66a2ddfb679939c2570b715f4
 
-Cycle ran clean. Canon QA status was `PASS_WITH_DEBT` (S1=0, S2=7, S3=3); merge proceeded.
+## [GAP: orphan asset]
 
-## Branches merged this cycle
+- `eldoria-godot/assets/models/Fox.glb` — present under `assets/` but no spawn logic in `WorldBuilder.gd`, `Items.gd`, `Enemy.gd`, or `Player.gd`. Either route Fox into a creature/pet spawn table or move out of `assets/models/`.
 
-- `auto/art` (1 commit) → modifies `eldoria-godot/assets/ART_COVERAGE.md` only (documentation update). No new `.glb`, `.tres`, or shader artifacts were introduced, so no orphan-asset gaps were produced by this merge.
+## [GAP: orphan quest]
 
-## Branches with no new commits (skipped, behind main)
+- `eldoria-godot/data/quests/crystal_caves/bones_in_the_choirstone.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
+- `eldoria-godot/data/quests/crystal_caves/shards_for_mara.tres` — defined but no NPC dialogue under `data/dialogue/` references it.
+  (Both are crystal_caves region quests; likely awaiting NPC dialogue authoring. Owner: @quest-writer.)
 
-- auto/audio, auto/builder, auto/character, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
-- All show ahead=0 vs main; behind counts range 6–28. These workers should rebase from main on next run (Step 3 only resets merged branches).
+## [GAP: orphan animation]
 
-## Gaps detected
+- `eldoria-godot/assets/animations/` contains 0 `.tres` AnimationLibraries (435 source FBX files unbuilt).
+  Consistent with CQ-S2-07 from canon-qa; tracked there. No new gap.
 
-(none from this cycle's merge)
+## [GAP: orphan material]
 
-## Outstanding cross-agent observations
+- 36 `.tres` materials under `assets/materials/` show no static reference from project `.tscn` scenes or core scripts. This is expected — materials are loaded dynamically by constructed paths in WorldBuilder.gd's `_make_*` family. Flag suppressed; if a runtime material miss shows up in QA, revisit per-material.
 
-These are not gaps from this cycle but background notes to inform owners on next run:
+## Notes for next integrator cycle
 
-- Several `.glb` files under `eldoria-godot/assets/models/` (Boss.glb, Fox.glb, Hero.glb, enemies/*.glb, heroes/*.glb, npcs/warrior.glb, npcs/worker_girl.glb) are not referenced by `WorldBuilder.gd`. Spot-check confirms they are referenced from feature scripts (e.g. `Boss.gd`, `PLAYER_MODEL.md`, `CombatScene`-family); these are **not** orphan-spawn gaps but live elsewhere in the spawn graph. Listed for visibility only.
-- Canon QA debt log carries 7 S2 items (missing flavor entries, catalog/runtime drift, missing recipe, AnimationLibrary batch not-yet-shipped). Owners: @lorekeeper, @builder. These remain logged for next cycle.
-
+- Reset complete: `auto/character` and `auto/lore` fast-forwarded to `refs/heads/main`. Other auto/* branches were already at-or-behind main and need no reset.
+- No conflicts encountered. Manual-flag list is empty.
