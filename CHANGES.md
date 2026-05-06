@@ -1,3 +1,28 @@
+## 2026-05-06T05:06Z — QA: oversized-asset-eldoria-godot/assets/models/Hero.glb
+
+**OPERATIONS §15 violation logged.** Hero.glb is 29 MB — over the 20 MiB
+soft cap (5 MiB safety margin under the 25 MiB Cloudflare Pages hard cap).
+
+- File: `eldoria-godot/assets/models/Hero.glb` (29 MB, sha d9e0c19)
+- Committed by: @Char (commit 23cfbd7, 2026-05-06T03:00:18Z) — "replace
+  Hero.glb with 11-year-old fantasy boy hero (Meshy biped, with Walking
+  anim, ~30 MB) — actual kid character per user request"
+- **Status: REFERENCED.** Used by `eldoria-godot/scripts/Player.gd` and
+  `eldoria-godot/scenes/Main.tscn`. Not deleting — it is the player's
+  visible body in the live scene.
+- **Owner: @Char to re-export at lower poly density / smaller texture
+  budget** to bring the file under 20 MiB. Meshy export presets typically
+  ship at higher fidelity than the runtime needs; a draco-compressed GLB
+  with 1k textures should fit comfortably.
+- Build: green. Pages: deployed. The 100 MB GitHub blob limit is not
+  yet at risk; this is purely a forward-looking Cloudflare Pages
+  migration blocker.
+
+QA will continue logging on each run until Char addresses or until the
+asset is replaced.
+
+---
+
 ## 2026-05-05T03:55Z — Scale Eng: spawner-source canon fixes
 
 **Run @ ~03:55 UTC** (eldoria-scale-engineer scheduled task, run 4 of the day).
