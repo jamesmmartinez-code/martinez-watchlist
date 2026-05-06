@@ -162,4 +162,15 @@ Re-enable only after textures are wired and sizes audited.
 - 2026-05-06: Worker cache-control was 5min for everything. Deployed
   v1.3.0-cache: HTML 60s, JS 1h, WASM/PCK 24h+swr 7d. Repeat-load 12s→2-3s.
 
+- 2026-05-06: Crystal Guardian rendered ~1.55m (medium enemy) instead of canon
+  4.00m (gargantuan boss, §2). The deferred normalize was silently cancelling
+  the per-kind 1.55× scale multiplier in Enemy.gd. Fixed by adding per-kind
+  normalize targets (`_NORMALIZE_TARGET_BY_KIND`) and a new `gargantuan_bosses`
+  SIZE_STANDARDS group at 4.00m. crystal_guardian now joins that group on
+  spawn so the WorldBuilder global scale sweep keeps it at 4.00m.
+- 2026-05-06: bandit_captain visible at ~1.55m even with 1.40× multiplier
+  (same deferred-normalize cancellation). Now per-kind targets 2.30m
+  (SIZE_STANDARDS §2 elite-enemy band) so the captain reads as a real
+  mini-boss rather than a slightly bigger bandit.
+
 Add a new row here whenever a scale fix lands. Helps detect recurring drift.

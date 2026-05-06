@@ -3291,6 +3291,11 @@ const SIZE_STANDARDS := {
 	"pets":    [0.55, 0.25],   # fox/squirrel/owl; band [0.41, 0.69]
 	"enemies": [1.55, 0.25],   # medium default; small/elite per-kind below
 	"bosses":  [2.80, 0.20],   # standard boss; gargantuan via per-kind opt-in
+	# char-spec 2026-05-06: SIZE_STANDARDS.md §2 gargantuan boss tier (4.00m).
+	# Members are named in the canon: Crystal Guardian, Mountain Ogre, end-realm
+	# bosses only. Joining "gargantuan_bosses" overrides "bosses" in the lookup
+	# below (narrowest-first match in _expected_height_for).
+	"gargantuan_bosses": [4.00, 0.20],
 	# scale-eng 2026-05-05: wolf canon target 1.0m cap 1.4m floor 0.7m. Was
 	# matching "enemies" target 1.40 ±0.20 → band [1.12, 1.68], over canon cap.
 	"wolves":  [1.00, 0.30],
@@ -3298,6 +3303,7 @@ const SIZE_STANDARDS := {
 
 func _expected_height_for(body: Node) -> float:
 	# Match group membership against SIZE_STANDARDS, narrowest first.
+	if body.is_in_group("gargantuan_bosses"): return SIZE_STANDARDS["gargantuan_bosses"][0]
 	if body.is_in_group("bosses"):  return SIZE_STANDARDS["bosses"][0]
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][0]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][0]
@@ -3308,6 +3314,7 @@ func _expected_height_for(body: Node) -> float:
 	return 1.65
 
 func _tolerance_for(body: Node) -> float:
+	if body.is_in_group("gargantuan_bosses"): return SIZE_STANDARDS["gargantuan_bosses"][1]
 	if body.is_in_group("bosses"):  return SIZE_STANDARDS["bosses"][1]
 	if body.is_in_group("pets"):    return SIZE_STANDARDS["pets"][1]
 	if body.is_in_group("player"):  return SIZE_STANDARDS["player"][1]
