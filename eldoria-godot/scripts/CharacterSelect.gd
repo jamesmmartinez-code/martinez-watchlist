@@ -70,8 +70,8 @@ func _ready() -> void:
 	hbox.offset_top = -250;  hbox.offset_bottom = 350
 	add_child(hbox)
 
-	hbox.add_child(_make_hero_card("alden", "Alden", "Pathfinder", "Bow & wits", COL_ALDEN, "🐸"))
-	hbox.add_child(_make_hero_card("owen",  "Owen",  "Vanguard",   "Sword & shield", COL_OWEN, "🏎️"))
+	hbox.add_child(_make_hero_card("alden", "Alden", "Pathfinder", "Bow & wits", COL_ALDEN, "★"))
+	hbox.add_child(_make_hero_card("owen",  "Owen",  "Vanguard",   "Sword & shield", COL_OWEN, "✦"))
 
 	# Footer
 	var footer := Label.new()
