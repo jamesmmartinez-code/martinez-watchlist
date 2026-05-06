@@ -1,65 +1,29 @@
-# Integration Gaps Log
+# Integration Gaps — Eldoria
 
-last_run: 2026-05-06T18:04Z
-canon_qa_status_at_run: PASS_WITH_DEBT (s1=0, s2=7, s3=3 — see eldoria-godot/qa/_blocking_status.md)
-merged_this_cycle: auto/environment (1), auto/art (1), auto/lore (1)
-skipped_this_cycle: (none)
-push_result: 1d8d8ca
+generated_at: 2026-05-06T18:27:00Z
+integrator_run: 20260506T182805Z
 
-## This cycle merged
+## Summary
 
-- auto/environment — 1 commit ahead. Server-side merge.
-- auto/art — Two hero portrait PNGs (alden_pathfinder, owen_vanguard), HEROES_ATTRIBUTION.md, plus scripts/art/gen_hero_portraits.py generator.
-- auto/lore — New codex entry data/codex/brigids_ribbon.md.
+Cycle ran clean. Canon QA status was `PASS_WITH_DEBT` (S1=0, S2=7, S3=3); merge proceeded.
 
-Other auto/* branches (auto/builder, auto/polisher, auto/scale, auto/character, auto/audio, auto/qa, auto/scale-floorfix) were behind main with 0 commits ahead — fast-forwarded only via Step 3 reset for the three merged branches.
+## Branches merged this cycle
 
-## Canon QA S2 carry-over (logged for owners)
+- `auto/art` (1 commit) → modifies `eldoria-godot/assets/ART_COVERAGE.md` only (documentation update). No new `.glb`, `.tres`, or shader artifacts were introduced, so no orphan-asset gaps were produced by this merge.
 
-From eldoria-godot/qa/_blocking_status.md (cycle 2 audit, 2026-05-06):
+## Branches with no new commits (skipped, behind main)
 
-- [CQ-S2-01 @lorekeeper] data/items_flavor.json — missing briar_shortbow, mossbound_buckler, roan_woodbow, wolf_heart
-- [CQ-S2-02 @builder] scripts/Items.gd — legacy ITEMS dict missing briar_shortbow, mossbound_buckler, roan_woodbow
-- [CQ-S2-03] data/dialogue/trainer_hala.json — practice_cudgel reward, no flavor entry
-- [CQ-S2-04] data/dialogue/stablemaster_roan.json — Steppe-Patterned Halter, no flavor entry
-- [CQ-S2-05 @recipe-author] data/items/_catalog.csv row mossbound_buckler — acquired_via:craft, no recipe
-- [CQ-S2-06 @scale-engineer] WorldBuilder.gd:3028-3052 — tree collision parity unverifiable static
-- [CQ-S2-07 @animation-sourcer] eldoria-godot/assets/animations/ — 435 source FBX, 0 .tres AnimationLibraries
+- auto/audio, auto/builder, auto/character, auto/environment, auto/lore, auto/polisher, auto/qa, auto/scale, auto/scale-floorfix
+- All show ahead=0 vs main; behind counts range 6–28. These workers should rebase from main on next run (Step 3 only resets merged branches).
 
-## Gaps surfaced this run
+## Gaps detected
 
-### Cycle delta
+(none from this cycle's merge)
 
-Files added by this cycle (3 merged branches):
+## Outstanding cross-agent observations
 
-- `eldoria-godot/assets/portraits/alden_pathfinder.png` (from auto/art) — UI portrait companion to existing hero GLB.
-- `eldoria-godot/assets/portraits/owen_vanguard.png` (from auto/art) — UI portrait companion to existing hero GLB.
-- `eldoria-godot/assets/portraits/HEROES_ATTRIBUTION.md` (from auto/art) — attribution metadata.
-- `eldoria-godot/data/codex/brigids_ribbon.md` (from auto/lore) — joins existing codex docs under data/codex/, follows same convention; no loader registration needed.
-- `scripts/art/gen_hero_portraits.py` (from auto/art) — generator script, build-time only.
+These are not gaps from this cycle but background notes to inform owners on next run:
 
-No new `.glb` in `assets/`, no `data/quests/*.tres`, no AnimationLibrary `.tres`, and no StandardMaterial3D `.tres` were added this cycle, so the four orphan-asset rules produce zero new entries.
+- Several `.glb` files under `eldoria-godot/assets/models/` (Boss.glb, Fox.glb, Hero.glb, enemies/*.glb, heroes/*.glb, npcs/warrior.glb, npcs/worker_girl.glb) are not referenced by `WorldBuilder.gd`. Spot-check confirms they are referenced from feature scripts (e.g. `Boss.gd`, `PLAYER_MODEL.md`, `CombatScene`-family); these are **not** orphan-spawn gaps but live elsewhere in the spawn graph. Listed for visibility only.
+- Canon QA debt log carries 7 S2 items (missing flavor entries, catalog/runtime drift, missing recipe, AnimationLibrary batch not-yet-shipped). Owners: @lorekeeper, @builder. These remain logged for next cycle.
 
-### [GAP: orphan asset] — hero/enemy GLBs lacking spawn references in WorldBuilder.gd (carry-over)
-
-- eldoria-godot/assets/models/Fox.glb — no spawn reference (likely glTF sample, false positive)
-- eldoria-godot/assets/models/Hero.glb — no spawn reference (likely glTF sample, false positive)
-- eldoria-godot/assets/models/enemies/goblin_scout.glb — no spawn reference [@character / @builder]
-- eldoria-godot/assets/models/heroes/alden_pathfinder.glb — no spawn reference [@character / @builder]  *(portrait now shipped by auto/art this cycle — visual side advancing, spawn side still pending)*
-- eldoria-godot/assets/models/heroes/owen_vanguard.glb — no spawn reference [@character / @builder]  *(portrait now shipped by auto/art this cycle — visual side advancing, spawn side still pending)*
-
-### [GAP: orphan codex icon] — codex PNG icons not yet referenced via icon_glyph (carry-over)
-
-- eldoria-godot/assets/icons/codex/the_sundering.png — no codex .md has `icon_glyph: the_sundering` [@lorekeeper]
-- eldoria-godot/assets/icons/codex/oath_of_thorns.png — no codex .md has `icon_glyph: oath_of_thorns` [@lorekeeper]
-- eldoria-godot/assets/icons/codex/wyrmsong_winds.png — no codex .md has `icon_glyph: wyrmsong_winds` [@lorekeeper]
-
-Renderer falls back to legacy emoji, so non-blocking.
-
-### [GAP: orphan banner] — sign PNGs added in prior cycle still not wired (carry-over)
-
-- eldoria-godot/assets/banners/sign_to_briarwood.png — unused [@architect / @builder]
-- eldoria-godot/assets/banners/sign_to_crystal_caves.png — unused [@architect / @builder]
-- eldoria-godot/assets/banners/sign_to_whisperwood.png — unused [@architect / @builder]
-
-Pending the road-sign placement pass.
