@@ -76,3 +76,16 @@ references in `data/codex/stag_courts_courtesy.md` and
 locked to THEME §3 (moss + bronze for the Briarwood scribe; stone-blue +
 frost-silver for the Steppe-rider). CC0 / agent-generated; no external assets.
 See `eldoria-godot/assets/icons/codex/ATTRIBUTION.md` for full notes.
+
+## Skeleton enemy (auto/character 2026-05-05)
+
+- `assets/models/enemies/skeleton.glb` — "skeleton warrior" by 3dMondra
+  (https://sketchfab.com/3dMondra), Sketchfab uid
+  `aa225d17845e4d84b582646b7573114f`, CC-BY-4.0 (CC Attribution).
+  593 KiB, 4248 faces, 9 embedded animations: Parry Shield 01, Warrior
+  Block 01, Combat Run 01, Warrior Stunned 01, Heavy Charged Attack 01,
+  Idle 01, Warrior Heavy Attack Sword 01, Stunned 01, Death 01.
+  Replaces the warrior.glb placeholder previously bound in
+  `Enemy.gd::KIND_MODELS["skeleton"]`. Ends the THEME §4 "until dedicated
+  skeleton GLB is sourced" placeholder note in that file. Source URL:
+  https://sketchfab.com/3d-models/skeleton-warrior-aa225d17845e4d84b582646b7573114f
