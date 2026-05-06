@@ -538,6 +538,7 @@ func _ready() -> void:
 	_safe_call("_build_pond")
 	_safe_call("_build_firefly_particles")
 	_safe_call("_build_falling_leaves")
+	_safe_call("_build_butterflies")  # Env 2026-05-06: daytime ambient life — THEME §12
 	_safe_call("_build_smoke_chimneys")
 	_safe_call("_build_campfire")
 	_safe_call("_build_enemies")
@@ -1433,6 +1434,106 @@ func _build_firefly_particles() -> void:
 		qm.material = dm
 		p.draw_pass_1 = qm
 		add_child(p)
+
+# ============================================================================
+# Butterflies — daytime ambient life
+# THEME §12 lists "butterflies, fireflies at night, birds in V-formations,
+# falling leaves" as ambient life that brings the world alive. Fireflies
+# (night) and falling leaves were already wired by prior environment runs;
+# butterflies (day) are the missing third pillar. Five GPUParticles3D
+# emitters across the meadow + village edge push pale-wing quads upward
+# with a horizontal tangential wander so they read as fluttering rather
+# than rising smoke. Wing colors pull from the §3 sunset palette accent
+# tier (soft yellow, pale orange, alabaster) so they catch the painterly
+# light without going neon.
+# Per THEME §13 the emission boxes sit slightly above ground (y=0.6) so
+# butterflies never spawn inside the dirt; lifetime keeps them alive long
+# enough to drift through ~3m of vertical sunbeam before fading.
+# Each emitter joins group "butterflies" so future _process tweaks can
+# vary speed by time-of-day if a day/night cycle ships.
+# ============================================================================
+const BUTTERFLY_SPOTS: Array = [
+	Vector3( 12.0, 0.6,  20.0),  # meadow east — sunny clearing
+	Vector3(-18.0, 0.6,  10.0),  # west pasture by pond
+	Vector3(  8.0, 0.6, -22.0),  # forest fringe south
+	Vector3(-22.0, 0.6, -18.0),  # whisperwood edge
+	Vector3(  0.0, 0.6,  30.0),  # village far approach
+]
+const BUTTERFLY_PALETTE: Array = [
+	Color(1.00, 0.92, 0.55),  # pale lemon — Old World swallowtail
+	Color(1.00, 0.65, 0.28),  # painterly orange — fritillary
+	Color(0.94, 0.88, 0.78),  # alabaster — cabbage white tinted warm
+	Color(0.85, 0.55, 0.18),  # bronze accent (THEME §3 secondary)
+	Color(0.62, 0.74, 0.42),  # moss-pale — common brimstone
+]
+
+func _build_butterflies() -> void:
+	# Env: 2026-05-06 — daytime ambient life (THEME §12). No emission/glow:
+	# unlike fireflies, butterflies catch ambient sun rather than emit it.
+	for i in BUTTERFLY_SPOTS.size():
+		var spot: Vector3 = BUTTERFLY_SPOTS[i]
+		var wing_color: Color = BUTTERFLY_PALETTE[i % BUTTERFLY_PALETTE.size()]
+		var p := GPUParticles3D.new()
+		p.position = spot
+		p.amount = 14
+		p.lifetime = 5.5
+		p.preprocess = 3.0
+		# Butterflies wander in a low cylinder ~6m wide, 2m tall above the spot.
+		p.visibility_aabb = AABB(Vector3(-7, -1, -7), Vector3(14, 4, 14))
+		var pm := ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pm.emission_box_extents = Vector3(3.0, 0.4, 3.0)
+		# Drift gently upward — opposite of falling leaves.
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 55.0
+		pm.gravity = Vector3(0, 0.05, 0)
+		pm.initial_velocity_min = 0.20
+		pm.initial_velocity_max = 0.55
+		# Horizontal wander reads as fluttering wings catching the breeze.
+		pm.tangential_accel_min = 0.6
+		pm.tangential_accel_max = 1.6
+		pm.angular_velocity_min = -180.0
+		pm.angular_velocity_max =  180.0
+		pm.scale_min = 0.55
+		pm.scale_max = 1.15
+		pm.color = wing_color
+		# Fade in + out so the wings appear to flit into and out of sunbeams
+		# rather than popping at spawn or clipping the ground (§13).
+		var ramp := Gradient.new()
+		# 4-point fade so wings flit IN and OUT of sunbeams. Setting offsets +
+		# colors as packed arrays sidesteps the add_point() index-drift trap
+		# that bites when you mix set_color(1,…) with add_point() calls.
+		ramp.offsets = PackedFloat32Array([0.0, 0.15, 0.85, 1.0])
+		ramp.colors = PackedColorArray([
+			Color(1, 1, 1, 0),
+			Color(1, 1, 1, 1),
+			Color(1, 1, 1, 1),
+			Color(1, 1, 1, 0),
+		])
+		var ramp_tex := GradientTexture1D.new()
+		ramp_tex.gradient = ramp
+		pm.color_ramp = ramp_tex
+		p.process_material = pm
+		# Tiny pair-of-wings quad. Cull disabled so it reads from both sides.
+		var qm := QuadMesh.new()
+		qm.size = Vector2(0.14, 0.10)
+		var dm := StandardMaterial3D.new()
+		dm.albedo_color = wing_color
+		dm.albedo_texture = _make_soft_particle_texture()
+		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		dm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		dm.vertex_color_use_as_albedo = true
+		# A whisper of warm emission so they catch the eye in shaded canopy
+		# without going neon (THEME §3 bans fluorescent palette).
+		dm.emission_enabled = true
+		dm.emission = wing_color
+		dm.emission_energy_multiplier = 0.25
+		qm.material = dm
+		p.draw_pass_1 = qm
+		p.add_to_group("butterflies")
+		add_child(p)
+
 
 # ============================================================================
 # Chimney smoke from each building
