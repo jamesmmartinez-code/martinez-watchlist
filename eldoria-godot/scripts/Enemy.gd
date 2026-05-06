@@ -61,12 +61,26 @@ const KIND_MODELS := {
 	# so the model's hand-painted bone textures show through unmodulated —
 	# tinting them muddied the silhouette.
 	#
-	# crystal_elemental / crystal_guardian still reuse warrior.glb until a
-	# dedicated crystal-being GLB is sourced. Their tint override stays on so
-	# warrior.glb gets the crystal-cyan / frost-pale modulate.
+	# Character run (2026-05-06, second pass): crystal_elemental and
+	# crystal_guardian PROMOTED from warrior.glb (placeholder reuse — humanoid
+	# woman in merchant apron, silhouette-broken at 30m) to a dedicated
+	# stone-golem GLB sourced from Sketchfab uid 19c1855bdb2c4cdc89da2cfb64da48cf
+	# ("Drugdör The Golem Animated" by Phons, CC-BY-4.0 — see CREDITS.md).
+	# 1.49 MiB GLB (well under §15's 20 MiB cap), 2 meshes, 1 skin, 9 embedded
+	# animations: "Idle", "Walk", "Attack1/2/3", "Defence1/2/3", "IdlePieces"
+	# — every §12 MOTION need covered by one source. The "Idle" name is an
+	# exact match in _play_model_idle_anim()'s lookup list (no substring
+	# fallback needed). Both crystal kinds REUSE this single GLB and
+	# differentiate by scale + tint (same boss-variant pattern as
+	# bandit/bandit_captain): crystal_elemental at 1.10× with cyan modulate,
+	# crystal_guardian at 1.55× with frost-pale modulate (see WorldBuilder
+	# _spawn_enemy calls in _make_crystal_caves). KIND_TINT_OVERRIDE stays
+	# on for both kinds — the golem's natural stone-grey rock texture is
+	# what we WANT to tint here (it's the canvas the per-kind crystal/frost
+	# Color paints onto, mirroring the goblin → goblin_warlord pattern).
 	"skeleton":          preload("res://assets/models/enemies/skeleton.glb"),
-	"crystal_elemental": preload("res://assets/models/npcs/warrior.glb"),
-	"crystal_guardian":  preload("res://assets/models/npcs/warrior.glb"),
+	"crystal_elemental": preload("res://assets/models/enemies/crystal_elemental.glb"),
+	"crystal_guardian":  preload("res://assets/models/enemies/crystal_elemental.glb"),
 	# THEME §4 (Bandits — human, hooded, leather, scarves over face).
 	# Character run (2026-05-06): bandit kind PROMOTED from warrior.glb
 	# (placeholder reuse) to a dedicated rogue/bandit GLB sourced from
@@ -105,17 +119,27 @@ const KIND_MODELS := {
 	"bandit_captain":    preload("res://assets/models/enemies/bandit.glb"),
 }
 
-# THEME §4 — kinds whose KIND_MODELS entry is a *placeholder reuse* (warrior.glb
-# being recolored as skeleton/crystal). For these the per-kind `tint` modulate
-# MUST still apply, even though `uses_real_model` is true. Real role-correct
-# models (goblin, wolf) keep their hand-painted textures untinted.
+# THEME §4 — kinds whose KIND_MODELS entry is a model that ships with
+# essentially-untextured / monochrome geometry where the per-kind `tint`
+# modulate IS the silhouette differentiator at 30m. The Drugdör golem GLB used
+# by crystal_elemental and crystal_guardian is a stone-grey rock figure — the
+# crystal-cyan / frost-pale modulate paints it as ice/crystal beings. Real
+# role-correct models that ship hand-painted textures (goblin, wolf, skeleton,
+# bandit) keep those textures unmodulated; they are NOT in this map.
 const KIND_TINT_OVERRIDE := {
 	# THEME §4 — "skeleton" was REMOVED from this map when its KIND_MODELS
 	# entry promoted from warrior.glb (placeholder reuse) to skeleton.glb (a
 	# real bone-textured CC-BY model). The hand-painted bone material is the
 	# silhouette signal we want at 30m; modulating it bone-white-on-bone-
-	# white washes out the rib detail. crystal_* kinds keep their tint
-	# override because warrior.glb is still being repurposed for them.
+	# white washes out the rib detail.
+	#
+	# crystal_elemental / crystal_guardian STAY in this map even though their
+	# KIND_MODELS entry was promoted off warrior.glb on 2026-05-06: they now
+	# share the Drugdör stone-golem GLB (Sketchfab CC-BY, neutral grey rock
+	# textures). The cyan / frost-pale Color passed in by WorldBuilder
+	# `_spawn_enemy` is what makes them read as "crystal beings" rather than
+	# "two grey rock golems"; without the override the Color is dropped and
+	# the elemental / guardian silhouettes collapse onto each other at 30m.
 	"crystal_elemental": true,
 	"crystal_guardian":  true,
 	# THEME §4 — "bandit" was REMOVED from this map (Character run
@@ -379,15 +403,17 @@ func _spawn_model() -> void:
 	add_child(_model)
 	# Real fantasy models carry their own painted textures — applying a
 	# placeholder tint would muddy them. Tint only the fallback humanoid OR
-	# the kinds in KIND_TINT_OVERRIDE (where warrior.glb is being repurposed
-	# as a skeleton / crystal elemental and the kind's `tint` color is the
-	# whole point of the silhouette).
+	# the kinds in KIND_TINT_OVERRIDE (currently the stone-grey Drugdör golem
+	# GLB shared by crystal_elemental / crystal_guardian, plus bandit_captain
+	# whose deeper purple-leather Color is the silhouette differentiator
+	# from regular bandits — the kind's `tint` Color is the whole point of
+	# the silhouette in those branches).
 	var force_tint: bool = KIND_TINT_OVERRIDE.get(enemy_kind, false)
 	if (not uses_real_model) or force_tint:
 		_model.call_deferred("propagate_call", "set", ["modulate", tint])
-	# Auto-play idle animation whenever the model carries one (real role-correct
-	# models AND the placeholder-reuse warrior.glb both ship anims). Static
-	# T-pose enemies are banned per THEME §12.
+	# Auto-play idle animation whenever the model carries one (every real
+	# role-correct GLB in KIND_MODELS ships at least an "Idle" anim — see
+	# _play_model_idle_anim()). Static T-pose enemies are banned per THEME §12.
 	if uses_real_model:
 		call_deferred("_play_model_idle_anim")
 

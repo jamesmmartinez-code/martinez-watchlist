@@ -18,6 +18,7 @@
 
 - **Hero.glb** — "Emma – Stylized Adventure Character" by [sanaullahrais](https://sketchfab.com/sanaullahrais), Sketchfab CC Attribution. https://sketchfab.com/3d-models/790391aec68649dab097e5b83d0351a4
 - **enemies/goblin_scout.glb** — "Goblin Animations" by [codywellman](https://sketchfab.com/codywellman), Sketchfab CC Attribution. Goblin model by Victor-Emmanuel Pancrazi (artstation.com/babichon), rig by Thomas Vialetto (artstation.com/tvialetto), concept by Youssef Zamani (artstation.com/usefzamani). https://sketchfab.com/3d-models/goblin-animations-b9705b05dd6c47b29ec943bc096cbf3a
+- **`enemies/crystal_elemental.glb`** — "Drugdör The Golem Animated" by [Phons](https://sketchfab.com/Phons) (Sketchfab UID `19c1855bdb2c4cdc89da2cfb64da48cf`), CC-BY-4.0. https://sketchfab.com/3d-models/19c1855bdb2c4cdc89da2cfb64da48cf — Stone-grey golem GLB shared by both `crystal_elemental` (1.10× scale, cyan tint) and `crystal_guardian` (1.55× scale, frost-pale tint) enemy kinds. 1.49 MiB, 1 skin, 9 anims (Idle, Walk, Attack1/2/3, Defence1/2/3, IdlePieces). Replaces the prior warrior.glb placeholder reuse — last placeholder reuse called out in Enemy.gd KIND_MODELS now resolved.
 
 ## Textures — PolyHaven (CC0)
 ## Audio — Procedurally generated (CC0)
