@@ -5,9 +5,9 @@
 [ext_resource type="Script" path="res://scripts/CameraController.gd" id="3_camera"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="4_npc"]
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
-[ext_resource type="PackedScene" path="res://assets/models/Hero.glb" id="8_hero"]
+[ext_resource type="PackedScene" uid="uid://b0j4kdyg3stf2" path="res://assets/models/Hero.glb" id="8_hero"]
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
-[ext_resource type="Texture2D" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="9_sky_panorama"]
+[ext_resource type="Texture2D" uid="uid://75hg5h11bt7u" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="9_sky_panorama"]
 
 [sub_resource type="PanoramaSkyMaterial" id="Sky_panorama"]
 panorama = ExtResource("9_sky_panorama")
