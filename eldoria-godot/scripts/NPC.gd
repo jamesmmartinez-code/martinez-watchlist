@@ -440,3 +440,26 @@ func _play_voice_line(line_id: String) -> void:
 	player.position = Vector3(0, 1.7, 0)
 	add_child(player)
 	player.finished.connect(player.queue_free)
+
+	# 2026-05-06: lift visible mesh so feet sit at body-local y=0 (THEME §13).
+	# NPCs were rendering half-buried because their GLB pivot is at center.
+	call_deferred("_lift_npc_to_ground")
+
+func _lift_npc_to_ground() -> void:
+	# Walk children, find lowest VisualInstance3D y, lift everything up by that amount.
+	var lowest: float = INF
+	var found := false
+	for v in find_children("*", "VisualInstance3D", true):
+		var vi := v as VisualInstance3D
+		if vi == null: continue
+		var a: AABB = vi.global_transform * vi.get_aabb()
+		if not found or a.position.y < lowest:
+			lowest = a.position.y
+			found = true
+	if not found: return
+	# If lowest visible point is below current global Y, lift the NPC root.
+	var floor_y := global_position.y
+	if lowest < floor_y - 0.05:
+		var lift := floor_y - lowest
+		global_position.y += lift
+

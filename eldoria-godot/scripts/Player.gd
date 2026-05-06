@@ -229,21 +229,23 @@ func _physics_process(delta: float) -> void:
 	if int(_input_log_t * 60.0) % 8 == 0:
 		_snap_to_ground(6.0)
 	if Input.is_key_pressed(KEY_BRACKETRIGHT) or Input.is_key_pressed(KEY_BACKSPACE):
-		global_position = Vector3(15, 3, 15)
+		global_position = Vector3(15, 10, 15)
 		velocity = Vector3.ZERO
 		is_dead = false
 		is_attacking = false
 		if hp <= 0: hp = max_hp
+		# 2026-05-06: force-snap to ground after teleport so we don't get re-stuck in air
+		call_deferred("_snap_to_ground", 50.0)
 		return
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = Vector3(15, 3, 15)
+		global_position = Vector3(15, 10, 15)
 		velocity = Vector3.ZERO
 		return
 	return  # FORCED-MOVE: bypass legacy state machine below
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = Vector3(15, 5, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
+		global_position = Vector3(15, 10, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
 		velocity = Vector3.ZERO
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
@@ -388,7 +390,7 @@ func _panic_unstick(keycode: int) -> void:
 		mounted = false
 		mount_node = null
 		velocity = Vector3.ZERO
-		global_position = Vector3(15, 5, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
+		global_position = Vector3(15, 10, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
 		hp = max(1, hp)
 		_attack_timeout = 0.0
 		_dead_timer = 0.0
@@ -396,7 +398,7 @@ func _panic_unstick(keycode: int) -> void:
 	elif keycode == KEY_F1:
 		print("[Player] PANIC F1 — teleport to spawn")
 		velocity = Vector3.ZERO
-		global_position = Vector3(15, 5, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
+		global_position = Vector3(15, 10, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — clear of village
 		is_attacking = false
 		is_dead = false
 		hp = max(1, hp)
@@ -572,7 +574,7 @@ func _die() -> void:
 
 func _respawn_at_well() -> void:
 	# Well is at (0, 0, 6) per WorldBuilder
-	global_position = Vector3(15, 5, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — was inside well
+	global_position = Vector3(15, 10, 15)  # PX SAFE_SPAWN — Y=3→5 2026-05-06 (avoid below-ground spawn) — was inside well
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
