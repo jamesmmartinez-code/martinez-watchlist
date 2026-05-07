@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fishing_spot"
+metadata/_data = """
+{
+  "id": "misty_morning_cove",
+  "name": "Misty Morning Cove",
+  "region": "whisperwood",
+  "water_type": "lake",
+  "fish_pool": [
+    "trout",
+    "salmon"
+  ],
+  "best_time": "dawn",
+  "ambience": "misty and serene"
+}
+"""
