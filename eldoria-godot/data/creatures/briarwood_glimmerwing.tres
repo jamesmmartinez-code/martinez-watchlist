@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_glimmerwing",
+  "name": "Glimmerwing",
+  "family": "beast",
+  "tier": "elite",
+  "level": 25,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1.5,
+  "move_speed": 4.2,
+  "behavior_tags": [
+    "pack_hunter"
+  ],
+  "tells": [
+    {
+      "name": "glow",
+      "wind_up_ms": 1000,
+      "vfx_id": "swirling_lights"
+    }
+  ],
+  "weaknesses": {
+    "darkness": 1.5
+  },
+  "resistances": {
+    "light": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "iridescent_scale",
+      "weight": 0.4
+    },
+    {
+      "item_id": "glowing_feather",
+      "weight": 0.3
+    },
+    {
+      "item_id": "shimmering_dust",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "a majestic, iridescent creature with delicate wings that reflect the colors of the rainbow, leaving trails of glittering dust in its wake"
+}
+"""

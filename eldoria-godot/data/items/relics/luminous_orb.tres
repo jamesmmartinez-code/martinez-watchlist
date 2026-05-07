@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "luminous_orb",
+  "name": "Stellar Sphere",
+  "category": "relic",
+  "subtype": "orb",
+  "tier": "legendary",
+  "level_req": 40,
+  "stats": {
+    "atk": 20,
+    "def": 20,
+    "hp": 50,
+    "spd": 10
+  },
+  "flavor": "A glowing relic from a fallen star, imbuing its wielder with celestial power.",
+  "realm": "skyreave"
+}
+"""

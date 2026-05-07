@@ -1,0 +1,30 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Forge Warband Axe
+; Tier-2 — Edda's first axe-pattern, designed after she studied an Iron-Crown
+; warband-axe head recovered on the Whisperwood road.
+; New-region ingredient: warband_haft (Whisperwood wolf-fight battlefield salvage).
+; # NEEDS:item:warband_haft (input — splintered ash-haft from Iron-Crown axes; battlefield drop)
+; # NEEDS:item:warband_axe (output — tier-2 weapon_axe; "honest swing, hooked beard")
+
+[resource]
+resource_name = "Forge Warband Axe"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "forge_warband_axe"
+metadata/name = "Forge Warband Axe"
+metadata/station_required = "edda_forge"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "iron_ingot", "qty": 3},
+    {"item_id": "warband_haft", "qty": 1},
+    {"item_id": "leather_strip", "qty": 2},
+    {"item_id": "charcoal", "qty": 3}
+]
+metadata/output = {"item_id": "warband_axe", "qty": 1}
+metadata/time_seconds = 22
+metadata/fuel_cost = 3
+metadata/unlock_condition = "recipe_book"
+metadata/unlock_book = "eddas_warband_pattern"
+metadata/failure_behavior = "none"
+metadata/category = "weapon_axe"
+metadata/teach_voice = "Edda, slow: 'I copied this off a head we picked up. Whoever made it meant it. So will you.'"

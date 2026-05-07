@@ -1,0 +1,31 @@
+{
+  "npc_name": "Smith Edda",
+  "role": "smithy",
+  "default": "Bring me ore. I forge best when the dew's still on the iron.",
+  "morning": "*spits on coals* — Brigid's awake before any of us. So am I. What do you need shaped?",
+  "midday": "*hammer-clang* — Steel won't shape itself. Got ore, or just standing there?",
+  "evening": "Forge cools by sundown. Last orders, friend — I won't waste good charcoal on a half-quench.",
+  "night": "Coals are banked. Come back when you've slept. Iron rests too.",
+  "after_first_quest_complete": "Heard about the Whisperwood. Good. — Here. *slides a wrapped bundle across the anvil* I name my work, but this one I'll let YOU name.",
+  "low_health_player": "*sets down the hammer* — You're white as charcoal-ash. Sit. Eat. The iron will wait — it always does.",
+  "boss_alive": "The Warlord rides a blade I'd recognize anywhere. I forged it before I knew better. If you fight him, I owe you a quench when you come back.",
+  "boss_slain": "*long silence* — You unmade my mistake. *one hard hammer-strike* — That's for Brigid. Whatever you need next, no charge. *Ai-velin*, friend.",
+  "high_renown": "Word reaches the forge sooner than the post. Your name's already in the *haethe* of three blades I've struck this week. Wear it like good steel — slow to bend.",
+  "stranger": "Don't touch the anvil. Ask first. I don't know your face yet.",
+  "longnight_vigil": "*does not look up from the cooling blade* — Stew's cold by now. Bram'll be along. He always is. Sit if you want. Don't speak.",
+  "spring_first_warm_day": "Marshmint at my door this morning. Lyra leaves it. I owe her a cleaver and she knows it. *bellows huff* — What do you need?",
+  "lore_notes": {
+    "_comment": "Lines above are mood-keyed surfaces for the Builder/Polisher agent to wire into NPC.gd. Tree shape mirrors the proposed Priority-3 grammar in the Lore Keeper SKILL.md, plus two seasonal/event hooks (longnight_vigil, spring_first_warm_day) that tie back to canon in lore/npcs/smith_edda.md and lore/world.md. The midday line is preserved verbatim from WorldBuilder.NPCS so the existing time-of-day variants stay coherent if Builder swaps source-of-truth here.",
+    "voice_rules": [
+      "Short sentences. Long pauses. Use *hammer-clang* as a punctuation tic.",
+      "Never names a blade Frost. The Pale Wyrm is kept asleep by silence.",
+      "Invokes Brigid the Forge-Mother in moments of pride or grief, never anger.",
+      "Uses Old Faerie words sparingly: haethe (the song iron remembers), unnen (the work of two hands), ai-velin (the long path / a complete life)."
+    ],
+    "consequence_hooks": [
+      "boss_slain assumes a unique drop from the Goblin Warlord that is the saber Edda forged badly years ago. If/when Builder wires this drop, this line becomes a turn-in beat.",
+      "longnight_vigil is keyed to the Longnight Vigil festival (lore/world.md → Calendar). Future Builder may guard it on time_of_year + late hour.",
+      "after_first_quest_complete is intentionally agnostic across which first quest the player finished — it scans as a smith's notice of any change in the Whisperwood. Safe to fire on whisperwood_cleansing OR ears_for_mara turn-ins."
+    ]
+  }
+}

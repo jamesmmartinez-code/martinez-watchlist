@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/items/_item_resource.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "steel_plate"
+name = "Steel Plate"
+category = "armor"
+rarity = "rare"
+tier = 4
+stats = {"armor": 22}
+flavor = "Smoke-city work — the spaulders bear an Iron Crown stamp the polish has nearly forgiven. Heavy in the way honest plate is heavy: it asks you to carry it on the long walk, not the short sprint. Edda has rivetted a small Brigid-mark inside the breast where no one but the wearer will ever see."
+acquired_via = "chest"
+value_gold = 280
+set_id = ""
+slot = "body"
+armor_class = 22
+move_penalty = -0.1

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Forge Pelt-Lined Brigandine
+; Tier-2 unlock — uses Whisperwood-cured leather (from cure_wolf_pelt) plus iron plates.
+; New-region ingredient: leather_strip (cured wolf_pelt → Lyra's herb-shed → Whisperwood material chain).
+; The tier-2 brigandine is mid-route armor — sits between leather (tier-2 vendor) and steel_plate (tier-3 chest).
+; Not strictly better than steel_plate (chest, tier-3); fully satisfies "no tier-N strictly better than tier-N+1".
+; # NEEDS:item:pelt_brigandine (output — iron-plated leather coat; tier-2 armor_metal)
+; INPUTS exist: leather_strip (NEEDS), iron_ingot (NEEDS), iron_buckle (NEEDS), charcoal (NEEDS)
+
+[resource]
+resource_name = "Forge Pelt-Lined Brigandine"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "forge_pelt_brigandine"
+metadata/name = "Forge Pelt-Lined Brigandine"
+metadata/station_required = "edda_forge"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "leather_strip", "qty": 6},
+    {"item_id": "iron_ingot", "qty": 2},
+    {"item_id": "iron_buckle", "qty": 4},
+    {"item_id": "charcoal", "qty": 3}
+]
+metadata/output = {"item_id": "pelt_brigandine", "qty": 1}
+metadata/time_seconds = 32
+metadata/fuel_cost = 3
+metadata/unlock_condition = "quest_complete"
+metadata/unlock_quest = "warband_pelts_returned"
+metadata/unlock_hint = "Edda will lay the plates after the Whisperwood warband-pelt run is delivered to Lyra."
+metadata/failure_behavior = "none"
+metadata/category = "armor_metal"
+metadata/teach_voice = "Edda: 'Plates inside, fur out. The world hits you, the iron answers, the pelt forgets.'"

@@ -1,0 +1,60 @@
+[gd_resource type="Resource" format=3]
+
+; ──────────────────────────────────────────────────────────────────────
+;  Quest Registry — Realm of Eldoria
+;
+;  Lists all .tres-format quests in this folder. The legacy inline
+;  catalog at scripts/World.gd :: QUEST_CATALOG remains the source of
+;  truth for currently-shipping single-action quests — the .tres files
+;  here describe the richer multi-stage shape new authors should write
+;  against. As the engine adds stage / prereq / region-trigger support,
+;  the legacy entries can be migrated into this folder one at a time.
+;
+;  Convention:
+;    res://data/quests/<region>/<quest_id>.tres
+;
+;  Maintained by: quest-writer agent.
+; ──────────────────────────────────────────────────────────────────────
+
+[resource]
+resource_name = "quest_index"
+metadata/schema_version = 1
+metadata/last_updated = "2026-05-06"
+metadata/quests = {
+"shards_for_mara": {
+"file": "res://data/quests/crystal_caves/shards_for_mara.tres",
+"region": "crystal_caves",
+"act": 2,
+"level_band": "6-8",
+"giver": "Mara the Merchant",
+"kind": "fetch",
+"target": "crystal_shard",
+"status": "authored"
+},
+"bones_in_the_choirstone": {
+"file": "res://data/quests/crystal_caves/bones_in_the_choirstone.tres",
+"region": "crystal_caves",
+"act": 2,
+"level_band": "6-8",
+"giver": "Elder Maeve",
+"kind": "kill",
+"target": "skeleton",
+"status": "authored"
+}
+}
+metadata/regions = {
+"briarwood":     {"tres_quest_count": 0, "legacy_count": 0,  "note": "village hub; no in-region quests; all NPC givers live here"},
+"whisperwood":   {"tres_quest_count": 0, "legacy_count": 6,  "note": "see scripts/World.gd :: QUEST_CATALOG (whisperwood_cleansing, pelt_for_lyra, ears_for_mara, wolf_fang_for_roan, wolf_form_with_hala, wolf_heart_for_bram)"},
+"crystal_caves": {"tres_quest_count": 2, "legacy_count": 0,  "note": "Mara fetch + Maeve kill; codex fragments seeded under data/codex/. Room for one more before this region is at the soft cap of 3."},
+"high_steppe":   {"tres_quest_count": 0, "legacy_count": 0,  "note": "no in-region NPC givers yet; canonical entry-point is Stablemaster Roan (Briarwood)"},
+"smoke_cities":  {"tres_quest_count": 0, "legacy_count": 0,  "note": "Iron Crown territory; no canonical givers seeded"},
+"stag_court":    {"tres_quest_count": 0, "legacy_count": 0,  "note": "withheld by canon — see codex/stag_courts_courtesy.md author note; do not write a Court quest reflexively"}
+}
+metadata/needs = [
+"engine:multi_stage_quest_runtime",
+"engine:prereq_resolver",
+"engine:enter_region_trigger",
+"player_experience:level_band_balance (pacing/level_bands.md does not exist; xp/gold for new quests are interpolated from peers)",
+"dialogue:elder_maeve.json :: vigil_shelf branch",
+"lore:regions_folder (lore/regions/<r>.md per skill spec; canonical for now is split between data/codex/ and lore/world.md)"
+]

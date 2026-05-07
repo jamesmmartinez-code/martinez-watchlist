@@ -1,0 +1,30 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Stitch Thiar's Salve
+; Tier-2 — a green-smelling rub-on salve named for Thiar the Stag.
+; Use: applied before a fight, soaks into a cloth tunic, trims the first two cuts shallow.
+; New-region ingredient: bark_tannin_oak harvested from a Whisperwood-fallen oak (post-apology).
+; # NEEDS:item:thiar_salve (output — tier-2 salve, single-use buff consumable)
+; # NEEDS:item:bark_tannin_oak, herb_starveil, beeswax_dab, clay_flask_empty (already flagged)
+
+[resource]
+resource_name = "Stitch Thiar's Salve"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_thiar_salve"
+metadata/name = "Stitch Thiar's Salve"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "bark_tannin_oak", "qty": 3},
+    {"item_id": "herb_starveil", "qty": 1},
+    {"item_id": "beeswax_dab", "qty": 2},
+    {"item_id": "clay_flask_empty", "qty": 1}
+]
+metadata/output = {"item_id": "thiar_salve", "qty": 2}
+metadata/time_seconds = 14
+metadata/fuel_cost = 1
+metadata/unlock_condition = "recipe_book"
+metadata/unlock_book = "lyras_warband_pages"
+metadata/failure_behavior = "none"
+metadata/category = "salve"
+metadata/teach_voice = "Lyra, dabbing your wrist with the test-spot: 'Cool first, warm later. That's how you know it's keeping.'"

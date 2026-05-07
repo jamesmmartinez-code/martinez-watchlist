@@ -1,0 +1,19 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "mug_polish",
+"name": "Bram: Polish the Mugs",
+"category": "daily",
+"region": "briarwood",
+"giver": "innkeeper_bram",
+"objective": "Polish 12 mugs at the inn counter. (Small rhythm minigame — flag for PX.)",
+"duration_hours": 4,
+"rewards": {"renown": 1, "items": ["warm_cider"], "coin": 4},
+"variant_lines": {
+  "accept": "Bram: \"Slow circles. Ten breaths a mug. The mug knows when youre hurrying.\"",
+  "complete": "Bram: \"*chuckles* — Look at the shine on those. Youve a future at the bar, traveler.\"",
+  "miss": "Bram: \"Mugs are still dirty. Theyll keep.\""
+},
+"px_team_notes": "Rhythm minigame FLAGGED. Suggested: 12 mugs, hold-and-release tempo to a slow lute beat. No fail state."
+}

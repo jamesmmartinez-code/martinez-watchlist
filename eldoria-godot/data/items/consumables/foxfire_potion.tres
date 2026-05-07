@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "foxfire_potion",
+  "name": "Foxfire Draught",
+  "category": "consumable",
+  "subtype": "healing",
+  "tier": "uncommon",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 20,
+    "spd": 0
+  },
+  "flavor": "Grants warmth and vitality to weary travelers",
+  "realm": "tidesong"
+}
+"""

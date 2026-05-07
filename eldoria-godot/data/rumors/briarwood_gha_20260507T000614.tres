@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve spotted near ancient ruins"
+truth_0 = "true"
+rumor_1 = "Hidden path behind waterfall leads to secret glade"
+truth_1 = "partial"
+rumor_2 = "Briarwood trees can talk to each other"
+truth_2 = "false"
+rumor_3 = "Rare flower blooms only under full moon"
+truth_3 = "true"
+rumor_4 = "Mysterious stranger seen trading rare seeds"
+truth_4 = "partial"

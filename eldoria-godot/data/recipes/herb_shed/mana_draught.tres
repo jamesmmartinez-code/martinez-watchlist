@@ -1,0 +1,28 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Stargaze Mana Draught
+; Lore: items_flavor.json mp_potion — "distilled on a clear Honeysong night with the still set under the open sky"
+; Discovery flavor: only available at the Honeysong (calendar tag) — gates to a once-per-cycle limit later.
+; # NEEDS:item:herb_starveil, herb_marshmint, well_water_clear, clay_flask_empty
+
+[resource]
+resource_name = "Stargaze Mana Draught"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_mp_draught"
+metadata/name = "Stargaze Mana Draught"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "herb_starveil", "qty": 2},
+    {"item_id": "herb_marshmint", "qty": 1},
+    {"item_id": "well_water_clear", "qty": 1},
+    {"item_id": "clay_flask_empty", "qty": 1}
+]
+metadata/output = {"item_id": "mp_potion", "qty": 1}
+metadata/time_seconds = 12
+metadata/fuel_cost = 1
+metadata/unlock_condition = "recipe_book"
+metadata/unlock_book = "lyras_first_pages"
+metadata/failure_behavior = "none"
+metadata/category = "potion"
+metadata/teach_voice = "Lyra, leaving the first sip at the well: 'Erris keeps the songs that do not yet have endings.'"

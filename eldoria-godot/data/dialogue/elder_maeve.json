@@ -1,0 +1,39 @@
+{
+  "npc_name": "Elder Maeve",
+  "role": "quest",
+  "default": "Trouble brews in the Whisperwood. Seek out the Goblin Warlord.",
+  "morning": "*leans on the hawthorn stick* — Up early, traveler. Vellum keeps memory. Mornings keep promises. What brings you to my doorstep before the kettle's on?",
+  "midday": "Sit a moment. — No? Then walk slow. The valley is older than any errand.",
+  "evening": "Lanterns are coming on. Briarwood looks its best at this hour, and its truest. Tell me what's troubling you, and I'll tell you whether it's worth troubling over.",
+  "night": "*lowers her voice* — The Whisperwood breathes louder when the village sleeps. Best you sleep too. Come back at first light.",
+  "after_first_quest_complete": "*small, dry laugh* — Five fewer goblins. The Warlord won't grieve them; the Whisperwood will. — Take this, traveler. *holds out a small carved acorn* It's nothing. It's also a promise. The village remembers who walks for it.",
+  "low_health_player": "*sets down the stick* — Sit. Sit, child. Bram's stew is on the hearth — no, don't argue with me, I've buried better arguers than you. *Vellum keep this one a while longer.*",
+  "boss_alive": "The Warlord is no chieftain. He is a wound the Whisperwood is still bleeding from. Do not fight him angry. Anger is what made him.",
+  "boss_slain": "*long pause* — *Ai-velin*, traveler. The Whisperwood will sleep tonight. *quietly* — So will I. — Tell Bram I'll take the stew this year. Tell him I said so.",
+  "high_renown": "Word reaches the Elder's hearth before it reaches the well. Three children in the lane asked me yesterday if you were a hero. I told them heroes are the ones who come back. *small smile* — See that you do.",
+  "stranger": "*peers up the stick at you* — A face I don't yet know. Sit, then. Tell me your village before you tell me your business — that is how it's done in Briarwood.",
+  "longnight_vigil": "*candle in one hand, stick in the other* — *Vael-tor-i.* — The gathered hearth. Tonight Briarwood does not sleep, and tonight you do not speak unless you mean it. Stand beside me, traveler. The candle for Halsa goes nearest the well.",
+  "honeysong_eve": "*does not look at the forest line* — Set your lantern on the pond, traveler. Erris hears better in summer. — No, I'll stay on the bank tonight. The water is for the young. The bank is for the old who have already given the water what they owed it.",
+  "lore_notes": {
+    "_comment": "Mood-keyed dialogue tree for Elder Maeve. Mirrors smith_edda.json shape so the Builder/Polisher's NPC.gd reader can route by the same keys. Two seasonal hooks (longnight_vigil, honeysong_eve) align with the canonical Calendar in lore/world.md. The default and stranger lines preserve the WorldBuilder.NPCS lines[] entries' intent so existing wiring still reads coherently if Builder hasn't yet swapped source-of-truth here.",
+    "voice_rules": [
+      "Slow speech. Each sentence weighed twice. Pauses are the character; do not shorten them.",
+      "Addresses strangers as 'traveler', villagers by full given name. Children as 'child' only when they are hurt or grieving.",
+      "Invokes Vellum the Patient Stone in moments of weight. Never Brigid (Edda's god). Never Thiar (the hunters'). The Hollow King only in winter.",
+      "Quotes a proverb roughly every third exchange. Most are her own. The village remembers them as old.",
+      "Uses Old Faerie sparingly and only when nothing else will do. Uses the older 'we'-form vael-tor-i, not the singular vael-tor.",
+      "Does not laugh often. When she does, it is dry and good — a grandmother's laugh, the kind that earns trust."
+    ],
+    "consequence_hooks": [
+      "after_first_quest_complete is keyed to the whisperwood_cleansing turn-in (her own quest). Safe to fire on goblins-killed=5 satisfaction; the carved acorn is intentionally non-statted flavor and does not need to enter Items.ITEMS unless Builder wants a collectible.",
+      "longnight_vigil is keyed to the Longnight Vigil festival (lore/world.md → Calendar). Future Builder may guard it on time_of_year=longnight + late_hour=true. The Halsa-candle-near-the-well detail is canon and intentionally cross-references smith_edda.md.",
+      "honeysong_eve is keyed to Honeysong Eve (lore/world.md → Calendar). The 'kerritha-ed her brother's heather' beat from elder_maeve.md is the unspoken reason her tone is quieter here; Builder should not surface that reason in any future line — the withholding is canonical.",
+      "boss_slain assumes a faction-pressure resolution against the Goblin Warlord; her line acknowledges Bram's Vigil-stew tradition and seeds a small follow-up beat where Maeve, for the first canonical time, accepts Bram's stew. Future Bram backstory may pick this up."
+    ],
+    "withholding": [
+      "Maeve will NOT speak of the Stag-Court offer in any line, ever. If a downstream writer is tempted to surface it here, do not. The Stag-Court arc is a codex-fragment beat, never a Maeve dialogue beat. See elder_maeve.md → Hooks → Stag-Court offer.",
+      "Maeve will NOT name Aelis to the player in any line of this tree. Aelis is mentioned only in the .md and may surface later through Mara's unopened letter. Maeve's grief about Aelis is structural; it should never be shown directly.",
+      "Maeve will NOT speak Cailen's name aloud. (She has not, in canon, since the Honeysong she kerritha-ed his heather.) Any future line that puts his name in her mouth violates the .md."
+    ]
+  }
+}

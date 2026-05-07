@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8eldoriatrn001"]
+
+[ext_resource type="Script" path="res://scripts/terrain/eldoria_heightmap.gd" id="1_pilot"]
+
+[node name="EldoriaTerrain" type="Node3D"]
+script = ExtResource("1_pilot")
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://data/terrain/eldoria"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 50, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]

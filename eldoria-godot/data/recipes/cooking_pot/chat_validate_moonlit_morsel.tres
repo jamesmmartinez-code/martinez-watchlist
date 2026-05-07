@@ -1,0 +1,30 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "chat_validate_moonlit_morsel",
+  "name": "Moonbeam Muffin",
+  "station_required": "cooking_pot",
+  "station_tier_min": 1,
+  "inputs": [
+    {
+      "item_id": "moonstone_dust",
+      "qty": 1
+    },
+    {
+      "item_id": "fresh_milk",
+      "qty": 2
+    }
+  ],
+  "output": {
+    "item_id": "moonbeam_muffin",
+    "qty": 1
+  },
+  "time_seconds": 10,
+  "fuel_cost": 2,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A delicate treat infused with the soft glow of moonlight, reminiscent of the dreamy landscapes of Studio Ghibli's films."
+}
+"""

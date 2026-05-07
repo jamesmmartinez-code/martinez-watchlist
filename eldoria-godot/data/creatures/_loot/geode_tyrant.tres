@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=2 format=3 uid="uid://eldoria_loot_geode_tyrant"]
+
+; Boss loot for Geodelich, the Sundered Heart (geode_tyrant).
+; Crystal-Caves capstone, level 8.  Every id below is verified against
+; eldoria-godot/data/items/_catalog.csv.  Weights sum to 1.000.
+;   crystal_shard       0.30  (gives Mara's quest a payoff if you saved it)
+;   hp_potion_l         0.18
+;   mp_potion           0.14
+;   ring_focus          0.12  (uncommon relic — 'scribe ring' from canon)
+;   crit_amulet         0.10  (rare relic — Hawk's Amulet)
+;   frost_saber         0.08  (rare; drops here matches existing
+;                              crystal_elemental reward chain)
+;   shadow_dagger       0.05  (epic; the under-stream did 'remember' shadow)
+;   guardian_core       0.03  (legendary — lore-justified by the heart's
+;                              role as old ward-stone)
+;   Σ = 1.000
+
+[ext_resource type="Script" path="res://data/creatures/_loot_table.gd" id="1_loot_table"]
+
+[resource]
+script = ExtResource("1_loot_table")
+creature_id = &"geode_tyrant"
+entries = [
+	{ "id": &"crystal_shard",  "weight": 0.30, "qty_min": 3, "qty_max": 5 },
+	{ "id": &"hp_potion_l",    "weight": 0.18, "qty_min": 2, "qty_max": 3 },
+	{ "id": &"mp_potion",      "weight": 0.14, "qty_min": 2, "qty_max": 4 },
+	{ "id": &"ring_focus",     "weight": 0.12, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"crit_amulet",    "weight": 0.10, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"frost_saber",    "weight": 0.08, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"shadow_dagger",  "weight": 0.05, "qty_min": 1, "qty_max": 1 },
+	{ "id": &"guardian_core",  "weight": 0.03, "qty_min": 1, "qty_max": 1 },
+]

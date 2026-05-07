@@ -1,0 +1,29 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Carve Oak Talisman
+; Lore: items_flavor.json talisman_oak — "Lyra harvested the wood with her hands in the leaf-mould
+;   and apologized aloud to Thiar the Stag before she touched it. Strung on a cord she dyed in marshmint water."
+; OUTPUT exists: talisman_oak
+; # NEEDS:item:whisperwood_oak_disc, herb_marshmint, hemp_cord
+
+[resource]
+resource_name = "Carve Oak Talisman"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_oak_talisman"
+metadata/name = "Carve Oak Talisman"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "whisperwood_oak_disc", "qty": 1},
+    {"item_id": "herb_marshmint", "qty": 2},
+    {"item_id": "hemp_cord", "qty": 1}
+]
+metadata/output = {"item_id": "talisman_oak", "qty": 1}
+metadata/time_seconds = 18
+metadata/fuel_cost = 0
+metadata/unlock_condition = "quest_complete"
+metadata/unlock_quest = "thiar_apology_first_oak"
+metadata/unlock_hint = "Walk to the Whisperwood-fallen oak with Lyra. She will say the apology; you carry the disc."
+metadata/failure_behavior = "none"
+metadata/category = "talisman_organic"
+metadata/teach_voice = "Lyra, both hands on the cord: 'Thiar lent the wood. We hold it for him.'"

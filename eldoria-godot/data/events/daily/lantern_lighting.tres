@@ -1,0 +1,18 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+metadata/data = {
+"id": "lantern_lighting",
+"name": "Light the Village Lanterns",
+"category": "daily",
+"region": "briarwood",
+"giver": "village_lantern_keeper",
+"objective": "Light all 24 village lanterns before sundown.",
+"duration_hours": 1,
+"rewards": {"renown": 1, "items": ["lantern_oil"], "coin": 3},
+"variant_lines": {
+  "accept": "A note pinned to the well: \"Old Olens knee is bad. Lanterns by sundown, please.\"",
+  "complete": "Bram, polishing a mug: \"Village looks right tonight.\"",
+  "miss": "Half the lanes are dark. Children stay indoors. No mechanical penalty — just a quieter night."
+}
+}

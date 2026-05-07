@@ -1,0 +1,25 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Steep Marshmint Dye
+; Beginner recipe: practice without a quest gate.
+; Output (marshmint_dye) is a craft-component for tier-2 cloth/talisman work.
+; # NEEDS:item:herb_marshmint, well_water_clear, clay_flask_empty (reused as dye-pot), marshmint_dye
+
+[resource]
+resource_name = "Steep Marshmint Dye"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_marshmint_dye"
+metadata/name = "Steep Marshmint Dye"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 1
+metadata/inputs = [
+    {"item_id": "herb_marshmint", "qty": 3},
+    {"item_id": "well_water_clear", "qty": 1}
+]
+metadata/output = {"item_id": "marshmint_dye", "qty": 2}
+metadata/time_seconds = 6
+metadata/fuel_cost = 1
+metadata/unlock_condition = "auto"
+metadata/failure_behavior = "none"
+metadata/category = "herb_blend"
+metadata/teach_voice = "Lyra: 'Three sprigs and a cup. Don't crowd the pot — they need the water.'"

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" format=3]
+
+; Recipe — Bind Fang-Focus Charm
+; Tier-2 — small wrist-charm, a cleaned wolf-fang threaded onto marshmint cord.
+; OUTPUT exists in catalog: ring_focus (Ring of Focus, relic, tier 2, uncommon).
+; The "ring" is in fact a fang-loop — the noun is village shorthand. Anchored to Lyra's
+; talisman tradition (parallel to oak_talisman tier-1 but tier-2 because the fang must be cleaned in salve first).
+; New-region ingredient: wolf_fang (Whisperwood drop).
+; # NEEDS:item:thiar_salve (cross-recipe input; cleans the fang of warband memory)
+; # NEEDS:item:hemp_cord, marshmint_dye (already flagged)
+
+[resource]
+resource_name = "Bind Fang-Focus Charm"
+metadata/schema = "recipes/_schema_v1"
+metadata/id = "herbshed_fang_focus"
+metadata/name = "Bind Fang-Focus Charm"
+metadata/station_required = "lyra_herb_shed"
+metadata/station_tier_min = 2
+metadata/inputs = [
+    {"item_id": "wolf_fang", "qty": 1},
+    {"item_id": "thiar_salve", "qty": 1},
+    {"item_id": "hemp_cord", "qty": 1},
+    {"item_id": "marshmint_dye", "qty": 1}
+]
+metadata/output = {"item_id": "ring_focus", "qty": 1}
+metadata/time_seconds = 20
+metadata/fuel_cost = 0
+metadata/unlock_condition = "quest_complete"
+metadata/unlock_quest = "thiar_apology_first_oak"
+metadata/unlock_hint = "After Lyra's first oak-apology, she will teach the fang-cleaning over the same hearth."
+metadata/failure_behavior = "none"
+metadata/category = "talisman_organic"
+metadata/teach_voice = "Lyra, soaking the fang: 'Wolf doesn't ask anymore. We carry the question for it. Quietly.'"

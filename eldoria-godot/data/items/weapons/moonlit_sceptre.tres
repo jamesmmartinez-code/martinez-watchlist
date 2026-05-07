@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonlit_sceptre",
+  "name": "Moonlit Scepter",
+  "category": "weapon",
+  "subtype": "staff",
+  "tier": "uncommon",
+  "level_req": 10,
+  "stats": {
+    "atk": 5,
+    "def": 2,
+    "hp": 0,
+    "spd": 3
+  },
+  "flavor": "A gentle glow emanates from its crystal tip.",
+  "realm": "eldoria"
+}
+"""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" format=3]
+
+; ─────────────────────────────────────────────────────────────
+; STATION: Lyra's Herb-Shed — Briarwood (north of the well)
+; Owned by: Herbalist Lyra (lore: items_flavor.json hp_potion_*, mp_potion)
+; Schema: stations/_schema_v1
+; ─────────────────────────────────────────────────────────────
+
+[resource]
+resource_name = "Lyra's Herb-Shed"
+metadata/schema   = "stations/_schema_v1"
+metadata/id       = "lyra_herb_shed"
+metadata/name     = "Lyra's Herb-Shed"
+metadata/owner_npc = "herbalist_lyra"
+metadata/region   = "briarwood"
+metadata/tier_current = 1
+metadata/tier_max = 3
+metadata/allowed_categories = ["potion","salve","talisman_organic","cured_hide","herb_blend"]
+metadata/fuel_type = "hearth_coals"
+metadata/location_in_village = "north_well_lane_3rd_door"
+metadata/idle_animation = "mortar_and_pestle_grind"
+metadata/lore_anchor = "Lyra presses warm in clay flask sealed with beeswax + thumbprint — see hp_potion_s flavor"
+metadata/tier_unlock_hooks = {
+    "tier_2": "Whisperwood materials gathered (wolf_pelt, wolf_fang) and apology-aloud quest done with Lyra",
+    "tier_3": "Crystal Caves under-stream water collected; thalen-ai seventh-herb season cycled"
+}

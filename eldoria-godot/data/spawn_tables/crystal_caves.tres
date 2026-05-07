@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SpawnTable" load_steps=2 format=3 uid="uid://eldoria_spawn_crystal_caves"]
+
+[ext_resource type="Script" path="res://data/spawn_tables/_spawn_table.gd" id="1_spawn_table"]
+
+[resource]
+script = ExtResource("1_spawn_table")
+region_id = &"crystal_caves"
+biome = &"underground"
+
+day_entries = [
+	{ "id": &"skeleton",          "weight": 0.55, "count_min": 4, "count_max": 6, "time": "any" },
+	{ "id": &"crystal_elemental", "weight": 0.45, "count_min": 2, "count_max": 3, "time": "any" },
+]
+
+night_entries = [
+	{ "id": &"skeleton",          "weight": 0.65, "count_min": 5, "count_max": 8, "time": "night" },
+	{ "id": &"crystal_elemental", "weight": 0.35, "count_min": 2, "count_max": 4, "time": "night" },
+]
+
+pop_cap_total = 10
+pop_cap_per_kind = {
+	&"skeleton": 8,
+	&"crystal_elemental": 4,
+}
