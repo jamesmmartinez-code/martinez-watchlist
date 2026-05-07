@@ -1,0 +1,70 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "whisperwood_wonders",
+  "vendor_name": "Luna's Marvels",
+  "region": "whisperwood",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 50,
+      "quantity": 20,
+      "restock_hours": 12,
+      "item_name": "Glimmering Acorn"
+    },
+    {
+      "item_id": "NEW",
+      "price": 20,
+      "quantity": 50,
+      "restock_hours": 24,
+      "item_name": "Fairy Dust"
+    },
+    {
+      "item_id": "NEW",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 48,
+      "item_name": "Moonstone Feather"
+    },
+    {
+      "item_id": "NEW",
+      "price": 80,
+      "quantity": 15,
+      "restock_hours": 24,
+      "item_name": "Sparkling Stream Stone"
+    },
+    {
+      "item_id": "NEW",
+      "price": 150,
+      "quantity": 5,
+      "restock_hours": 72,
+      "item_name": "Rainbow Crystal Shard"
+    },
+    {
+      "item_id": "NEW",
+      "price": 30,
+      "quantity": 30,
+      "restock_hours": 12,
+      "item_name": "Sunflower Petals"
+    },
+    {
+      "item_id": "NEW",
+      "price": 40,
+      "quantity": 25,
+      "restock_hours": 24,
+      "item_name": "Butterfly Wings"
+    },
+    {
+      "item_id": "NEW",
+      "price": 200,
+      "quantity": 3,
+      "restock_hours": 96,
+      "item_name": "Starlight Orb"
+    }
+  ],
+  "flavor": "A whimsical shop nestled between the whispering trees, filled with treasures that shine like the moon and sparkle like the stars."
+}
+"""
