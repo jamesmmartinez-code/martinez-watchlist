@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cheese"
+metadata/_data = """
+{
+  "id": "pont_l_eveque",
+  "name": "Pont l'Eveque",
+  "milk_source": "cow",
+  "aging_days": 30,
+  "effect": "buff:satiated:1200s",
+  "flavor": "earthy and nutty"
+}
+"""
