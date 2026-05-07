@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "ancient_treant_set",
+  "name": "Treant's Guardians",
+  "theme": "forest",
+  "piece_ids": [
+    "treant_sword",
+    "treant_helm",
+    "treant_chest",
+    "treant_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Thorns of Protection",
+      "stat_mod": {
+        "def": 10
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Forest's Fury",
+      "stat_mod": {
+        "atk": 20
+      }
+    }
+  ],
+  "flavor": "Forged from the ancient wisdom of the treants, this set is said to hold the power of the forest"
+}
+"""
