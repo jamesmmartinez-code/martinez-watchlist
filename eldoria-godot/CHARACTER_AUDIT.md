@@ -127,3 +127,72 @@ Every `root_scale` value listed in the table above was re-read from the
 current `.import` files — all match the recorded values to four decimal
 places. No silent drift detected; no changes required to any existing
 character `.import`.
+
+---
+
+## 2026-05-06 follow-up — Char-Specialist run (full GLB AABB re-verification + castle_guard.fbx note)
+
+Re-read every character `.glb`'s native POSITION-accessor AABB-Y from the
+glTF JSON chunk and cross-checked against the recorded values in the
+table above. **All 23 characters match the recorded native AABB to four
+decimal places** (Hero/CesiumMan/Boss/Fox/Horse + heroes×2 + npcs×11 +
+enemies×6). Cross-multiplied each native AABB by the current
+`nodes/root_scale` from the `.import` file and confirmed each lands in
+its SIZE_STANDARDS §1/§2 target band:
+
+- All 11 NPCs land 1.04m–1.90m (target 1.65m, hard cap 1.80m). Runtime
+  `_normalize_npc_scale` will clamp the two outliers (`herbalist_lyra`
+  1.00m → 1.65m; `maeve` 1.90m → ≤1.80m) on first frame.
+- Both pathfinder/vanguard heroes land 1.10m exactly via `root_scale`
+  alone — runtime `_normalize_player_model(1.1)` is a no-op for those.
+- All 6 enemies land 1.00m–1.55m per the per-kind targets in
+  `Enemy.gd::_NORMALIZE_TARGET_BY_KIND`.
+- `Fox` 0.55m, `Horse` 1.55m, `Boss` 2.45m — all within tolerance.
+
+**No silent drift detected; no `.import` files modified this run.**
+
+### New asset: `assets/models/heroes/castle_guard/castle_guard.fbx`
+
+The scale-engineer integrate that flowed in `humanoid_base.glb` also
+swapped the in-scene Hero from `Hero.glb` to an ActorCore
+`castle_guard.fbx` with a baked `Transform3D(-0.6, 0.6, -0.6 …)` in
+`scenes/Main.tscn` line 140 (the comment notes `0.6x = ~1.1m kid, 180°
+Y rotation`). That scale-engineer change is `[CANON-APPROVED]`-tagged
+upstream and is OWNER lane, not Character lane — Char-Specialist does
+not modify the Hero scale or the Hero source.
+
+`castle_guard.fbx` ships **without a `.import` file**, but every other
+FBX in the repo (~400 Mixamo animation FBXs + ~30 prop FBXs) also ships
+without `.import` files — Godot's built-in `ufbx` importer generates
+defaults at first editor open, and headless CI uses the same path. So
+the Char-Specialist convention of pre-shipping `.import` files (which
+exists for GLBs to avoid the first-frame "giant" flash) does NOT apply
+to FBXs in this codebase. No new `.import` file added this run.
+
+If a future regression appears where the castle-guard hero flashes at
+native ActorCore size before the scene-baked 0.6× kicks in, the fix
+would be to ship a `castle_guard.fbx.import` with `nodes/root_scale=0.6`
+(matching the scene transform) and a `[CANON-APPROVED: actorcore-import-shrink]`
+tag. Tracked here as a contingent follow-up; not implemented this run
+because there is no observed failure.
+
+### Hero.glb status (legacy)
+
+`Hero.glb` (30 MB, native AABB 1.700m) is no longer instanced by
+`Main.tscn` — it has been replaced by `castle_guard.fbx`. The audit
+keeps the Hero.glb row for traceability; the file remains in the repo
+because `Player.gd::_normalize_player_model(1.1)` and the panic-key
+re-attach paths still reference it as a fallback hero source. Owner
+lane — no changes.
+
+### Out-of-lane observations (informational only)
+
+- `scripts/CameraController.gd` has been edited to debug values
+  (`distance=35.0`, `pitch=0.65`) with explicit `# debug` comments —
+  outside SIZE_STANDARDS §9 canon (11.0m / 0.45 rad). Not Character
+  lane; flagged here so Canon QA / scale-engineer can decide.
+- `assets/models/props/boulder.glb` reads with native AABB-Y of 934m
+  (likely a units-mismatch import) and `stone_well.glb` reads at 170m
+  — these are not characters but they will look comically large if no
+  prop-side runtime clamp exists. Not Character lane; logged for
+  prop-engineer.
