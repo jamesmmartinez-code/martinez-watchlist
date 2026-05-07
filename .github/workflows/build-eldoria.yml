@@ -30,6 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Visual bounds check (Main.tscn — gates fog/scale)
+        run: |
+          python3 .github/scripts/check_main_tscn.py
+        # Hard-fail the build if Hero scale or fog density are out of band.
+        # Prevents giant-boot bug + brown-fog-soup bug from ever shipping.
+        # Constraints live in eldoria-godot/qa/_visual_constraints.yaml.
+
       - name: Cache Godot binary + export templates
         id: cache-godot
         uses: actions/cache@v4
