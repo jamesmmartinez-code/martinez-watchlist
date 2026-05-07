@@ -1111,11 +1111,13 @@ func _process(delta: float) -> void:
 		var night_w2: float = clamp(-elev2 / 0.30, 0.0, 1.0)
 		# Fog: thicker at horizon (dusk haze), thinner at midday, slightly thicker
 		# at night for distance-blue. Baseline in tscn = 0.0032.
-		e.fog_density = 0.0028 + dusk_w2 * 0.0014 + night_w2 * 0.0006
+		# 2026-05-07 jm-fix: aggressive fog cut — was 0.0028+0.0014+0.0006 (peak 0.0042); now 0.0006+0.0002+0.0001 (peak 0.0009). Re-tune up only if vista flatness becomes a problem.
+		e.fog_density = 0.0006 + dusk_w2 * 0.0002 + night_w2 * 0.0001
 		# Volumetric fog energy — pop the warm emission glow at sunset, fade at noon
 		# (so direct sun reads cleanly) and at deep night (so it doesn’t over-warm
 		# a cool scene). Baseline tscn emission_energy = 0.16.
-		e.volumetric_fog_emission_energy = 0.10 + dusk_w2 * 0.18
+		# 2026-05-07 jm-fix: was 0.10 + 0.18*dusk; now 0.02 + 0.04*dusk. Kills the brown-haze look.
+		e.volumetric_fog_emission_energy = 0.02 + dusk_w2 * 0.04
 
 # ════════════════════════════════════════════════════════════════════════
 # Dialogue
