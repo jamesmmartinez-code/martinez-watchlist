@@ -169,3 +169,49 @@ jobs:
             if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ $name"; else FAIL=$((FAIL+1)); echo "  ❌ $name → HTTP $CODE"; fi
           done
           echo "🚢 R2 sync: $OK ok, $FAIL failed"
+
+      - name: Overwrite GH Pages /eldoria/index.html with redirect → Cloudflare
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          cat > eldoria/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+          <meta charset="utf-8">
+          <title>Realm of Eldoria — loading…</title>
+          <meta http-equiv="refresh" content="0; url=https://eldoria-api.james-m-martinez.workers.dev/eldoria/">
+          <link rel="canonical" href="https://eldoria-api.james-m-martinez.workers.dev/eldoria/">
+          <style>
+          html,body{margin:0;height:100%;background:#0d0d12;color:#e8d4a2;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;text-align:center}
+          a{color:#ffd24d;text-decoration:underline}
+          .box{padding:2rem;max-width:480px}
+          h1{margin:0 0 .8rem;font-size:1.6rem}
+          p{margin:.4rem 0;line-height:1.4}
+          </style>
+          </head>
+          <body>
+          <div class="box">
+          <h1>Realm of Eldoria</h1>
+          <p>Taking you to the fast Cloudflare server…</p>
+          <p>If nothing happens, <a href="https://eldoria-api.james-m-martinez.workers.dev/eldoria/">click here to play</a>.</p>
+          </div>
+          <script>location.replace("https://eldoria-api.james-m-martinez.workers.dev/eldoria/");</script>
+          </body>
+          </html>
+          HTML
+          git add eldoria/index.html
+          if git diff --cached --quiet; then
+            echo "✅ redirect index.html unchanged."
+            exit 0
+          fi
+          git commit -m "Auto: re-apply /eldoria/ redirect → Cloudflare ($(date -u +%Y-%m-%dT%H:%MZ))"
+          for i in 1 2 3 4 5; do
+            if git push; then echo "✅ pushed redirect on attempt $i"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 2))
+          done
+          echo "❌ redirect push failed"; exit 1
+
