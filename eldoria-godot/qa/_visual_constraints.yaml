@@ -1,0 +1,41 @@
+# Eldoria visual constraints — single source of truth
+# Created 2026-05-07 after fog + giant-character incidents.
+# Every agent and every CI bounds-checker reads from THIS file.
+# To loosen a bound, edit here AND open a PR explaining why.
+# Owner: Player Experience + Code QA.
+
+hero:
+  scale_min: 0.05         # uniform scale floor — anything tighter is invisible
+  scale_max: 0.50         # uniform scale ceiling — anything bigger is "giant boot bug"
+  target_world_height_m: 1.10
+  target_height_tolerance: 0.20   # ±20%
+
+npc:
+  scale_min: 0.50
+  scale_max: 2.00
+  target_world_height_m: 1.70
+  target_height_tolerance: 0.30
+
+camera:
+  distance_min_m: 3.0
+  distance_max_m: 12.0
+  fov_min_deg: 50
+  fov_max_deg: 80
+
+world_environment:
+  fog_density_max: 0.0020
+  volumetric_fog_density_max: 0.0020
+  volumetric_fog_emission_energy_max: 0.30
+  ambient_light_energy_max: 1.5
+  exposure_max: 1.5
+
+particles:
+  per_region_target: 1500
+  per_region_ceiling: 3000
+
+attachments:
+  gear_max_world_height_m: 0.40   # boot/helmet/cape — bigger than 40cm = bug
+
+build:
+  index_html_min_size_kb: 4
+  pck_max_chunk_size_mb: 95   # GitHub blob limit is 100; leave headroom
