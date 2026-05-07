@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "whispering_wheat_cakes",
+  "name": "Whispering Wheat Cakes",
+  "station_required": "cooking_pot",
+  "station_tier_min": 2,
+  "inputs": [
+    {
+      "item_id": "wheat_flour",
+      "qty": 3
+    },
+    {
+      "item_id": "honey",
+      "qty": 1
+    },
+    {
+      "item_id": "moonstone_dust",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "whispering_wheat_cakes",
+    "qty": 2
+  },
+  "time_seconds": 10,
+  "fuel_cost": 2,
+  "unlock_condition": "reach_level_5",
+  "failure_behavior": "none",
+  "flavor": "Inspired by the rolling hills of the Shire, these sweet treats are said to grant the consumer visions of hidden pathways and secret glades."
+}
+"""
