@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "lemon_sunrise_biscuit",
+  "name": "Lemon Sunrise Biscuit",
+  "kind": "bun",
+  "filling": "lemon curd",
+  "heal": 15,
+  "effect": "buff:cheerful:300s",
+  "flavor": "soft, fluffy, and radiant with citrusy brightness"
+}
+"""
