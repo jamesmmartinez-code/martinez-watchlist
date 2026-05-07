@@ -2827,6 +2827,44 @@ func _process(delta: float) -> void:
 		# Tiny vertical bob so the bird body itself reads as alive.
 		var base_y: float = float(b3d.get_meta("base_y", 0.0))
 		b3d.position.y = base_y + sin(_t * 6.5 + bphase) * 0.05
+	# Env: 2026-05-06 — crystal pulse (THEME §12). Crystal clusters in
+	# the Crystal Caves dungeon and any future open-world deposits
+	# joined group "crystals" but had no motion — the cave read as a
+	# museum diorama instead of the magical, breathing geode the lore
+	# implies. Each cluster's heart light pulses on a slow per-cluster
+	# phase, the omni range breathes in sync so the cast pool of blue
+	# light scales with the inhalation, and every shard's emission
+	# multiplier rides the same beat with a small per-shard offset so
+	# the cluster glints like stained glass catching light from inside.
+	# Frequencies (1.1 + 0.7) are intentionally non-harmonic so the
+	# pulse never settles into a metronome. Amplitudes are conservative
+	# (±25% on light, ±20% on emission) so the cave stays readable —
+	# no flicker, no strobe, just a steady breath.
+	for cluster in get_tree().get_nodes_in_group("crystals"):
+		var c3d: Node3D = cluster as Node3D
+		if c3d == null:
+			continue
+		var cphase: float = float(c3d.get_meta("pulse_phase", 0.0))
+		var cnoise: float = sin(_t * 1.1 + cphase) * 0.7 + sin(_t * 0.7 + cphase * 1.7) * 0.3
+		var clight: OmniLight3D = c3d.get_node_or_null("CrystalLight") as OmniLight3D
+		if clight:
+			var be: float = float(c3d.get_meta("light_base_energy", 1.6))
+			var br: float = float(c3d.get_meta("light_base_range", 7.0))
+			clight.light_energy = be + cnoise * 0.4
+			clight.omni_range = br * (1.0 + cnoise * 0.06)
+		var bem: float = float(c3d.get_meta("shard_base_emission", 3.2))
+		var sidx: int = 0
+		for sh in c3d.get_children():
+			var smi: MeshInstance3D = sh as MeshInstance3D
+			if smi == null:
+				continue
+			var smat: StandardMaterial3D = smi.material_override as StandardMaterial3D
+			if smat == null:
+				continue
+			var sphase: float = cphase + float(sidx) * 0.4
+			var sn: float = sin(_t * 1.1 + sphase) * 0.6 + sin(_t * 0.7 + sphase * 1.7) * 0.25
+			smat.emission_energy_multiplier = bem + sn * 0.6
+			sidx += 1
 
 
 
@@ -2894,12 +2932,26 @@ func _make_crystal_cluster(pos: Vector3, base_scale: float, color: Color, parent
 		shard.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf_range(0, TAU), rng.randf_range(-0.3, 0.3))
 		cluster.add_child(shard)
 	# Pulsing omni light at the heart of the cluster
+	# Env: 2026-05-06 — named so the THEME §12 crystal-pulse loop in
+	# _process can find it without scanning every child node. Base
+	# energy + range are also saved as cluster meta so the pulse can
+	# oscillate around the original values regardless of base_scale.
 	var light := OmniLight3D.new()
+	light.name = "CrystalLight"
 	light.light_color = color
 	light.light_energy = 1.6
 	light.omni_range = 7.0 * base_scale
 	light.position.y = 1.0
 	cluster.add_child(light)
+	# THEME §12 — per-cluster phase derived from world position so a
+	# field of crystals doesn't pulse in lockstep. base_energy /
+	# base_range / base_emission are the values the pulse oscillates
+	# around (so caves with bigger base_scale crystals still pulse
+	# proportionally).
+	cluster.set_meta("pulse_phase", pos.x * 0.31 + pos.z * 0.47)
+	cluster.set_meta("light_base_energy", 1.6)
+	cluster.set_meta("light_base_range", 7.0 * base_scale)
+	cluster.set_meta("shard_base_emission", 3.2)
 
 func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: bool = false) -> void:
 	var sm := MeshInstance3D.new()
