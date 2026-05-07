@@ -68,7 +68,7 @@ def main():
 
     # === Hero scale ===
     # Walk transform lines AFTER a "[node name="Hero"" header
-    hero_block = re.search(r"\[node name="Hero".*?(?=\[node )", text, re.S)
+    hero_block = re.search(r'\[node name="Hero".*?(?=\[node )', text, re.S)
     if hero_block:
         block = hero_block.group(0)
         tm = re.search(r"transform\s*=\s*Transform3D\(\s*([\-0-9.]+)", block)
