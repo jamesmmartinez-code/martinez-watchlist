@@ -1,5 +1,0 @@
-# Godot ignore — these FBX files are awaiting fbx2gltf conversion in CI.
-# Don't try to auto-import them as Godot resources — they'll bloat / corrupt
-# the .pck. The Animation Sourcer agent processes them separately and writes
-# the resulting AnimationLibrary .tres into ../humanoid_base.tres, which IS
-# imported normally.

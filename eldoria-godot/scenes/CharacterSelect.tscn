@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://eldoria_charsel"]
-
-[ext_resource type="Script" path="res://scripts/CharacterSelect.gd" id="1_charsel"]
-
-[node name="CharacterSelect" type="Control"]
-script = ExtResource("1_charsel")

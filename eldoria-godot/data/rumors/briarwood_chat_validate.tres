@@ -1,9 +1,0 @@
-[gd_resource type="Resource" load_steps=1 format=3]
-[resource]
-region = "briarwood"
-rumor_0 = "Glimmerwings spotted near old oak"
-truth_0 = "true"
-rumor_1 = "Maeve hiding a secret in her workshop"
-truth_1 = "partial"
-rumor_2 = "Briarwood trees turning to gold"
-truth_2 = "false"
