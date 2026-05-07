@@ -16,7 +16,7 @@ class_name Player
 # source GLB happened to ship with. Built by scripts/dev/build_anim_library.gd
 # from Mixamo packs in assets/animations/source/. Missing file = graceful
 # no-op (we fall back to the candidates dict in _play_anim like before).
-const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.glb"
 
 
 var gravity: float = 20.0
@@ -486,6 +486,9 @@ func _spawn_crit_flash() -> void:
 	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.6, 0), "CRIT!", Color(1.00, 0.85, 0.42), 56, 8)
 
 func _play_anim(name: String) -> void:
+	# 2026-05-06: map generic "attack" to numbered Mixamo attack_1/2/3 (random pick)
+	if name == "attack":
+		name = ["attack_1", "attack_2", "attack_3"].pick_random()
 	if not animation_player:
 		return
 	# RIGGING_STANDARD §Required animations: prefer the canonical "humanoid/<slot>"
@@ -1686,12 +1689,25 @@ func _merge_humanoid_library(ap: AnimationPlayer) -> void:
 		return
 	if not ResourceLoader.exists(HUMANOID_BASE_LIB):
 		return  # not built yet — fallback path in _play_anim still works
-	var lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
-	if lib == null:
+	# 2026-05-06: source is a baked .glb (PackedScene) not a .tres (AnimationLibrary).
+	# Instantiate, copy AnimationPlayer's animations into a new library, then dispose.
+	var packed := load(HUMANOID_BASE_LIB) as PackedScene
+	if packed == null:
 		return
+	var inst: Node = packed.instantiate()
+	if inst == null:
+		return
+	var src_ap: AnimationPlayer = inst.find_child("AnimationPlayer", true, false) as AnimationPlayer
+	if src_ap == null:
+		inst.queue_free()
+		return
+	var lib := AnimationLibrary.new()
+	for anim_name in src_ap.get_animation_list():
+		lib.add_animation(anim_name, src_ap.get_animation(anim_name))
 	if ap.has_animation_library("humanoid"):
 		ap.remove_animation_library("humanoid")
 	ap.add_animation_library("humanoid", lib)
+	inst.queue_free()
 
 # === SCALE GUARD 2026-05-06 (self-contained, defensive) ===
 # Walks the player tree, finds any MeshInstance3D whose world-space height

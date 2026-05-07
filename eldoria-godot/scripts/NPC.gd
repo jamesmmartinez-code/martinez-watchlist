@@ -117,7 +117,7 @@ var _is_walking_schedule: bool = false
 @onready var interact_area: Area3D = get_node_or_null("InteractArea") as Area3D
 # RIGGING_STANDARD §Required animations — shared humanoid library so NPCs
 # can play wave / yes / no / idle / walk regardless of source-GLB.
-const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
+const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.glb"
 
 @onready var anim: AnimationPlayer = get_node_or_null("AnimationPlayer")
 
@@ -152,11 +152,18 @@ func _ready() -> void:
 	# play wave/yes/no on dialogue regardless of their source GLB. Graceful
 	# no-op if the .tres hasn't been built yet.
 	if ap_resolved != null and ResourceLoader.exists(HUMANOID_BASE_LIB):
-		var _lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
-		if _lib != null:
-			if ap_resolved.has_animation_library("humanoid"):
-				ap_resolved.remove_animation_library("humanoid")
-			ap_resolved.add_animation_library("humanoid", _lib)
+		var _packed := load(HUMANOID_BASE_LIB) as PackedScene
+		if _packed != null:
+			var _inst: Node = _packed.instantiate()
+			var _src_ap: AnimationPlayer = _inst.find_child("AnimationPlayer", true, false) as AnimationPlayer if _inst else null
+			if _src_ap != null:
+				var _lib := AnimationLibrary.new()
+				for _an in _src_ap.get_animation_list():
+					_lib.add_animation(_an, _src_ap.get_animation(_an))
+				if ap_resolved.has_animation_library("humanoid"):
+					ap_resolved.remove_animation_library("humanoid")
+				ap_resolved.add_animation_library("humanoid", _lib)
+			if _inst: _inst.queue_free()
 	if ap_resolved != null:
 		var names := ap_resolved.get_animation_list()
 		# Prefer common spellings in order of likelihood, then fall back to
