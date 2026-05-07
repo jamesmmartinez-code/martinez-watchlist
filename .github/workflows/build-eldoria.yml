@@ -39,19 +39,6 @@ jobs:
             ~/.local/share/godot
           key: godot-4.6.2-templates-v1
 
-      - name: Install FBX2glTF (for ActorCore FBX imports)
-        run: |
-          if [ ! -x ~/.local/bin/FBX2glTF ]; then
-            mkdir -p ~/.local/bin
-            curl -fL -o /tmp/fbx2gltf.tar.gz https://github.com/godotengine/FBX2glTF/releases/download/v0.9.7/FBX2glTF-linux-x86_64.tar.gz
-            tar -xzf /tmp/fbx2gltf.tar.gz -C /tmp/
-            cp /tmp/FBX2glTF /tmp/FBX2glTF-linux-x86_64/FBX2glTF ~/.local/bin/FBX2glTF 2>/dev/null || true
-            find /tmp -name "FBX2glTF" -executable -exec cp {} ~/.local/bin/FBX2glTF \;
-            chmod +x ~/.local/bin/FBX2glTF
-          fi
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          ~/.local/bin/FBX2glTF --version || echo "FBX2glTF install attempted"
-
       - name: Install Godot 4.6.2 headless + Web export templates
         if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
