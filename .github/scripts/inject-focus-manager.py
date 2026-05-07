@@ -51,16 +51,18 @@ def main(html_path):
                 }
             }
             // AGGRESSIVE: refocus every 100ms for first 5 seconds (covers Godot init reclaim)
+            // 2026-05-07: gentler initial focus — was 100ms × 50 (5s of focus-stealing); now 250ms × 12 (3s)
             let aggressive_count=0;
             const aggressive=setInterval(()=>{
-                focusCanvas();checkFocus();
-                if(++aggressive_count>=50){clearInterval(aggressive);}
-            },100);
+                if(document.activeElement!==c) focusCanvas();
+                checkFocus();
+                if(++aggressive_count>=12){clearInterval(aggressive);}
+            },250);
             // After 5s, drop to gentle 1s polling
             setTimeout(()=>{setInterval(()=>{checkFocus();if(!focused)focusCanvas();},1000);},5000);
             // Click anywhere -> focus canvas
-            document.addEventListener('mousedown',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,30);},true);
-            document.addEventListener('click',()=>{setTimeout(focusCanvas,0);setTimeout(checkFocus,30);},true);
+            // 2026-05-07: removed mousedown refocus — was fighting Godot's right-drag camera + click-handling.
+            document.addEventListener('click',(e)=>{if(document.activeElement!==c){focusCanvas();checkFocus();}});
             hint.addEventListener('click',(e)=>{e.stopPropagation();focusCanvas();checkFocus();});
             window.addEventListener('focus',()=>{focusCanvas();checkFocus();});
             window.addEventListener('keydown',(e)=>{
