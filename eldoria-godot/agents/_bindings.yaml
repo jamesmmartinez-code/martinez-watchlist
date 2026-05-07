@@ -1,0 +1,164 @@
+# Eldoria agent binding manifest — what each agent reads + what tools it can call.
+# The cron Worker (realm-of-eldoria.james-m-martinez.workers.dev) reads this on each
+# invocation and prepends the listed canon files to the Llama prompt.
+# Created 2026-05-07 to fix "agents generate blind" problem.
+
+# Tool capability codes:
+#   workers_ai_text  — Llama 3.3 70B / Claude Opus 4.7 / GPT-5.5 (default for all)
+#   workers_ai_image — FLUX-1-schnell, FLUX-2, Leonardo Phoenix, Imagen-4
+#   workers_ai_music — minimax music-2.6
+#   workers_ai_tts   — Inworld tts-1.5-max, MiniMax speech-2.8-turbo
+#   workers_ai_video — Alibaba hh1-t2v, Runway gen-4.5
+#   meshy            — Meshy.ai text-to-3D + auto-rig (key in env.MESHY_KEY)
+#   sketchfab        — Sketchfab REST search/download (key in env.SKETCHFAB_KEY)
+#   cowork_task      — drops JSON in cowork-tasks/ for Cowork-side Adobe execution
+
+defaults:
+  canon_always:
+    - eldoria-godot/AGENT_CANON_PREAMBLE.md
+    - eldoria-godot/qa/_visual_constraints.yaml
+  tools_always: [workers_ai_text]
+
+# ===== 18 specialist agents =====
+
+lorekeeper:
+  canon_extra: [eldoria-godot/lore/]
+  outputs: [eldoria-godot/lore/]
+  tools_extra: []
+
+concept-artist:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/CHARACTER_AUDIT.md]
+  outputs: [eldoria-godot/assets/concept/]
+  tools_extra: [workers_ai_image, cowork_task]
+
+quest-writer:
+  canon_extra: [eldoria-godot/data/quest_grammar.md, eldoria-godot/lore/]
+  outputs: [eldoria-godot/data/quests/]
+
+dialogue-writer:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/data/dialogue/]
+  outputs: [eldoria-godot/data/dialogue/]
+  tools_extra: [workers_ai_tts]
+
+item-designer:
+  canon_extra: [eldoria-godot/data/items/, eldoria-godot/data/items_flavor.json]
+  outputs: [eldoria-godot/data/items/]
+
+bestiary-designer:
+  canon_extra: [eldoria-godot/data/creatures/, eldoria-godot/data/spawn_tables/]
+  outputs: [eldoria-godot/data/creatures/, eldoria-godot/data/bosses/]
+
+recipe-designer:
+  canon_extra: [eldoria-godot/data/recipes/, eldoria-godot/data/stations/]
+  outputs: [eldoria-godot/data/recipes/]
+
+event-designer:
+  canon_extra: [eldoria-godot/data/events/, eldoria-godot/data/rumors/]
+  outputs: [eldoria-godot/data/events/, eldoria-godot/data/rumors/]
+
+ui-designer:
+  canon_extra: [eldoria-godot/onboarding/, eldoria-godot/scenes/]
+  outputs: [eldoria-godot/scenes/ui/]
+  tools_extra: [workers_ai_image, cowork_task]
+
+player-experience:
+  canon_extra: [eldoria-godot/pacing/, eldoria-godot/onboarding/, eldoria-godot/qa/_px_flags.md]
+  outputs: [eldoria-godot/pacing/, eldoria-godot/qa/_px_flags.md]
+
+audio:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/scripts/World.gd]
+  outputs: [eldoria-godot/assets/audio/]
+  tools_extra: [workers_ai_music, workers_ai_tts]
+
+atmosphere:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/qa/_visual_constraints.yaml]
+  outputs: [eldoria-godot/scenes/, eldoria-godot/scripts/World.gd]
+
+character:
+  canon_extra: [eldoria-godot/CHARACTER_AUDIT.md, eldoria-godot/SIZE_STANDARDS.md]
+  outputs: [eldoria-godot/assets/characters/]
+  tools_extra: [meshy, sketchfab]
+
+architect:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/scripts/WorldBuilder.gd]
+  outputs: [eldoria-godot/scenes/, eldoria-godot/scripts/WorldBuilder.gd]
+  tools_extra: [meshy, sketchfab]
+
+builder:
+  canon_extra: [eldoria-godot/scripts/, eldoria-godot/data/]
+  outputs: [eldoria-godot/scripts/]
+
+code-qa:
+  canon_extra: [eldoria-godot/scripts/, eldoria-godot/qa/]
+  outputs: [eldoria-godot/qa/_blocking_status.md]
+
+canon-qa:
+  canon_extra: [eldoria-godot/lore/, eldoria-godot/data/, eldoria-godot/qa/]
+  outputs: [eldoria-godot/qa/_canon_audit_*.md, eldoria-godot/qa/_canon_flags.md]
+
+integrator:
+  canon_extra: [eldoria-godot/qa/_integration_gaps.md]
+  outputs: []  # Integrator only merges, never authors
+
+# ===== 8 NEW specialists (gap-fill from 2026-05-07 audit) =====
+
+physics-engineer:
+  canon_extra: [eldoria-godot/scripts/Player.gd, eldoria-godot/qa/_visual_constraints.yaml, eldoria-godot/SIZE_STANDARDS.md]
+  outputs: [eldoria-godot/scripts/Player.gd, eldoria-godot/scripts/CameraController.gd]
+
+combat-designer:
+  canon_extra: [eldoria-godot/data/creatures/, eldoria-godot/data/items/, eldoria-godot/scripts/Player.gd, eldoria-godot/scripts/Enemy.gd, eldoria-godot/scripts/Boss.gd]
+  outputs: [eldoria-godot/scripts/, eldoria-godot/data/_combat_curves.gd]
+
+systems-designer:
+  canon_extra: [eldoria-godot/scripts/Player.gd, eldoria-godot/data/items/, eldoria-godot/data/creatures/]
+  outputs: [eldoria-godot/data/_progression_curves.gd, eldoria-godot/data/_economy.tres]
+
+ai-behavior:
+  canon_extra: [eldoria-godot/data/creatures/, eldoria-godot/scripts/Enemy.gd, eldoria-godot/scripts/NPC.gd]
+  outputs: [eldoria-godot/scripts/, eldoria-godot/data/behaviors/]
+
+animator:
+  canon_extra: [eldoria-godot/assets/animations/, eldoria-godot/CHARACTER_AUDIT.md]
+  outputs: [eldoria-godot/assets/animations/, eldoria-godot/scripts/Player.gd]
+  tools_extra: [meshy, sketchfab]
+
+vfx:
+  canon_extra: [eldoria-godot/qa/_visual_constraints.yaml, eldoria-godot/scripts/DamageNumber.gd]
+  outputs: [eldoria-godot/scenes/vfx/]
+
+performance-engineer:
+  canon_extra: [eldoria-godot/qa/QA_OVERSIZED_ASSETS.md, eldoria-godot/qa/_visual_constraints.yaml]
+  outputs: [eldoria-godot/qa/_perf_report.md]
+
+visual-qa:
+  canon_extra: [eldoria-godot/qa/_visual_constraints.yaml]
+  outputs: [eldoria-godot/qa/_visual_qa_report.md]
+  tools_extra: [workers_ai_image]  # uses Claude Opus 4.7 multimodal to grade screenshots
+
+# ===== 60 cron content micro-agents — all share the same defaults =====
+# (item, recipe, bestiary, event, quest, dialogue, codex, npc-bio, achievement,
+#  set-bonus, pet, mount, cape, hat, mask, ring, amulet, trinket, backpack,
+#  shoe, weapon-skin, dye, instrument, song, board-game, card-game, minigame,
+#  fishing-spot, fish, plant, sapling, seed, mineral, wood, tea, wine, cheese,
+#  pastry, soup, festival-food, fortune-cookie, prop, tent, constellation,
+#  weather-event, weather-forecast, ambient-bark, boss-phrase, death-message,
+#  emote, faction, greeting, legend, legendary, loading-tip, lore-fragment,
+#  prophecy, quest-chain, rumor-followup, shop-vendor)
+# All inherit defaults; lore-fragment / prophecy / legend get extra lore access.
+
+cron_default:
+  canon_extra: [eldoria-godot/data/, eldoria-godot/lore/]
+  outputs_pattern: eldoria-godot/data/<agent>/
+
+cron_overrides:
+  lore-fragment:
+    canon_extra: [eldoria-godot/lore/, eldoria-godot/AGENT_CANON_PREAMBLE.md]
+  prophecy:
+    canon_extra: [eldoria-godot/lore/]
+  legend:
+    canon_extra: [eldoria-godot/lore/]
+  faction:
+    canon_extra: [eldoria-godot/lore/]
+  rumor-followup:
+    canon_extra: [eldoria-godot/data/rumors/, eldoria-godot/lore/]
