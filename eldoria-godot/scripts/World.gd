@@ -1350,21 +1350,21 @@ func hide_death_overlay() -> void:
 # Audio (music + SFX)
 # ════════════════════════════════════════════════════════════════════════
 const MUSIC_TRACKS = {
-	"village":     "res://assets/audio/music/village_theme.wav",
-	"whisperwood": "res://assets/audio/music/whisperwood_theme.wav",
-	"battle":      "res://assets/audio/music/battle_theme.wav",
+	"village":     "res://assets/audio/music/village_theme.ogg",
+	"whisperwood": "res://assets/audio/music/whisperwood_theme.ogg",
+	"battle":      "res://assets/audio/music/battle_theme.ogg",
 }
 const SFX = {
-	"sword_swing":   "res://assets/audio/sfx/sword_swing.wav",
-	"sword_hit":     "res://assets/audio/sfx/sword_hit.wav",
-	"damage_taken":  "res://assets/audio/sfx/damage_taken.wav",
-	"enemy_death":   "res://assets/audio/sfx/enemy_death.wav",
-	"loot_pickup":   "res://assets/audio/sfx/loot_pickup.wav",
-	"level_up":      "res://assets/audio/sfx/level_up.wav",
-	"quest_accept":  "res://assets/audio/sfx/quest_accept.wav",
-	"chest_open":    "res://assets/audio/sfx/chest_open.wav",
-	"player_death":  "res://assets/audio/sfx/player_death.wav",
-	"boss_intro":    "res://assets/audio/sfx/boss_intro.wav",
+	"sword_swing":   "res://assets/audio/sfx/sword_swing.ogg",
+	"sword_hit":     "res://assets/audio/sfx/sword_hit.ogg",
+	"damage_taken":  "res://assets/audio/sfx/damage_taken.ogg",
+	"enemy_death":   "res://assets/audio/sfx/enemy_death.ogg",
+	"loot_pickup":   "res://assets/audio/sfx/loot_pickup.ogg",
+	"level_up":      "res://assets/audio/sfx/level_up.ogg",
+	"quest_accept":  "res://assets/audio/sfx/quest_accept.ogg",
+	"chest_open":    "res://assets/audio/sfx/chest_open.ogg",
+	"player_death":  "res://assets/audio/sfx/player_death.ogg",
+	"boss_intro":    "res://assets/audio/sfx/boss_intro.ogg",
 }
 var _current_music: String = ""
 
