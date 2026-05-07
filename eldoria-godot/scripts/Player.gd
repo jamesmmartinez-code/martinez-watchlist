@@ -1701,9 +1701,37 @@ func _merge_humanoid_library(ap: AnimationPlayer) -> void:
 	if src_ap == null:
 		inst.queue_free()
 		return
+	# 2026-05-07: strip orphan tracks. The canonical humanoid_base.glb skeleton
+	# is bone-pruned (no Pinky1/Pinky2 etc.) but Mixamo source FBXs export full
+	# hand tracks. Without this pass, Godot spams "couldn't resolve track:
+	# mixamorig_RightHandPinky1" on every animation play. Build the destination
+	# bone-name set from the player's actual Skeleton3D, then drop any
+	# Position/Rotation/Scale-3D track whose ":bone_name" tail is not present.
+	var player_skel: Skeleton3D = _find_first_skeleton(self)
+	var dest_bones := {}
+	if player_skel:
+		for bi in range(player_skel.get_bone_count()):
+			dest_bones[player_skel.get_bone_name(bi)] = true
 	var lib := AnimationLibrary.new()
 	for anim_name in src_ap.get_animation_list():
-		lib.add_animation(anim_name, src_ap.get_animation(anim_name))
+		var src_anim: Animation = src_ap.get_animation(anim_name)
+		if src_anim == null:
+			continue
+		var anim: Animation = src_anim.duplicate(true)
+		if not dest_bones.is_empty():
+			# Walk in reverse so removing tracks doesn\'t shift indices.
+			for ti in range(anim.get_track_count() - 1, -1, -1):
+				var ttype := anim.track_get_type(ti)
+				if ttype != Animation.TYPE_POSITION_3D and ttype != Animation.TYPE_ROTATION_3D and ttype != Animation.TYPE_SCALE_3D:
+					continue
+				var path := String(anim.track_get_path(ti))
+				var colon := path.rfind(":")
+				if colon == -1:
+					continue
+				var bone := path.substr(colon + 1)
+				if bone != "" and not dest_bones.has(bone):
+					anim.remove_track(ti)
+		lib.add_animation(anim_name, anim)
 	if ap.has_animation_library("humanoid"):
 		ap.remove_animation_library("humanoid")
 	ap.add_animation_library("humanoid", lib)
