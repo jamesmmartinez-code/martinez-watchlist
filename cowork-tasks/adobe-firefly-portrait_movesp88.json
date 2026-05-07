@@ -1,0 +1,9 @@
+{
+  "id": "adobe-firefly-portrait_movesp88",
+  "kind": "adobe-firefly-portrait",
+  "payload": {
+    "prompt": "Maeve the herbalist, painterly portrait, briarwood region"
+  },
+  "queued_at": "2026-05-07T11:34:51.320Z",
+  "status": "pending"
+}
