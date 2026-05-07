@@ -1821,3 +1821,15 @@ func _process(delta: float) -> void:
 	print("[SIZE-DEBUG] Hero.scale=%s  global_pos=%s  AABB=%s (%.2fm tall)" % [
 		h3.scale, h3.global_position, aabb_size, aabb_size.y
 	])
+
+# 2026-05-07 EMERGENCY: stub for missing func that broke Player.gd parse.
+# Was called from line 426 (_do_attack) but never defined — added by combat-feel
+# commit df642acf without a body. TODO: replace with real VFX (mesh modulate flash,
+# particle burst, screen shake — pick one).
+func _attack_visual_feedback() -> void:
+	if has_node("Mesh"):
+		var m: Node = get_node("Mesh")
+		if m.has_method("set"):
+			m.set("modulate", Color(1.6, 1.6, 1.6))
+			await get_tree().create_timer(0.08).timeout
+			m.set("modulate", Color(1, 1, 1))
