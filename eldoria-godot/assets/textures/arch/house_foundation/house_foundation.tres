@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3]
+
+[ext_resource path="res://assets/textures/arch/house_foundation/albedo.jpg"    type="Texture2D" id="1"]
+[ext_resource path="res://assets/textures/arch/house_foundation/normal.png"    type="Texture2D" id="2"]
+[ext_resource path="res://assets/textures/arch/house_foundation/roughness.png" type="Texture2D" id="3"]
+[ext_resource path="res://assets/textures/arch/house_foundation/ao.jpg"        type="Texture2D" id="4"]
+
+[resource]
+albedo_texture = ExtResource("1")
+normal_enabled = true
+normal_texture = ExtResource("2")
+roughness_texture = ExtResource("3")
+ao_enabled = true
+ao_texture = ExtResource("4")
+uv1_scale = Vector3(2, 2, 1)
