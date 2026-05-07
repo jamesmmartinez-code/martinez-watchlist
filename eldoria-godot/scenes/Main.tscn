@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://eldoria_main"]
+[gd_scene load_steps=17 format=3 uid="uid://eldoria_main"]
 
 [ext_resource type="Script" path="res://scripts/World.gd" id="1_world"]
 [ext_resource type="Script" path="res://scripts/Player.gd" id="2_player"]
@@ -7,23 +7,19 @@
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
 [ext_resource type="PackedScene" uid="uid://b0j4kdyg3stf2" path="res://assets/models/Hero.glb" id="8_hero"]
 [ext_resource type="PackedScene" path="res://assets/models/heroes/castle_guard/castle_guard.fbx" id="22_castle_guard"]
+[ext_resource type="Texture2D" path="res://assets/skies/eldoria_sunset_sky_2k.jpg" id="23_sunset_sky"]
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
 [ext_resource type="Script" path="res://scripts/HoverInspector.gd" id="20_hover"]
 
-[sub_resource type="ProceduralSkyMaterial" id="Sky_procedural"]
-sky_top_color = Color(0.94, 0.78, 0.78, 1)        ; soft pink dome
-sky_horizon_color = Color(1.0, 0.62, 0.32, 1)     ; THEME §3 burnt-orange #FF8000-ish
-sky_curve = 0.18
-sky_energy_multiplier = 1.0
-ground_bottom_color = Color(0.55, 0.42, 0.28, 1)  ; parchment / earth
-ground_horizon_color = Color(0.88, 0.66, 0.42, 1)
-ground_curve = 0.05
-ground_energy_multiplier = 1.0
-sun_angle_max = 30.0
-sun_curve = 0.15
+[sub_resource type="PanoramaSkyMaterial" id="Sky_panorama"]
+; 2026-05-07: restore PolyHaven Sky-Is-On-Fire sunset panorama. The
+; ProceduralSkyMaterial swap (commit c621cef6) gave a flat pink dome that
+; combined with ambient_light_sky_contribution 0.85 to wash the world pink-white.
+panorama = ExtResource("23_sunset_sky")
+energy_multiplier = 1.0
 
 [sub_resource type="Sky" id="Sky"]
-sky_material = SubResource("Sky_procedural")
+sky_material = SubResource("Sky_panorama")
 radiance_size = 4
 
 [sub_resource type="Environment" id="Env"]
@@ -34,7 +30,7 @@ ambient_light_source = 3
 ambient_light_color = Color(0.86, 0.82, 0.82, 1)
 ; REFINE: visual — outdoor — ambient energy 0.50 → 0.46. THEME §3 wants warm directional dominance; flatter ambient was muddying lantern/chest emission contrast.
 ambient_light_energy = 0.46
-ambient_light_sky_contribution = 0.85
+ambient_light_sky_contribution = 0.40 ; 2026-05-07: 0.85 -> 0.40 (was bleeding sky color into every surface)
 tonemap_mode = 3
 ; REFINE: visual — outdoor — exposure 0.92 → 0.94. Slightly opens midtones for painterly readability per THEME §1; sun cap at energy 1.9 means no blowout.
 tonemap_exposure = 0.94
@@ -61,12 +57,12 @@ fog_enabled = true
 ; REFINE: visual — outdoor — fog tint warmer (R 0.92→0.94, G 0.78→0.80, B 0.62→0.60). Pairs with World.gd dusk-density swing so god-rays read sunset-gold not paper-white.
 fog_light_color = Color(0.94, 0.80, 0.60, 1)
 fog_light_energy = 0.5
-fog_density = 0.0032
+fog_density = 0.0018 ; 2026-05-07: 0.0032 -> 0.0018 (distance was washing out)
 fog_sky_affect = 0.7
 fog_height = 0.0
 fog_height_density = 0.05
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.004
+volumetric_fog_density = 0.0018 ; 2026-05-07: 0.004 -> 0.0018 (vol-fog over 110m was erasing distance)
 ; REFINE: visual — outdoor — vol-fog albedo nudged toward parchment/sepia (#D9C99B family) per THEME §3.
 volumetric_fog_albedo = Color(0.88, 0.82, 0.74, 1)
 volumetric_fog_emission = Color(0.4, 0.2, 0.05, 1)
@@ -136,7 +132,8 @@ script = ExtResource("2_player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("PlayerShape")
 
-[node name="Hero" parent="Player" instance=ExtResource("22_castle_guard")]
+[node name="Hero" parent="Player" instance=ExtResource("8_hero")]
+; 2026-05-07: swap castle_guard.fbx -> Hero.glb. FBX was rendering untextured-white at giant scale (Web export missed the .fbm material folder). Hero.glb is the proven Meshy biped baseline.
 transform = Transform3D(-0.7, 0, 0, 0, 0.7, 0, 0, 0, -0.7, 0, 0, 0)
 visible = true
 ; Scale Engineer 2026-05-05 — Meshy biped Hero.glb exports at ~2.4-2.6m default.
