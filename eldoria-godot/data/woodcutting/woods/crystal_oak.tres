@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "wood"
+metadata/_data = """
+{
+  "id": "crystal_oak",
+  "name": "Glimmerbark",
+  "tree_kind": "oak",
+  "plank_id": "plank_ironwood",
+  "region": "crystal_caves",
+  "tool_required": "axe_tier_3",
+  "flavor": "Iridescent, crystalline patterns dance across its bark"
+}
+"""
