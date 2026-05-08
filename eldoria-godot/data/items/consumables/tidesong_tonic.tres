@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "tidesong_tonic",
+  "name": "Tidesong Tonic",
+  "category": "consumable",
+  "subtype": "potion",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "hp": 10
+  },
+  "flavor": "A soothing drink made from the rare seaweed of Tidesong's coastal waters.",
+  "realm": "tidesong"
+}
+"""
