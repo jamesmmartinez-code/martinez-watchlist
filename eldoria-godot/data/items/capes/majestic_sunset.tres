@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "majestic_sunset",
+  "name": "Golden Hour",
+  "palette": [
+    "#FFD700",
+    "#FFC107"
+  ],
+  "emblem": "Sun",
+  "flutter_strength": 8,
+  "effect": "trails sparkles",
+  "flavor": "warm, painterly hues"
+}
+"""
