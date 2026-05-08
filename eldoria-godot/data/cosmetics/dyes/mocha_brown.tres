@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "mocha_brown",
+  "name": "Mocha",
+  "color_hex": "#964B00",
+  "source": "mineral:iron",
+  "rarity": "common",
+  "flavor": "Earth tones of the mountain range"
+}
+"""
