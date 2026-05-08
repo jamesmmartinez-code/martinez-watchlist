@@ -1,0 +1,45 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_kitten_of_tidesong",
+  "title": "A Kitten Lost at Sea",
+  "region": "tidesong",
+  "act": 2,
+  "level_band": [
+    1,
+    3
+  ],
+  "hook": "Kitten overboard!",
+  "stages": [
+    {
+      "objective": "Rescue the kitten from the waves",
+      "location": "Tidesong Beach",
+      "completion_trigger": "talk_to_npc:kitten_rescuer"
+    },
+    {
+      "objective": "Find the kitten's favorite toy, a little wooden boat",
+      "location": "Tidesong Pier",
+      "completion_trigger": "collect:item_id:wooden_boat"
+    },
+    {
+      "objective": "Return the toy to the kitten's owner, a fisherman's child",
+      "location": "Tidesong Village",
+      "completion_trigger": "talk_to_npc:fisherman_child"
+    }
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": [
+      "item_id:healing_potion"
+    ],
+    "faction_rep": {
+      "tidesong": 5
+    }
+  },
+  "repeatable": false,
+  "flavor": "A tiny ball of fluff clings to a piece of driftwood as the tide rises, its little meows carried away by the wind."
+}
+"""
