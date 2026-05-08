@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "whispering_winds",
+  "name": "Zephyr's Breeze",
+  "theme": "sky",
+  "piece_ids": [
+    "wind_dancer_sword",
+    "cloud_hopper_helm",
+    "skyward_chest",
+    "breeze_walker_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Gust Boost",
+      "stat_mod": {
+        "spd": 3
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Storm Shield",
+      "stat_mod": {
+        "def": 20
+      }
+    }
+  ],
+  "flavor": "Forged from the whispers of the wind, this set was crafted by the cloud weavers to aid adventurers in their journey across the skies."
+}
+"""
