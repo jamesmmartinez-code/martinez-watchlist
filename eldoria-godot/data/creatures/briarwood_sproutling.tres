@@ -6,45 +6,41 @@ metadata/_data = """
   "id": "briarwood_sproutling",
   "name": "Briarwood Sproutling",
   "family": "fey",
-  "tier": "trash",
-  "level": 5,
-  "hp": 25,
-  "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 4,
-  "attack_speed": 1.2,
-  "move_speed": 4,
+  "tier": "elite",
+  "level": 20,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1.5,
+  "move_speed": 5.5,
   "behavior_tags": [
-    "plant_like"
+    "lure"
   ],
   "tells": [
     {
       "name": "photosynthesize",
-      "wind_up_ms": 500,
+      "wind_up_ms": 1000,
       "vfx_id": "glow"
     }
   ],
   "weaknesses": {
-    "fire": 1.2
+    "ice": 1.5
   },
   "resistances": {
-    "nature": 0.8
+    "nature": 0.5
   },
-  "xp_value": 10,
+  "xp_value": 100,
   "loot_table": [
     {
-      "item_id": "acorn",
-      "weight": 0.3
-    },
-    {
       "item_id": "petal",
-      "weight": 0.2
+      "weight": 0.6
     },
     {
-      "item_id": "twig",
-      "weight": 0.5
+      "item_id": "seed",
+      "weight": 0.4
     }
   ],
-  "flavor": "A tiny, leafy creature with a delicate petal-like face and a body made of twisted vines."
+  "flavor": "A delicate, plant-like creature with leaves for hair and a gentle glow, the Briarwood Sproutling can control the growth of vines to restrain its enemies."
 }
 """
