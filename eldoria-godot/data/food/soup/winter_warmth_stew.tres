@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "soup"
+metadata/_data = """
+{
+  "id": "winter_warmth_stew",
+  "name": "Winter's Warmth",
+  "main_ingredients": [
+    "wild_mushroom",
+    "dried_venison"
+  ],
+  "heal": 40,
+  "effect": "buff:warm:600s|cure:cold",
+  "flavor": "smoky forest broth"
+}
+"""
