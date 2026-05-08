@@ -346,18 +346,41 @@ func _ready() -> void:
 	cs.position.y = 0.9
 	add_child(cs)
 
-	# Hit area for player attacks (a slightly larger area than the body)
-	var hit_area := Area3D.new()
-	hit_area.name = "HitArea"
-	hit_area.collision_layer = 8
-	hit_area.collision_mask = 0
-	add_child(hit_area)
+	# PHYSICS-ENGINEER CHECK 9: hitbox (layer 4) and hurtbox (layer 5) must be
+	# SEPARATE Area3D nodes. Hitbox = the enemy's vulnerable area that player attack
+	# arc checks against. Hurtbox = the enemy's melee swing zone that Area3D overlap
+	# detects on the player side. Keeping them on distinct layers lets each combat
+	# system filter independently without cross-talk.
+	#
+	# Hitbox (layer 4) — where player arc-attacks land on this enemy.
+	var hitbox_area := Area3D.new()
+	hitbox_area.name = "HitboxArea"
+	hitbox_area.collision_layer = 4   # hitbox layer — player attacks check layer 4
+	hitbox_area.collision_mask = 0
+	hitbox_area.monitoring = true
+	add_child(hitbox_area)
 	var hac := CollisionShape3D.new()
 	var hcaps := CapsuleShape3D.new()
 	hcaps.radius = 0.55; hcaps.height = 1.8
 	hac.shape = hcaps
 	hac.position.y = 0.9
-	hit_area.add_child(hac)
+	hitbox_area.add_child(hac)
+	#
+	# Hurtbox (layer 5) — the enemy's melee swing volume.
+	# Separate from the hitbox so a parry/dodge system can mask layer 5
+	# independently without accidentally blocking player-attack detection.
+	var hurtbox_area := Area3D.new()
+	hurtbox_area.name = "HurtboxArea"
+	hurtbox_area.collision_layer = 5   # hurtbox layer — enemy attacks land here
+	hurtbox_area.collision_mask = 0
+	hurtbox_area.monitoring = true
+	add_child(hurtbox_area)
+	var hurt_cs := CollisionShape3D.new()
+	var hurt_caps := CapsuleShape3D.new()
+	hurt_caps.radius = 0.50; hurt_caps.height = 1.6
+	hurt_cs.shape = hurt_caps
+	hurt_cs.position.y = 0.8
+	hurtbox_area.add_child(hurt_cs)
 
 	# Visual model
 	_spawn_model()
