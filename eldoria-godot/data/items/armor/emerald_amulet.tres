@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "emerald_amulet",
+  "name": "Emerald Guardian",
+  "category": "armor",
+  "subtype": "amulet",
+  "tier": "rare",
+  "level_req": 30,
+  "stats": {
+    "atk": 0,
+    "def": 5,
+    "hp": 0,
+    "spd": 1
+  },
+  "flavor": "An ancient amulet that protects its wearer with the power of the forest.",
+  "realm": "shadewood"
+}
+"""

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonlit_dagger",
+  "name": "Glimmer Stinger",
+  "category": "weapon",
+  "subtype": "dagger",
+  "tier": "uncommon",
+  "level_req": 15,
+  "stats": {
+    "atk": 5,
+    "def": 0,
+    "hp": 0,
+    "spd": 2
+  },
+  "flavor": "A dagger that shines like the moon, perfect for sneaky adventurers.",
+  "realm": "tidesong"
+}
+"""
