@@ -194,6 +194,16 @@ func MAT_FOUNDATION(uv := 2.0) -> StandardMaterial3D:
 		"res://assets/textures/stone/stone_rough.jpg",
 		Vector3(uv, uv, 1))
 
+func MAT_PLASTER(uv := 3.0) -> StandardMaterial3D:
+	# Whitewashed plaster for building wall surfaces — half-timbered look
+	# when combined with MAT_DARK_WOOD corner beams.
+	var m = _sub_mat("res://assets/textures/arch/whitewashed_plaster/whitewashed_plaster.tres", uv)
+	if m: return m
+	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
+		"res://assets/textures/stone/stone_norm.jpg",
+		"",
+		Vector3(uv, uv, 1), Color(0.94, 0.91, 0.84))
+
 func MAT_BARK(uv := 2.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/bark/bark_diff.jpg",
 		"res://assets/textures/bark/bark_norm.jpg",
@@ -792,12 +802,12 @@ func _make_building(pos: Vector3) -> void:
 	foundation.position.y = 0.25
 	house.add_child(foundation)
 
-	# Walls (wood planks)
+	# Walls (whitewashed plaster — half-timbered look with dark wood corner beams)
 	var wall := MeshInstance3D.new()
 	var wall_mesh := BoxMesh.new()
 	wall_mesh.size = Vector3(3.6, 2.6, 3.6)
 	wall.mesh = wall_mesh
-	wall.material_override = MAT_WOOD(2)
+	wall.material_override = MAT_PLASTER(3)
 	wall.position.y = 1.3 + 0.5
 	house.add_child(wall)
 
