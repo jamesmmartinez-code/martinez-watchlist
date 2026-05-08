@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "my_neighborhood_ramen",
+  "name": "My Neighborhood Ramen",
+  "station_required": "cooking_pot",
+  "station_tier_min": 1,
+  "inputs": [
+    {
+      "item_id": "saffron_threads",
+      "qty": 1
+    },
+    {
+      "item_id": "tender_pork_belly",
+      "qty": 1
+    },
+    {
+      "item_id": "mystic_mushrooms",
+      "qty": 2
+    }
+  ],
+  "output": {
+    "item_id": "my_neighborhood_ramen",
+    "qty": 1
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A hearty, steaming bowl of noodles reminiscent of the whimsical town of Kiki's Delivery Service, where magic and community come together"
+}
+"""
