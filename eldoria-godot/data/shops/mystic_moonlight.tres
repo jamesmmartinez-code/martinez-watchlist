@@ -1,0 +1,56 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "mystic_moonlight",
+  "vendor_name": "Luna Sparklesong",
+  "region": "whisperwood",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 50,
+      "quantity": 20,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "NEW",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 200,
+      "quantity": 5,
+      "restock_hours": 48
+    },
+    {
+      "item_id": "NEW",
+      "price": 15,
+      "quantity": 50,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "NEW",
+      "price": 80,
+      "quantity": 15,
+      "restock_hours": 18
+    },
+    {
+      "item_id": "NEW",
+      "price": 300,
+      "quantity": 2,
+      "restock_hours": 72
+    },
+    {
+      "item_id": "NEW",
+      "price": 25,
+      "quantity": 30,
+      "restock_hours": 12
+    }
+  ],
+  "flavor": "A whimsical shop filled with sparkling treasures and curious trinkets, where the moon's gentle light inspires the most wondrous creations."
+}
+"""
