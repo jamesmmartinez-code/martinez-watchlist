@@ -7,11 +7,11 @@ metadata/_data = """
   "region": "whisperwood",
   "days": [
     {
-      "label": "Day 5",
-      "weather": "stormy_warm",
+      "label": "Day 1",
+      "weather": "sunny",
       "high_c": 20,
-      "low_c": 15,
-      "omen": "Thunder roars, a warm storm awakes"
+      "low_c": 10,
+      "omen": "Morning dew kisses the forest"
     }
   ]
 }
