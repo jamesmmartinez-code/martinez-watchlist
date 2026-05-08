@@ -1167,9 +1167,23 @@ func _process(delta: float) -> void:
 	# restores full output. Dawn/dusk get half-intensity (shafts read as morning
 	# mist cutting through), night shuts them off entirely (THEME §1 painterly mood).
 	var daylight_w: float = clamp(elev2 * 3.0, 0.0, 1.0)
+	# REFINE: visual — per-shaft wind-sway drift (run 25). All 5 shaft emitters
+	# previously stepped in identical lockstep — same amount_ratio every frame,
+	# which reads as a flat uniform glow rather than light moving through canopy
+	# gaps. Each shaft gets a unique slow-oscillation offset derived from its XZ
+	# position hash (incommensurable frequencies: shaft_phase offsets the sine by
+	# a fraction of its grid position so no two shafts peak together). Amplitude
+	# ±8% on top of the daylight_w base — enough to be visible as independent
+	# breathing but not so large it looks like a strobe. THEME §12 MOTION & LIFE:
+	# light through leaves moves; light from a fixture does not.
+	var t_now: float = float(Time.get_ticks_msec()) / 1000.0
 	for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
 		if shaft is GPUParticles3D:
-			shaft.amount_ratio = clamp(daylight_w * 0.85 + 0.15, 0.0, 1.0)
+			# Derive a stable per-shaft phase from its XZ position so the offset
+			# survives scene reloads (position is authored by WorldBuilder, not random).
+			var shaft_phase: float = fposmod(shaft.global_position.x * 1.31 + shaft.global_position.z * 0.79, TAU)
+			var sway: float = sin(t_now * 0.23 + shaft_phase) * 0.08
+			shaft.amount_ratio = clamp(daylight_w * 0.85 + 0.15 + sway, 0.0, 1.0)
 
 	# Run 24 (Builder): adaptive difficulty tick — fires every 10s.
 	# THEME §12: diff drifts via lerp, never hard-snaps.
@@ -2391,3 +2405,4 @@ func _pulse_card(node: Control) -> void:
 	var tw: Tween = create_tween().set_loops(2)
 	tw.tween_property(node, "modulate", pulse_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(node, "modulate", base_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
