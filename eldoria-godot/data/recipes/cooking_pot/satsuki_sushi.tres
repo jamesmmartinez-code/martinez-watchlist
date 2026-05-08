@@ -4,7 +4,7 @@ metadata/_kind = "recipe"
 metadata/_data = """
 {
   "id": "satsuki_sushi",
-  "name": "Satsuki Sushi",
+  "name": "Satsuki's Spirited Sushi",
   "station_required": "cooking_pot",
   "station_tier_min": 1,
   "inputs": [
@@ -13,11 +13,11 @@ metadata/_data = """
       "qty": 2
     },
     {
-      "item_id": "salmon",
+      "item_id": "totoro_tuna",
       "qty": 1
     },
     {
-      "item_id": "miso_paste",
+      "item_id": "satsuki_seaweed",
       "qty": 1
     }
   ],
@@ -27,8 +27,8 @@ metadata/_data = """
   },
   "time_seconds": 5,
   "fuel_cost": 1,
-  "unlock_condition": "auto",
+  "unlock_condition": "reach_level_5",
   "failure_behavior": "none",
-  "flavor": "A delicate dish inspired by the gentle spirit of Satsuki, with flavors that evoke the tranquility of the forest and the wisdom of the ancient trees."
+  "flavor": "A traditional dish from the countryside, said to bring good fortune and a taste of childhood wonder."
 }
 """

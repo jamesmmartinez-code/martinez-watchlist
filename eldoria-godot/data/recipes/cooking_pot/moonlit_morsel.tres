@@ -4,31 +4,31 @@ metadata/_kind = "recipe"
 metadata/_data = """
 {
   "id": "moonlit_morsel",
-  "name": "Moonbeam Muffin",
+  "name": "Luminous Leaf Wrap",
   "station_required": "cooking_pot",
   "station_tier_min": 2,
   "inputs": [
     {
-      "item_id": "moonstone_dust",
+      "item_id": "silver_leaf",
       "qty": 1
     },
     {
-      "item_id": "fresh_milk",
+      "item_id": "mythril_sugar",
+      "qty": 3
+    },
+    {
+      "item_id": "starlight_salt",
       "qty": 2
-    },
-    {
-      "item_id": "honey",
-      "qty": 1
     }
   ],
   "output": {
-    "item_id": "moonbeam_muffin",
+    "item_id": "luminous_leaf_wrap",
     "qty": 1
   },
   "time_seconds": 10,
   "fuel_cost": 2,
-  "unlock_condition": "complete_quest_moonlight",
+  "unlock_condition": "complete_quest_woodland_whispers",
   "failure_behavior": "return_inputs",
-  "flavor": "A delicate pastry infused with the soft glow of moonlight, reminiscent of a quiet night in the Shire."
+  "flavor": "Inspired by the moonlit forests of Lothlórien, this dish is said to grant the consumer visions of ancient wisdom."
 }
 """
