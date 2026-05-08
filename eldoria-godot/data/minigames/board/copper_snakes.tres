@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "copper_snakes",
+  "name": "Copper Snakes",
+  "play_at": "tavern",
+  "rules": "Roll dice, move snakes. Land on another snake, send it back. Reach the treasure first, win!",
+  "reward_win": "copper:5",
+  "flavor": "Golden light on wooden boards, laughter and dice"
+}
+"""
