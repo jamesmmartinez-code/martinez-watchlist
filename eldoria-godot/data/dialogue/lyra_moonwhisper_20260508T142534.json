@@ -1,0 +1,188 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra Moonwhisper",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Oh my, you must be the adventurer I've heard so much about! Welcome to our little village.",
+      "options": [
+        {
+          "player_text": "Thank you, I'm excited to explore!",
+          "goto": "explore",
+          "tags": [
+            "polite",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "What's the village like?",
+          "goto": "village",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explore",
+      "npc_text": "We have a lovely forest nearby, filled with ancient trees and sparkling streams. Be careful, though - the forest can be tricky to navigate.",
+      "options": [
+        {
+          "player_text": "I'll be careful, I promise!",
+          "goto": "forest",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Can you give me a map?",
+          "goto": "map",
+          "tags": [
+            "practical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "village",
+      "npc_text": "Our village is small, but we have a strong sense of community. We have a wonderful bakery, a cozy inn, and a bustling market square.",
+      "options": [
+        {
+          "player_text": "That sounds lovely, can I visit the bakery?",
+          "goto": "bakery",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm not really hungry, what else is there to do?",
+          "goto": "activities",
+          "tags": [
+            "adventurous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forest",
+      "npc_text": "Remember, the forest is full of wonders, but also dangers. Keep your wits about you and don't stray too far from the path.",
+      "options": [
+        {
+          "player_text": "I'll be careful, thank you!",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        },
+        {
+          "player_text": "What kind of dangers are in the forest?",
+          "goto": "dangers",
+          "tags": [
+            "cautious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "npc_text": "Here's a map of the forest - it should help you find your way. But don't rely too much on it, the forest can be unpredictable.",
+      "options": [
+        {
+          "player_text": "Thank you, this is really helpful!",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        },
+        {
+          "player_text": "What's this symbol on the map?",
+          "goto": "symbol",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bakery",
+      "npc_text": "Our bakery is famous for its delicious pastries and bread. I'm sure you'll find something you like.",
+      "options": [
+        {
+          "player_text": "I love baked goods, thank you!",
+          "goto": "END",
+          "tags": [
+            "excited"
+          ]
+        },
+        {
+          "player_text": "What's the special of the day?",
+          "goto": "special",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "activities",
+      "npc_text": "We have all sorts of activities in the village, from archery to woodworking. What sounds interesting to you?",
+      "options": [
+        {
+          "player_text": "I'd love to try archery!",
+          "goto": "END",
+          "tags": [
+            "adventurous"
+          ]
+        },
+        {
+          "player_text": "What's woodworking like?",
+          "goto": "woodworking",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dangers",
+      "npc_text": "There are rumors of strange creatures in the forest, but I'm sure you'll be fine. Just be careful and stay alert.",
+      "options": [
+        {
+          "player_text": "I'll be careful, thank you!",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        },
+        {
+          "player_text": "What kind of creatures are there?",
+          "goto": "creatures",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "symbol",
+      "npc_text": "That symbol marks a hidden clearing deep in the forest. It's said to be filled with magical flowers.",
+      "options": [
+        {
+          "player_text": "That sounds amazing, I'll have to find it!",
+          "goto": "END",
+          "tags": [
+            "excited"
+          ]
+        },
+        {
+          "player_text": "What kind of magical flowers?",
+          "goto": "flowers",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    }
+  ]
+}
