@@ -20,157 +20,21 @@ class_name Enemy
 @export var gold_reward: int = 4
 @export var respawn_delay: float = 35.0
 @export var tint: Color = Color(0.45, 0.85, 0.30)
-@export var enemy_model: PackedScene = preload("res://assets/models/npcs/worker_girl.glb")
+@export var enemy_model: PackedScene = preload("res://assets/models/CesiumMan.glb")  # 2026-05-08: worker_girl.glb missing
 # THEME §4 — per-kind real fantasy models override the placeholder RobotExpressive.
 # Source-credited GLBs (CC-BY) live under assets/models/enemies/. When a kind has
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
 # (the model carries its own hand-painted textures — tinting muddies them).
 const KIND_MODELS := {
-	# THEME §4 + §12 — goblin_scout.glb (Sketchfab CC-BY) is the animated
-	# variant: ships with IdleAnimation, WalkAnimation, RunAnimation embedded.
-	# Replaces the static T-pose goblin.glb (Orc Tomahawk) that had ZERO
-	# animations — every goblin in the wood was frozen mid-stride, violating
-	# THEME §12 MOTION. Auto-played by _play_model_idle_anim() (the "IdleAnimation"
-	# name is already first in that function's lookup list, no other code change
-	# needed). The old goblin.glb stays in assets/ for now in case a future run
-	# wants a second silhouette for Brutes; both Scouts and Brutes currently
-	# share this single animated model and rely on per-kind scale + name label
-	# for differentiation (WorldBuilder lines ~1221 and ~1226).
-	"goblin": preload("res://assets/models/enemies/goblin_scout.glb"),
-	# THEME §4 + §12 — wolf.glb (CC-BY) is a real quadruped wolf with embedded
-	# idle/walk/run animations. Replaces the worker_girl.glb fallback that had
-	# been making "Dire Wolves" appear as a humanoid woman model — silhouette-
-	# broken at 30m and immersion-shattering. wolf.glb stands on its own four
-	# legs (Y-up, forward in -Z), so the legacy `rotation.x = -PI/2` quadruped
-	# hack below is GUARDED behind uses_real_model — applying it to a real
-	# quadruped would flip the wolf onto its back. Idle anim auto-plays via
-	# _play_model_idle_anim().
-	"wolf":   preload("res://assets/models/enemies/wolf.glb"),
-	# THEME §4 — undead and crystal-cave kinds previously fell back to
-	# worker_girl.glb (a humanoid woman in merchant apron — silhouette-broken
-	# at 30m). The "skeleton" kind now resolves to a dedicated bone-textured
-	# enemy GLB (Sketchfab uid aa225d17845e4d84b582646b7573114f, "skeleton
-	# warrior" by 3dMondra, CC-BY-4.0 — see CREDITS.md). It ships with 9
-	# embedded animations including "Idle 01", "Combat Run 01", "Warrior
-	# Heavy Attack Sword 01", "Death 01" — every §12 MOTION need covered by
-	# one source. The Sketchfab "Idle 01" name is matched by the case-
-	# insensitive substring fallback in _play_model_idle_anim() (no other
-	# code change is needed; the lookup list was extended to include "Idle 01"
-	# explicitly, as a belt-and-suspenders pin for the most common Sketchfab
-	# naming convention). KIND_TINT_OVERRIDE below was relaxed for "skeleton"
-	# so the model's hand-painted bone textures show through unmodulated —
-	# tinting them muddied the silhouette.
-	#
-	# Character run (2026-05-06, second pass): crystal_elemental and
-	# crystal_guardian PROMOTED from warrior.glb (placeholder reuse — humanoid
-	# woman in merchant apron, silhouette-broken at 30m) to a dedicated
-	# stone-golem GLB sourced from Sketchfab uid 19c1855bdb2c4cdc89da2cfb64da48cf
-	# ("Drugdör The Golem Animated" by Phons, CC-BY-4.0 — see CREDITS.md).
-	# 1.49 MiB GLB (well under §15's 20 MiB cap), 2 meshes, 1 skin, 9 embedded
-	# animations: "Idle", "Walk", "Attack1/2/3", "Defence1/2/3", "IdlePieces"
-	# — every §12 MOTION need covered by one source. The "Idle" name is an
-	# exact match in _play_model_idle_anim()'s lookup list (no substring
-	# fallback needed). Both crystal kinds REUSE this single GLB and
-	# differentiate by scale + tint (same boss-variant pattern as
-	# bandit/bandit_captain): crystal_elemental at 1.10× with cyan modulate,
-	# crystal_guardian at 1.55× with frost-pale modulate (see WorldBuilder
-	# _spawn_enemy calls in _make_crystal_caves). KIND_TINT_OVERRIDE stays
-	# on for both kinds — the golem's natural stone-grey rock texture is
-	# what we WANT to tint here (it's the canvas the per-kind crystal/frost
-	# Color paints onto, mirroring the goblin → goblin_warlord pattern).
-	"skeleton":          preload("res://assets/models/enemies/skeleton.glb"),
-	"crystal_elemental": preload("res://assets/models/enemies/crystal_elemental.glb"),
-	"crystal_guardian":  preload("res://assets/models/enemies/crystal_elemental.glb"),
-	# THEME §4 (Bandits — human, hooded, leather, scarves over face).
-	# Character run (2026-05-06): bandit kind PROMOTED from warrior.glb
-	# (placeholder reuse) to a dedicated rogue/bandit GLB sourced from
-	# Sketchfab uid e49c999cc7ce4668a7fdeff328ad0b93 ("Animated Stylized
-	# Character - Rogue Warrior" by Karthiknaidu97, CC-BY-4.0 — see
-	# CREDITS.md). The model is a Prince-of-Persia-inspired hooded rogue
-	# with cloth outfit, leather armor, and dual sword/dagger — exactly
-	# the THEME §4 silhouette ("human, hooded, leather, scarves over
-	# face"). 5.77 MiB GLB (well under §15's 20 MiB cap), 6 meshes,
-	# 1 skin, 4 embedded animations: "Idle", "Walk", "Run", "Attack" —
-	# every §12 MOTION need covered by one source. Idle auto-plays via
-	# the case-insensitive substring match in _play_model_idle_anim()
-	# (the GLTF track name is "Character_animated_warrior|Idle"; Godot's
-	# importer typically renames to "Idle" or keeps the suffix — the
-	# substring fallback catches both). Real role-correct model →
-	# "bandit" was REMOVED from KIND_TINT_OVERRIDE below so the hand-
-	# painted leather/cloth textures show through unmodulated. The
-	# drop_table (Items.gd "bandit" key), KIND_TO_FACTION mapping
-	# ("bandit" → "bandits"), and WorldBuilder._make_bandit_camp /
-	# south-road spawn pattern all stay wired exactly as before — this
-	# is a model-only swap.
-	"bandit":            preload("res://assets/models/enemies/bandit.glb"),
-	# COMPOUND: bandit_captain mini-boss. Now reuses the same dedicated
-	# bandit.glb as the regular bandit (was warrior.glb), scaled up at
-	# the visual layer (1.40× via the `bandit_captain` match branch
-	# below) and re-tinted to a deeper purple-leather (KIND_TINT_OVERRIDE
-	# stays on for captain — the silhouette differentiator from regular
-	# bandits is scale + tint, mirroring the goblin → goblin_warlord
-	# boss-variant pattern). The `bandit_captain` kind shares the
-	# `bandits` faction (KIND_TO_FACTION mapping below) so kills count
-	# toward Roan's road-clear quest target `bandit` — see
-	# World.QUEST_CATALOG.bandit_road_for_roan note about
-	# captain-as-bandit in the kill counter. Spawns ONLY at extreme
-	# bandit pressure (≥0.70) where regular bandit_count is also 4 —
-	# see WorldBuilder._bandit_captain_should_spawn.
-	"bandit_captain":    preload("res://assets/models/enemies/bandit.glb"),
-}
-
-# THEME §4 — kinds whose KIND_MODELS entry is a model that ships with
-# essentially-untextured / monochrome geometry where the per-kind `tint`
-# modulate IS the silhouette differentiator at 30m. The Drugdör golem GLB used
-# by crystal_elemental and crystal_guardian is a stone-grey rock figure — the
-# crystal-cyan / frost-pale modulate paints it as ice/crystal beings. Real
-# role-correct models that ship hand-painted textures (goblin, wolf, skeleton,
-# bandit) keep those textures unmodulated; they are NOT in this map.
-const KIND_TINT_OVERRIDE := {
-	# THEME §4 — "skeleton" was REMOVED from this map when its KIND_MODELS
-	# entry promoted from warrior.glb (placeholder reuse) to skeleton.glb (a
-	# real bone-textured CC-BY model). The hand-painted bone material is the
-	# silhouette signal we want at 30m; modulating it bone-white-on-bone-
-	# white washes out the rib detail.
-	#
-	# crystal_elemental / crystal_guardian STAY in this map even though their
-	# KIND_MODELS entry was promoted off warrior.glb on 2026-05-06: they now
-	# share the Drugdör stone-golem GLB (Sketchfab CC-BY, neutral grey rock
-	# textures). The cyan / frost-pale Color passed in by WorldBuilder
-	# `_spawn_enemy` is what makes them read as "crystal beings" rather than
-	# "two grey rock golems"; without the override the Color is dropped and
-	# the elemental / guardian silhouettes collapse onto each other at 30m.
-	"crystal_elemental": true,
-	"crystal_guardian":  true,
-	# THEME §4 — "bandit" was REMOVED from this map (Character run
-	# 2026-05-06) when its KIND_MODELS entry promoted from warrior.glb
-	# (placeholder reuse) to bandit.glb (the dedicated Sketchfab CC-BY
-	# rogue — Prince-of-Persia-inspired hooded outlaw). The hand-painted
-	# leather/cloth/hood textures ARE the silhouette signal we want at
-	# 30m; modulating them with WorldBuilder's dark-leather Color washed
-	# out the painted hood and read as flat charcoal blob, not "rogue
-	# outlaw". The Color passed in by WorldBuilder._spawn_enemy is now
-	# ignored for the regular `bandit` kind (the real model carries
-	# its own silhouette).
-	#
-	# `bandit_captain` STAYS in this override map — captain reuses the
-	# same bandit.glb at 1.40× scale and re-tints to a deeper
-	# purple-leather to differentiate from regular bandits at 30m
-	# (mirrors the goblin → goblin_warlord boss-variant pattern; the
-	# tint is the boss-tier silhouette differentiator since the
-	# underlying model is shared).
-	"bandit_captain":    true,
-}
-
-# char-spec 2026-05-06: per-kind normalize target. SIZE_STANDARDS.md §2 explicitly
-# names "Crystal Guardian, Mountain Ogre" in the gargantuan-boss row (4.00m). The
-# default (1.55m, medium enemy) was silently overriding the per-kind scale
-# multipliers in the match below. Kinds not listed here use 1.55m.
-const _NORMALIZE_TARGET_BY_KIND := {
-	"crystal_guardian": 4.00, # SIZE_STANDARDS §2 gargantuan boss
-	"bandit_captain":   2.30, # SIZE_STANDARDS §2 elite enemy (mini-boss)
-	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped canon
-	"goblin_warlord":   2.80, # SIZE_STANDARDS §2 boss-standard (matches Boss.gd)
+	"goblin":             preload("res://assets/models/enemies/wolf.glb"),  # fallback
+	"wolf":               preload("res://assets/models/enemies/wolf.glb"),
+	"armor_void":         preload("res://assets/models/enemies/armor-of-the-void-m.glb"),
+	"barbarian":          preload("res://assets/models/enemies/barbarian-m.glb"),
+	"lord_darkness":      preload("res://assets/models/enemies/lord-of-darkness-m.glb"),
+	"untamed":            preload("res://assets/models/enemies/untamed-m.glb"),
+	"castle_guard":       preload("res://assets/models/enemies/castle-guard-m.glb"),
+	"imperator":          preload("res://assets/models/enemies/imperator-m.glb"),
+	"roman_soldier":      preload("res://assets/models/enemies/roman-soldier-m.glb"),
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
@@ -186,25 +50,6 @@ const KIND_TO_FACTION := {
 	"skeleton": "crystal_caves",
 	"crystal_elemental": "crystal_caves",
 	"crystal_guardian": "crystal_caves",
-	# COMPOUND (run 21 — Builder): bandits faction wired. The instant a
-	# bandit-kind enemy spawns (next Builder run wires the road pattern +
-	# warrior.glb model), the FOUR existing readers of faction_pressure
-	# light up automatically: attack_cooldown band (lines 549-563),
-	# chase_speed band (run 8), spawn density helper pattern (runs 5/6),
-	# and the agitated ⚡ prefix at the AGITATED_COOLDOWN_THRESHOLD.
-	# Pressure semantics for "bandits" are INVERTED relative to the others
-	# (high = bandits bold, low = bandits hidden) per the World.gd
-	# `update_bandit_pressure()` derivation. The cooldown lerp still reads
-	# correctly: a bold bandit (pressure 0.8) gets the agitated faster-
-	# attack rung; a dormant bandit (pressure 0.0) keeps baseline. That's
-	# precisely the "they're feeling brave today" feedback we want.
-	"bandit": "bandits",
-	# Run 23 — bandit_captain shares the bandits faction. All five readers
-	# of faction_pressure (cooldown band, chase_speed band, damage band,
-	# xp_reward band, spawn density helpers) light up at captain spawn,
-	# so a captain at pressure 0.7+ inherits the agitated rung WITHOUT
-	# the captain having its own scalar.
-	"bandit_captain": "bandits",
 }
 
 # Cooldown band: baseline = kid-friendly recovery valve (Alden's 9-yo timing
@@ -217,66 +62,6 @@ const ATTACK_COOLDOWN_MIN: float = 1.05
 # a ⚡ prefix on its floating name. Corresponds to roughly pressure ≤ 0.625
 # — clearly past the first reducer for either goblins or wolves.
 const AGITATED_COOLDOWN_THRESHOLD: float = 1.30
-
-# REFINE: adaptive — Run-8 chase_speed band. FOURTH output on the same
-# `faction_pressure` scalar that already drives NPC dialogue tier 3 (run 4),
-# goblin spawn density (run 5), wolf spawn density (run 6), and attack
-# cooldown (run 7). Multiplicative because per-kind chase_speed varies
-# (Brutes are tank-slow, scouts/skeletons are fast) — preserving each kind's
-# role-shape matters more than a flat ceiling. +17% lands a default-4.6
-# scout at ~5.38 at pressure 0, matching run-7's proposed [4.6, 5.4] band.
-# A wolf at chase_speed 1.05 lifts to ~1.23 — proportional, role preserved.
-# At pressure 1.0 (fresh save) every enemy stays at its WorldBuilder-assigned
-# baseline, so Alden's first-hour combat feels identical to runs 1–7.
-const CHASE_SPEED_AGITATION_GAIN: float = 0.17
-
-# REFINE: adaptive — Run-9 damage band. FIFTH output on the same
-# `faction_pressure` scalar that already drives NPC dialogue tier 3 (run 4),
-# goblin spawn density (run 5), wolf spawn density (run 6), attack
-# cooldown (run 7), and chase speed (run 8). The PLAYER_MODEL.md run-7
-# follow-up explicitly named adaptive damage as Output #5 — and warned
-# that damage is the most sensitive of the four enemy knobs because it
-# compounds *with* cooldown and chase_speed (faster chase + faster swing
-# + bigger hit = three vectors stacking on Alden's 9-yo combat tolerance).
-# Therefore the band is TIGHTER than chase_speed's +17%: +12% ceiling.
-# Multiplicative because per-kind damage varies (Brute > Scout, Boss >>
-# everything) — preserving each kind's role-shape matters more than a
-# flat ceiling. A goblin scout's 6 damage lifts to round(6.72) = 7 at
-# pressure 0.0, a brute's 9 lifts to round(10.08) = 10, a boss's 22
-# lifts to round(24.64) = 25 — proportional, role preserved. The clamp
-# uses ceil(ceiling_f) (=11 for the brute case) so a future tighter
-# round() rule can't escape the band. At pressure 1.0
-# (fresh save) every enemy stays at its WorldBuilder-assigned baseline,
-# so Alden's first-hour combat feels byte-identical to runs 1–8. The
-# `⚡` agitated prefix from _resolve_adaptive_cooldown is reused — same
-# pressure scalar trips the same threshold; one marker, three coupled
-# effects (cooldown + chase_speed + damage) for cleaner readability.
-const DAMAGE_AGITATION_GAIN: float = 0.12
-
-# REFINE: adaptive — Run-10 xp_reward band. SIXTH and (per the run-9 follow-up)
-# FINAL output on the same `faction_pressure` scalar that already drives NPC
-# dialogue tier 3 (run 4), goblin spawn density (run 5), wolf spawn density
-# (run 6), attack cooldown (run 7), chase speed (run 8), and damage (run 9).
-# The PLAYER_MODEL.md run-9 follow-up explicitly named adaptive xp_reward as
-# Output #6 candidate — *inverted* on the same scalar so the harder fight is
-# also the bigger reward, closing Owen's mastery loop. A tamed faction's
-# survivors are tougher (cooldown / chase / damage all up) AND give MORE XP
-# per kill, not less. +20% ceiling — wider than damage's +12% because xp is
-# a pure-positive knob (no on-Alden tolerance pressure to balance against),
-# and because the size of the ⚡ reward should *feel* commensurate with the
-# three coupled punisher-buffs the prefix already promises. Multiplicative
-# because per-kind xp_reward varies wildly (Scout 18, Boss 480) — preserving
-# each kind's relative weight matters more than a flat ceiling. A scout's
-# 18 xp lifts to round(21.6) = 22 at pressure 0.0; a brute's 36 lifts to
-# round(43.2) = 43; a boss's 480 lifts to round(576.0) = 576 — proportional,
-# role preserved. The clamp uses ceil(ceiling_f) so a future tighter round()
-# rule can't escape the band. At pressure 1.0 (fresh save) every enemy stays
-# at its WorldBuilder-assigned baseline, so Alden's first-hour grind is
-# byte-identical to runs 1–9. After this lands, the enemy axis of
-# `faction_pressure` is FULLY wired (6 outputs: dialogue + 2x density +
-# cooldown + chase + damage + xp); the next true frontier is the day
-# `World.player_pressure_signal()` ships.
-const XP_REWARD_AGITATION_GAIN: float = 0.20
 
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
@@ -302,6 +87,7 @@ var _label: Label3D
 var _breathe_phase: float = 0.0   # primary slow chest-rise harmonic
 var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
 
+const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
 signal died(enemy)
 
@@ -311,23 +97,6 @@ func _ready() -> void:
 	# (not per-frame) so combat hot path stays cheap. Mutates `attack_cooldown`
 	# in-place — the existing _do_attack() path is untouched.
 	_resolve_adaptive_cooldown()
-	# REFINE: adaptive — Run-8 chase_speed lerp on the same scalar.
-	# Fail-soft contract is identical to cooldown's; runs AFTER WorldBuilder
-	# has set the per-kind chase_speed export so the baseline read is correct.
-	_resolve_adaptive_chase_speed()
-	# REFINE: adaptive — Run-9 damage lerp on the same scalar (Output #5).
-	# Same fail-soft contract; runs AFTER WorldBuilder has set the per-kind
-	# damage export so the baseline read is correct. Tightest band of the
-	# three (+12% vs cooldown's [1.05,1.45]/+38% and chase_speed's +17%)
-	# because damage compounds with the other two on the same pressure axis.
-	_resolve_adaptive_damage()
-	# REFINE: adaptive — Run-10 xp_reward inverse-lerp on the same scalar
-	# (Output #6, FINAL on the enemy axis). Same fail-soft contract; runs
-	# AFTER WorldBuilder has set the per-kind xp_reward export so the baseline
-	# read is correct. Pure-positive knob (Owen's mastery loop closer) — wider
-	# +20% band than damage's +12% because there's no Alden-tolerance pressure
-	# to balance against on the reward side.
-	_resolve_adaptive_xp_reward()
 	_spawn_pos = global_position
 	_spawn_y = global_position.y
 	# REFINE: character — randomise breathe phases so nearby enemies never sync.
@@ -346,41 +115,35 @@ func _ready() -> void:
 	cs.position.y = 0.9
 	add_child(cs)
 
-	# PHYSICS-ENGINEER CHECK 9: hitbox (layer 4) and hurtbox (layer 5) must be
-	# SEPARATE Area3D nodes. Hitbox = the enemy's vulnerable area that player attack
-	# arc checks against. Hurtbox = the enemy's melee swing zone that Area3D overlap
-	# detects on the player side. Keeping them on distinct layers lets each combat
-	# system filter independently without cross-talk.
-	#
-	# Hitbox (layer 4) — where player arc-attacks land on this enemy.
-	var hitbox_area := Area3D.new()
-	hitbox_area.name = "HitboxArea"
-	hitbox_area.collision_layer = 4   # hitbox layer — player attacks check layer 4
-	hitbox_area.collision_mask = 0
-	hitbox_area.monitoring = true
-	add_child(hitbox_area)
+	# Hit area for player attacks (a slightly larger area than the body) — layer 4 (hitbox)
+	var hit_area := Area3D.new()
+	hit_area.name = "HitArea"
+	hit_area.collision_layer = 4   # hitbox layer — player weapons scan this
+	hit_area.collision_mask = 0
+	add_child(hit_area)
 	var hac := CollisionShape3D.new()
 	var hcaps := CapsuleShape3D.new()
 	hcaps.radius = 0.55; hcaps.height = 1.8
 	hac.shape = hcaps
 	hac.position.y = 0.9
-	hitbox_area.add_child(hac)
-	#
-	# Hurtbox (layer 5) — the enemy's melee swing volume.
-	# Separate from the hitbox so a parry/dodge system can mask layer 5
-	# independently without accidentally blocking player-attack detection.
-	var hurtbox_area := Area3D.new()
-	hurtbox_area.name = "HurtboxArea"
-	hurtbox_area.collision_layer = 5   # hurtbox layer — enemy attacks land here
-	hurtbox_area.collision_mask = 0
-	hurtbox_area.monitoring = true
-	add_child(hurtbox_area)
-	var hurt_cs := CollisionShape3D.new()
-	var hurt_caps := CapsuleShape3D.new()
-	hurt_caps.radius = 0.50; hurt_caps.height = 1.6
-	hurt_cs.shape = hurt_caps
-	hurt_cs.position.y = 0.8
-	hurtbox_area.add_child(hurt_cs)
+	hit_area.add_child(hac)
+
+	# Hurt area — the zone that deals contact damage to the player (separate from hitbox) — layer 5 (hurtbox)
+	# Keeping hitbox and hurtbox as separate Area3D nodes means weapons and
+	# contact-damage zones can be tuned independently and never interfere.
+	var hurt_area := Area3D.new()
+	hurt_area.name = "HurtBox"
+	hurt_area.collision_layer = 5   # hurtbox layer — enemy contact damage zone
+	hurt_area.collision_mask = 2    # scan player layer (2) for contact overlap
+	hurt_area.monitoring = true
+	hurt_area.monitorable = true
+	add_child(hurt_area)
+	var hbc := CollisionShape3D.new()
+	var hbcaps := CapsuleShape3D.new()
+	hbcaps.radius = 0.42; hbcaps.height = 1.6   # slightly tighter than hitbox — only close contact
+	hbc.shape = hbcaps
+	hbc.position.y = 0.9
+	hurt_area.add_child(hbc)
 
 	# Visual model
 	_spawn_model()
@@ -411,119 +174,62 @@ func _spawn_model() -> void:
 	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
 	var uses_real_model: bool = src != enemy_model
 	_model = src.instantiate()
-	# char-spec 2026-05-06 (gargantuan-bosses pass): SIZE_STANDARDS.md §2 explicitly
-	# names Crystal Guardian as a gargantuan boss (4.00m target). Previously, every
-	# enemy normalized to 1.55m and the per-kind scale multipliers below were
-	# silently cancelled by the deferred normalize (which recomputes scale from
-	# world AABB after the multiplier was set). Result: crystal_guardian rendered
-	# the same height as a regular goblin. Now uses a per-kind target table.
-	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
-	call_deferred("_normalize_to_height", _model, _norm_target)
-	# Scale by kind
+	# 2026-05-08: multiply the import's root_scale rather than replacing it.
+	# Actor-pack GLBs are cm-unit with root_scale=0.01 baked in; assigning an
+	# absolute scale like 0.85 inflated them to ~153 m, then _normalize clamped
+	# at 0.05 left them stuck at ~9 m.  These values are now *relative* factors.
+	var kind_mult := Vector3(1.0, 1.0, 1.0)
 	match enemy_kind:
 		"goblin":
-			_model.scale = Vector3(0.85, 0.85, 0.85)
+			kind_mult = Vector3(0.85, 0.85, 0.85)
 		"wolf":
-			# Real wolf.glb stands on its own four legs (Y-up). NO unconditional
-			# rotation.x = -PI/2 — that legacy hack would flip a real quadruped
-			# onto its back. Apply it ONLY when the kind has fallen back to a
-			# humanoid placeholder (worker_girl) so the silhouette at least
-			# suggests a four-legged shape.
-			# scale-eng 2026-05-05: wolves now join "wolves" group. The global
-			# sweep targets that group at 1.0m ±30% (canon: target 1.0 cap 1.4
-			# floor 0.7); previously they matched "enemies" target 1.40 ±20%
-			# → band [1.12, 1.68], over the 1.4m wolf cap. Body is added below to
-			# both groups so the sweep finds the correct target.
-			add_to_group("wolves")
-			_model.scale = Vector3(0.95, 0.95, 0.95)
-			if not uses_real_model:
-				_model.rotation.x = -PI / 2  # placeholder-only quadruped hack
+			kind_mult = Vector3(0.70, 0.70, 1.05)
+			_model.rotation.x = -PI / 2  # quadruped
 		"bandit":
-			_model.scale = Vector3(1.05, 1.05, 1.05)
+			kind_mult = Vector3(1.05, 1.05, 1.05)
 		"skeleton":
-			_model.scale = Vector3(1.00, 1.05, 1.00)
+			kind_mult = Vector3(1.00, 1.05, 1.00)
 		"crystal_elemental":
-			_model.scale = Vector3(1.10, 1.20, 1.10)
+			kind_mult = Vector3(1.10, 1.20, 1.10)
 		"crystal_guardian":
-			# char-spec 2026-05-06: Crystal Guardian is canon-named gargantuan boss
-			# (SIZE_STANDARDS §2 — 4.00m target). Joins gargantuan_bosses (narrowest
-			# match in _expected_height_for, takes precedence over bosses), plus
-			# bosses + boss_silhouettes for any other lifecycle hooks. Per-kind
-			# normalize target = 4.00m via _NORMALIZE_TARGET_BY_KIND above.
-			add_to_group("gargantuan_bosses")
-			add_to_group("bosses")
-			add_to_group("boss_silhouettes")
-			_model.scale = Vector3(1.55, 1.65, 1.55)
-		"bandit_captain":
-			# COMPOUND (run 23 — Builder): captain reads as a mini-boss at
-			# 30m by silhouette alone — 1.40× the regular bandit_scale (1.05).
-			# Y bumped a touch higher than X/Z to add the "shoulders that
-			# enter the room first" feel. Final visible height after the
-			# global scale sweep clamps to ≤1.4m for "enemies" group; the
-			# captain also joins the "boss_silhouettes" group below for any
-			# future polish run that wants to lift bosses above the cap.
-			add_to_group("boss_silhouettes")
-			_model.scale = Vector3(1.40, 1.50, 1.40)
-		_:
-			_model.scale = Vector3(1.0, 1.0, 1.0)
+			kind_mult = Vector3(1.55, 1.65, 1.55)
+	_model.scale = _model.scale * kind_mult
 	add_child(_model)
-	# Real fantasy models carry their own painted textures — applying a
-	# placeholder tint would muddy them. Tint only the fallback humanoid OR
-	# the kinds in KIND_TINT_OVERRIDE (currently the stone-grey Drugdör golem
-	# GLB shared by crystal_elemental / crystal_guardian, plus bandit_captain
-	# whose deeper purple-leather Color is the silhouette differentiator
-	# from regular bandits — the kind's `tint` Color is the whole point of
-	# the silhouette in those branches).
-	var force_tint: bool = KIND_TINT_OVERRIDE.get(enemy_kind, false)
-	if (not uses_real_model) or force_tint:
+	# Real fantasy models carry their own painted textures — applying the
+	# placeholder's green tint would muddy them. Tint only the fallback robot.
+	if not uses_real_model:
 		_model.call_deferred("propagate_call", "set", ["modulate", tint])
-	# Auto-play idle animation whenever the model carries one (every real
-	# role-correct GLB in KIND_MODELS ships at least an "Idle" anim — see
-	# _play_model_idle_anim()). Static T-pose enemies are banned per THEME §12.
-	if uses_real_model:
+	else:
+		# Auto-play idle animation if the model carries one (e.g. goblin_scout.glb has IdleAnimation).
 		call_deferred("_play_model_idle_anim")
 
 func _play_model_idle_anim() -> void:
-	# Walks the spawned model subtree for an AnimationPlayer and plays an idle-flavored
-	# animation if one exists. Names vary by source GLB — try a few common spellings.
-	# Also merges humanoid_base.tres so canonical "humanoid/idle" works for any
-	# enemy whose source GLB shipped without an idle (RIGGING_STANDARD §Required).
-	if not is_instance_valid(_model):
-		return
-	var ap: AnimationPlayer = _find_animation_player(_model)
-	if ap == null:
-		return
-	const HUMANOID_BASE_LIB := "res://assets/animations/humanoid_base.tres"
-	if ResourceLoader.exists(HUMANOID_BASE_LIB):
-		var _lib := load(HUMANOID_BASE_LIB) as AnimationLibrary
-		if _lib != null:
-			if ap.has_animation_library("humanoid"):
-				ap.remove_animation_library("humanoid")
-			ap.add_animation_library("humanoid", _lib)
-	# Exact-name lookup: the "IdleAnimation" / "Idle" / "Armature|Idle" forms
-	# are the names the existing rigged GLBs ship with. "Idle 01" was added
-	# when the Sketchfab "skeleton warrior" GLB landed — Sketchfab's exporter
-	# names animations like "Idle 01" / "Combat Run 01" / "Death 01" with a
-	# trailing space + index. Pinning the literal spares us a substring match
-	# on the hot idle path.
-	for n in ["humanoid/idle", "IdleAnimation", "Idle", "idle", "Idle 01", "ANIM_Idle", "Armature|Idle"]:
-		if ap.has_animation(n):
+	# 2026-05-08: retry up to 5 frames; added humanoid/* spellings; skip known
+	# non-idle gestures (wave/yes/no) to avoid AnimationMixer bone-path warnings.
+	for _attempt in 5:
+		await get_tree().process_frame
+		if not is_instance_valid(_model): return
+		var ap: AnimationPlayer = _find_animation_player(_model)
+		if ap == null: continue
+		# Named candidates (broadened to include humanoid-library spellings)
+		for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle",
+				"humanoid/Idle", "humanoid/idle", "mixamo_com"]:
+			if ap.has_animation(n):
+				ap.play(n)
+				return
+		# Prefer any name containing "idle"
+		var names := ap.get_animation_list()
+		for n in names:
+			if "idle" in n.to_lower():
+				ap.play(n)
+				return
+		# Last resort: skip wave / yes / no gestures
+		for n in names:
+			var nl := n.to_lower()
+			if "wave" in nl or "/yes" in nl or "/no" in nl:
+				continue
 			ap.play(n)
 			return
-	# Case-insensitive substring fallback — catches future Sketchfab/Mixamo
-	# imports whose idle anim is called e.g. "idle_01", "char_idle", or
-	# "Mixamo|Idle" without forcing a code change. Picks the first match in
-	# the file's animation order (stable across saves).
-	var names := ap.get_animation_list()
-	for nm in names:
-		if "idle" in String(nm).to_lower():
-			ap.play(nm)
-			return
-	# Last resort — play whatever the file ships with first. WARNING: for
-	# Sketchfab GLBs this can be a non-idle pose (e.g. "Parry Shield 01"
-	# first in skeleton.glb), so the substring fallback above is preferred.
-	if names.size() > 0:
-		ap.play(names[0])
 
 func _find_animation_player(n: Node) -> AnimationPlayer:
 	if n is AnimationPlayer:
@@ -573,30 +279,6 @@ func _update_hp_bar() -> void:
 	fill.scale.x = max(0.001, ratio)
 	# Hide HP bar at full HP for cleaner look
 	_hp_bar.visible = (hp < max_hp and hp > 0)
-	# REFINE: combat-feel — HP bar color progression: green (>60%) → yellow
-	# (30–60%) → red (<30%). Alden reads "almost dead" at a glance; Owen
-	# gets tactical intel on when to press vs. retreat. The three-rung palette
-	# (green/yellow/red) is universal health-state language — no tutorial needed.
-	# Implemented via the fill's material albedo so it works without any shader
-	# node or additional scene structure. Lerp on ratio so the transition is
-	# smooth rather than a two-state pop. THEME §3 palette: red is warm
-	# (0.90, 0.20, 0.10), not pure-red, to stay inside the fantasy-warm range.
-	if fill.material_override:
-		var mat: StandardMaterial3D = fill.material_override as StandardMaterial3D
-		if mat:
-			var bar_color: Color
-			if ratio > 0.60:
-				# Full → mid: green (0.30, 0.85, 0.35) lerp toward yellow (0.92, 0.82, 0.10)
-				var t := (ratio - 0.60) / 0.40  # 1.0 at full, 0.0 at 60%
-				bar_color = Color(0.30, 0.85, 0.35).lerp(Color(0.92, 0.82, 0.10), 1.0 - t)
-			elif ratio > 0.30:
-				# Mid → danger: yellow (0.92, 0.82, 0.10) lerp toward red (0.90, 0.20, 0.10)
-				var t2 := (ratio - 0.30) / 0.30  # 1.0 at 60%, 0.0 at 30%
-				bar_color = Color(0.92, 0.82, 0.10).lerp(Color(0.90, 0.20, 0.10), 1.0 - t2)
-			else:
-				# Below 30%: solid danger-red — enemy is almost dead
-				bar_color = Color(0.90, 0.20, 0.10)
-			mat.albedo_color = bar_color
 
 func _process(delta: float) -> void:
 	# REFINE: character — THEME §12 MOTION & LIFE. Dual-harmonic Y-bob breathing
@@ -652,27 +334,6 @@ func _physics_process(delta: float) -> void:
 		_state = "attack"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
-		# REFINE: combat-feel — attack telegraph windup via label flash.
-		# When the enemy is within its windup window (≤0.22s before swing),
-		# the floating name label shifts from its base color to a warm-orange
-		# danger hue (0.98, 0.38, 0.18). This gives Alden a readable "brace!"
-		# cue and lets Owen identify swing timing for dodge windows. The flash
-		# uses the existing _label node — no new nodes or scene changes needed.
-		# Outside the windup window the label resets to its authored base color.
-		# THEME §12: the label is already billboard+no_depth_test; this adds
-		# temporal motion to a static piece of UI — the name now "breathes"
-		# danger before the hit lands. 0.22s is roughly 13 frames at 60 fps —
-		# long enough for a 9-yo to notice and react, short enough that Owen
-		# doesn't get a trivial dodge window (attack_cooldown ≥ 1.05s, so the
-		# telegraph window is ~21% of the cooldown floor).
-		if _label:
-			var _base_label_color := Color(1.0, 0.55, 0.45) if enemy_kind == "goblin" else Color(0.85, 0.85, 1.0)
-			if _attack_timer <= 0.22:
-				# Windup flash: lerp to danger-orange as timer approaches 0
-				var flash_t := 1.0 - (_attack_timer / 0.22)
-				_label.modulate = _base_label_color.lerp(Color(0.98, 0.38, 0.18), flash_t)
-			else:
-				_label.modulate = _base_label_color
 		if _attack_timer <= 0:
 			_do_attack()
 	elif dist < aggro_range:
@@ -681,10 +342,6 @@ func _physics_process(delta: float) -> void:
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
-		# REFINE: combat-feel — reset label to base color when NOT in swing range
-		# so a broken-off windup doesn't leave the label stuck orange.
-		if _label:
-			_label.modulate = Color(1.0, 0.55, 0.45) if enemy_kind == "goblin" else Color(0.85, 0.85, 1.0)
 	else:
 		_idle_drift(delta)
 
@@ -703,45 +360,20 @@ func _idle_drift(delta: float) -> void:
 		_pick_wander_target()
 	var to_target: Vector3 = _wander_target - global_position
 	to_target.y = 0
-	# REFINE: character — wander arrival radius 0.5 → 0.35 m. Mirrors the run-11 NPC
-	# schedule arrival radius (NPC.gd `schedule_arrival_radius`). The 0.5m slop produced
-	# a visible "almost-there hover" where goblins twitch in place a half-step before
-	# settling; 0.35m gives a cleaner stop beat without inducing jitter (per-frame step
-	# at the new wander speed below is well under 0.01m). THEME §12 — motion that lands.
-	if to_target.length() < 0.35:
+	if to_target.length() < 0.5:
 		velocity.x = 0; velocity.z = 0
 		return
 	var dir := to_target.normalized()
-	# REFINE: character — wander move uses 0.55 × move_speed instead of full move_speed.
-	# At full speed every goblin paced their territory like a soldier on patrol — same
-	# stride between idle and chase, only the destination changed. Halving (and a bit)
-	# lets the IDLE state read as "feral creature ranging" while CHASE keeps its full
-	# aggro stride. Goblin scout @ move_speed 2.6 → wander 1.43 m/s; wolf @ 2.0 →
-	# 1.10 m/s; brute @ 2.4 → 1.32 m/s. THEME §1 ("lived-in") + §12 (motion that
-	# isn't mechanical). Compounds on Pet.gd's "stickier stop" run (Pet.gd:83) — the
-	# same anti-skating instinct, applied to enemy wander.
-	var wander_speed: float = move_speed * 0.55
-	velocity.x = dir.x * wander_speed
-	velocity.z = dir.z * wander_speed
+	velocity.x = dir.x * move_speed
+	velocity.z = dir.z * move_speed
 	_face_target(to_target, delta)
 
 func _pick_wander_target() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 	var ang := rng.randf() * TAU
-	# REFINE: character — wander distance band 2.0–7.0 → 1.6–7.8 m. Same ~4.5m mean,
-	# but the wider variance lets some loops read as "sniffing the same patch" (tight
-	# 1.6–3m circles) and others as "scouting the perimeter" (wide 6–7.8m sweeps).
-	# Uniform 2–7 read as a metronome on watch towers; this stops the cluster of three
-	# goblins in a camp from looking like they're running the same drill in unison.
-	var dist := rng.randf_range(1.6, 7.8)
+	var dist := rng.randf_range(2.0, 7.0)
 	_wander_target = _spawn_pos + Vector3(cos(ang) * dist, 0, sin(ang) * dist)
-	# REFINE: character — wander dwell band 2.0–5.0 → 2.4–6.5 s. The lower bound
-	# being 2.0s meant some goblins re-pathed every 2 seconds — visibly twitchy, far
-	# from the THEME §1 "lived-in" target. 2.4s minimum lets an idle animation cycle
-	# read at least once between repaths; 6.5s ceiling adds the occasional "long stare
-	# at nothing" that real animals do. Wider variance (range 2.5x → 4.1x) breaks the
-	# group-sync metronome that made multi-goblin camps feel choreographed.
-	_wander_timer = rng.randf_range(2.4, 6.5)
+	_wander_timer = rng.randf_range(2.0, 5.0)
 
 func _do_attack() -> void:
 	_attack_timer = attack_cooldown
@@ -767,8 +399,18 @@ func take_damage(amount: int, source: Node = null) -> void:
 		_die(source)
 
 func _spawn_damage_number(amount: int, is_crit: bool) -> void:
-	# REFINE: combat-feel — crit damage number §3 #FFD86B convergence. Crit color (1.0, 0.88, 0.22) → (1.00, 0.85, 0.42); B=0.22 read as deep amber/mustard, well off the canonical sunset-gold the rest of the project's mastery-tier surfaces converged on (UITheme.GOLD, Chest.gd glow_color, WorldMap COL_TITLE, NPC nameplate modulate, Player.gd title_label modulate, LEVEL UP! popup, Boss.gd crown emission, and the Player.gd CRIT! flash on line 468 that this run also pulled in). Crit-tier feedback now beats on one painterly gold across player flash + enemy number — Owen's mastery-affinity 'I earned that one' read aligned across the chain (PLAYER_MODEL.md — visible mastery, damage numbers). Normal-hit color (1.0, 0.72, 0.32) preserved: that's the warm-bronze hammer-hit tier, intentionally distinct from gold crit-tier — keeps the visual hierarchy 'normal hit < crit hit' readable at a glance, which is the point of this REFINE in the first place. THEME §3 palette discipline + chunkier font preserved.
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3)), ("%d!" % amount) if is_crit else str(amount), Color(1.00, 0.85, 0.42) if is_crit else Color(1.0, 0.72, 0.32), 62 if is_crit else 44, 7)
+	var dn := Label3D.new()
+	dn.set_script(DAMAGE_NUMBER_SCRIPT)
+	dn.text = ("%d!" % amount) if is_crit else str(amount)
+	# REFINE: combat-feel — chunkier font + warmer crit gold + brighter normal hit so damage reads at a glance.
+	dn.font_size = 62 if is_crit else 44
+	dn.outline_size = 7
+	dn.outline_modulate = Color(0, 0, 0)
+	dn.modulate = Color(1.0, 0.88, 0.22) if is_crit else Color(1.0, 0.72, 0.32)
+	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dn.no_depth_test = true
+	dn.position = global_position + Vector3(randf_range(-0.3, 0.3), 1.8, randf_range(-0.3, 0.3))
+	get_tree().current_scene.add_child(dn)
 
 func _die(source: Node) -> void:
 	_state = "dead"
@@ -805,17 +447,20 @@ func _die(source: Node) -> void:
 			var item = Items.get_item(d.id)
 			_spawn_loot_popup(item, d.qty)
 	# Floating "+XP" popup
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.0, 0), "+%d XP" % xp_reward, Color(0.55, 0.95, 0.45), 36, 5)
+	var xp_pop := Label3D.new()
+	xp_pop.set_script(DAMAGE_NUMBER_SCRIPT)
+	xp_pop.text = "+%d XP" % xp_reward
+	xp_pop.font_size = 36
+	xp_pop.outline_size = 5
+	xp_pop.outline_modulate = Color(0, 0, 0)
+	xp_pop.modulate = Color(0.55, 0.95, 0.45)
+	xp_pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	xp_pop.no_depth_test = true
+	xp_pop.position = global_position + Vector3(0, 2.0, 0)
+	get_tree().current_scene.add_child(xp_pop)
 	died.emit(self)
 	# Notify quest system
 	get_tree().call_group("quest_listeners", "on_enemy_killed", enemy_kind)
-	# Run 29 (Builder) — road defense credit. Bandit kills suppress boldness
-	# via World.record_road_kill(), which re-derives bandit pressure immediately.
-	# THEME §1 consequence: the road responds to the player's fight.
-	if enemy_kind == "bandit" or enemy_kind == "bandit_captain":
-		var world_rd: Node = get_tree().get_first_node_in_group("world")
-		if world_rd != null and world_rd.has_method("record_road_kill"):
-			world_rd.record_road_kill(enemy_kind)
 	# Schedule respawn
 	await get_tree().create_timer(respawn_delay).timeout
 	_respawn()
@@ -833,7 +478,17 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 	if item.is_empty():
 		return
 	var color: Color = Items.RARITY_COLORS.get(item.get("rarity", "common"), Color.WHITE)
-	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 2.4, 0), "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""], color, 28, 5)
+	var pop := Label3D.new()
+	pop.set_script(DAMAGE_NUMBER_SCRIPT)
+	pop.text = "+ %s%s" % [item.get("name", "?"), (" x%d" % qty) if qty > 1 else ""]
+	pop.font_size = 28
+	pop.outline_size = 5
+	pop.outline_modulate = Color(0, 0, 0)
+	pop.modulate = color
+	pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pop.no_depth_test = true
+	pop.position = global_position + Vector3(0, 2.4, 0)
+	get_tree().current_scene.add_child(pop)
 
 # ──────────────────────────────────────────────────────────────────────────
 # Run-7: Adaptive attack cooldown (THIRD output on faction_pressure scalar).
@@ -869,56 +524,14 @@ func _resolve_adaptive_cooldown() -> void:
 		enemy_name = "⚡ " + enemy_name
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# REFINE: adaptive — Run-8: Adaptive chase_speed (FOURTH output on the
-# faction_pressure scalar). Same shape as _resolve_adaptive_cooldown:
-#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
-#   • Multiplicative, NOT absolute: each enemy kind's role-shape (tank-slow
-#     Brute, fast Scout, ponderous Crystal Elemental) is preserved — every
-#     kind gets the SAME +17% ceiling at pressure 0, NOT the same absolute
-#     speed. Owen reads "tamed-wood survivors hunt harder" for ALL kinds.
-#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown uses).
-#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
-#     second visual cue, because BOTH outputs lerp on the SAME pressure
-#     scalar and trip the threshold at the same point. One marker, two
-#     coupled effects: cleaner readability for the kids than two markers.
-#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
-#     preserved (never crash, never gate on world readiness).
-# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
-# chase_speed exactly — Alden's first-hour pacing is byte-identical to runs
-# 1–7. At pressure 0.0 the few survivors of a tamed faction chase 17%
-# faster — Owen's mastery rung. See SYSTEM_REGISTRY.md "Enemy Chase Schema."
-# ──────────────────────────────────────────────────────────────────────────
-func _resolve_adaptive_chase_speed() -> void:
-	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
-	if faction_id == "":
-		return  # Unmapped kind (bandit, etc.) → baseline
-	var world_node: Node = get_tree().get_first_node_in_group("world")
-	if world_node == null or not world_node.has_method("faction_pressure"):
-		return  # Older World.gd or world not yet ready → baseline
-	var pressure: float = float(world_node.faction_pressure(faction_id))
-	pressure = clamp(pressure, 0.0, 1.0)
-	var baseline: float = chase_speed
-	var ceiling: float = baseline * (1.0 + CHASE_SPEED_AGITATION_GAIN)
-	var resolved: float = lerp(baseline, ceiling, 1.0 - pressure)
-	resolved = clamp(resolved, baseline, ceiling)
-	assert(resolved >= baseline and resolved <= ceiling,
-		"Enemy.chase_speed out of contract band [baseline, baseline*1.17]")
-	chase_speed = resolved
-
-
-# Normalize 3D model scale so it ends up ~target_height tall, AND lift the
-# model so its BOTTOM aligns with the body's feet (THEME §13 — no half-buried
-# characters). Sketchfab GLBs commonly arrive with center-pivots; without this
-# lift, half the model sinks below the ground plane on spawn.
-# Note: SIZE_STANDARDS.md treats _global_scale_sweep as the authoritative
-# scaler — this initial normalize stays so freshly-spawned models read close
-# to target before the 0.5s sweep snaps them inside the tolerance band.
+# Normalize 3D model scale so it ends up ~target_height tall.
+# Prevents giants from Sketchfab GLBs with mixed units.
 func _normalize_to_height(model: Node, target_height: float) -> void:
+	# 2026-05-08: multiply the current scale rather than replacing it, so the
+	# import root_scale is preserved as the baseline. Lower clamp floor to 0.001
+	# so Actor-pack cm-unit models (correct world scale ≈ 0.01) are reachable.
 	await get_tree().process_frame
-	if not is_instance_valid(model):
-		return
-	# Pass 1: world-space AABB → choose uniform scale to hit target_height.
+	if not is_instance_valid(model): return
 	var aabb := AABB()
 	var has := false
 	for c in model.find_children("*", "VisualInstance3D", true):
@@ -932,177 +545,5 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 			aabb = aabb.merge(a)
 	if not has or aabb.size.y <= 0.001:
 		return
-	# scale-eng 2026-05-05: iterative shrink. Floor 0.05 → 0.001 so wildly-oversized
-	# (100×-1000×) Sketchfab/Meshy enemy GLBs can actually reach target.
-	var _pass_n: int = 0
-	while _pass_n < 6 and aabb.size.y > 0.001 and (aabb.size.y < target_height * 0.80 or aabb.size.y > target_height * 1.20):
-		var _s: float = clamp(target_height / aabb.size.y, 0.001, 5.0)
-		if model is Node3D:
-			(model as Node3D).scale = (model as Node3D).scale * _s
-		else:
-			model.scale = Vector3(_s, _s, _s)
-		await get_tree().process_frame
-		if not is_instance_valid(model): return
-		aabb = AABB(); has = false
-		for c_re in model.find_children("*", "VisualInstance3D", true):
-			var v_re := c_re as VisualInstance3D
-			if not v_re: continue
-			var a_re := v_re.global_transform * v_re.get_aabb()
-			if not has: aabb = a_re; has = true
-			else: aabb = aabb.merge(a_re)
-		_pass_n += 1
-	# Pass 2 (THEME §13 ground contact): re-measure in MODEL-LOCAL space to
-	# find the bottom of the visible mesh relative to the model's pivot, then
-	# lift the model so the bottom sits at body-local y ≈ 0. The body's capsule
-	# rests its bottom near y ≈ 0.1 once gravity settles, so feet-at-0 reads
-	# as planted, not floating. If the GLB pivot is already at the feet,
-	# local_min_y ≈ 0 and the lift is a no-op.
-	await get_tree().process_frame
-	if not is_instance_valid(model) or not (model is Node3D):
-		return
-	var local_min_y: float = INF
-	var local_has := false
-	var inv_xform: Transform3D = (model as Node3D).global_transform.affine_inverse()
-	for c2 in model.find_children("*", "VisualInstance3D", true):
-		var v2 := c2 as VisualInstance3D
-		if not v2: continue
-		var a2 := v2.get_aabb()
-		# Convert from v2's local frame → world → model's local frame.
-		a2 = (inv_xform * v2.global_transform) * a2
-		if not local_has:
-			local_min_y = a2.position.y
-			local_has = true
-		else:
-			local_min_y = min(local_min_y, a2.position.y)
-	# scale-eng 2026-05-05: SYMMETRIC ground-snap. Was only LIFTING when bottom
-	# sat below pivot. New Meshy GLBs sometimes have feet ABOVE pivot (crotch-
-	# pivot biped). Snap feet to body-local y=0 in EITHER direction so the
-	# camera doesn't end up looking at the model's boots from below.
-	if local_has and abs(local_min_y) > 0.05:
-		var shift: float = clamp(-local_min_y, -10.0, 2.0)
-		(model as Node3D).position.y = (model as Node3D).position.y + shift
-
-# ──────────────────────────────────────────────────────────────────────────
-# REFINE: adaptive — Run-9: Adaptive damage (FIFTH output on the
-# faction_pressure scalar). Same shape as _resolve_adaptive_chase_speed:
-#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
-#   • Multiplicative, NOT absolute: each enemy kind's role-shape (light Scout,
-#     heavier Brute, boss-tier Warlord) is preserved — every kind gets the
-#     SAME +12% ceiling at pressure 0, NOT the same absolute damage.
-#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown +
-#     chase_speed already use).
-#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
-#     third visual cue, because all three outputs (cooldown / chase_speed /
-#     damage) lerp on the SAME pressure scalar and trip the threshold at the
-#     same point. One marker, three coupled effects: cleaner readability for
-#     the kids than three markers.
-#   • Tighter band (+12%) than chase_speed (+17%) and cooldown's effective
-#     ~+38% (1.45 → 1.05 implies the LOWER value hits faster, so the
-#     tightening is asymmetric) because damage stacks WITH the other two on
-#     the same pressure axis: a faster-chasing, faster-swinging, harder-
-#     hitting enemy is three vectors of pressure on Alden's combat tolerance,
-#     not one. Damage stays the subordinate knob.
-#   • Integer rounding: damage is int, so we round() the lerped float and
-#     clamp the int result to [baseline, ceil(baseline*(1+gain))]. This
-#     ensures the ceiling actually lands at high pressure (e.g. 6 → 7 at
-#     pressure 0.0; without round-up the +12% bump would round-to-zero on
-#     small baselines).
-#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
-#     preserved (never crash, never gate on world readiness).
-# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
-# damage exactly — Alden's first-hour combat is byte-identical to runs 1–8.
-# At pressure 0.0 the few survivors of a tamed faction hit 12% harder —
-# Owen's mastery rung. See SYSTEM_REGISTRY.md "Enemy Damage Schema."
-# ──────────────────────────────────────────────────────────────────────────
-func _resolve_adaptive_damage() -> void:
-	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
-	if faction_id == "":
-		return  # Unmapped kind (bandit, etc.) → baseline
-	var world_node: Node = get_tree().get_first_node_in_group("world")
-	if world_node == null or not world_node.has_method("faction_pressure"):
-		return  # Older World.gd or world not yet ready → baseline
-	var pressure: float = float(world_node.faction_pressure(faction_id))
-	pressure = clamp(pressure, 0.0, 1.0)
-	var baseline_i: int = damage
-	if baseline_i <= 0:
-		return  # Defensive: a zero/negative baseline shouldn't be amplified.
-	var baseline_f: float = float(baseline_i)
-	var ceiling_f: float = baseline_f * (1.0 + DAMAGE_AGITATION_GAIN)
-	var resolved_f: float = lerp(baseline_f, ceiling_f, 1.0 - pressure)
-	# Round to int, then clamp to the integer band. Ceil(ceiling_f) is the
-	# integer ceiling (e.g. 6.72 → 7) so the +12% bump actually lands on
-	# small-baseline enemies; round() on resolved_f handles the interior of
-	# the band cleanly (lerp at pressure 0.5 of baseline 6 returns 6.36 →
-	# round → 6, which stays at baseline as expected for the middle band).
-	var ceiling_i: int = int(ceil(ceiling_f))
-	var resolved_i: int = int(round(resolved_f))
-	resolved_i = clamp(resolved_i, baseline_i, ceiling_i)
-	assert(resolved_i >= baseline_i and resolved_i <= ceiling_i,
-		"Enemy.damage out of contract band [baseline, ceil(baseline*1.12)]")
-	damage = resolved_i
-
-
-
-# ──────────────────────────────────────────────────────────────────────────
-# REFINE: adaptive — Run-10: Adaptive xp_reward (SIXTH and final output on
-# the faction_pressure scalar). Same shape as _resolve_adaptive_damage, with
-# ONE deliberate inversion on the *direction* of the lerp:
-#   • Reads `World.faction_pressure(faction_id)` ONCE at spawn — no per-frame cost.
-#   • Multiplicative, NOT absolute: each enemy kind's role-shape (Scout 18 xp,
-#     Brute 36, Wolf 28, Skeleton 24, Elemental 55, Boss 480) is preserved —
-#     every kind gets the SAME +20% ceiling at pressure 0, NOT the same
-#     absolute xp. Owen's mastery rung scales proportionally across the
-#     whole bestiary.
-#   • Reuses KIND_TO_FACTION (single source of truth — same map cooldown +
-#     chase_speed + damage already use).
-#   • Reuses the `⚡` agitated prefix from _resolve_adaptive_cooldown — no
-#     fourth visual cue, because all four outputs (cooldown / chase_speed /
-#     damage / xp_reward) lerp on the SAME pressure scalar and trip the
-#     threshold at the same point. One marker, four coupled effects: clean
-#     readability for the kids — when they see ⚡ they learn it means
-#     "faster, harder, hits more, but pays more too."
-#   • Wider band (+20%) than damage (+12%) and chase_speed (+17%) because
-#     xp_reward is a *pure-positive* knob — there's no Alden-combat-tolerance
-#     pressure to balance against on the reward side, AND the size of the ⚡
-#     reward should *feel* commensurate with the three coupled punisher-buffs
-#     the prefix already promises. Asymmetric on purpose: the punishment side
-#     stays tight, the reward side opens up.
-#   • Integer rounding: xp_reward is int, so we round() the lerped float and
-#     clamp the int result to [baseline, ceil(baseline*(1+gain))]. ceil() on
-#     the upper bound ensures the +20% bump actually lands on small-baseline
-#     enemies (a 6-xp variant would round-to-baseline without it; the actual
-#     small baseline in the bestiary is 18, where 21.6 rounds to 22 cleanly).
-#   • Fail-soft: missing world / missing accessor / unmapped kind → baseline
-#     preserved (never crash, never gate on world readiness).
-# At pressure 1.0 (fresh save) every enemy keeps its WorldBuilder-assigned
-# xp_reward exactly — Alden's first-hour grind is byte-identical to runs 1–9.
-# At pressure 0.0 the few survivors of a tamed faction grant 20% more xp per
-# kill — Owen's mastery rung. The enemy axis of `faction_pressure` is fully
-# wired after this run. See SYSTEM_REGISTRY.md "Enemy XP Reward Schema."
-# ──────────────────────────────────────────────────────────────────────────
-func _resolve_adaptive_xp_reward() -> void:
-	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
-	if faction_id == "":
-		return  # Unmapped kind (bandit, etc.) → baseline
-	var world_node: Node = get_tree().get_first_node_in_group("world")
-	if world_node == null or not world_node.has_method("faction_pressure"):
-		return  # Older World.gd or world not yet ready → baseline
-	var pressure: float = float(world_node.faction_pressure(faction_id))
-	pressure = clamp(pressure, 0.0, 1.0)
-	var baseline_i: int = xp_reward
-	if baseline_i <= 0:
-		return  # Defensive: a zero/negative baseline shouldn't be amplified.
-	var baseline_f: float = float(baseline_i)
-	var ceiling_f: float = baseline_f * (1.0 + XP_REWARD_AGITATION_GAIN)
-	var resolved_f: float = lerp(baseline_f, ceiling_f, 1.0 - pressure)
-	# Round to int, then clamp to the integer band. Ceil(ceiling_f) is the
-	# integer ceiling (e.g. 21.6 → 22) so the +20% bump actually lands on
-	# small-baseline enemies; round() on resolved_f handles the interior of
-	# the band cleanly.
-	var ceiling_i: int = int(ceil(ceiling_f))
-	var resolved_i: int = int(round(resolved_f))
-	resolved_i = clamp(resolved_i, baseline_i, ceiling_i)
-	assert(resolved_i >= baseline_i and resolved_i <= ceiling_i,
-		"Enemy.xp_reward out of contract band [baseline, ceil(baseline*1.20)]")
-	xp_reward = resolved_i
-
+	var correction: float = clamp(target_height / aabb.size.y, 0.001, 100.0)
+	model.scale = model.scale * correction
