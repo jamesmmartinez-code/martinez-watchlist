@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "sakura_mochi",
+  "name": "Sakura Mochi",
+  "festival_id": "cherry_blossom_festival",
+  "duration_hours": 24,
+  "effect": "buff:lucky:600s|emote_unlock:sakura_dance",
+  "flavor": "Soft pink mochi filled with sweet red bean paste"
+}
+"""
