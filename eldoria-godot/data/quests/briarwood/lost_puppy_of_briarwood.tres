@@ -1,0 +1,45 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_puppy_of_briarwood",
+  "title": "Find Briarwood's Missing Puppy",
+  "region": "briarwood",
+  "act": 2,
+  "level_band": [
+    1,
+    3
+  ],
+  "hook": "Briarwood's beloved puppy, Luna, has gone missing!",
+  "stages": [
+    {
+      "objective": "Search for Luna in the Briarwood meadows",
+      "location": "briarwood_meadows",
+      "completion_trigger": "talk_to_npc:puppy_tracker"
+    },
+    {
+      "objective": "Follow the trail of paw prints to the old oak tree",
+      "location": "old_oak_tree",
+      "completion_trigger": "reach_zone:old_oak_tree"
+    },
+    {
+      "objective": "Defeat the mischievous squirrel gang that's been playing tricks on the villagers",
+      "location": "old_oak_tree",
+      "completion_trigger": "defeat:creature_id_123"
+    }
+  ],
+  "rewards": {
+    "xp": 100,
+    "gold": 20,
+    "items": [
+      "treat_for_luna"
+    ],
+    "faction_rep": {
+      "briarwood": 10
+    }
+  },
+  "repeatable": false,
+  "flavor": "A warm sun casts a gentle glow over the rolling hills of Briarwood, where wildflowers sway in the breeze and the sound of laughter carries on the wind. But amidst this peaceful scene, a sense of worry hangs in the air - Luna, the village puppy, has gone missing!"
+}
+"""
