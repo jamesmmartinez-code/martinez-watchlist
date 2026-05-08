@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's serenade summons a rare firefly species."
+truth_0 = "true"
+rumor_1 = "Briarwood's ancient trees are actually giant, sleeping creatures."
+truth_1 = "partial"
+rumor_2 = "A hidden path in Briarwood leads to a secret underground city."
+truth_2 = "partial"
+rumor_3 = "The Starlight Serenade is actually a magical experiment gone wrong."
+truth_3 = "false"
+rumor_4 = "Maeve's music has healing properties for injured creatures."
+truth_4 = "true"
