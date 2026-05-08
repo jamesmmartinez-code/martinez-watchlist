@@ -4,18 +4,18 @@ metadata/_kind = "legendary"
 metadata/_data = """
 {
   "id": "starlight_slasher",
-  "name": "Stellar Slice",
+  "name": "Luna's Glimmer",
   "category": "sword",
-  "level_req": 35,
+  "level_req": 30,
   "stats": {
-    "atk": 30,
+    "atk": 25,
     "def": 5,
-    "hp": 0,
+    "hp": 10,
     "spd": 5
   },
-  "unique_effect": "Deals +10% damage to enemies at night",
-  "unlock_condition": "complete_quest_chain:moonlit_menace",
-  "backstory": "Forged from stardust, Stellar Slice was said to be wielded by the celestial guardians who protected the land from the darkness of the moonless nights. Its power is said to be at its peak when the stars shine bright.",
-  "flavor": "May the light of the stars guide my blade"
+  "unique_effect": "Moonlight Strike: +10% damage at night",
+  "unlock_condition": "defeat_boss:lunar_dragon",
+  "backstory": "Forged from a fallen star, Luna's Glimmer was said to be wielded by the ancient lunar warriors who protected the land from darkness. Its blade shines brightest under the light of the full moon.",
+  "flavor": "May the starlight guide my blade"
 }
 """
