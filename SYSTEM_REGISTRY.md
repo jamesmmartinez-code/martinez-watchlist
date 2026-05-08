@@ -1,3 +1,15 @@
+## Ambient NPC Barks (run 27)
+Schema: NPCS[] dict key `bark_lines: Array[String]` (4 lines per NPC)
+Wiring: WorldBuilder._make_npc() → npc.ambient_bark_lines.append() loop
+Runtime: NPC._ready sets _bark_cooldown = randf_range(interval_min, interval_max)
+         NPC._process → _tick_ambient_bark(delta) → Label3D float + 3s fade
+Guard: no bark when _bark_label != null (dedup); no bark when player in interact range
+Intervals: NPC.gd defaults 22-38s (per-role override queued for next pass)
+NPCs wired: Elder Maeve, Smith Edda, Mara the Merchant, Herbalist Lyra,
+            Innkeeper Bram, Stablemaster Roan, Trainer Hala
+
+
+
 
 ## Adaptive Difficulty per Player (run 24)
 player_difficulty_state: {session_deaths: int, session_kills: int, session_seconds: float, diff_scalar: float[0.70-1.30], tier: String}
