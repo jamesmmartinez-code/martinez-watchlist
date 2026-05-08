@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonwhisper_boots",
+  "name": "Moonwhisper Boots",
+  "category": "armor",
+  "subtype": "boots",
+  "tier": "uncommon",
+  "level_req": 10,
+  "stats": {
+    "atk": 0,
+    "def": 5,
+    "hp": 0,
+    "spd": 2
+  },
+  "flavor": "These enchanted boots allow the wearer to move silently under the light of the full moon",
+  "realm": "tidesong"
+}
+"""

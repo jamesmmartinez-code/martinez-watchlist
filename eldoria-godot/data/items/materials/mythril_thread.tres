@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mythril_thread",
+  "name": "Mythril Thread",
+  "category": "material",
+  "subtype": "thread",
+  "tier": "epic",
+  "level_req": 1,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A strand of mythril thread, said to be able to weave powerful magical fabrics",
+  "realm": "eldoria"
+}
+"""
