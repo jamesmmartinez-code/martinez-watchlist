@@ -236,6 +236,25 @@ const ACHIEVEMENTS: Dictionary = {
 			],
 		},
 	},
+
+	# Builder run 24 — Hearthkeeper: player has visited their home after
+	# completing the first quest. Closes the housing loop: first_quest_done
+	# (Maeve) + player_home_visited (PlayerHome._on_player_interact).
+	# title_priority 22 — between "the Rune-Touched" (25) and "Friend of Eldoria" (20).
+	"hearthkeeper": {
+		"name": "Hearthkeeper",
+		"desc": "The cottage north of the plaza has a fire in its hearth — and you put it there.",
+		"icon": "🏠",
+		"title_text": "the Hearthkeeper",
+		"title_priority": 22,
+		"predicate": {
+			"kind": "all_of",
+			"preds": [
+				{"kind": "world_flag", "flag": "first_quest_done"},
+				{"kind": "world_flag", "flag": "player_home_visited"},
+			],
+		},
+	},
 }
 
 # Pure evaluator — returns the IDs of every achievement whose predicate is

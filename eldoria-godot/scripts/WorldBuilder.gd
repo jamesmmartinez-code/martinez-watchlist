@@ -511,6 +511,10 @@ const BUILDINGS = [
 	Vector3(10, 0,  0), Vector3(-10, 0,  0),
 	Vector3( 6, 0, -8), Vector3(-6, 0, -8),
 ]
+# Builder run 24 — Player Home (Backlog #10). North of the plaza, clear of all
+# existing buildings and the path network terminus at z=12. THEME §13: y=0.
+const HOME_POS: Vector3 = Vector3(0.0, 0.0, 14.0)
+const HOME_SCRIPT: Script = preload("res://scripts/PlayerHome.gd")
 
 func _ready() -> void:
 	if _buildings_built: return
@@ -548,6 +552,7 @@ func _ready() -> void:
 	_safe_call("_build_stable_horse")
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
+	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
@@ -2282,6 +2287,17 @@ func _find_horse_animation_player(n: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
+
+func _build_player_home() -> void:
+	# Builder run 24 — Backlog #10: Housing / player-shaped spaces.
+	# Places the PlayerHome cottage at HOME_POS (north plaza edge).
+	# THEME §1 §3 §12 §13 — see PlayerHome.gd for full rationale.
+	var home := StaticBody3D.new()
+	home.set_script(HOME_SCRIPT)
+	home.position = HOME_POS
+	home.name = "PlayerHome"
+	add_child(home)
+	_dlog("player_home spawned at %s" % str(HOME_POS))
 
 func _build_loot_chests() -> void:
 	# Common chests scattered around the wilds, plus a rare chest deeper in
