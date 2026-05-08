@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "mystic_moose",
+  "name": "Mystic",
+  "species": "moose",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "tame_in_wild:whisperwood",
+  "flavor": "A gentle giant with a coat as white as freshly fallen snow, Mystic is a moose with a quiet wisdom in its eyes, as if it holds the secrets of the forest within its heart."
+}
+"""
