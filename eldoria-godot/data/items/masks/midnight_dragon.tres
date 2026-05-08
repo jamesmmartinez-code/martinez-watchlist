@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "midnight_dragon",
+  "name": "Moonlit Blaze",
+  "creature_or_motif": "Dragon",
+  "festival_id": "lunar_festival",
+  "colors": [
+    "#8B9467",
+    "#FFD700"
+  ],
+  "flavor": "Glowing dragon scales shimmer under moonlight."
+}
+"""
