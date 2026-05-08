@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "backpack"
+metadata/_data = """
+{
+  "id": "mocha_satchel",
+  "name": "Mocha Satchel",
+  "extra_slots": 5,
+  "appearance": "Brown leather backpack",
+  "unlock_condition": "craft",
+  "flavor": "Perfect for the coffee lover on-the-go"
+}
+"""
