@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mineral"
+metadata/_data = """
+{
+  "id": "starlight_opal",
+  "name": "Starlight Opal",
+  "kind": "gem",
+  "tier": "moonsilver",
+  "found_in": "whisperwood",
+  "smelt_into": "",
+  "cut_into": "starlight_opal_facet",
+  "flavor": "Glowing opal found in ancient trees"
+}
+"""
