@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "moonlit_dreamer",
+  "name": "Dreamcatcher's Guard",
+  "theme": "dusk",
+  "piece_ids": [
+    "dreamcatcher_helm",
+    "lunar_sword",
+    "stardust_chest",
+    "moonwhisper_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Moonlight Vigor",
+      "stat_mod": {
+        "atk": 3
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Stardust Shield",
+      "stat_mod": {
+        "hp": 30
+      }
+    }
+  ],
+  "flavor": "Forged under the soft glow of the full moon, the Dreamcatcher's Guard is said to have been crafted by the ancient lunar weavers to protect the dreamers of the land from the shadows that lurk in the dusk."
+}
+"""
