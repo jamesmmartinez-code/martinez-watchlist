@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "misty_glen_runner",
+  "name": "Foghoof",
+  "species": "moose",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "tame_in_wild:whisperwood",
+  "flavor": "A gentle giant with a coat as misty as the dawn, Foghoof is a loyal companion that will carry you through the whispering woods with ease and agility."
+}
+"""
