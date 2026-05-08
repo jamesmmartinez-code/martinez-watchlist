@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "midnight_breeze",
+  "name": "Moonlit Whisper",
+  "palette": [
+    "#3498db",
+    "#2ecc71"
+  ],
+  "emblem": "",
+  "flutter_strength": 6,
+  "effect": "slightly increases movement speed",
+  "flavor": "soft brushstrokes on a summer night"
+}
+"""
