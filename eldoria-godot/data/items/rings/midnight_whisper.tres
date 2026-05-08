@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "midnight_whisper",
+  "name": "Moonlit",
+  "tier": "legendary",
+  "stat_mod": {
+    "hp": 10,
+    "atk": 5,
+    "def": 5,
+    "spd": 10,
+    "luck": 5
+  },
+  "effect": "Grants +10% move speed at night",
+  "flavor": "Forged under moonlight by the Dreamweaver"
+}
+"""
