@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mineral"
+metadata/_data = """
+{
+  "id": "starlight_sapphire",
+  "name": "Starlight Sapphire",
+  "kind": "gem",
+  "tier": "moonsilver",
+  "found_in": "crystal_caves",
+  "smelt_into": "",
+  "cut_into": "starlight_facet",
+  "flavor": "Twinkling like a midnight sky"
+}
+"""
