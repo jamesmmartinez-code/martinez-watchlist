@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "plant"
+metadata/_data = """
+{
+  "id": "ironbloom",
+  "name": "Ironbloom",
+  "habitat": "cliff",
+  "season": "summer",
+  "alchemy_use": "Enhances strength and vitality",
+  "appearance": "Tight clusters of dark blue flowers with metallic sheen"
+}
+"""
