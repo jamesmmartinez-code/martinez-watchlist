@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "misty_morning_seed",
+  "name": "Misty Dawn",
+  "grows_into": "eldrida_sapling",
+  "price": 20,
+  "obtained_from": "vendor:greenthumb|forage:mystic_meadow",
+  "flavor": "Soft haze on forest floor"
+}
+"""
