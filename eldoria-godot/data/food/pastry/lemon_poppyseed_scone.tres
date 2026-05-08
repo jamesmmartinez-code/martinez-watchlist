@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "lemon_poppyseed_scone",
+  "name": "Lemon Poppyseed Scone",
+  "kind": "scone",
+  "filling": "lemon curd",
+  "heal": 15,
+  "effect": "buff:cheerful:300s",
+  "flavor": "zesty lemon and sweet honey notes dance on the palate, leaving a delicate floral finish"
+}
+"""
