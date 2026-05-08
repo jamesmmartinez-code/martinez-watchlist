@@ -1,5 +1,5 @@
 {
-  "totalSize": 189071468,
+  "totalSize": 188753588,
   "parts": [
     {
       "name": "index.pck.000",
@@ -11,7 +11,7 @@
     },
     {
       "name": "index.pck.002",
-      "size": 327788
+      "size": 9908
     }
   ]
 }
