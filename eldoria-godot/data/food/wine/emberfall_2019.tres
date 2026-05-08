@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "wine"
+metadata/_data = """
+{
+  "id": "emberfall_2019",
+  "name": "Emberfall",
+  "grape_or_fruit": "silverberry",
+  "region": "briarwood",
+  "year": "Harvested under the fiery blaze of the Blood Moon, aged to perfection in oak barrels",
+  "effect": "buff:warmth:600s",
+  "flavor": "Rich, smoky notes with hints of vanilla and a smooth, velvety finish"
+}
+"""
