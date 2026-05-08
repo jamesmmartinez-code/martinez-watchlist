@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "lost_puppy",
+  "title": "Puppy in Peril",
+  "region": "briarwood",
+  "theme": "Rescue",
+  "quests": [
+    {
+      "id": "find_puppy",
+      "title": "Find the Puppy",
+      "hook": "Puppy missing!",
+      "stages_count": 2
+    },
+    {
+      "id": "follow_clues",
+      "title": "Follow the Clues",
+      "hook": "Paw prints lead the way",
+      "stages_count": 3
+    },
+    {
+      "id": "face_thief",
+      "title": "Face the Puppy Thief",
+      "hook": "Confront the culprit",
+      "stages_count": 2
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "puppy_toy"
+  },
+  "flavor": "A heartwarming tale of a lost puppy in need of rescue"
+}
+"""
