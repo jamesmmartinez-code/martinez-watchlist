@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "plant"
+metadata/_data = """
+{
+  "id": "silver_bloom",
+  "name": "Moonpetal",
+  "habitat": "meadow",
+  "season": "summer",
+  "alchemy_use": "Enhances lunar magic effects",
+  "appearance": "Delicate white flowers with silver-tipped petals"
+}
+"""
