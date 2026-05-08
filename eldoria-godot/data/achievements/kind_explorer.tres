@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "kind_explorer",
+  "title": "Friend of the Realm",
+  "description": "Helped 10 NPCs with their quests",
+  "trigger": "complete_quest:1-100:10",
+  "reward_title": "Hero's Badge",
+  "reward_xp": 200,
+  "reward_gold": 100,
+  "flavor": "You're a true friend!"
+}
+"""
