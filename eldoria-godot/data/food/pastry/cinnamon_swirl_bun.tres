@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "cinnamon_swirl_bun",
+  "name": "Sweet Delight",
+  "kind": "bun",
+  "filling": "cinnamon",
+  "heal": 20,
+  "effect": "buff:cheerful:300s",
+  "flavor": "warm, golden pastry with a hint of spice"
+}
+"""
