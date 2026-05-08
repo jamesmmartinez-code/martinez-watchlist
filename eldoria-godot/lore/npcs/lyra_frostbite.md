@@ -1,23 +1,23 @@
 ---
 slug: lyra_frostbite
 name: "Lyra"
-region: whisperwood
-role: herbalist
+region: crystal_caves
+role: scholar
 age: 25
 ---
 
 ## Appearance
-tall, curly brown hair, bright green eyes
+short, curly brown hair, bright green eyes, and a collection of colorful, swirling tattoos on her arms
 
 ## Personality
-gentle, adventurous
+inquisitive, optimistic, and fiercely determined
 
 ## Backstory
-Lyra grew up in Whisperwood, learning about plants and healing from her wise grandmother. She loves exploring the forest, discovering new species, and helping her community with her knowledge. Her grandmother's stories of ancient magic sparked Lyra's curiosity, and she now seeks to understand the secrets of the forest.
+Lyra was raised by her family of crystal hunters and learned the intricacies of crystal formations from a young age. She became fascinated with the ancient lore and magic that flowed through the crystals, and now spends her days studying and documenting the secrets of the Crystal Caves.
 
 ## Secret
-*fears losing her connection to nature*
+*Lyra hopes to one day discover a crystal that holds the key to healing any wound, and fears that she may never find it.*
 
 ## Relationships
-- **friend** → `bram_ironfist`
-- **mentor** → `hala_moonwhisper`
+- **mentor** → `tomas_stonehealer`
+- **friend** → `garrick_digger`
