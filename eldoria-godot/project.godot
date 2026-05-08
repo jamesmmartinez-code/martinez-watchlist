@@ -22,7 +22,7 @@ Audio="*res://scripts/Audio.gd"
 config/name="Realm of Eldoria"
 config/description="Family fantasy RPG — built for Alden & Owen"
 run/main_scene="res://scenes/Main.tscn"  # reverted 2026-05-06: CharacterSelect was broken; Main = village
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
@@ -76,8 +76,9 @@ attack={
 
 [rendering]
 
-anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/msaa_3d=0
 
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/terrain_3d/plugin.cfg")
+
