@@ -133,7 +133,7 @@ func _ready() -> void:
 	# THEME §13 ground contact + size discipline — Owen.glb / hero_lange.glb are
 	# Meshy/Sketchfab exports at native units (often cm), so they spawn 3-4×
 	# normal size if not normalized. Walks the visible AABB and uniformly
-	# scales the Hero subtree to ~1.8m, then lifts so feet sit at body-local
+	# scales the Hero subtree to ~1.1m (kid canon, SIZE_STANDARDS §1), then lifts so feet sit at body-local
 	# y=0. Mirrors the Enemy.gd / Boss.gd pattern. No-op if the model is
 	# already in the right range.
 	call_deferred("_normalize_player_model", 1.1)
@@ -1599,7 +1599,7 @@ func _apply_character_choice() -> void:
 	new_hero.name = "Hero"
 	add_child(new_hero)
 	# _normalize_player_model + the deferred retries already running will dial
-	# the new hero in to 1.8m on the next frame.
+	# the new hero in to 1.1m (kid canon) on the next frame.
 
 func _normalize_player_model(target_height: float) -> void:
 	await get_tree().process_frame
@@ -1804,8 +1804,8 @@ func _force_hero_height_cap() -> void:
 		if not has: aabb = a; has = true
 		else: aabb = aabb.merge(a)
 	if not has or aabb.size.y < 0.001: return
-	if aabb.size.y > 1.0:
-		var shrink: float = 1.0 / aabb.size.y
+	if aabb.size.y > 1.30:  # SIZE_STANDARDS §1 hard cap for kid player (char-spec 2026-05-08)
+		var shrink: float = 1.30 / aabb.size.y
 		hero3.scale = hero3.scale * shrink
 
 
