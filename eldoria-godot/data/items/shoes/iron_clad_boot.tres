@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "iron_clad_boot",
+  "name": "Iron Clad Boot",
+  "kind": "boot",
+  "traction": "stone",
+  "minor_effect": "Protects feet from damage",
+  "flavor": "A sturdy boot made from iron plates"
+}
+"""
