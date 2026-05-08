@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "critter_caregiver",
+  "title": "Kind Heart",
+  "description": "Helped 10 creatures in need",
+  "trigger": "complete_quest:q1|complete_quest:q2|complete_quest:q3|complete_quest:q4|complete_quest:q5|complete_quest:q6|complete_quest:q7|complete_quest:q8|complete_quest:q9|complete_quest:q10",
+  "reward_title": "Animal Lover's Pin",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "Your kindness is making a difference!"
+}
+"""
