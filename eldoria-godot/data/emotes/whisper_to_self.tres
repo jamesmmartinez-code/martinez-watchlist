@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "emote"
+metadata/_data = """
+{
+  "id": "whisper_to_self",
+  "name": "Whisper",
+  "trigger_text": "/whisper",
+  "duration_sec": 2,
+  "animation": "lean in, whisper",
+  "sound": "psst",
+  "unlock_condition": "free_at_start",
+  "flavor": "mysterious"
+}
+"""
