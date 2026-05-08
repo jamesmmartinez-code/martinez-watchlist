@@ -5,4 +5,4 @@ title: "The Whispering Winds"
 region: "whisperwood"
 ---
 
-Deep in Whisperwood, where ancient trees stretch towards the sky, the winds whisper secrets to those who listen. On quiet evenings, when sunbeams filter through the leaves, the gentle breeze carries the whispers of old, sharing tales of a long-forgotten world. It is said that if you sit beneath the whispering trees, you will hear the soft murmurs of the forest, guiding you towards hidden wonders and unseen dangers. The whispers are a gift, a reminder that even in stillness, the natural world holds many mysteries waiting to be uncovered.
+In Whisperwood, where trees lean in to share ancient secrets, the wind whispers tales of old. On quiet nights, when moonlight filters through the canopy, the whispers grow loud, carrying the stories of old ones, their laughter, and their tears. The wind stirs, and the trees sway, as if dancing to the rhythm of forgotten memories. It is said that on these nights, the wind whispers truths to those who listen, and the trees remember the songs of their ancestors.
