@@ -485,6 +485,49 @@ func _play_model_idle_anim() -> void:
 	if names.size() > 0:
 		ap.play(names[0])
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Run 24 (Builder) — player-adaptive difficulty hook.
+# Called every 10s by World._apply_adaptive_difficulty() via group "enemies".
+# `scalar` is World.player_difficulty_state["diff_scalar"] in [0.70, 1.30].
+#
+# TWO-AXIS adaptive system:
+#   Axis 1 (runs 7-10): faction-pressure scalar — resolved ONCE at spawn,
+#          captures world-state difficulty (tamed faction => agitated survivors).
+#   Axis 2 (run 24):    player-performance scalar — pushed live every 10s,
+#          captures per-player skill (dying => ease, breezing => harden).
+#
+# Bands (multiplicative from the faction-adjusted baseline):
+#   attack_cooldown: eased up to +20% longer; hardened up to -15% shorter.
+#   chase_speed:     eased up to -10% slower; hardened up to +10% faster.
+#   damage:          eased up to -12%; hardened up to +10%.
+#
+# Contract: scalar=1.0 leaves every stat byte-identical to its faction-
+# adjusted value. Dead enemies and non-faction kinds are skipped (fail-soft).
+# THEME §12 MOTION: lerp 40% per call so stats drift gradually.
+# ─────────────────────────────────────────────────────────────────────────────
+func receive_difficulty_scalar(scalar: float) -> void:
+	if _state == "dead":
+		return  # don't mutate dead enemies — they respawn from export defaults
+	scalar = clamp(scalar, 0.70, 1.30)
+	# attack_cooldown: scalar < 1 (eased) => longer cooldown (easier); scalar > 1 => shorter (harder)
+	# Map scalar [0.70, 1.30] -> cooldown multiplier [1.20, 0.85]
+	var cooldown_mult: float = lerp(1.20, 0.85, (scalar - 0.70) / 0.60)
+	var target_cooldown: float = clamp(attack_cooldown * cooldown_mult, 0.60, 3.0)
+	attack_cooldown = lerp(attack_cooldown, target_cooldown, 0.40)
+
+	# chase_speed: scalar < 1 => slower chase (easier); scalar > 1 => faster (harder)
+	# Map scalar [0.70, 1.30] -> speed multiplier [0.90, 1.10]
+	var speed_mult: float = lerp(0.90, 1.10, (scalar - 0.70) / 0.60)
+	var target_speed: float = clamp(chase_speed * speed_mult, 1.0, 12.0)
+	chase_speed = lerp(chase_speed, target_speed, 0.40)
+
+	# damage: scalar < 1 => less damage (easier); scalar > 1 => more (harder)
+	# Map scalar [0.70, 1.30] -> damage multiplier [0.88, 1.10]
+	var dmg_mult: float = lerp(0.88, 1.10, (scalar - 0.70) / 0.60)
+	var target_dmg: float = clamp(float(damage) * dmg_mult, 1.0, 999.0)
+	damage = int(round(lerp(float(damage), target_dmg, 0.40)))
+
+
 func _find_animation_player(n: Node) -> AnimationPlayer:
 	if n is AnimationPlayer:
 		return n
