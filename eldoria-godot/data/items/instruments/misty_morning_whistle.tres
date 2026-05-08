@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "instrument"
+metadata/_data = """
+{
+  "id": "misty_morning_whistle",
+  "name": "Misty Morning Whistle",
+  "kind": "whistle",
+  "unlock_condition": "Dawn",
+  "play_effect": "buff:nearby_npc_friendly:120s",
+  "flavor": "Sweet, mournful melody"
+}
+"""
