@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "starlight_sentinels",
+  "name": "Stellar Guardians",
+  "theme": "sky",
+  "piece_ids": [
+    "starlight_blade",
+    "stardust_helm",
+    "astral_plate",
+    "moonwalker_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Glimmering Shield",
+      "stat_mod": {
+        "def": 10
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Celestial Vigor",
+      "stat_mod": {
+        "hp": 75
+      }
+    }
+  ],
+  "flavor": "Forged in the heart of a fallen star, these armors were said to have been crafted by the celestial guardians who watched over the land from the sky"
+}
+"""
