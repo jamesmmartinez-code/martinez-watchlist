@@ -3,11 +3,11 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "whispering_winds",
+  "id": "cosmic_dance",
   "fortunes": [
     {
-      "text": "Listen to your heart's whispers",
-      "mood": "wise"
+      "text": "Twirl with the stars tonight",
+      "mood": "playful"
     }
   ]
 }
