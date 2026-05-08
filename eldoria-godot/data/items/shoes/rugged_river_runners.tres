@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "rugged_river_runners",
+  "name": "River Runners",
+  "kind": "boot",
+  "traction": "all",
+  "minor_effect": "increases movement speed on water",
+  "flavor": "painted with scenes of winding rivers and sunny skies"
+}
+"""
