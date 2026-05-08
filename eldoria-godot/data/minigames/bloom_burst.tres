@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "bloom_burst",
+  "name": "Petal Puzzle",
+  "kind": "matching",
+  "location": "festival:flower_fest",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 5,
+    "gold": 2,
+    "item_id": "flower_crown"
+  },
+  "flavor": "Delicate petals swirl"
+}
+"""
