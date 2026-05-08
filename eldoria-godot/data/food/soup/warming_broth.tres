@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "soup"
+metadata/_data = """
+{
+  "id": "warming_broth",
+  "name": "Warming Broth",
+  "main_ingredients": [
+    "carrot",
+    "chicken_breast"
+  ],
+  "heal": 15,
+  "effect": "buff:warm:600s|cure:cold",
+  "flavor": "Savory chicken & carrot"
+}
+"""
