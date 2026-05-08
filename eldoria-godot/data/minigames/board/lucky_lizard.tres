@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "lucky_lizard",
+  "name": "Roll the Bones",
+  "play_at": "tavern",
+  "rules": "Roll 3 dice, highest total wins. Wager 1 copper per round.",
+  "reward_win": "copper:5",
+  "flavor": "Moonlit gamblers laugh and cheer"
+}
+"""
