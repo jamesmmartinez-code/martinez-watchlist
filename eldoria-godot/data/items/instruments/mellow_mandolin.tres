@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "instrument"
+metadata/_data = """
+{
+  "id": "mellow_mandolin",
+  "name": "Mellow Mandolin",
+  "kind": "lute",
+  "unlock_condition": "Complete the Main Quest",
+  "play_effect": "buff:nearby_npc_friendly:120s",
+  "flavor": "A soothing melody that brings peace to those who listen"
+}
+"""
