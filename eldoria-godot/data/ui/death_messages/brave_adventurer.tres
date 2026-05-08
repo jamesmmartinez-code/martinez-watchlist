@@ -6,9 +6,29 @@ metadata/_data = """
   "id": "brave_adventurer",
   "messages": [
     {
-      "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "Don't worry, brave adventurer, you'll try again soon!",
+      "trigger": "fall_damage",
+      "text": "Whoops! Time to rest at the wayshrine.",
+      "mood": "playful"
+    },
+    {
+      "trigger": "enemy_defeat",
+      "text": "You've earned a campfire nap!",
+      "mood": "gentle"
+    },
+    {
+      "trigger": "kill_zone",
+      "text": "The wayshrine is calling your name!",
       "mood": "encouraging"
+    },
+    {
+      "trigger": "drowning",
+      "text": "Don't worry, you'll wake at the campfire.",
+      "mood": "gentle"
+    },
+    {
+      "trigger": "fall_damage",
+      "text": "Take a deep breath, you'll be back on your feet!",
+      "mood": "playful"
     }
   ]
 }
