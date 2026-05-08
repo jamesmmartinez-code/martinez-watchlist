@@ -6,29 +6,29 @@ metadata/_data = """
   "id": "entwash_stew",
   "name": "Entwash Stew",
   "station_required": "cooking_pot",
-  "station_tier_min": 2,
+  "station_tier_min": 3,
   "inputs": [
     {
-      "item_id": "ancient_wood",
-      "qty": 1
+      "item_id": "entwood_mushrooms",
+      "qty": 3
     },
     {
-      "item_id": "entwash_mushroom",
+      "item_id": "forest_berry",
       "qty": 2
     },
     {
-      "item_id": "riverwater",
+      "item_id": "ancient_ale",
       "qty": 1
     }
   ],
   "output": {
-    "item_id": "entwash_stew",
+    "item_id": "entwash_stew_bowl",
     "qty": 1
   },
   "time_seconds": 15,
   "fuel_cost": 3,
-  "unlock_condition": "complete_quest_entwash",
-  "failure_behavior": "ruin",
-  "flavor": "A hearty, slow-cooked stew that grants the consumer temporary resistance to nature's fury, as if the ancient wisdom of the Ents has been distilled into its savory broth."
+  "unlock_condition": "reputation:ent_ally",
+  "failure_behavior": " spoiled_meal",
+  "flavor": "Hearty, earthy stew brewed with the ancient wisdom of the Ents"
 }
 """

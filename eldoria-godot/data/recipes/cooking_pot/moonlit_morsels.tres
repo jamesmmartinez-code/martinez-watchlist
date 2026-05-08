@@ -4,31 +4,31 @@ metadata/_kind = "recipe"
 metadata/_data = """
 {
   "id": "moonlit_morsels",
-  "name": "Moonbeam Muffins",
+  "name": "Moonlit Morsels",
   "station_required": "cooking_pot",
-  "station_tier_min": 1,
+  "station_tier_min": 2,
   "inputs": [
     {
-      "item_id": "starlight_sugar",
+      "item_id": "silverleaf",
       "qty": 1
     },
     {
-      "item_id": "mythril_milk",
+      "item_id": "starlight_sugar",
       "qty": 2
     },
     {
-      "item_id": "dreamweaver_eggs",
-      "qty": 3
+      "item_id": "dreamcream",
+      "qty": 1
     }
   ],
   "output": {
-    "item_id": "moonbeam_muffin",
+    "item_id": "moonbeam_biscuits",
     "qty": 2
   },
   "time_seconds": 10,
   "fuel_cost": 2,
-  "unlock_condition": "auto",
+  "unlock_condition": "quest:moonlight_gathering",
   "failure_behavior": "none",
-  "flavor": "Whispers of the forest, infused in every bite"
+  "flavor": "Sweet, crumbly biscuits infused with the essence of moonbeams"
 }
 """
