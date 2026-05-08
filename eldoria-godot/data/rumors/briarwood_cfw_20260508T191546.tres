@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Wild strawberries grow near the ancient oak in Briarwood"
+truth_0 = "true"
+rumor_1 = "Maeve will give you a free cookie if you visit her during the festival"
+truth_1 = "partial"
+rumor_2 = "The Briarwood Blossoms can cure any ailment"
+truth_2 = "false"
+rumor_3 = "The faeries of Briarwood have a secret language that only they can understand"
+truth_3 = "true"
+rumor_4 = "You can trade a shiny rock for a rare item with the festival vendor"
+truth_4 = "partial"

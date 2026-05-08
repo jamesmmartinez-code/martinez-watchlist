@@ -4,9 +4,9 @@ metadata/_kind = "event"
 metadata/_data = """
 {
   "id": "briarwood_blossom_fest",
-  "name": "Briarwood Blossom Festival",
+  "name": "Briarwood Blossom Fest",
   "category": "festival",
-  "trigger": "spring_equinox",
+  "trigger": "date",
   "duration_hours": 4,
   "participants": [
     "maeve"
@@ -20,6 +20,6 @@ metadata/_data = """
     "items": []
   },
   "repeats_yearly": true,
-  "flavor": "Celebrate the blossoming of Briarwood's famous wildflowers with Maeve and friends!"
+  "flavor": "The rare and magical Briarwood Blossoms will bloom under the light of the full moon, and the faeries of the forest will dance and play."
 }
 """
