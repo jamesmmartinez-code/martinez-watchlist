@@ -1,3 +1,4 @@
+- QA 2026-05-08T14:06 UTC: Build=None (pages-build-and-deployment in_progress, no build-eldoria.yml runs), Pages=building, §15 violation: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt in prior runs. No new action taken this run.
 
 ## 2026-05-08 Auto: run 24 -- Adaptive difficulty per player
 
