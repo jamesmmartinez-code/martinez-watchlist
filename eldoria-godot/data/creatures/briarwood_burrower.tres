@@ -1,0 +1,51 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_burrower",
+  "name": "Briarwood Burrower",
+  "family": "beast",
+  "tier": "trash",
+  "level": 5,
+  "hp": 50,
+  "armor": 2,
+  "dmg_min": 3,
+  "dmg_max": 6,
+  "attack_speed": 1.2,
+  "move_speed": 4.0,
+  "behavior_tags": [
+    "pack_hunter",
+    "digger"
+  ],
+  "tells": [
+    {
+      "name": "dig",
+      "wind_up_ms": 500,
+      "vfx_id": "dirt"
+    }
+  ],
+  "weaknesses": {
+    "fire": 1.2
+  },
+  "resistances": {
+    "poison": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "acorn",
+      "weight": 0.3
+    },
+    {
+      "item_id": "berry",
+      "weight": 0.2
+    },
+    {
+      "item_id": "twig",
+      "weight": 0.5
+    }
+  ],
+  "flavor": "Small, badger-like creatures with a coat of soft, moss-like fur and a talent for digging complex tunnel networks."
+}
+"""

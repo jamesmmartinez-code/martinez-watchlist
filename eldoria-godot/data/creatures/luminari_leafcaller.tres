@@ -1,0 +1,51 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "luminari_leafcaller",
+  "name": "Luminari Leafcaller",
+  "family": "fey",
+  "tier": "elite",
+  "level": 25,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1.5,
+  "move_speed": 5.5,
+  "behavior_tags": [
+    "ranger",
+    "healer"
+  ],
+  "tells": [
+    {
+      "name": "leaf_burst",
+      "wind_up_ms": 1000,
+      "vfx_id": "glow"
+    }
+  ],
+  "weaknesses": {
+    "dark": 1.5
+  },
+  "resistances": {
+    "nature": 0.5
+  },
+  "xp_value": 100,
+  "loot_table": [
+    {
+      "item_id": "rare_seed",
+      "weight": 0.2
+    },
+    {
+      "item_id": "glowing_mushroom",
+      "weight": 0.3
+    },
+    {
+      "item_id": "fey_dust",
+      "weight": 0.5
+    }
+  ],
+  "flavor": "Delicate, sprite-like creatures with leaves for hair and skin that shimmers like the moon, able to summon blasts of sparkling energy to heal their allies."
+}
+"""
