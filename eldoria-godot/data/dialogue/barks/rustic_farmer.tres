@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "rustic_farmer",
+  "barks": [
+    {
+      "text": "Seeds need love",
+      "npc_role": "farmer",
+      "tone": "contented"
+    }
+  ]
+}
+"""
