@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "dreamy_meadow_rest",
+  "messages": [
+    {
+      "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
+      "text": "You're resting in a sunny meadow. Feel better soon!",
+      "mood": "gentle"
+    }
+  ]
+}
+"""
