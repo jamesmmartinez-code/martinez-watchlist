@@ -1,3 +1,21 @@
+## Character polish — Enemy idle Y-bob breathing (run 30)
+- Enemy.gd: _breathe_phase + _breathe_phase2 vars added; randomised per-enemy in _ready() so nearby
+  goblins never rise/fall in unison (same pattern as NPC.gd run 25 dual-harmonic).
+- _process(delta) added (was absent — Enemy.gd used only _physics_process). Fires dual-harmonic
+  Y-bob on global_position.y when _state == "wander" (idle dwell-pause between steps).
+  Primary: sin(t * 2.513 + phase) * 0.018 m (~0.40 Hz, slow chest-rise).
+  Secondary: sin(t * 10.982 + phase2) * 0.006 m (~1.75 Hz, shoulder-shift).
+- Wolves and crystal_guardian excluded: wolves are quadrupeds (Y-bob on four-legged silhouette
+  reads as floating, not breathing); crystal_guardian is 4.00m — ±0.018m is invisible at that scale.
+- _spawn_y cached at _ready() (alongside existing _spawn_pos) as the ground-truth rest height.
+  bob writes to global_position.y = _spawn_y + bob — preserves THEME §13 ground contact.
+  _respawn() already resets to _spawn_pos so _spawn_y stays correct across respawn cycles.
+- THEME §12 §13 cited: every enemy in wander dwell-pause now visibly breathes; ground contact
+  maintained via _spawn_y anchor. Deepens what NPC.gd already has to the enemy layer.
+- Branch: auto/polisher
+
+
+
 ## NPC Relationship Score System (run 29)
 - npc_memory[name] now carries gifts: int and insults: int in addition to visit fields
 - npc_relationship_score(name) = clamp(gifts - insults, -10, 10) on World
