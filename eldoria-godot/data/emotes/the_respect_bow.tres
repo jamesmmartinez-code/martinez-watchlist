@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "emote"
+metadata/_data = """
+{
+  "id": "the_respect_bow",
+  "name": "Respectful Bow",
+  "trigger_text": "/bow",
+  "duration_sec": 2,
+  "animation": "slow, dignified bow",
+  "sound": "soft whoosh",
+  "unlock_condition": "complete_quest:welcome_to_eldoria",
+  "flavor": "polite"
+}
+"""
