@@ -540,6 +540,7 @@ func _ready() -> void:
 	_safe_call("_build_falling_leaves")
 	_safe_call("_build_butterflies")  # Env 2026-05-06: daytime ambient life — THEME §12
 	_safe_call("_build_bird_flocks")  # Env 2026-05-06: ambient life — V-formation birds, THEME §12
+	_safe_call("_build_god_rays")  # Builder run 23: god-rays through canopy — THEME §1 §12 §13
 	_safe_call("_build_smoke_chimneys")
 	_safe_call("_build_campfire")
 	_safe_call("_build_enemies")
@@ -3618,6 +3619,125 @@ func _emergency_shrink(body: Node, aabb: AABB, target_h: float) -> void:
 			c.scale = Vector3(new_s, new_s, new_s)
 			print("[ScaleSweep] EMERGENCY shrunk %s from %.1fm → %.1fm (s=%.3f)" % [body.name, aabb.size.y, target_h, new_s])
 			break
+
+
+# ============================================================================
+# God-rays through canopy — Builder run 23
+# THEME §1: painterly fantasy world — warm amber shafts evoke Studio Ghibli /
+#   BotW morning light spilling through the Whisperwood.
+# THEME §12 MOTION & LIFE: shafts are GPUParticles3D — they drift and pulse,
+#   never static quads. Each shaft particle falls slowly downward (0.15 m/s)
+#   with slight horizontal sway so the ray "breathes".
+# THEME §13 GROUND CONTACT: emitters sit at canopy height (~5.5 m) so shafts
+#   fall INTO the ground, never rising from it. Emission box is tall (height 3m)
+#   so spawn origin is mid-shaft, not at ground level.
+# 5-output rule:
+#   i-   Integration  — wired via _safe_call in _ready (above)
+#   ii-  Schema       — GOD_RAY_SPOTS const (position, angle, color, count)
+#   iii- Feedback     — _dlog on spawn; skip logged as push_warning
+#   iv-  Eval         — soft alpha ramp + _make_soft_particle_texture avoids
+#                       white-blob (PROBLEMS_LOG §1.3). emission_energy ≤ 1.5.
+#   v-   Hooks        — each emitter joins group "god_ray_shafts" for
+#                       World.gd time-of-day fade (shafts dim at dusk/night).
+# ============================================================================
+
+# Each entry: position = emitter world-pos (placed at canopy height),
+# color = warm shaft tint, amount = particle count per emitter.
+# Positions arc through the NW/W/SW Whisperwood treeline where the
+# morning sun (Sun transform in Main.tscn = azimuth ≈ SE) punches through.
+const GOD_RAY_SPOTS: Array = [
+	{"pos": Vector3(-22.0, 5.5, -15.0), "color": Color(1.00, 0.88, 0.55, 0.55), "amount": 14},
+	{"pos": Vector3(-18.0, 5.5,   5.0), "color": Color(1.00, 0.85, 0.45, 0.50), "amount": 12},
+	{"pos": Vector3(-25.0, 5.5,  10.0), "color": Color(0.95, 0.82, 0.40, 0.48), "amount": 10},
+	{"pos": Vector3(-12.0, 5.5, -28.0), "color": Color(1.00, 0.90, 0.60, 0.45), "amount": 10},
+	{"pos": Vector3( -8.0, 5.5,  20.0), "color": Color(0.98, 0.86, 0.50, 0.42), "amount":  8},
+]
+
+func _build_god_rays() -> void:
+	# THEME §1, §12, §13 — warm canopy shafts with motion. See block comment above.
+	for entry in GOD_RAY_SPOTS:
+		var world_pos: Vector3 = entry["pos"]
+		var shaft_color: Color = entry["color"]
+		var shaft_amount: int = entry["amount"]
+
+		var p := GPUParticles3D.new()
+		p.position = world_pos
+		p.amount = shaft_amount
+		# Long lifetime so shaft particles traverse the full 5 m from
+		# canopy to ground before fading — at 0.15 m/s that is ~33 s.
+		# Preprocess fills the emitter immediately so no "blink-in" on load.
+		p.lifetime = 32.0
+		p.preprocess = 16.0
+		p.visibility_aabb = AABB(Vector3(-3.0, -6.0, -3.0), Vector3(6.0, 8.0, 6.0))
+
+		var pm := ParticleProcessMaterial.new()
+		# Spawn in a tall thin box representing the mid-shaft cross-section.
+		# Height 3 m → particles spawn between 4 m and 7 m above ground,
+		# well within the canopy gap (§13 ground-contact: no spawn below 2 m).
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pm.emission_box_extents = Vector3(0.6, 1.5, 0.6)
+		# Fall downward (negative Y) to simulate gravity on light-dust.
+		pm.direction = Vector3(0.0, -1.0, 0.0)
+		pm.spread = 4.0  # tight cone: shaft stays columnar, not dispersed
+		pm.gravity = Vector3(0.0, 0.0, 0.0)  # gravity=0; direction does the work
+		pm.initial_velocity_min = 0.10
+		pm.initial_velocity_max = 0.20
+		# Gentle horizontal sway so the shaft "breathes" — THEME §12 motion mandate.
+		pm.tangential_accel_min = 0.03
+		pm.tangential_accel_max = 0.10
+		# Tall thin quads: each particle is a narrow vertical strip ~0.35 m wide
+		# × 1.8 m tall — stacked strips build the solid shaft column.
+		pm.scale_min = 1.0
+		pm.scale_max = 1.4
+		pm.color = shaft_color
+
+		# Alpha ramp: fade in at spawn (top of shaft), hold, fade at lifetime end
+		# (bottom near ground). Prevents hard edge at ground intersection (§13).
+		var ramp := Gradient.new()
+		ramp.offsets = PackedFloat32Array([0.0, 0.12, 0.80, 1.0])
+		ramp.colors = PackedColorArray([
+			Color(1.0, 1.0, 1.0, 0.0),
+			Color(1.0, 1.0, 1.0, 1.0),
+			Color(1.0, 1.0, 1.0, 0.85),
+			Color(1.0, 1.0, 1.0, 0.0),
+		])
+		var ramp_tex := GradientTexture1D.new()
+		ramp_tex.gradient = ramp
+		pm.color_ramp = ramp_tex
+
+		p.process_material = pm
+
+		# Quad mesh: narrow vertical strip oriented along the shaft direction.
+		# Billboard DISABLED — shafts rotate with the sun angle, not the camera.
+		# cull_mode DISABLED so the shaft reads from all camera angles.
+		var qm := QuadMesh.new()
+		qm.size = Vector2(0.35, 1.80)
+		var dm := StandardMaterial3D.new()
+		dm.albedo_color = shaft_color
+		# _make_soft_particle_texture() gives radial alpha falloff — prevents the
+		# hard-rectangle white-blob problem (PROBLEMS_LOG §1.3).
+		dm.albedo_texture = _make_soft_particle_texture()
+		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
+		# No billboard: shafts are world-aligned columns
+		dm.billboard_mode = BaseMaterial3D.BILLBOARD_DISABLED
+		dm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		dm.vertex_color_use_as_albedo = true
+		# Emission kept LOW (≤ 1.5 per PROBLEMS_LOG §1.3 — campfire blowout lesson).
+		# Shafts read as bright against dark canopy shadow without HDR blowout.
+		dm.emission_enabled = true
+		dm.emission = shaft_color
+		dm.emission_energy_multiplier = 0.80
+		qm.material = dm
+		p.draw_pass_1 = qm
+
+		# Hook v: join group for World.gd time-of-day modulation.
+		# World.gd can dim god_ray_shafts at dusk/night with:
+		#   for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
+		#       shaft.amount_ratio = clamp(daylight, 0.0, 1.0)
+		p.add_to_group("god_ray_shafts")
+		add_child(p)
+
+	_dlog("Env: _build_god_rays — %d shaft emitters spawned (THEME §12 motion)" % GOD_RAY_SPOTS.size())
 
 # SIZE_STANDARDS — see eldoria-godot/SIZE_STANDARDS.md (single source of truth).
 # Tuple = (target_height_m, tolerance_fraction).  Outside band → snap to target.
