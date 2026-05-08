@@ -1,0 +1,40 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_seedling",
+  "title": "A Lost Seedling",
+  "region": "whisperwood",
+  "act": 2,
+  "level_band": [
+    1,
+    5
+  ],
+  "hook": "Eira's special seedling has gone missing!",
+  "stages": [
+    {
+      "objective": "Find Eira's seedling in the Whispering Woods",
+      "location": "Whispering Woods",
+      "completion_trigger": "collect:item_id:seedling"
+    },
+    {
+      "objective": "Return the seedling to Eira",
+      "location": "Eira's Glade",
+      "completion_trigger": "talk_to_npc:slug:eira"
+    }
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": [
+      "seedling_food"
+    ],
+    "faction_rep": {
+      "whisperwood": 5
+    }
+  },
+  "repeatable": false,
+  "flavor": "Under the soft whispers of the Whispering Woods, a tiny seedling has vanished, leaving Eira's heart as barren as the winter trees."
+}
+"""
