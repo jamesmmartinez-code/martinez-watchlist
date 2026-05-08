@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "ancient_oak_bark",
+  "name": "Ancient Oak Bark",
+  "category": "material",
+  "subtype": "wood",
+  "tier": "common",
+  "level_req": 1,
+  "stats": {
+    "atk": 0,
+    "def": 2,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A sturdy piece of bark from an ancient oak tree, useful for crafting sturdy armor.",
+  "realm": "ashenmere"
+}
+"""
