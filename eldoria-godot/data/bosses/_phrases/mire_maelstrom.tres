@@ -3,13 +3,13 @@
 metadata/_kind = "boss_phrase"
 metadata/_data = """
 {
-  "id": "glimmer_gambit",
-  "boss_id": "glimmer_wraith",
+  "id": "mire_maelstrom",
+  "boss_id": "mire_matriarch",
   "phrases": [
     {
-      "trigger": "low_hp",
-      "text": "Shine on, friends!",
-      "tone": "sad_resolve"
+      "trigger": "player_dodge",
+      "text": "Quick as mud!",
+      "tone": "admiration"
     }
   ]
 }
