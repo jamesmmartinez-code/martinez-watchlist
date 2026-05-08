@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "ember_warning",
+  "boss_id": "magmarius",
+  "phrases": [
+    {
+      "trigger": "tell_windup",
+      "text": "Heat things up!",
+      "tone": "warning"
+    }
+  ]
+}
+"""

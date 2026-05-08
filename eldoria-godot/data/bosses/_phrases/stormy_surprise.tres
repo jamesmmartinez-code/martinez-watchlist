@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "stormy_surprise",
+  "boss_id": "generic",
+  "phrases": [
+    {
+      "trigger": "low_hp",
+      "text": "Not so fast!",
+      "tone": "sad_resolve"
+    }
+  ]
+}
+"""
