@@ -1,7 +1,7 @@
 ---
 id: glowing_giraffe
 kind: constellation
-name: "Glimmer"
+name: "Glimmerhoof"
 ---
 
-A magical giraffe once roamed the land, spreading stardust wherever it went, creating this constellation to guide travelers.
+Glimmerhoof was a magical giraffe who lit the way for lost travelers at night. As a reward, the gods turned her into a constellation.
