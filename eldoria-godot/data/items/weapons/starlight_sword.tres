@@ -4,18 +4,18 @@ metadata/_kind = "item"
 metadata/_data = """
 {
   "id": "starlight_sword",
-  "name": "Stellaluna Blade",
+  "name": "Starlight Sword",
   "category": "weapon",
   "subtype": "sword",
   "tier": "rare",
   "level_req": 25,
   "stats": {
     "atk": 10,
-    "def": 5,
+    "def": 0,
     "hp": 0,
-    "spd": 2
+    "spd": 0
   },
-  "flavor": "Forged from the essence of stardust, this sword shines with a gentle, lunar light.",
-  "realm": "tidesong"
+  "flavor": "Forged from the metals of a fallen star, this sword shines brightly in the darkness",
+  "realm": "skyreave"
 }
 """
