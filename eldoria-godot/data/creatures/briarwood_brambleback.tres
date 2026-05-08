@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_brambleback",
+  "name": "Brambleback",
+  "family": "beast",
+  "tier": "trash",
+  "level": 5,
+  "hp": 35,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "pack_hunter"
+  ],
+  "tells": [
+    {
+      "name": "thorn_swipe",
+      "wind_up_ms": 500,
+      "vfx_id": "thorns"
+    }
+  ],
+  "weaknesses": {
+    "fire": 1.2
+  },
+  "resistances": {
+    "poison": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "thorn",
+      "weight": 0.3
+    },
+    {
+      "item_id": "petal",
+      "weight": 0.2
+    }
+  ],
+  "flavor": "A small, spiky creature with a coat of thorns and leaves, often found in dense thickets of briar"
+}
+"""
