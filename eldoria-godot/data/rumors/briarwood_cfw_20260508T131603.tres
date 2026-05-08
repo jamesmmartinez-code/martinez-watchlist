@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's favorite food is moonberry pie"
+truth_0 = "true"
+rumor_1 = "The Luminous Leaves Tree is actually a giant, slumbering dragon"
+truth_1 = "false"
+rumor_2 = "Hidden paths in Briarwood lead to secret glaades"
+truth_2 = "partial"
+rumor_3 = "A mystical spring in Briarwood grants wishes to those who drink from it"
+truth_3 = "partial"
+rumor_4 = "The ancient magic of the Luminous Leaves Tree can heal any wound"
+truth_4 = "true"
