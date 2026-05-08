@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "starlight_slip",
+  "name": "Twilight",
+  "tier": "uncommon",
+  "stat_mod": {
+    "hp": 0,
+    "atk": 2,
+    "def": 0,
+    "spd": 1,
+    "luck": 0
+  },
+  "effect": "Chance to dodge projectiles",
+  "flavor": "Forged under moonlit skies"
+}
+"""
