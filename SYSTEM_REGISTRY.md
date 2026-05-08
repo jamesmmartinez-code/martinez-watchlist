@@ -1,4 +1,14 @@
 
+## Adaptive Difficulty per Player (run 24)
+player_difficulty_state: {session_deaths: int, session_kills: int, session_seconds: float, diff_scalar: float[0.70-1.30], tier: String}
+World mutators: record_player_death(), record_player_kill(kind)
+World evals: get_difficulty_tier() -> String, get_difficulty_scalar() -> float
+World internal: _apply_adaptive_difficulty() every 10s, _refresh_difficulty_hud(tier)
+Enemy hook: receive_difficulty_scalar(scalar) — live-lerps cooldown/chase_speed/damage
+Player hooks: _die() -> record_player_death | on_enemy_killed() -> record_player_kill
+HUD: DifficultyLabel at Vector2(8,96) below RenownLabel — glyph ▿/◇/▴
+
+
 
 ## Shop+Enchant (run 22)
 Mara: MARA_STOCK, _build_shop_panel, attempt_buy_item
