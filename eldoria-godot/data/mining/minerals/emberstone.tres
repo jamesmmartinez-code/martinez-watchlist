@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mineral"
+metadata/_data = """
+{
+  "id": "emberstone",
+  "name": "Emberstone",
+  "kind": "gem",
+  "tier": "sunstone",
+  "found_in": "crystal_caves",
+  "smelt_into": "",
+  "cut_into": "sunfacet",
+  "flavor": "glowing like a sunset"
+}
+"""
