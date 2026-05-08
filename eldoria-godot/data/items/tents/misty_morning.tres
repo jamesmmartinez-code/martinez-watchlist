@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tent"
+metadata/_data = """
+{
+  "id": "misty_morning",
+  "name": "The Wanderer",
+  "capacity": 2,
+  "weather_resistance": "all",
+  "palette": [
+    "#87CEEB",
+    "#964B00"
+  ],
+  "flavor": "Earthy tones on a misty dawn"
+}
+"""
