@@ -178,6 +178,22 @@ func MAT_STONE(uv := 2.0) -> StandardMaterial3D:
 		"res://assets/textures/stone/stone_rough.jpg",
 		Vector3(uv, uv, 1))
 
+func MAT_PATH(uv := 4.0) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/terrain/briarwood_path/briarwood_path.tres", uv)
+	if m: return m
+	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
+		"res://assets/textures/stone/stone_norm.jpg",
+		"res://assets/textures/stone/stone_rough.jpg",
+		Vector3(uv, uv, 1), Color(0.72, 0.68, 0.62))
+
+func MAT_FOUNDATION(uv := 2.0) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/arch/house_foundation/house_foundation.tres", uv)
+	if m: return m
+	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
+		"res://assets/textures/stone/stone_norm.jpg",
+		"res://assets/textures/stone/stone_rough.jpg",
+		Vector3(uv, uv, 1))
+
 func MAT_BARK(uv := 2.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/bark/bark_diff.jpg",
 		"res://assets/textures/bark/bark_norm.jpg",
@@ -748,7 +764,7 @@ func _build_path_network() -> void:
 		var pm := PlaneMesh.new()
 		pm.size = Vector2(p.w, length)
 		path.mesh = pm
-		path.material_override = MAT_STONE(length / 2)
+		path.material_override = MAT_PATH(length / 2)
 		path.position = center + Vector3(0, 0.02, 0)
 		path.rotation.y = atan2(dir.x, dir.z)
 		path.name = "Path"
@@ -772,7 +788,7 @@ func _make_building(pos: Vector3) -> void:
 	var fm := BoxMesh.new()
 	fm.size = Vector3(4.0, 0.5, 4.0)
 	foundation.mesh = fm
-	foundation.material_override = MAT_STONE(2)
+	foundation.material_override = MAT_FOUNDATION(2)
 	foundation.position.y = 0.25
 	house.add_child(foundation)
 
