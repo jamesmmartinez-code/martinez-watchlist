@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "berry_basket_bonanza",
+  "name": "Berry Basket",
+  "kind": "catching",
+  "location": "festival:harvest",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 10,
+    "gold": 5,
+    "item_id": "berry_juice"
+  },
+  "flavor": "Juicy berries fall from above"
+}
+"""
