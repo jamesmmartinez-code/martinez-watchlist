@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "soup"
+metadata/_data = """
+{
+  "id": "spicy_squid_stew",
+  "name": "Squid Ink Stew",
+  "main_ingredients": [
+    "squid",
+    "hot_pepper"
+  ],
+  "heal": 40,
+  "effect": "buff:warm:900s|cure:cold",
+  "flavor": "Rich broth with a kick"
+}
+"""
