@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "legendary"
+metadata/_data = """
+{
+  "id": "starlight_slasher",
+  "name": "Stellar Slice",
+  "category": "sword",
+  "level_req": 35,
+  "stats": {
+    "atk": 30,
+    "def": 5,
+    "hp": 0,
+    "spd": 5
+  },
+  "unique_effect": "Deals +10% damage to enemies at night",
+  "unlock_condition": "complete_quest_chain:moonlit_menace",
+  "backstory": "Forged from stardust, Stellar Slice was said to be wielded by the celestial guardians who protected the land from the darkness of the moonless nights. Its power is said to be at its peak when the stars shine bright.",
+  "flavor": "May the light of the stars guide my blade"
+}
+"""
