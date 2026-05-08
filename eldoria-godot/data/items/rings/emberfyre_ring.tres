@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "emberfyre_ring",
+  "name": "Emberfyre",
+  "tier": "legendary",
+  "stat_mod": {
+    "hp": 10,
+    "atk": 20,
+    "def": 5,
+    "spd": 5,
+    "luck": 10
+  },
+  "effect": "Deals fire damage to enemies within 5 feet",
+  "flavor": "Forged in dragonfire by ancient dwarves"
+}
+"""
