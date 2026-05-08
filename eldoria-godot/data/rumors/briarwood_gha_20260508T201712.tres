@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "A hidden glade in Briarwood is filled with rare wildflowers"
+truth_0 = "true"
+rumor_1 = "The ancient trees in Briarwood are whispering secrets to each other"
+truth_1 = "partial"
+rumor_2 = "Maeve has a secret garden hidden behind her cottage"
+truth_2 = "true"
+rumor_3 = "The creatures of Briarwood are planning a surprise party for Maeve"
+truth_3 = "partial"
+rumor_4 = "Briarwood is home to a magical dragon that grants wishes"
+truth_4 = "false"
