@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weapon_skin"
+metadata/_data = """
+{
+  "id": "mythic_dragon_scale",
+  "name": "Dragon's Breath",
+  "applies_to": "sword|bow|staff",
+  "palette": [
+    "#FF9900",
+    "#FFFFFF"
+  ],
+  "motif": "Dragonfire",
+  "unlock_condition": "complete_quest:blazing_trail",
+  "flavor": "Inferno hues dance across the blade"
+}
+"""
