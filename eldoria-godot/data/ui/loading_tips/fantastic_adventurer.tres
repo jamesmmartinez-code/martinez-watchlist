@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "fantastic_adventurer",
+  "tips": [
+    {
+      "text": "Explore caves for hidden treasures!",
+      "category": "exploration"
+    },
+    {
+      "text": "Make friends to join a guild!",
+      "category": "social"
+    },
+    {
+      "text": "Craft gear to boost your powers!",
+      "category": "crafting"
+    },
+    {
+      "text": "Try new spells to defeat tough foes!",
+      "category": "combat"
+    },
+    {
+      "text": "Discover secret areas with your map!",
+      "category": "exploration"
+    },
+    {
+      "text": "Help others to earn rewards!",
+      "category": "social"
+    },
+    {
+      "text": "Unlock new skills as you level up!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Solve puzzles to reveal hidden secrets!",
+      "category": "secret"
+    }
+  ]
+}
+"""
