@@ -3,12 +3,12 @@
 metadata/_kind = "death_message"
 metadata/_data = """
 {
-  "id": "cozy_campfire",
+  "id": "sunny_side_up",
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "I wake up by the campfire, feeling refreshed!",
-      "mood": "gentle"
+      "text": "Time for a quick rest at the wayshrine!",
+      "mood": "encouraging"
     }
   ]
 }

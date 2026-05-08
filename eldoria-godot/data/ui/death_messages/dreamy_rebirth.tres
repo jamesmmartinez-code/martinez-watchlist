@@ -3,12 +3,12 @@
 metadata/_kind = "death_message"
 metadata/_data = """
 {
-  "id": "cozy_campfire",
+  "id": "dreamy_rebirth",
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "I wake up by the campfire, feeling refreshed!",
-      "mood": "gentle"
+      "text": "I had the most wonderful dream... and now I'm back in the game!",
+      "mood": "playful"
     }
   ]
 }

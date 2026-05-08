@@ -3,12 +3,12 @@
 metadata/_kind = "death_message"
 metadata/_data = """
 {
-  "id": "cozy_campfire",
+  "id": "heroic_nap",
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "I wake up by the campfire, feeling refreshed!",
-      "mood": "gentle"
+      "text": "A hero's work is never done! I'll just take a little nap.",
+      "mood": "playful"
     }
   ]
 }

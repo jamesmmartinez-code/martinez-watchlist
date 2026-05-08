@@ -7,8 +7,8 @@ metadata/_data = """
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "Zzz... waking up at the campfire, feeling fresh!",
-      "mood": "gentle"
+      "text": "The wayshrine's magic helps me rest and recover!",
+      "mood": "encouraging"
     }
   ]
 }
