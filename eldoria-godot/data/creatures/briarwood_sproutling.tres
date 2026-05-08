@@ -4,8 +4,8 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_sproutling",
-  "name": "Sproutling",
-  "family": "elemental",
+  "name": "Briarwood Sproutling",
+  "family": "fey",
   "tier": "trash",
   "level": 5,
   "hp": 25,
@@ -13,13 +13,13 @@ metadata/_data = """
   "dmg_min": 2,
   "dmg_max": 4,
   "attack_speed": 1.2,
-  "move_speed": 3.8,
+  "move_speed": 4,
   "behavior_tags": [
-    "pack_hunter"
+    "lone_wanderer"
   ],
   "tells": [
     {
-      "name": "photosynthesis",
+      "name": "photosynthesize",
       "wind_up_ms": 500,
       "vfx_id": "glow"
     }
@@ -39,8 +39,12 @@ metadata/_data = """
     {
       "item_id": "seed",
       "weight": 0.2
+    },
+    {
+      "item_id": "twig",
+      "weight": 0.5
     }
   ],
-  "flavor": "a small, sprouting creature with leaves for hair and a body made of twisted vines"
+  "flavor": "A small, delicate fey creature with leaves for hair and skin like the petals of a flower."
 }
 """
