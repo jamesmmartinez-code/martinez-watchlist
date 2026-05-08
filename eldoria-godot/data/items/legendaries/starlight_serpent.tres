@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "legendary"
+metadata/_data = """
+{
+  "id": "starlight_serpent",
+  "name": "Stellar Fang (the Celestial Biter)",
+  "category": "dagger",
+  "level_req": 30,
+  "stats": {
+    "atk": 25,
+    "def": 5,
+    "hp": 10,
+    "spd": 5
+  },
+  "unique_effect": "Deals extra damage to shadow creatures",
+  "unlock_condition": "defeat_boss:dark_emperor",
+  "backstory": "Forged from a fallen star and the tooth of a celestial dragon, this dagger shines brightest in the darkest of nights. It is said that the first wielder of Stellar Fang was a young hero who vanquished the Dark Emperor, saving the land from eternal darkness.",
+  "flavor": "May the light of the stars guide my blade"
+}
+"""
