@@ -91,6 +91,23 @@ jobs:
             ~/godot/godot --headless --path . --import 2>&1 | tail -50 || true
           fi
 
+
+      - name: Build humanoid_base.tres AnimationLibrary from merged GLB
+        run: |
+          cd eldoria-godot
+          if [ -f assets/animations/humanoid_base.glb ]; then
+            echo "Building humanoid_base.tres from pre-merged GLB..."
+            ~/godot/godot --headless --path . \
+              --script res://scripts/dev/build_from_merged_glb.gd 2>&1 | tail -30
+            if [ -f assets/animations/humanoid_base.tres ]; then
+              echo "✅ humanoid_base.tres generated"
+            else
+              echo "⚠️  humanoid_base.tres not generated (non-fatal — continuing build)"
+            fi
+          else
+            echo "⚠️  humanoid_base.glb missing — skipping AnimLib build"
+          fi
+
       - name: Export Web build
         run: |
           cd eldoria-godot
