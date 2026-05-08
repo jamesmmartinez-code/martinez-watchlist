@@ -1,3 +1,12 @@
+## Ambient NPC Barks (run 27)
+- All 7 villagers now emit idle one-liner barks every 22-38s when player is not in interact range
+- Bark lines authored per-role: Maeve (elder-wisdom), Edda (forge-rhythm), Mara (merchant-tallies),
+  Lyra (botanical-dreamy), Bram (pub-warm), Roan (horse-road), Hala (drill-counts)
+- NPC.gd bark system (run 26 scaffold) now fully activated — Label3D float + 3s fade
+- THEME §12 MOTION & LIFE: village sounds inhabited, not posed; each NPC has a distinct voice
+- group 'npcs' unchanged; schedule + dialogue-json systems compose without conflict
+
+
 ## Combat-feel polish — HP bar color + attack telegraph (run 28)
 - HP bar color progression: green (>60%) → yellow (30–60%) → red (<30%).
   Smooth lerp on ratio — no two-state pop. Palette stays within THEME §3
