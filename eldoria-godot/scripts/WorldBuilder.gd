@@ -489,6 +489,23 @@ const NPCS = [
 		"Quiet woods bring quieter trouble. Keep one eye on the brush when you ride out at dusk.",
 		"Wolves used to chase off the wrong sort. Now? Watch the leather-cloaked ones. They smell coin where coin used to be safe.",
 	 ],
+	 # COMPOUND (run 29 — Builder, Backlog #9): road-defense cleared tier.
+	 # warmed_world_flag fires ONLY when warm_world_flag (bandits_emergent)
+	 # is NOT active — so these lines play precisely when the road has been
+	 # actively defended (score >= 3 kills → bandit_road_cleared flag) but
+	 # bandits have NOT yet emerged at boldness >= 0.40. The player has
+	 # pre-empted the threat. THEME §1 consequence: Roan notices.
+	 # Four time-of-day bucket lines (morning/midday/evening/night) so
+	 # each visit gets a fresh voice. THEME §12: Roan's gratitude shifts
+	 # with the light — morning relief, midday confidence, evening hope,
+	 # night rest.
+	 "warmed_world_flag":"bandit_road_cleared",
+	 "warmed_world_lines":[
+		"South road's been clean since you patrolled it. Pippin's been past the gate twice this morning.",
+		"Heard you put down more than a few on the road. The merchants ride easier. So do I.",
+		"The hooded ones haven't shown in days. That's your work, isn't it. Good work.",
+		"Quietest night in a fortnight. Mares slept straight through. Whatever you did on that road — keep it up.",
+	 ],
 	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Originally
 	 # this comment claimed Roan had "no warm_flag and no warm_world_flag"
 	 # — that was true through run 16. Run 17 added warm_flag, run 21 added

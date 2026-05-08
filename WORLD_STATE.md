@@ -1,3 +1,14 @@
+## Faction State — Bandit Road Defense (run 29)
+- road_defense_score: float[0..10] in World.gd — increments on bandit kills (+1.0) and captain kills (+2.0)
+- Decays 5%/s via _process so defended roads soften over time (THEME §12 MOTION — not permanent)
+- defense_damper in update_bandit_pressure(): at score=5 reduces bandit boldness by ~0.15 below passive derivation
+- bandit_road_cleared world flag: set when score>=3; triggers "The road breathes easier." toast + minimap ping
+- _tick_bandit_patrol() fires every 90s: if boldness>0.50 spawns a lone Bandit Patrol 20m south of player
+- Roan warmed_world_flag tier: "bandit_road_cleared" → 4 time-of-day gratitude lines fire when road is cleared
+  but bandits_emergent is NOT active (player pre-empted the threat)
+- THEME §1: consequence is proportional — each kill immediately shifts boldness; Roan notices
+- THEME §12: score decays continuously; patrol timer ticks every frame; road is never static at high boldness
+
 ## Ambient NPC Barks (run 27)
 - All 7 villagers now emit idle one-liner barks every 22-38s when player is not in interact range
 - Bark lines authored per-role: Maeve (elder-wisdom), Edda (forge-rhythm), Mara (merchant-tallies),

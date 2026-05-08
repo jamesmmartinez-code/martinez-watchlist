@@ -746,6 +746,13 @@ func _die(source: Node) -> void:
 	died.emit(self)
 	# Notify quest system
 	get_tree().call_group("quest_listeners", "on_enemy_killed", enemy_kind)
+	# Run 29 (Builder) — road defense credit. Bandit kills suppress boldness
+	# via World.record_road_kill(), which re-derives bandit pressure immediately.
+	# THEME §1 consequence: the road responds to the player's fight.
+	if enemy_kind == "bandit" or enemy_kind == "bandit_captain":
+		var world_rd: Node = get_tree().get_first_node_in_group("world")
+		if world_rd != null and world_rd.has_method("record_road_kill"):
+			world_rd.record_road_kill(enemy_kind)
 	# Schedule respawn
 	await get_tree().create_timer(respawn_delay).timeout
 	_respawn()
