@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "lucky_dice_roll",
+  "name": "Lucky Roll",
+  "play_at": "tavern",
+  "rules": "Roll 3 dice, highest total wins. Ties roll again.",
+  "reward_win": "copper:5",
+  "flavor": "A simple game of chance"
+}
+"""
