@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fortune"
+metadata/_data = """
+{
+  "id": "starlight_wish",
+  "fortunes": [
+    {
+      "text": "Wishes have wings, let them fly",
+      "mood": "hopeful"
+    }
+  ]
+}
+"""
