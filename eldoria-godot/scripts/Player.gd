@@ -136,7 +136,7 @@ func _ready() -> void:
 	# scales the Hero subtree to ~1.8m, then lifts so feet sit at body-local
 	# y=0. Mirrors the Enemy.gd / Boss.gd pattern. No-op if the model is
 	# already in the right range.
-	call_deferred("_normalize_player_model", 1.1)
+	call_deferred("_normalize_player_model", 1.8)  # scale-eng 2026-05-08: clamped 1.1 → 1.8 (canon floor 1.6m, Player/Hero NPC range 1.6–2.0m)
 	# Repeat at 0.5/1.5/3s — Meshy biped finishes loading skinning data over multiple frames,
 	# so a single deferred call sometimes catches the model before the AABB stabilizes.
 	_schedule_normalize_retry(0.5)
@@ -1544,7 +1544,7 @@ func reset_save() -> void:
 func _schedule_normalize_retry(delay: float) -> void:
 	await get_tree().create_timer(delay).timeout
 	if is_instance_valid(self):
-		_normalize_player_model(1.1)
+		_normalize_player_model(1.8)  # scale-eng 2026-05-08: clamped 1.1 → 1.8 (canon floor 1.6m)
 
 # Ground-snap raycast — fired every physics tick. If the visual character is
 # floating above the collider (which happens after a Meshy GLB rescale lifts
