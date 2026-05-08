@@ -3,18 +3,18 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "lucky_dragon",
+  "id": "mythic_quests",
   "fortunes": [
     {
-      "text": "Dream big, adventurer!",
+      "text": "Every quest begins with courage",
       "mood": "hopeful"
     },
     {
-      "text": "Smile often, wonder always",
+      "text": "Laughter is the best treasure",
       "mood": "playful"
     },
     {
-      "text": "Kindness is the greatest magic",
+      "text": "Explore, discover, and dream",
       "mood": "wise"
     }
   ]

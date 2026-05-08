@@ -3,18 +3,18 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "lucky_dragon",
+  "id": "whimsy_realms",
   "fortunes": [
     {
-      "text": "Dream big, adventurer!",
+      "text": "Wonder awaits around every corner",
       "mood": "hopeful"
     },
     {
-      "text": "Smile often, wonder always",
+      "text": "Play, imagine, and create",
       "mood": "playful"
     },
     {
-      "text": "Kindness is the greatest magic",
+      "text": "Your heart is full of wonder",
       "mood": "wise"
     }
   ]

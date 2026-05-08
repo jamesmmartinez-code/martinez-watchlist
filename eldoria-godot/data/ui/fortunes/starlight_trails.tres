@@ -3,18 +3,18 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "lucky_dragon",
+  "id": "starlight_trails",
   "fortunes": [
     {
-      "text": "Dream big, adventurer!",
+      "text": "Shine bright like a star!",
       "mood": "hopeful"
     },
     {
-      "text": "Smile often, wonder always",
+      "text": "Make friends on your journey",
       "mood": "playful"
     },
     {
-      "text": "Kindness is the greatest magic",
+      "text": "Believe in the magic within",
       "mood": "wise"
     }
   ]
