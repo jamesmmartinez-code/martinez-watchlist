@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "event"
+metadata/_data = """
+{
+  "id": "briarwood_blossom_fest",
+  "name": "Briarwood Blossom Festival",
+  "category": "festival",
+  "trigger": "spring_equinox",
+  "duration_hours": 4,
+  "participants": [
+    "maeve"
+  ],
+  "mechanics": [
+    "special_vendor"
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": []
+  },
+  "repeats_yearly": true,
+  "flavor": "Celebrate the blossoming of Briarwood's famous wildflowers with Maeve and friends!"
+}
+"""
