@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "sapling"
+metadata/_data = """
+{
+  "id": "morning_glory",
+  "name": "Morning Glory",
+  "grow_days": 7,
+  "yield_item": "blue_flower",
+  "yield_qty": 4,
+  "sun_required": "full",
+  "watering": "medium",
+  "flavor": "a delicate, skyward climber with trumpet blooms"
+}
+"""
