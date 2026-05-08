@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "instrument"
+metadata/_data = """
+{
+  "id": "silver_song",
+  "name": "Silver Song",
+  "kind": "lute",
+  "unlock_condition": "Complete the Forest of Whispers quest",
+  "play_effect": "buff:nearby_npc_friendly:120s",
+  "flavor": "A lute with intricate silver filigree, said to charm the forest spirits"
+}
+"""
