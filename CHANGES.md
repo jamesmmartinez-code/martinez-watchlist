@@ -1,4 +1,15 @@
 ## Tech debt
+## 2026-05-08 Auto: run 24 -- Housing / Player Home (Backlog #10)
+I'm building: Housing / player-shaped spaces (Backlog #10)
+THEME §1 cited: timber-frame + thatched roof identical to village houses — no modern materials
+THEME §3 cited: warm amber window glow, sunset-gold nameplate (#FFD86B)
+THEME §12 cited: hearth CPUParticles3D sparks, candle sine-flicker in _process, chimney smoke
+THEME §13 cited: all geometry base at y=0; no floating edges, no buried foundations
+Mood board panel: cosy fantasy cottage at dusk, warm light through leaded windows
+Files: scripts/PlayerHome.gd (NEW) | WorldBuilder.gd +HOME_POS +HOME_SCRIPT +_build_player_home | Achievements.gd +hearthkeeper
+5-output: i=_build_player_home wired via _safe_call in WorldBuilder._ready; ii=HOME_POS+HOME_SCRIPT schema + interior_unlocked bool + "player_home" group; iii=E-key toast feedback ("Home. The hearth is warm." / locked line); iv=interior gated on has_world_flag("first_quest_done") re-evaluated each _ready; v="player_home" group hook (WeatherSystem/SeasonSystem) + World flag "player_home_visited" + Achievements "hearthkeeper" + "chests" group on StorageChest for Minimap pin
+Next: Adaptive difficulty per-player (Backlog #11) or NPC faction dialogue for hearthkeeper title
+
 - QA 2026-05-08: `eldoria-godot/assets/models/Hero.glb` is 30 MiB -- exceeds OPERATIONS.md s15 soft cap (20 MiB) and hard cap (25 MiB). Referenced in Main.tscn, cannot delete. Action: mesh optimization/LOD reduction needed.
 
 ## 2026-05-08 Auto: run 23 -- God-rays through canopy

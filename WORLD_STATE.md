@@ -12,3 +12,11 @@
 - Shafts fall downward 0.10-0.20 m/s with tangential sway — THEME §12 motion
 - World.gd time-of-day fade: amount_ratio dims at dusk, off at night, full at midday
 - group "god_ray_shafts" is the read/write hook for future weather/weather passes
+
+## Player Home — Briarwood Cottage (run 24)
+- Cottage at Vector3(0, 0, 14) — north edge of Briarwood plaza, always visible
+- Interior (hearth flame, candle flicker, storage chest, chimney smoke) unlocks after first_quest_done
+- PlayerHome.gd joins group "player_home" for future WeatherSystem / SeasonSystem hooks
+- StorageChest joins group "chests" — Minimap plots bronze ring on it
+- World flag "player_home_visited" set on first E-key interaction
+- Achievement "hearthkeeper" / title "the Hearthkeeper" unlocks on first_quest_done + player_home_visited
