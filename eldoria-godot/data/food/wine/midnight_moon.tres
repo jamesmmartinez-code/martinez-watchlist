@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "wine"
+metadata/_data = """
+{
+  "id": "midnight_moon",
+  "name": "Midnight Eclipse",
+  "grape_or_fruit": "moonpear",
+  "region": "skyreave",
+  "year": "Harvested under the light of a blood moon in 1234",
+  "effect": "buff:warmth:600s",
+  "flavor": "Dark, fruity notes with hints of smoky vanilla and a crisp, lunar finish"
+}
+"""
