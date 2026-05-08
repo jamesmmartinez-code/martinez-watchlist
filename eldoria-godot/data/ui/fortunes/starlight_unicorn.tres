@@ -3,10 +3,10 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "lucky_dragon",
+  "id": "starlight_unicorn",
   "fortunes": [
     {
-      "text": "Dreams are wishes in disguise",
+      "text": "Believe in yourself, magic happens",
       "mood": "hopeful"
     }
   ]

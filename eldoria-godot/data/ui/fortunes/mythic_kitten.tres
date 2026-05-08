@@ -3,11 +3,11 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "lucky_dragon",
+  "id": "mythic_kitten",
   "fortunes": [
     {
-      "text": "Dreams are wishes in disguise",
-      "mood": "hopeful"
+      "text": "Kindness is a superpower",
+      "mood": "wise"
     }
   ]
 }
