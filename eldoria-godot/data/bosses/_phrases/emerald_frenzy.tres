@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "emerald_frenzy",
+  "boss_id": "generic",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Unleash the green!",
+      "tone": "playful_menace"
+    },
+    {
+      "trigger": "tell_windup",
+      "text": "Get ready to rumble!",
+      "tone": "warning"
+    },
+    {
+      "trigger": "low_hp",
+      "text": "My power is waning...",
+      "tone": "sad_resolve"
+    },
+    {
+      "trigger": "player_dodge",
+      "text": "You're a nimble one!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

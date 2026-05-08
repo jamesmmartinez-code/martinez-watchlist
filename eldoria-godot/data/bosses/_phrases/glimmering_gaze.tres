@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "glimmering_gaze",
+  "boss_id": "generic",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Shine on, adventurers!",
+      "tone": "playful_menace"
+    },
+    {
+      "trigger": "tell_windup",
+      "text": "My eyes are on you!",
+      "tone": "warning"
+    },
+    {
+      "trigger": "low_hp",
+      "text": "Fading fast...",
+      "tone": "sad_resolve"
+    },
+    {
+      "trigger": "player_dodge",
+      "text": "Quick, but not quick enough!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "luminous_leap",
+  "boss_id": "generic",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Leap into the light!",
+      "tone": "playful_menace"
+    },
+    {
+      "trigger": "tell_windup",
+      "text": "Watch your step!",
+      "tone": "warning"
+    },
+    {
+      "trigger": "low_hp",
+      "text": "My radiance is fading...",
+      "tone": "sad_resolve"
+    },
+    {
+      "trigger": "player_dodge",
+      "text": "You're a shining star!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""
