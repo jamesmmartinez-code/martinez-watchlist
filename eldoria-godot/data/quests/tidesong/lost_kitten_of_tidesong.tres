@@ -4,42 +4,42 @@ metadata/_kind = "quest"
 metadata/_data = """
 {
   "id": "lost_kitten_of_tidesong",
-  "title": "A Kitten Lost at Sea",
+  "title": "The Missing Kitten of Tidesong",
   "region": "tidesong",
   "act": 2,
   "level_band": [
-    1,
-    3
+    3,
+    5
   ],
-  "hook": "Kitten overboard!",
+  "hook": "Luna's kitten, Finnley, has gone missing!",
   "stages": [
     {
-      "objective": "Rescue the kitten from the waves",
-      "location": "Tidesong Beach",
-      "completion_trigger": "talk_to_npc:kitten_rescuer"
+      "objective": "Search the Tidesong docks for any sign of Finnley",
+      "location": "Tidesong Docks",
+      "completion_trigger": "talk_to_npc:old_sailor_jack"
     },
     {
-      "objective": "Find the kitten's favorite toy, a little wooden boat",
-      "location": "Tidesong Pier",
-      "completion_trigger": "collect:item_id:wooden_boat"
+      "objective": "Follow the trail of fish scraps to the old lighthouse",
+      "location": "Old Lighthouse",
+      "completion_trigger": "reach_zone:old_lighthouse_interior"
     },
     {
-      "objective": "Return the toy to the kitten's owner, a fisherman's child",
-      "location": "Tidesong Village",
-      "completion_trigger": "talk_to_npc:fisherman_child"
+      "objective": "Rescue Finnley from the mischievous seagulls",
+      "location": "Old Lighthouse Roof",
+      "completion_trigger": "defeat:seagull_gang"
     }
   ],
   "rewards": {
     "xp": 50,
     "gold": 10,
     "items": [
-      "item_id:healing_potion"
+      "fish_treats"
     ],
     "faction_rep": {
       "tidesong": 5
     }
   },
   "repeatable": false,
-  "flavor": "A tiny ball of fluff clings to a piece of driftwood as the tide rises, its little meows carried away by the wind."
+  "flavor": "The sun sets over Tidesong, casting a warm orange glow over the docks. The sound of seagulls fills the air as you search for Luna's missing kitten, Finnley."
 }
 """
