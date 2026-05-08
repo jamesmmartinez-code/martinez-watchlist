@@ -4,43 +4,43 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_sproutling",
-  "name": "Sproutling",
+  "name": "Briarwood Sproutling",
   "family": "fey",
-  "tier": "trash",
-  "level": 5,
-  "hp": 30,
-  "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 5,
-  "attack_speed": 1.2,
-  "move_speed": 3.8,
+  "tier": "elite",
+  "level": 25,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1.5,
+  "move_speed": 3,
   "behavior_tags": [
-    "lone_wanderer"
+    "ambusher"
   ],
   "tells": [
     {
-      "name": "photosynthesize",
-      "wind_up_ms": 500,
-      "vfx_id": "leaf_burst"
+      "name": "thorn_burst",
+      "wind_up_ms": 1000,
+      "vfx_id": "thorn_explosion"
     }
   ],
   "weaknesses": {
-    "fire": 1.2
+    "ice": 1.5
   },
   "resistances": {
-    "nature": 0.8
+    "nature": 0.7
   },
-  "xp_value": 10,
+  "xp_value": 120,
   "loot_table": [
     {
-      "item_id": "acorn",
-      "weight": 0.3
+      "item_id": "briarwood_seed",
+      "weight": 0.6
     },
     {
-      "item_id": "petal",
-      "weight": 0.2
+      "item_id": "fey_dust",
+      "weight": 0.4
     }
   ],
-  "flavor": "a small, delicate creature with leaves for hair and skin like the gentle bark of a tree"
+  "flavor": "a small, mischievous fey creature with a body made of twisted vines and leaves, often found in the dense thickets of the Briarwood"
 }
 """

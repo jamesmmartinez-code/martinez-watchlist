@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "mossbloom_fox",
+  "name": "Mossbloom Fox",
+  "family": "beast",
+  "tier": "trash",
+  "level": 6,
+  "hp": 35,
+  "armor": 2,
+  "dmg_min": 3,
+  "dmg_max": 6,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "pack_hunter"
+  ],
+  "tells": [
+    {
+      "name": "dart",
+      "wind_up_ms": 500,
+      "vfx_id": "leaf_burst"
+    }
+  ],
+  "weaknesses": {
+    "fire": 1.2
+  },
+  "resistances": {
+    "nature": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "petal",
+      "weight": 0.3
+    },
+    {
+      "item_id": "acorn",
+      "weight": 0.2
+    },
+    {
+      "item_id": "feather",
+      "weight": 0.5
+    }
+  ],
+  "flavor": "a small, fluffy fox with a coat of soft moss and a bushy tail, often found in the sun-dappled clearings of the Briarwood"
+}
+"""
