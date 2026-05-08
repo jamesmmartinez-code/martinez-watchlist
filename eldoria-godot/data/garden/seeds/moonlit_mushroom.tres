@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "moonlit_mushroom",
+  "name": "Luminous Cap",
+  "grows_into": "glimmer_sapling",
+  "price": 15,
+  "obtained_from": "forage:night_shade",
+  "flavor": "Glowing, ethereal fungus."
+}
+"""
