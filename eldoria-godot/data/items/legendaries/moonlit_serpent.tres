@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "legendary"
+metadata/_data = """
+{
+  "id": "moonlit_serpent",
+  "name": "Luna's Whisper",
+  "category": "dagger",
+  "level_req": 30,
+  "stats": {
+    "atk": 25,
+    "def": 5,
+    "hp": 0,
+    "spd": 5
+  },
+  "unique_effect": "Deals bonus damage to undead foes",
+  "unlock_condition": "defeat_boss:undead_king",
+  "backstory": "Forged from a fallen star and the tears of the moon goddess, Luna's Whisper was said to be able to vanquish the darkness. It was hidden away for centuries, waiting for a brave warrior to wield it against the forces of evil.",
+  "flavor": "May the light of the moon guide my blade"
+}
+"""
