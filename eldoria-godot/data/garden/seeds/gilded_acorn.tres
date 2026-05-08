@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "gilded_acorn",
+  "name": "Gilded Acorn",
+  "grows_into": "golden_sapling",
+  "price": 25,
+  "obtained_from": "vendor:botanist|forage:golden_grove",
+  "flavor": "Glowing with an inner light"
+}
+"""
