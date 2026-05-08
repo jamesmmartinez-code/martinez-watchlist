@@ -1,3 +1,14 @@
+## Visual polish — god-ray wind-sway + hearth flicker depth (run 25)
+- God-ray shafts (run 23 follow-up): per-shaft wind-sway via XZ position hash
+  (freq 0.23 Hz, ±8% amplitude). 5 emitters now breathe independently.
+- PlayerHome candle: dual-harmonic flicker (1.4 Hz primary + 5.18 Hz secondary).
+  Second frequency incommensurable — never visually repeats within 30s window.
+- PlayerHome hearth OmniLight3D: pulsed in _process at 0.73× candle rate,
+  phase π/3, range 1.8–2.3 energy. Hearth + candle breathe in sympathy.
+- THEME §12 cited: MOTION & LIFE — per-shaft independence, dual-harmonic flame.
+
+
+
 
 ## Adaptive Difficulty per Player (run 24)
 - player_difficulty_state: dict in World.gd tracking session deaths/kills/seconds

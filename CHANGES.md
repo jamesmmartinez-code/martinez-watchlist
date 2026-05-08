@@ -1,3 +1,16 @@
+## 2026-05-08 Auto: run 25 — Visual polish (god-ray + hearth)
+Polish category: Visual
+THEME §12 cited: MOTION & LIFE — light through leaves moves; a hearth that emits
+flat constant energy reads as a light bulb, not a fire.
+Files: World.gd (god-ray loop REFINE) | PlayerHome.gd (CANDLE_FREQ2/AMP2 consts + _process + _hearth_light wiring)
+5-output:
+  i.  INTEGRATION  — all changes within existing functions, no new calls
+  ii. SCHEMA       — CANDLE_FREQ2=5.18, CANDLE_AMP2=0.07, _hearth_light OmniLight3D ref
+  iii.FEEDBACK     — per-shaft amount_ratio now unique per frame; hearth+candle pulse linked
+  iv. EVAL         — both changes deepen run 23 (god-rays) and run 24 (hearth) without touching new nodes
+  v.  HOOKS        — god_ray_shafts group unchanged (WorldBuilder hook still valid)
+Next: Character depth (NPC ambient-bark deepening) or Combat-feel (damage number color tiers)
+
 - QA 2026-05-08T14:11 UTC: Build=success (Build Eldoria 14:03), Pages=errored (Jekyll processing failure on large .pck files). FIX: added .nojekyll (commit c658b56a) to skip Jekyll — this should resolve Pages build. §15 violation: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete. Logged as tech debt.
 
 ## Tech debt

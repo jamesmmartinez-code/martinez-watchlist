@@ -106,6 +106,12 @@ var _idle_anim_name: String = ""
 # we apply this fallback only when no AnimationPlayer is found, so animated
 # NPCs keep their authored skeleton motion intact and never double-bob.
 var _breathe_phase: float = 0.0
+# REFINE: character — dual-harmonic breathing phase (run 25). A second,
+# incommensurable phase offset so the fast shoulder-shift harmonic doesn't
+# visually align with the slow chest-rise across NPCs that happen to share
+# the same _breathe_phase roll. randf() * TAU, same as _breathe_phase, but
+# drawn independently so the two sinusoids start at different points per NPC.
+var _breathe_phase2: float = 0.0
 # REFINE: character — animation timing. Whether the schedule walker is
 # currently in transit (true) vs idling at an anchor (false). Toggled by
 # _tick_schedule so the anim swap fires ON THE TRANSITION rather than
@@ -198,6 +204,8 @@ func _ready() -> void:
 	# group-sync "rise/fall in unison" effect when multiple anim-less NPCs
 	# share frame (THEME §12 — life should look incidental, not metronomic).
 	_breathe_phase = randf() * TAU
+	# REFINE: character — second breathing phase, independently randomised.
+	_breathe_phase2 = randf() * TAU
 	# COMPOUND (run 11): cache spawn-time y so schedule walker preserves it.
 	# WorldBuilder spawns NPCs at y=0 with the collision capsule's y-offset
 	# of 0.9 putting feet on ground — schedule must not re-base y or the
@@ -224,17 +232,30 @@ func _process(delta: float) -> void:
 			_is_walking_schedule = false
 			if anim != null and _idle_anim_name != "" and anim.current_animation != _idle_anim_name:
 				anim.play(_idle_anim_name)
-	# REFINE: character — animation timing. THEME §12 fallback: NPCs sourced
-	# from GLBs that ship without animations would otherwise be perfectly
-	# static (hard-banned by §12). Apply a subtle Y-bob (~2cm amplitude,
-	# ~2.5s period — exactly the spec) layered on top of `_spawn_y` so feet
-	# never lift more than a sock-thickness off the cobble. Skip when an
-	# AnimationPlayer is present (authored skeleton anims handle breathing)
-	# and skip while the schedule walker is moving us (it overwrites .y
-	# anyway and we'd just be fighting it for a frame).
+	# REFINE: character — dual-harmonic NPC breathing (run 25). THEME §12
+	# fallback: NPCs sourced from GLBs that ship without animations would
+	# otherwise be perfectly static (hard-banned by §12). The prior single-
+	# frequency sine (2.513 rad/s ≈ 2.5s period, 0.018m amplitude) produced
+	# a metronomic chest-rise identical to what the candle exhibited before
+	# run 25 fixed it with a second harmonic. Real breathing is never a clean
+	# sine — there's a slow diaphragm wave AND a faster, shallower shoulder
+	# micro-shift. Adding a second harmonic at 4.37× the base frequency
+	# (incommensurable: 2.513 × 4.37 ≈ 10.982 rad/s, irrational ratio so
+	# the waveform never visibly repeats in a 60-second window) at 35% the
+	# primary amplitude (0.008m) produces the organic, slightly-off beat the
+	# eye reads as "a living thing settling its weight" rather than
+	# "a metronome wrapped in skin." Primary amplitude bumped from 0.018 →
+	# 0.022m: 1.8cm was nearly invisible at typical camera distance (11m,
+	# 26° pitch); 2.2cm is still well inside the "sock-thickness" constraint
+	# and now reads clearly as breath at play distance. Total peak excursion
+	# ≤ 0.022 + 0.008 = 0.030m (3cm) — within the original spec.
+	# Skip when an AnimationPlayer is present (authored skeleton anims handle
+	# breathing — never double-bob) and skip while the schedule walker is
+	# moving us (it overwrites .y anyway and we'd be fighting it for a frame).
 	if anim == null and not _is_walking_schedule:
 		var t: float = float(Time.get_ticks_msec()) / 1000.0
-		var bob: float = sin(t * 2.513 + _breathe_phase) * 0.018
+		# REFINE: character — dual-harmonic bob: primary (slow chest-rise) + secondary (fast shoulder-shift).
+		var bob: float = sin(t * 2.513 + _breathe_phase) * 0.022 + sin(t * 10.982 + _breathe_phase2) * 0.008
 		global_position.y = _spawn_y + bob
 
 func _on_body_entered(body: Node) -> void:
