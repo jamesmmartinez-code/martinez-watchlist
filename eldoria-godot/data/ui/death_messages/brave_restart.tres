@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "brave_restart",
+  "messages": [
+    {
+      "trigger": "fall_damage|enemy_defeat|drowning",
+      "text": "Time to start anew, with a heart full of courage!",
+      "mood": "encouraging"
+    }
+  ]
+}
+"""

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "wayshrine_welcome",
+  "messages": [
+    {
+      "trigger": "kill_zone|drowning",
+      "text": "The wayshrine's warmth is all I need to get back on my feet!",
+      "mood": "playful"
+    }
+  ]
+}
+"""

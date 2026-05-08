@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "restful_rebirth",
+  "messages": [
+    {
+      "trigger": "fall_damage|enemy_defeat",
+      "text": "I'm resting at the wayshrine, ready to try again!",
+      "mood": "playful"
+    }
+  ]
+}
+"""
