@@ -8,14 +8,14 @@ metadata/_data = """
   "category": "consumable",
   "subtype": "healing",
   "tier": "uncommon",
-  "level_req": 5,
+  "level_req": 1,
   "stats": {
     "atk": 0,
     "def": 0,
-    "hp": 50,
+    "hp": 20,
     "spd": 0
   },
-  "flavor": "Restores a moderate amount of health to the consumer.",
+  "flavor": "This enchanted acorn restores a moderate amount of health when consumed.",
   "realm": "eldoria"
 }
 """

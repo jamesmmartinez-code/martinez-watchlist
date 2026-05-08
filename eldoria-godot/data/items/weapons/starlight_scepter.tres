@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_scepter",
+  "name": "Starlight Scepter",
+  "category": "weapon",
+  "subtype": "staff",
+  "tier": "rare",
+  "level_req": 25,
+  "stats": {
+    "atk": 15,
+    "def": 5,
+    "hp": 0,
+    "spd": 2
+  },
+  "flavor": "A staff imbued with the essence of stardust, granting the wielder increased magical prowess.",
+  "realm": "tidesong"
+}
+"""
