@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's baking a giant wildflower cake for the festival"
+truth_0 = "true"
+rumor_1 = "A secret glade in Briarwood is home to ancient, glowing trees"
+truth_1 = "partial"
+rumor_2 = "Briarwood's wildflowers can grant wishes if picked under a full moon"
+truth_2 = "false"
+rumor_3 = "A hidden path in Briarwood leads to a hidden fairy village"
+truth_3 = "partial"
+rumor_4 = "Maeve's special festival vendor will sell rare, flower-petal wings"
+truth_4 = "true"
