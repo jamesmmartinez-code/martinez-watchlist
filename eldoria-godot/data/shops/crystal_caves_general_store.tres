@@ -1,0 +1,56 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "crystal_caves_general_store",
+  "vendor_name": "Glimmer's Goods",
+  "region": "crystal_caves",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "healing_potion",
+      "price": 50,
+      "quantity": 20,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "crystal_shard",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 200,
+      "quantity": 5,
+      "restock_hours": 48
+    },
+    {
+      "item_id": "rope",
+      "price": 20,
+      "quantity": 30,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "NEW",
+      "price": 150,
+      "quantity": 15,
+      "restock_hours": 18
+    },
+    {
+      "item_id": "map",
+      "price": 80,
+      "quantity": 25,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "torch",
+      "price": 30,
+      "quantity": 40,
+      "restock_hours": 6
+    }
+  ],
+  "flavor": "A cozy little shop nestled between glittering crystal formations, Glimmer's Goods offers a variety of essentials for young adventurers exploring the Crystal Caves."
+}
+"""
