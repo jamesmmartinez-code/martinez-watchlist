@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "adventurous_soul",
+  "title": "World Wanderer",
+  "description": "Spent 5 hours exploring the world",
+  "trigger": "playtime:5",
+  "reward_title": "Traveler's Token",
+  "reward_xp": 400,
+  "reward_gold": 300,
+  "flavor": "The world is yours to discover!"
+}
+"""
