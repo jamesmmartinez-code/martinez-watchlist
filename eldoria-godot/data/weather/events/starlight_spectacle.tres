@@ -4,14 +4,14 @@ metadata/_kind = "weather_event"
 metadata/_data = """
 {
   "id": "starlight_spectacle",
-  "name": "Twinkling Starlight",
-  "kind": "fairy_lights",
+  "name": "Twinkling Skies",
+  "kind": "meteor_shower",
   "duration_min": 15,
-  "region": "whisperwood",
+  "region": "all",
   "effects": [
     "spawn:firefly_x",
     "buff:luck:300s"
   ],
-  "flavor": "Glittering lights dance across the sky"
+  "flavor": "A magical meteor shower paints the night sky with twinkling stars"
 }
 """
