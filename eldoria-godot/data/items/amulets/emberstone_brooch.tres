@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "amulet"
+metadata/_data = """
+{
+  "id": "emberstone_brooch",
+  "name": "Ember's Vigil",
+  "wards_against": "cold|fear",
+  "tier": "uncommon",
+  "glow_color_hex": "#FF9900",
+  "flavor": "Forged from a fragment of a fallen star"
+}
+"""
