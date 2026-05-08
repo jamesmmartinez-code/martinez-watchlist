@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "lost_kitten_adventure",
+  "title": "Whisker's Big Journey",
+  "region": "briarwood",
+  "theme": "Helping a lost kitten",
+  "quests": [
+    {
+      "id": "find_lost_kitten",
+      "title": "Find Whisker",
+      "hook": "Kitten lost in woods!",
+      "stages_count": 2
+    },
+    {
+      "id": "gather_kitten_food",
+      "title": "Gather Food for Whisker",
+      "hook": "Kitten's hungry!",
+      "stages_count": 3
+    },
+    {
+      "id": "return_kitten_home",
+      "title": "Return Whisker Home",
+      "hook": "Reunite kitten with owner",
+      "stages_count": 2
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "kitten_friendship_badge"
+  },
+  "flavor": "A heartwarming tale of friendship and adventure"
+}
+"""
