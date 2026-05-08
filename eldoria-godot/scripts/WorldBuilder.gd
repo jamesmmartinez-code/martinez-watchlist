@@ -1421,7 +1421,7 @@ func _build_firefly_particles() -> void:
 	for s in spots:
 		var p := GPUParticles3D.new()
 		p.position = s + Vector3(0, 1.5, 0)
-		p.amount = 60
+		p.amount = 18  # 2026-05-08: 60→18 (too many caused white speck carpet)
 		p.lifetime = 4.0
 		p.preprocess = 2.0
 		p.visibility_aabb = AABB(Vector3(-12, -2, -12), Vector3(24, 6, 24))
@@ -1431,8 +1431,8 @@ func _build_firefly_particles() -> void:
 		pm.gravity = Vector3(0, 0.05, 0)
 		pm.initial_velocity_min = 0.1
 		pm.initial_velocity_max = 0.6
-		pm.scale_min = 0.6
-		pm.scale_max = 1.4
+		pm.scale_min = 0.4  # 2026-05-08: reduced
+		pm.scale_max = 0.7
 		pm.color = Color(1.0, 0.85, 0.35)
 		p.process_material = pm
 		var qm := QuadMesh.new()
@@ -1441,7 +1441,7 @@ func _build_firefly_particles() -> void:
 		dm.albedo_color = Color(1.0, 0.9, 0.5)
 		dm.emission_enabled = true
 		dm.emission = Color(1.0, 0.75, 0.25)
-		dm.emission_energy_multiplier = 4.0
+		dm.emission_energy_multiplier = 1.2  # 2026-05-08: 4.0→1.2 (was causing white HDR blowout)
 		dm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS
 		dm.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		dm.albedo_texture = _make_soft_particle_texture()
