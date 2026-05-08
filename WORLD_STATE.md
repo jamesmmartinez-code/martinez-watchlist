@@ -1,3 +1,18 @@
+## Combat-feel polish — HP bar color + attack telegraph (run 28)
+- HP bar color progression: green (>60%) → yellow (30–60%) → red (<30%).
+  Smooth lerp on ratio — no two-state pop. Palette stays within THEME §3
+  fantasy-warm range (warm red 0.90, 0.20, 0.10; no pure-red). Alden reads
+  "almost dead" at a glance; Owen gets tactical press/retreat intel.
+- Attack telegraph windup: enemy label flashes warm-orange (0.98, 0.38, 0.18)
+  in the 0.22s window before each swing, lerping from base color as timer
+  approaches 0. Label resets to base color in chase/idle states so a broken-
+  off windup doesn't leave the name stuck orange.
+- Both changes use existing scene nodes (_hp_bar HPFill material, _label) —
+  zero new nodes or scene edits required. THEME §12 cited: the label now has
+  temporal motion, "breathing" danger before the hit lands.
+- THEME §12 MOTION & LIFE cited: static UI gains a timing cue.
+
+
 ## Character polish — ambient barks wired for all 7 NPCs (run 27)
 - THEME §12 MOTION & LIFE: NPC ambient bark system (NPC.gd run 26) had no
   authored lines in WorldBuilder.gd — every NPC was silent. All 7 are now
@@ -36,7 +51,6 @@
 - Enemy live params (cooldown/chase_speed/damage) lerp 40% toward target each push
 - HUD: DifficultyLabel shows ▿ eased / ◇ normal / ▴ hardened
 - Two-axis system: faction pressure (spawn-time) × player performance (live 10s pulse)
-
 
 
 

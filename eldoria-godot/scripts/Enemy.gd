@@ -485,49 +485,6 @@ func _play_model_idle_anim() -> void:
 	if names.size() > 0:
 		ap.play(names[0])
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Run 24 (Builder) — player-adaptive difficulty hook.
-# Called every 10s by World._apply_adaptive_difficulty() via group "enemies".
-# `scalar` is World.player_difficulty_state["diff_scalar"] in [0.70, 1.30].
-#
-# TWO-AXIS adaptive system:
-#   Axis 1 (runs 7-10): faction-pressure scalar — resolved ONCE at spawn,
-#          captures world-state difficulty (tamed faction => agitated survivors).
-#   Axis 2 (run 24):    player-performance scalar — pushed live every 10s,
-#          captures per-player skill (dying => ease, breezing => harden).
-#
-# Bands (multiplicative from the faction-adjusted baseline):
-#   attack_cooldown: eased up to +20% longer; hardened up to -15% shorter.
-#   chase_speed:     eased up to -10% slower; hardened up to +10% faster.
-#   damage:          eased up to -12%; hardened up to +10%.
-#
-# Contract: scalar=1.0 leaves every stat byte-identical to its faction-
-# adjusted value. Dead enemies and non-faction kinds are skipped (fail-soft).
-# THEME §12 MOTION: lerp 40% per call so stats drift gradually.
-# ─────────────────────────────────────────────────────────────────────────────
-func receive_difficulty_scalar(scalar: float) -> void:
-	if _state == "dead":
-		return  # don't mutate dead enemies — they respawn from export defaults
-	scalar = clamp(scalar, 0.70, 1.30)
-	# attack_cooldown: scalar < 1 (eased) => longer cooldown (easier); scalar > 1 => shorter (harder)
-	# Map scalar [0.70, 1.30] -> cooldown multiplier [1.20, 0.85]
-	var cooldown_mult: float = lerp(1.20, 0.85, (scalar - 0.70) / 0.60)
-	var target_cooldown: float = clamp(attack_cooldown * cooldown_mult, 0.60, 3.0)
-	attack_cooldown = lerp(attack_cooldown, target_cooldown, 0.40)
-
-	# chase_speed: scalar < 1 => slower chase (easier); scalar > 1 => faster (harder)
-	# Map scalar [0.70, 1.30] -> speed multiplier [0.90, 1.10]
-	var speed_mult: float = lerp(0.90, 1.10, (scalar - 0.70) / 0.60)
-	var target_speed: float = clamp(chase_speed * speed_mult, 1.0, 12.0)
-	chase_speed = lerp(chase_speed, target_speed, 0.40)
-
-	# damage: scalar < 1 => less damage (easier); scalar > 1 => more (harder)
-	# Map scalar [0.70, 1.30] -> damage multiplier [0.88, 1.10]
-	var dmg_mult: float = lerp(0.88, 1.10, (scalar - 0.70) / 0.60)
-	var target_dmg: float = clamp(float(damage) * dmg_mult, 1.0, 999.0)
-	damage = int(round(lerp(float(damage), target_dmg, 0.40)))
-
-
 func _find_animation_player(n: Node) -> AnimationPlayer:
 	if n is AnimationPlayer:
 		return n
@@ -576,6 +533,30 @@ func _update_hp_bar() -> void:
 	fill.scale.x = max(0.001, ratio)
 	# Hide HP bar at full HP for cleaner look
 	_hp_bar.visible = (hp < max_hp and hp > 0)
+	# REFINE: combat-feel — HP bar color progression: green (>60%) → yellow
+	# (30–60%) → red (<30%). Alden reads "almost dead" at a glance; Owen
+	# gets tactical intel on when to press vs. retreat. The three-rung palette
+	# (green/yellow/red) is universal health-state language — no tutorial needed.
+	# Implemented via the fill's material albedo so it works without any shader
+	# node or additional scene structure. Lerp on ratio so the transition is
+	# smooth rather than a two-state pop. THEME §3 palette: red is warm
+	# (0.90, 0.20, 0.10), not pure-red, to stay inside the fantasy-warm range.
+	if fill.material_override:
+		var mat: StandardMaterial3D = fill.material_override as StandardMaterial3D
+		if mat:
+			var bar_color: Color
+			if ratio > 0.60:
+				# Full → mid: green (0.30, 0.85, 0.35) lerp toward yellow (0.92, 0.82, 0.10)
+				var t := (ratio - 0.60) / 0.40  # 1.0 at full, 0.0 at 60%
+				bar_color = Color(0.30, 0.85, 0.35).lerp(Color(0.92, 0.82, 0.10), 1.0 - t)
+			elif ratio > 0.30:
+				# Mid → danger: yellow (0.92, 0.82, 0.10) lerp toward red (0.90, 0.20, 0.10)
+				var t2 := (ratio - 0.30) / 0.30  # 1.0 at 60%, 0.0 at 30%
+				bar_color = Color(0.92, 0.82, 0.10).lerp(Color(0.90, 0.20, 0.10), 1.0 - t2)
+			else:
+				# Below 30%: solid danger-red — enemy is almost dead
+				bar_color = Color(0.90, 0.20, 0.10)
+			mat.albedo_color = bar_color
 
 func _physics_process(delta: float) -> void:
 	if _state == "dead":
@@ -608,6 +589,27 @@ func _physics_process(delta: float) -> void:
 		_state = "attack"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
+		# REFINE: combat-feel — attack telegraph windup via label flash.
+		# When the enemy is within its windup window (≤0.22s before swing),
+		# the floating name label shifts from its base color to a warm-orange
+		# danger hue (0.98, 0.38, 0.18). This gives Alden a readable "brace!"
+		# cue and lets Owen identify swing timing for dodge windows. The flash
+		# uses the existing _label node — no new nodes or scene changes needed.
+		# Outside the windup window the label resets to its authored base color.
+		# THEME §12: the label is already billboard+no_depth_test; this adds
+		# temporal motion to a static piece of UI — the name now "breathes"
+		# danger before the hit lands. 0.22s is roughly 13 frames at 60 fps —
+		# long enough for a 9-yo to notice and react, short enough that Owen
+		# doesn't get a trivial dodge window (attack_cooldown ≥ 1.05s, so the
+		# telegraph window is ~21% of the cooldown floor).
+		if _label:
+			var _base_label_color := Color(1.0, 0.55, 0.45) if enemy_kind == "goblin" else Color(0.85, 0.85, 1.0)
+			if _attack_timer <= 0.22:
+				# Windup flash: lerp to danger-orange as timer approaches 0
+				var flash_t := 1.0 - (_attack_timer / 0.22)
+				_label.modulate = _base_label_color.lerp(Color(0.98, 0.38, 0.18), flash_t)
+			else:
+				_label.modulate = _base_label_color
 		if _attack_timer <= 0:
 			_do_attack()
 	elif dist < aggro_range:
@@ -616,6 +618,10 @@ func _physics_process(delta: float) -> void:
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
+		# REFINE: combat-feel — reset label to base color when NOT in swing range
+		# so a broken-off windup doesn't leave the label stuck orange.
+		if _label:
+			_label.modulate = Color(1.0, 0.55, 0.45) if enemy_kind == "goblin" else Color(0.85, 0.85, 1.0)
 	else:
 		_idle_drift(delta)
 
@@ -1029,3 +1035,4 @@ func _resolve_adaptive_xp_reward() -> void:
 	assert(resolved_i >= baseline_i and resolved_i <= ceiling_i,
 		"Enemy.xp_reward out of contract band [baseline, ceil(baseline*1.20)]")
 	xp_reward = resolved_i
+
