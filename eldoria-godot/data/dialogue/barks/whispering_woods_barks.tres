@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "whispering_woods_barks",
+  "barks": [
+    {
+      "text": "What a lovely day!",
+      "npc_role": "farmer",
+      "tone": "contented"
+    },
+    {
+      "text": "Stupid hammer",
+      "npc_role": "smith",
+      "tone": "grumbling"
+    },
+    {
+      "text": "I wonder...",
+      "npc_role": "child",
+      "tone": "wondering"
+    },
+    {
+      "text": "Hmmm, bread",
+      "npc_role": "baker",
+      "tone": "humming"
+    },
+    {
+      "text": "Need more guards",
+      "npc_role": "guard",
+      "tone": "grumbling"
+    },
+    {
+      "text": "Fresh produce!",
+      "npc_role": "merchant",
+      "tone": "contented"
+    },
+    {
+      "text": "When's lunch?",
+      "npc_role": "child",
+      "tone": "wondering"
+    },
+    {
+      "text": "Young ones these days",
+      "npc_role": "elder",
+      "tone": "grumbling"
+    }
+  ]
+}
+"""
