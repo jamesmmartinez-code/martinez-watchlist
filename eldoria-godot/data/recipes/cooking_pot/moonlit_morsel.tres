@@ -6,18 +6,18 @@ metadata/_data = """
   "id": "moonlit_morsel",
   "name": "Moonbeam Muffin",
   "station_required": "cooking_pot",
-  "station_tier_min": 1,
+  "station_tier_min": 2,
   "inputs": [
     {
-      "item_id": "honey",
+      "item_id": "moonstone_dust",
       "qty": 1
     },
     {
-      "item_id": "flour",
+      "item_id": "fresh_milk",
       "qty": 2
     },
     {
-      "item_id": "starlight_salt",
+      "item_id": "honey",
       "qty": 1
     }
   ],
@@ -27,8 +27,8 @@ metadata/_data = """
   },
   "time_seconds": 10,
   "fuel_cost": 2,
-  "unlock_condition": "auto",
-  "failure_behavior": "none",
-  "flavor": "A delicate pastry infused with the essence of moonbeams and the sweetness of honey."
+  "unlock_condition": "complete_quest_moonlight",
+  "failure_behavior": "return_inputs",
+  "flavor": "A delicate pastry infused with the soft glow of moonlight, reminiscent of a quiet night in the Shire."
 }
 """
