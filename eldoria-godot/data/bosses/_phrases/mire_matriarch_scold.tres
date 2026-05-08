@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mire_matriarch_scold",
+  "boss_id": "matriarch_boss",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "You think you're quick?",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

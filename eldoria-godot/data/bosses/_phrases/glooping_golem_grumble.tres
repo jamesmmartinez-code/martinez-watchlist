@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "glooping_golem_grumble",
+  "boss_id": "golem_boss",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Time to get messy!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

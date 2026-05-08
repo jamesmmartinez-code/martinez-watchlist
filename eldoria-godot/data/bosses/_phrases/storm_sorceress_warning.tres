@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "storm_sorceress_warning",
+  "boss_id": "sorceress_boss",
+  "phrases": [
+    {
+      "trigger": "tell_windup",
+      "text": "Gusts ahead!",
+      "tone": "warning"
+    }
+  ]
+}
+"""

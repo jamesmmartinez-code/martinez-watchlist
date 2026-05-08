@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "aerial_assassin_admiration",
+  "boss_id": "assassin_boss",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Impressive evasion!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""
