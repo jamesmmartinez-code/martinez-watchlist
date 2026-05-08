@@ -1,0 +1,44 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "whisperwood_wonders",
+  "vendor_name": "Luna Sparkspanner",
+  "region": "whisperwood",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 50,
+      "quantity": 25,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "acorn_potion",
+      "price": 75,
+      "quantity": 15,
+      "restock_hours": 48
+    },
+    {
+      "item_id": "NEW",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 72
+    },
+    {
+      "item_id": "sparkling_dust",
+      "price": 20,
+      "quantity": 30,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 200,
+      "quantity": 5,
+      "restock_hours": 96
+    }
+  ],
+  "flavor": "Tucked away in the heart of Whisperwood, Luna Sparkspanner's shop, Whisperwood Wonders, is a treasure trove of enchanted trinkets and curious goods, where the soft glow of luminescent mushrooms and the sweet scent of blossoming wildflowers guide you through a maze of wonders."
+}
+"""
