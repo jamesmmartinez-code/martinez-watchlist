@@ -5,11 +5,11 @@ metadata/_data = """
 {
   "id": "emberstone",
   "name": "Emberstone",
-  "kind": "gem",
-  "tier": "sunstone",
+  "kind": "ore",
+  "tier": "iron",
   "found_in": "crystal_caves",
-  "smelt_into": "",
-  "cut_into": "sunfacet",
-  "flavor": "glowing like a sunset"
+  "smelt_into": "iron_ingot",
+  "cut_into": "",
+  "flavor": "Glowing red veins in dark stone"
 }
 """
