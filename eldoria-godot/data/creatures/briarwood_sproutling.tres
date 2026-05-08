@@ -6,41 +6,45 @@ metadata/_data = """
   "id": "briarwood_sproutling",
   "name": "Briarwood Sproutling",
   "family": "fey",
-  "tier": "elite",
-  "level": 25,
-  "hp": 250,
-  "armor": 8,
-  "dmg_min": 15,
-  "dmg_max": 30,
-  "attack_speed": 1.5,
-  "move_speed": 3,
+  "tier": "trash",
+  "level": 5,
+  "hp": 25,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4,
   "behavior_tags": [
-    "ambusher"
+    "plant_like"
   ],
   "tells": [
     {
-      "name": "thorn_burst",
-      "wind_up_ms": 1000,
-      "vfx_id": "thorn_explosion"
+      "name": "photosynthesize",
+      "wind_up_ms": 500,
+      "vfx_id": "glow"
     }
   ],
   "weaknesses": {
-    "ice": 1.5
+    "fire": 1.2
   },
   "resistances": {
-    "nature": 0.7
+    "nature": 0.8
   },
-  "xp_value": 120,
+  "xp_value": 10,
   "loot_table": [
     {
-      "item_id": "briarwood_seed",
-      "weight": 0.6
+      "item_id": "acorn",
+      "weight": 0.3
     },
     {
-      "item_id": "fey_dust",
-      "weight": 0.4
+      "item_id": "petal",
+      "weight": 0.2
+    },
+    {
+      "item_id": "twig",
+      "weight": 0.5
     }
   ],
-  "flavor": "a small, mischievous fey creature with a body made of twisted vines and leaves, often found in the dense thickets of the Briarwood"
+  "flavor": "A tiny, leafy creature with a delicate petal-like face and a body made of twisted vines."
 }
 """

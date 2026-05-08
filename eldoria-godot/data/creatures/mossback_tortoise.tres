@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "mossback_tortoise",
+  "name": "Mossback Tortoise",
+  "family": "beast",
+  "tier": "elite",
+  "level": 25,
+  "hp": 350,
+  "armor": 10,
+  "dmg_min": 20,
+  "dmg_max": 35,
+  "attack_speed": 0.8,
+  "move_speed": 2.5,
+  "behavior_tags": [
+    "tanky"
+  ],
+  "tells": [
+    {
+      "name": "shell_bash",
+      "wind_up_ms": 1000,
+      "vfx_id": "dust"
+    }
+  ],
+  "weaknesses": {
+    "lightning": 1.5
+  },
+  "resistances": {
+    "blunt": 0.7
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "moss",
+      "weight": 0.4
+    },
+    {
+      "item_id": "shell_shard",
+      "weight": 0.3
+    },
+    {
+      "item_id": "rare_herb",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "A slow-moving tortoise with a shell covered in soft, green moss and a gentle gaze."
+}
+"""
