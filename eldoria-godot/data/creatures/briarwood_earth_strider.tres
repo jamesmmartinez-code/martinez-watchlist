@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_earth_strider",
+  "name": "Terragrin",
+  "family": "elemental",
+  "tier": "elite",
+  "level": 25,
+  "hp": 350,
+  "armor": 10,
+  "dmg_min": 20,
+  "dmg_max": 35,
+  "attack_speed": 0.8,
+  "move_speed": 2.5,
+  "behavior_tags": [
+    "guardian"
+  ],
+  "tells": [
+    {
+      "name": "stomp",
+      "wind_up_ms": 1000,
+      "vfx_id": "shaking_ground"
+    }
+  ],
+  "weaknesses": {
+    "lightning": 1.5
+  },
+  "resistances": {
+    "earth": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "geode",
+      "weight": 0.7
+    },
+    {
+      "item_id": "iron_ore",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "A sturdy, four-legged creature with skin like rough bark and leaves for hair, the Terragrin patrols the forest floor with gentle, earth-shaking strides."
+}
+"""
