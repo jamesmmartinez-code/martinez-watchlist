@@ -285,10 +285,22 @@ var _attack_timer: float = 0.0
 var _wander_timer: float = 0.0
 var _wander_target: Vector3
 var _spawn_pos: Vector3
+var _spawn_y: float = 0.0
 var _gravity: float = 20.0
 var _model: Node3D
 var _hp_bar: Node3D
 var _label: Label3D
+# REFINE: character — THEME §12 MOTION & LIFE. Enemies in wander/idle state
+# now breathe with the same dual-harmonic Y-bob that NPCs already use (NPC.gd
+# line 294). Without this, a goblin standing in its wander dwell-pause read as
+# a plastic figurine — animation plays, but the body is stationary. The bob
+# (±0.018m primary + ±0.006m secondary) is invisible at combat distance but
+# legible at 6–8m as "creature that breathes." Phase is randomised per-enemy
+# at _ready so a goblin camp's three scouts never rise and fall in unison.
+# Skips while chasing / attacking (state != "wander") and while dead — the
+# same gate NPC.gd uses for its schedule-walker override.
+var _breathe_phase: float = 0.0   # primary slow chest-rise harmonic
+var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
 
 
 signal died(enemy)
@@ -317,6 +329,11 @@ func _ready() -> void:
 	# to balance against on the reward side.
 	_resolve_adaptive_xp_reward()
 	_spawn_pos = global_position
+	_spawn_y = global_position.y
+	# REFINE: character — randomise breathe phases so nearby enemies never sync.
+	var _rng_breathe := RandomNumberGenerator.new(); _rng_breathe.randomize()
+	_breathe_phase = _rng_breathe.randf() * TAU
+	_breathe_phase2 = _rng_breathe.randf() * TAU
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
 	collision_mask = 1 | 4 # collide with world (1) and other enemies (4)
@@ -557,6 +574,29 @@ func _update_hp_bar() -> void:
 				# Below 30%: solid danger-red — enemy is almost dead
 				bar_color = Color(0.90, 0.20, 0.10)
 			mat.albedo_color = bar_color
+
+func _process(delta: float) -> void:
+	# REFINE: character — THEME §12 MOTION & LIFE. Dual-harmonic Y-bob breathing
+	# while in wander/idle state. Mirrors NPC.gd line 294's pattern exactly:
+	#   primary  2.513 rad/s  (~0.40 Hz) — slow chest-rise,  ±0.018 m
+	#   secondary 10.982 rad/s (~1.75 Hz) — fast shoulder-shift, ±0.006 m
+	# Both frequencies are irrational multiples; the combined waveform never
+	# repeats within a 60s window (same design principle as the run-25 NPC bob).
+	# Skip while chasing / attacking / dead — only the dwell-pause between
+	# wander steps reads as "standing still enough to breathe." Skip while
+	# actively moving (to_target length > arrival_radius) is handled naturally:
+	# _physics_process owns global_position.y during movement via move_and_slide;
+	# the breathe bob only writes .y when the body is at rest.
+	if _state == "wander" and _spawn_y != INF:
+		var t := Time.get_ticks_msec() * 0.001  # seconds, monotonic
+		# REFINE: character — wolves skip the bob (quadruped — body-rock is the
+		# right motion, but that requires animation-layer access; Y-bob on a
+		# four-legged model reads as floating). Crystal Guardian is a gargantuan
+		# boss (4.00m) — at that scale ±0.018m is invisible; skip for cleanliness.
+		if enemy_kind != "wolf" and enemy_kind != "crystal_guardian":
+			var bob: float = sin(t * 2.513 + _breathe_phase) * 0.018 \
+				+ sin(t * 10.982 + _breathe_phase2) * 0.006
+			global_position.y = _spawn_y + bob
 
 func _physics_process(delta: float) -> void:
 	if _state == "dead":
