@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "mystic_mirror",
+  "name": "Ancient Reflections",
+  "kind": "telescope",
+  "region": "whisperwood",
+  "interaction": "peers through to a hidden glade",
+  "reward": "reveal_lore_fragment:whisperwood_history",
+  "flavor": "A delicate, gemstone-encrusted telescope stands atop a toadstool, its brass surface adorned with whispering leaves and vines, as if the forest itself is sharing secrets with those who dare to listen."
+}
+"""
