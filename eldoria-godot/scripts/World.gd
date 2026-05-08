@@ -97,6 +97,32 @@ var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 # all enter through the same accessor surface.
 var npc_memory: Dictionary = {}
 
+# ════════════════════════════════════════════════════════════════════════
+# Faction State — Road Defense (Run 29, Builder — Backlog #9)
+# ════════════════════════════════════════════════════════════════════════
+# road_defense_score: float accumulates when the player kills bandits on
+# the road. Each bandit kill = +1.0; bandit_captain kill = +2.0. Decays
+# 5% per real-second so a dormant road slowly loses its defended feel over
+# time (THEME §12 MOTION — state drifts, never snaps). Capped at 10.0.
+# Subtracts from update_bandit_pressure() derivation via a road_defense
+# damper term: at score=5 the bandit boldness is reduced by ~0.15 below
+# what goblin/wolf pressure alone would produce. The player actively pushes
+# bandits back by fighting them — killing 5 bandits makes the road
+# noticeably safer (THEME §1 "lived-in consequence").
+#
+# _bandit_patrol_timer: counts up; fires _tick_bandit_patrol every 90s.
+# At boldness > 0.50 (bandits feeling bold) a lone patrol bandit spawns
+# on the south road 20m ahead of the player. Gives the faction real-time
+# presence between WorldBuilder spawn cycles. THEME §12: the road is
+# never static while boldness is high.
+var road_defense_score: float = 0.0
+var _bandit_patrol_timer: float = 0.0
+# THEME §13 GROUND CONTACT — patrol spawns at y=0, same plane as road.
+const BANDIT_PATROL_INTERVAL: float = 90.0
+const BANDIT_PATROL_BOLDNESS_THRESHOLD: float = 0.50
+const ROAD_DEFENSE_DECAY: float = 0.05   # per second — 5% drain
+const ROAD_DEFENSE_CAP: float = 10.0
+
 # Run 20 (Builder) — npc_seen: per-NPC "have we ever met?" ledger.
 # Schema: { npc_name -> bool }. An entry of `true` means the player has
 # completed at least one full _on_interact tick with this NPC (i.e. dialogue
@@ -689,7 +715,14 @@ func update_bandit_pressure() -> void:
 	var goblin_p: float = faction_pressure("whisperwood_goblins")
 	var wolf_p: float = faction_pressure("dire_wolves")
 	var road_threat_avg: float = (goblin_p + wolf_p) * 0.5
-	var raw: float = 1.0 - road_threat_avg - 0.20
+	# Road-defense damper (run 29 — Builder): player killing bandits
+	# actively suppresses their boldness. At score=5.0, damper=0.15 —
+	# enough to keep boldness below the 0.40 emergence threshold even
+	# when goblin/wolf threats are both largely tamed. Lerps smoothly
+	# with road_defense_score so every kill has an immediate (if small)
+	# effect. THEME §12: consequence is proportional, not step-function.
+	var defense_damper: float = clamp(road_defense_score / ROAD_DEFENSE_CAP * 0.30, 0.0, 0.30)
+	var raw: float = 1.0 - road_threat_avg - 0.20 - defense_damper
 	var bandit_p: float = clamp(raw, 0.0, 1.0)
 	var entry: Dictionary = factions["bandits"]
 	entry["pressure"] = bandit_p
@@ -703,6 +736,60 @@ func update_bandit_pressure() -> void:
 		world_flags["bandits_emergent"] = true
 	elif world_flags.has("bandits_emergent"):
 		world_flags.erase("bandits_emergent")
+
+# ════════════════════════════════════════════════════════════════════════
+# Road Defense public API (Run 29, Builder)
+# ════════════════════════════════════════════════════════════════════════
+
+# Mutator — called by Enemy._die() when kind is bandit / bandit_captain.
+# THEME §1 consequence: the player's fight on the road is remembered.
+func record_road_kill(kind: String) -> void:
+	var credit: float = 2.0 if kind == "bandit_captain" else 1.0
+	road_defense_score = clamp(road_defense_score + credit, 0.0, ROAD_DEFENSE_CAP)
+	# Re-derive bandit boldness immediately so the next spawn check
+	# reflects the fresh kill — no 10s lag.
+	update_bandit_pressure()
+	# Set road-cleared world flag when score crosses 3.0 (three kills —
+	# enough to make Roan notice). Idempotent: re-setting is a no-op.
+	if road_defense_score >= 3.0 and not has_world_flag("bandit_road_cleared"):
+		world_flags["bandit_road_cleared"] = true
+		_show_toast("The road breathes easier.")
+		ping_minimap(Vector3(2.0, 0.0, -40.0), Color(0.69, 0.455, 0.165))
+
+# Eval accessor — returns current road defense score for HUD / dialogue.
+func get_road_defense_score() -> float:
+	return road_defense_score
+
+# Internal — fired every BANDIT_PATROL_INTERVAL seconds from _process.
+# If bandit boldness is above threshold, spawns a lone patrol bandit
+# 20m ahead of the player on the south road. Fail-soft: if no player
+# is found, or no WorldBuilder is found, this is a no-op.
+func _tick_bandit_patrol() -> void:
+	if faction_pressure("bandits") < BANDIT_PATROL_BOLDNESS_THRESHOLD:
+		return
+	var players: Array = get_tree().get_nodes_in_group("player")
+	if players.is_empty():
+		return
+	var player_node: Node3D = players[0] as Node3D
+	if player_node == null:
+		return
+	# Spawn 20m south of player along the road axis, clamped near road corridor.
+	var base_pos: Vector3 = player_node.global_position
+	var patrol_pos: Vector3 = Vector3(
+		clamp(base_pos.x + randf_range(-4.0, 4.0), -8.0, 8.0),
+		0.0,  # THEME §13 GROUND CONTACT
+		base_pos.z - 20.0
+	)
+	# Delegate to WorldBuilder._spawn_enemy if the node is available.
+	var wb_nodes: Array = get_tree().get_nodes_in_group("world_builder")
+	for wb in wb_nodes:
+		if wb.has_method("_spawn_enemy"):
+			wb._spawn_enemy("bandit", patrol_pos,
+				"Bandit Patrol", 42, 9, 24, 8,
+				Color(0.30, 0.20, 0.12),
+				1.0, 0.0, "")
+			_show_toast("A bandit patrol stirs on the south road.")
+			return
 
 # Read accessors used by dialogue/spawning/difficulty (queryable schema)
 func faction_pressure(faction_id: String) -> float:
@@ -1192,6 +1279,17 @@ func _process(delta: float) -> void:
 	if _adaptive_diff_timer >= 10.0:
 		_adaptive_diff_timer = 0.0
 		_apply_adaptive_difficulty()
+
+	# Run 29 (Builder): road defense decay + patrol tick.
+	# THEME §12 MOTION: score decays 5%/s so a defended road slowly
+	# softens back toward neutral — defense is maintained, not permanent.
+	if road_defense_score > 0.0:
+		road_defense_score = max(0.0, road_defense_score - ROAD_DEFENSE_DECAY * delta)
+		update_bandit_pressure()
+	_bandit_patrol_timer += delta
+	if _bandit_patrol_timer >= BANDIT_PATROL_INTERVAL:
+		_bandit_patrol_timer = 0.0
+		_tick_bandit_patrol()
 
 
 

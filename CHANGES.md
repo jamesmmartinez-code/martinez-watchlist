@@ -1,3 +1,41 @@
+## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
+
+I'm building: Faction state — bandit boldness scales with road defense (Backlog #9)
+THEME §1 cited: road_defense_score decays slowly so defended roads soften back — consequence is lived-in, not permanent
+THEME §12 cited: road_defense_score decays 5%/s via _process — drifts, never hard-clears; patrol spawns at 90s interval bring the road alive
+THEME §13 cited: patrol bandit spawns at y=0 (GROUND CONTACT), south road corridor clamped to x∈[-8,8]
+Mood board panel: Zelda BotW emergent threat ecology — world responds to what you've done
+
+Files:
+  World.gd  +road_defense_score float  +_bandit_patrol_timer float
+            +BANDIT_PATROL_INTERVAL const  +BANDIT_PATROL_BOLDNESS_THRESHOLD const
+            +ROAD_DEFENSE_DECAY const  +ROAD_DEFENSE_CAP const
+            +record_road_kill(kind) mutator
+            +get_road_defense_score() eval accessor
+            +_tick_bandit_patrol() internal patrol spawner
+            update_bandit_pressure() — defense_damper term subtracts from boldness
+            _process — road_defense_score decay + _bandit_patrol_timer tick
+  Enemy.gd  _die() — bandit/bandit_captain kill → record_road_kill() on world
+  WorldBuilder.gd — Roan warmed_world_flag:"bandit_road_cleared" + 4 morning/midday/evening/night lines
+
+5-output check:
+  i.   Integration:  _tick_bandit_patrol() wired into World._process every BANDIT_PATROL_INTERVAL (90s)
+                     record_road_kill() called from Enemy._die() for bandit/bandit_captain kinds
+  ii.  Schema:       road_defense_score float[0..10], _bandit_patrol_timer, 4 consts in World.gd
+                     SYSTEM_REGISTRY.md updated with full contract
+  iii. Feedback:     "The road breathes easier." toast on bandit_road_cleared flag (score>=3)
+                     "A bandit patrol stirs on the south road." toast on patrol spawn
+                     Minimap ping at south road on cleared flag
+  iv.  Eval:         get_road_defense_score() public accessor
+                     faction_pressure("bandits") is the eval surface for boldness (pre-existing)
+  v.   2+ hooks:     Enemy._die() → record_road_kill() (hook 1, per-kill)
+                     _process → _bandit_patrol_timer → _tick_bandit_patrol() (hook 2, interval)
+                     Roan warmed_world_flag:"bandit_road_cleared" (hook 3, NPC dialogue)
+                     update_bandit_pressure() defense_damper (hook 4, boldness derivation)
+
+Next run picks up: NPC memory deepening (record_npc_gift / record_npc_insult / relation_score)
+  or Crystal Caves deepening (boss lore, new crystal_guardian patrol pattern)
+
 ## Tech debt
 
 QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 25 MiB hard cap (20 MiB soft cap) for Cloudflare Pages deploy target. Asset is actively referenced in `scripts/Player.gd`, `scripts/CharacterSelect.gd`, and `scenes/Main.tscn` — cannot be deleted. Action required: compress/LOD-bake Hero.glb below 20 MiB or split into streaming chunks before Cloudflare Pages migration.

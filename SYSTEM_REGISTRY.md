@@ -1,3 +1,25 @@
+## Road Defense System (run 29)
+World.gd schema:
+  road_defense_score: float[0..10] — increments: bandit kill +1.0, bandit_captain kill +2.0; decays 5%/s
+  _bandit_patrol_timer: float — counts up to BANDIT_PATROL_INTERVAL (90s), then fires _tick_bandit_patrol()
+  BANDIT_PATROL_BOLDNESS_THRESHOLD: float = 0.50 — min boldness to spawn patrol
+  ROAD_DEFENSE_DECAY: float = 0.05  — per-second decay multiplier
+  ROAD_DEFENSE_CAP: float = 10.0    — max score
+Mutators:
+  record_road_kill(kind: String) — called by Enemy._die() for bandit/bandit_captain
+    increments score, calls update_bandit_pressure(), sets bandit_road_cleared flag at score>=3
+Evals:
+  get_road_defense_score() -> float
+  faction_pressure("bandits") -> float  (boldness; pre-existing)
+Derived: update_bandit_pressure() defense_damper = clamp(score/CAP * 0.30, 0, 0.30)
+  reduces raw bandit boldness proportionally — at score=10: -0.30 damper
+Patrol: _tick_bandit_patrol() — spawns "Bandit Patrol" bandit 20m south of player via WorldBuilder._spawn_enemy
+Hooks:
+  Enemy._die() bandit/bandit_captain → record_road_kill()
+  World._process → _bandit_patrol_timer → _tick_bandit_patrol()
+  Roan warmed_world_flag:"bandit_road_cleared" (4 lines, time-of-day buckets)
+Flags: bandit_road_cleared (world_flag, set at score>=3, never cleared this session)
+
 ## Ambient NPC Barks (run 27)
 Schema: NPCS[] dict key `bark_lines: Array[String]` (4 lines per NPC)
 Wiring: WorldBuilder._make_npc() → npc.ambient_bark_lines.append() loop
