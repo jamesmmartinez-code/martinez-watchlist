@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "mushroom_miso_soup",
+  "name": "Mushroom Miso Soup",
+  "station_required": "cooking_pot",
+  "station_tier_min": 1,
+  "inputs": [
+    {
+      "item_id": "wild_mushroom",
+      "qty": 2
+    },
+    {
+      "item_id": "miso_paste",
+      "qty": 1
+    },
+    {
+      "item_id": "spring_water",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "mushroom_miso_soup",
+    "qty": 1
+  },
+  "time_seconds": 10,
+  "fuel_cost": 2,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A hearty soup inspired by the rolling hills of the Shire, with the earthy flavors of wild mushrooms and the savory taste of miso paste."
+}
+"""
