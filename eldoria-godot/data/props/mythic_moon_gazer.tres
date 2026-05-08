@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "mythic_moon_gazer",
+  "name": "Moon Gazer's Scope",
+  "kind": "telescope",
+  "region": "skyreave",
+  "interaction": "Peer through to see constellations come to life",
+  "reward": "reveal_lore_fragment:skyreave_stars",
+  "flavor": "An ornate, brass telescope adorned with crescent moons and star charts, standing atop a worn, stone pedestal, overlooking the windswept skies of Skyreave"
+}
+"""
