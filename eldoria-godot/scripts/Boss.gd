@@ -9,7 +9,15 @@ class_name Boss
 
 @export var enemy_name: String = "Goblin Warlord"
 @export var enemy_kind: String = "goblin_warlord"
-@export var max_hp: int = 600
+# REFINE: balance — Goblin Warlord max_hp 600 → 1500. PX difficulty_targets.md §TTK-band:
+# Boss target 40–70s realistic wall-clock. At L7 frost_saber+emberforge (avg 60 swing,
+# eff DPS 68, ~50% contact ratio): 600 HP = ~10 swings = ~18s realistic — far below the
+# 40–70s band. 1500 HP = ~25 effective swings / ~44s realistic contact — center of band.
+# Phase thresholds (50%, 25%) remain meaningful at the new pool:
+#   Phase 1 add-spawn fires at 750 HP (well into the fight, not trivially).
+#   Phase 2 add-spawn fires at 375 HP (last quarter, crisis moment).
+# Cited: pacing/difficulty_targets.md PX rec #2.
+@export var max_hp: int = 1500
 @export var damage: int = 22
 @export var move_speed: float = 3.0
 @export var chase_speed: float = 6.0
