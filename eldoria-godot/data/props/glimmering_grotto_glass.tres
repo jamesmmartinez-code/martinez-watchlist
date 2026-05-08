@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "glimmering_grotto_glass",
+  "name": "Moonwhisper Lens",
+  "kind": "telescope",
+  "region": "crystal_caves",
+  "interaction": "Peer through to see a hidden constellation",
+  "reward": "reveal_lore_fragment:crystal_caves_ancient_stars",
+  "flavor": "A delicate, gemstone-encrusted telescope rests on a moss-covered pedestal, reflecting the soft glow of luminescent crystals in the surrounding cavern walls"
+}
+"""
