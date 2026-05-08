@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "midnight_bloom",
+  "name": "Moonlit Mirage",
+  "creature_or_motif": "Butterfly",
+  "festival_id": "summer_solstice",
+  "colors": [
+    "#3498db",
+    "#f1c40f"
+  ],
+  "flavor": "Delicate wings shimmer under starlight"
+}
+"""
