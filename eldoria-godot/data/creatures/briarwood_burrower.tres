@@ -4,19 +4,18 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_burrower",
-  "name": "Briarwood Burrower",
+  "name": "Briarwood Badger",
   "family": "beast",
   "tier": "trash",
   "level": 5,
   "hp": 50,
   "armor": 2,
-  "dmg_min": 3,
-  "dmg_max": 6,
+  "dmg_min": 4,
+  "dmg_max": 8,
   "attack_speed": 1.2,
-  "move_speed": 4.0,
+  "move_speed": 4,
   "behavior_tags": [
-    "pack_hunter",
-    "digger"
+    "pack_hunter"
   ],
   "tells": [
     {
@@ -46,6 +45,6 @@ metadata/_data = """
       "weight": 0.5
     }
   ],
-  "flavor": "Small, badger-like creatures with a coat of soft, moss-like fur and a talent for digging complex tunnel networks."
+  "flavor": "A stout, furry creature with a distinctive white stripe on its forehead, the Briarwood Badger is a fierce defender of its underground tunnels."
 }
 """
