@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "moonlit_mille_feuille",
+  "name": "Moonlit Layer Cake",
+  "kind": "tart",
+  "filling": "Raspberry",
+  "heal": 20,
+  "effect": "buff:cheerful:300s",
+  "flavor": "Buttery pastry layers shine with a soft, lunar glow, as the sweetness of raspberries dances on the palate"
+}
+"""
