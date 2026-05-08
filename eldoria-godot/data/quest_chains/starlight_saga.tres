@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "starlight_saga",
+  "title": "The Starlight Saga",
+  "region": "whisperwood",
+  "theme": "Lost Starlight",
+  "quests": [
+    {
+      "id": "lost_twinkle",
+      "title": "Lost Twinkle",
+      "hook": "Find missing starlight",
+      "stages_count": 3
+    },
+    {
+      "id": "moonlit_meeting",
+      "title": "Moonlit Meeting",
+      "hook": "Meet the Moon Fox",
+      "stages_count": 2
+    },
+    {
+      "id": "stardust_retrieval",
+      "title": "Stardust Retrieval",
+      "hook": "Gather stardust",
+      "stages_count": 3
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "starlight_cape"
+  },
+  "flavor": "A mystical adventure under the starry sky"
+}
+"""
