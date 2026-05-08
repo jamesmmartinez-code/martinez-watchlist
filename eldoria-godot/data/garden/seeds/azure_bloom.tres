@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "azure_bloom",
+  "name": "Azure Bloom",
+  "grows_into": "azure_sapling",
+  "price": 15,
+  "obtained_from": "forage:azure_wastes",
+  "flavor": "Misty, high-altitude flower."
+}
+"""
