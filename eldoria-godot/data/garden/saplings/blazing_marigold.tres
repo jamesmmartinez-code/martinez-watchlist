@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "sapling"
+metadata/_data = """
+{
+  "id": "blazing_marigold",
+  "name": "Blazing Marigold",
+  "grow_days": 7,
+  "yield_item": "gold_dust",
+  "yield_qty": 4,
+  "sun_required": "full",
+  "watering": "medium",
+  "flavor": "Bright orange petals ablaze with golden light"
+}
+"""
