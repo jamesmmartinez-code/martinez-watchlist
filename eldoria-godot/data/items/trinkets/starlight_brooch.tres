@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "starlight_brooch",
+  "name": "Twinkling Star",
+  "slot": "hairpin",
+  "minor_effect": "attracts fireflies at night",
+  "unlock_condition": "find_in:forest",
+  "flavor": "delicate, shimmering silver"
+}
+"""
