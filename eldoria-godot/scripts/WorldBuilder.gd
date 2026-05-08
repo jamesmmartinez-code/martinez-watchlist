@@ -1955,7 +1955,13 @@ func _build_enemies() -> void:
 	# A Goblin Brute per camp, suppressed entirely once pressure drops below 0.4
 	for camp in camp_centers:
 		for j in brute_count:
-			_spawn_enemy("goblin", camp + Vector3(2, 0, 0), "Goblin Brute", 56, 11, 36, 9,
+			# REFINE: balance — Goblin Brute hp 56→95, damage 11→13. PX difficulty_targets.md
+			# §TTK-band: Brute is "Tough" tier, target 4–7s. At L2 iron_sword (eff DPS 27.3):
+			# 56 HP = ~2 swings ≈ 2.1s realistic — outside band (reads as trash). 95 HP =
+			# 3–4 swings ≈ 3.5–5.0s realistic — center of Tough band. Damage 11→13 preserves
+			# threat shape (Brute hits harder than Scout) while staying in damage-taken budget.
+			# Cited: pacing/difficulty_targets.md PX rec #1.
+			_spawn_enemy("goblin", camp + Vector3(2, 0, 0), "Goblin Brute", 95, 13, 36, 9,
 				Color(0.30, 0.55, 0.20), 0.95, 1.0)
 
 	# Player-facing feedback (Rule 2 iii): one-shot ambient toast at world
@@ -1986,7 +1992,12 @@ func _build_enemies() -> void:
 	]
 	for i in wolf_count:
 		var w: Vector3 = wolf_spots[i]
-		_spawn_enemy("wolf", w, "Dire Wolf", 40, 9, 28, 6,
+		# REFINE: balance — Dire Wolf hp 40→52. PX difficulty_targets.md §TTK-band:
+		# Wolf is "Standard" tier, target 2.5–4.5s. At L2 iron_sword (eff DPS 27.3):
+		# 40 HP = ~2 swings ≈ 1.5s realistic — outside band (too fast). 52 HP =
+		# ~2 swings ≈ 1.9–2.8s realistic — base of Standard band. XP/gold unchanged.
+		# Cited: pacing/difficulty_targets.md §L2 audit, Dire Wolf row.
+		_spawn_enemy("wolf", w, "Dire Wolf", 52, 9, 28, 6,
 			Color(0.55, 0.50, 0.45), 0.8, 1.05)
 
 	# Player-facing feedback (Rule 2 iii): one-shot toast at world build if
