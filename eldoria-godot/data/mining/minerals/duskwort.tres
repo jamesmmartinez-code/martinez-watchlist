@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mineral"
+metadata/_data = """
+{
+  "id": "duskwort",
+  "name": "Moonwhisper",
+  "kind": "ore",
+  "tier": "moonsilver",
+  "found_in": "whisperwood",
+  "smelt_into": "",
+  "cut_into": "",
+  "flavor": "Luminous, like the night sky"
+}
+"""
