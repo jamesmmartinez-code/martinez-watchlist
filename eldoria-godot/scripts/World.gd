@@ -2223,6 +2223,57 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and inv_tooltip and inv_tooltip.visible:
 		inv_tooltip.position = get_viewport().get_mouse_position() + Vector2(16, 16)
 
+# ── DEBUG: backtick (`) dumps every scene node + white-mesh list to browser console ──
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey) or not event.pressed:
+		return
+	if event.keycode == KEY_QUOTELEFT:  # backtick `
+		_debug_dump_scene()
+
+func _debug_dump_scene() -> void:
+	print("=== SCENE DUMP ===")
+	var lines: Array = []
+	_collect_nodes(get_tree().root, lines, 0)
+	for line in lines:
+		print(line)
+	print("=== END DUMP (" + str(lines.size()) + " nodes) ===")
+	print("--- WHITE / UNTEXTURED MESHES ---")
+	_find_white_meshes(get_tree().root)
+	print("--- END WHITE MESHES ---")
+
+func _collect_nodes(node: Node, out: Array, depth: int) -> void:
+	var indent: String = "  ".repeat(depth)
+	var info: String = indent + node.name + " [" + node.get_class() + "]"
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		var mat = mi.get_active_material(0)
+		if mat is StandardMaterial3D:
+			var sm := mat as StandardMaterial3D
+			var tn: String = "NULL" if sm.albedo_texture == null else sm.albedo_texture.resource_path.get_file()
+			info += "  tex=" + tn + "  color=" + str(sm.albedo_color)
+		elif mat == null:
+			info += "  MAT:NONE"
+		else:
+			info += "  MAT:" + mat.get_class()
+	elif node is CharacterBody3D or node is StaticBody3D:
+		info += "  pos=" + str(snapped(node.global_position, Vector3(0.1, 0.1, 0.1)))
+	out.append(info)
+	for child in node.get_children():
+		_collect_nodes(child, out, depth + 1)
+
+func _find_white_meshes(node: Node) -> void:
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		var mat = mi.get_active_material(0)
+		if mat == null:
+			print("  NO-MAT: " + str(mi.get_path()))
+		elif mat is StandardMaterial3D:
+			var sm := mat as StandardMaterial3D
+			if sm.albedo_texture == null:
+				print("  NULL-TEX: " + str(mi.get_path()) + "  color=" + str(sm.albedo_color))
+	for child in node.get_children():
+		_find_white_meshes(child)
+
 # Mount toggle stub (Phase 2 item 6 — wire here when Horse.glb mount is added)
 func toggle_mount() -> void:
 	var player := get_node_or_null("Player")
