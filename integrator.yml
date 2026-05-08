@@ -1,0 +1,40 @@
+name: Integrate Agent Content
+on:
+  push:
+    branches: ['auto/**']
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: integrator
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Merge all auto/* branches into main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --all
+          BRANCHES=$(git branch -r | grep 'origin/auto/' | sed 's/origin\///' | tr -d ' ')
+          if [ -z "$BRANCHES" ]; then echo "Nothing to merge"; exit 0; fi
+          for branch in $BRANCHES; do
+            git merge --no-ff -m "Integrate: $branch" "origin/$branch" 2>&1 || {
+              git merge --abort 2>/dev/null || true
+            }
+          done
+          git push origin main
+          for branch in $BRANCHES; do
+            git push origin --delete "$branch" 2>/dev/null || true
+          done
+          echo "✓ Done"
