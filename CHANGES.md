@@ -1,3 +1,7 @@
+## Tech debt
+
+QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 20 MiB soft cap (25 MiB hard cap) for the Cloudflare Pages deploy target. Asset is actively referenced by `scenes/Main.tscn`, `scripts/CharacterSelect.gd`, and `scripts/Player.gd` — cannot delete. Action required: compress or split the GLB (e.g., separate mesh from animations, use Draco compression, or replace with a smaller LOD version) to bring it under 20 MiB.
+
 ## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
 
 I'm building: Faction state — bandit boldness scales with road defense (Backlog #9)
