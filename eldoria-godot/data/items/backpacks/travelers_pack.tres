@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "backpack"
+metadata/_data = """
+{
+  "id": "travelers_pack",
+  "name": "Traveler's Pack",
+  "extra_slots": 4,
+  "appearance": "Worn leather",
+  "unlock_condition": "craft",
+  "flavor": "A sturdy pack for the weary traveler"
+}
+"""
