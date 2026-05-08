@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "foolish_luck",
+  "name": "Foolish Luck",
+  "play_at": "tavern",
+  "rules": "Players take turns rolling a 6-sided die. The first to roll 3 sixes wins. Loser pays winner 5 coppers.",
+  "reward_win": "copper:5",
+  "flavor": "Golden dice spin, fate's smile on a winner's face"
+}
+"""
