@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "fools_gold",
+  "name": "Snake's Eye",
+  "play_at": "tavern",
+  "rules": "Roll 1d6, add 1 if you have a 'lucky' token. Highest total wins.",
+  "reward_win": "copper:5",
+  "flavor": "A rustic game of chance, played with worn dice and hopeful grins."
+}
+"""
