@@ -1,0 +1,38 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "spiced_sun_cake",
+  "name": "Sunset Spice Cake",
+  "station_required": "oven",
+  "station_tier_min": 2,
+  "inputs": [
+    {
+      "item_id": "honey",
+      "qty": 2
+    },
+    {
+      "item_id": "sunstone",
+      "qty": 1
+    },
+    {
+      "item_id": "cinnamon",
+      "qty": 1
+    },
+    {
+      "item_id": "flour",
+      "qty": 3
+    }
+  ],
+  "output": {
+    "item_id": "sunset_spice_cake",
+    "qty": 1
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A sweet and aromatic cake, imbued with the warmth and vitality of the setting sun, rumored to bring joy and comfort to those who partake."
+}
+"""
