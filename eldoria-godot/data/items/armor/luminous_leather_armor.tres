@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "luminous_leather_armor",
+  "name": "Luminous Leather Armor",
+  "category": "armor",
+  "subtype": "leather",
+  "tier": "epic",
+  "level_req": 40,
+  "stats": {
+    "atk": 0,
+    "def": 20,
+    "hp": 10,
+    "spd": 3
+  },
+  "flavor": "A suit of leather armor infused with soft, ethereal luminescence, providing exceptional protection and agility.",
+  "realm": "skyreave"
+}
+"""
