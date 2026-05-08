@@ -131,6 +131,8 @@ shape = SubResource("GroundShape")
 
 [node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+floor_snap_length = 0.3
+floor_max_angle = 0.80285 ; deg_to_rad(46) -- physics-engineer 2026-05-08 CHECK 10
 script = ExtResource("2_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
