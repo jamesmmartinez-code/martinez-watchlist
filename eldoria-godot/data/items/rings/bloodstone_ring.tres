@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "bloodstone_ring",
+  "name": "Fang's Bane",
+  "tier": "uncommon",
+  "stat_mod": {
+    "hp": 0,
+    "atk": 0,
+    "def": 0,
+    "spd": 0,
+    "luck": 0
+  },
+  "effect": "10% chance to poison attacker",
+  "flavor": "Forged in dragonfire"
+}
+"""
