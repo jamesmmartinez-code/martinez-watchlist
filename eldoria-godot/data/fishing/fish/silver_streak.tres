@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fish"
+metadata/_data = """
+{
+  "id": "silver_streak",
+  "name": "Silver Streak",
+  "rarity": "common",
+  "size_cm": 30,
+  "caught_in": "river",
+  "bait": "worm",
+  "sell_value": 5,
+  "cookable_into": "",
+  "flavor": "Shimmering scales like moonlit ripples on a summer night"
+}
+"""
