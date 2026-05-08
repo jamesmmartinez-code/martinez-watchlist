@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "persistent_adventurer",
+  "title": "Unstoppable Adventurer",
+  "description": "Played for 5 hours straight!",
+  "trigger": "playtime:5",
+  "reward_title": "Marathon Runner",
+  "reward_xp": 400,
+  "reward_gold": 300,
+  "flavor": "You're on a roll!"
+}
+"""
