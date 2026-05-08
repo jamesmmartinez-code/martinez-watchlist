@@ -1,3 +1,9 @@
+- QA 2026-05-08T14:11 UTC: Build=success (Build Eldoria 14:03), Pages=errored (Jekyll processing failure on large .pck files). FIX: added .nojekyll (commit c658b56a) to skip Jekyll — this should resolve Pages build. §15 violation: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete. Logged as tech debt.
+
+## Tech debt
+
+- **OPERATIONS.md §15 violation** — `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 20 MiB soft cap (25 MiB hard cap). File is actively referenced in `scenes/Main.tscn` and `scripts/Player.gd` as the primary character model. Must be re-exported from Meshy/Blender at lower poly count, or split into base mesh + separate animation library, before Cloudflare Pages migration. Detected: 2026-05-08.
+
 - QA 2026-05-08T14:06 UTC: Build=None (pages-build-and-deployment in_progress, no build-eldoria.yml runs), Pages=building, §15 violation: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt in prior runs. No new action taken this run.
 
 ## 2026-05-08 Auto: run 24 -- Adaptive difficulty per player
