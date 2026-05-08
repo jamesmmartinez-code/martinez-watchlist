@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "glooping_shadow",
+  "boss_id": "dark_sorcerer",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Shadows deepen, heroes!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
