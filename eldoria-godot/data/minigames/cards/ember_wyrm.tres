@@ -5,10 +5,10 @@ metadata/_data = """
 {
   "id": "ember_wyrm",
   "name": "Inferno Drake",
-  "suit": "fire",
+  "suit": "sky",
   "power": 8,
-  "effect": "+2 power if opponent has fire",
+  "effect": "Burn 2 enemy creatures",
   "art_motif": "blazing wings",
-  "flavor": "painterly dragon on a cliffside"
+  "flavor": "Aerial terror"
 }
 """
