@@ -6,10 +6,10 @@ metadata/_data = """
   "id": "explorer_extraordinaire",
   "title": "Map Master",
   "description": "Explored 5 new zones",
-  "trigger": "reach_zone:zone_5",
-  "reward_title": "Cartographer's Crest",
+  "trigger": "reach_zone:whimsy_woods|reach_zone:misty_mountains|reach_zone:sparkle_swamp|reach_zone:sunflower_plains|reach_zone:starlight_desert",
+  "reward_title": "Cartographer's Badge",
   "reward_xp": 200,
   "reward_gold": 100,
-  "flavor": "Keep charting new lands!"
+  "flavor": "Keep discovering!"
 }
 """
