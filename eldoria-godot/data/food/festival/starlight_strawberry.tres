@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "starlight_strawberry",
+  "name": "Midnight Starlight",
+  "festival_id": "luminous_night",
+  "duration_hours": 48,
+  "effect": "buff:lucky:600s|emote_unlock:twinkle_dance",
+  "flavor": "Sweet strawberry under starry skies"
+}
+"""
