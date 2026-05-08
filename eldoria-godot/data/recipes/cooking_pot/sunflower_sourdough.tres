@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "sunflower_sourdough",
+  "name": "Sunflower Sourdough",
+  "station_required": "cooking_pot",
+  "station_tier_min": 1,
+  "inputs": [
+    {
+      "item_id": "sunflower_seeds",
+      "qty": 1
+    },
+    {
+      "item_id": "fresh_yeast",
+      "qty": 1
+    },
+    {
+      "item_id": "sprouted_grain",
+      "qty": 2
+    }
+  ],
+  "output": {
+    "item_id": "sunflower_bread",
+    "qty": 1
+  },
+  "time_seconds": 120,
+  "fuel_cost": 2,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "Warm sunlight and the gentle hum of bees inspire this nourishing bread, infused with the brightness of sunflowers."
+}
+"""
