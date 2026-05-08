@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "starlight_pin",
+  "name": "Twinkling Star",
+  "slot": "hairpin",
+  "minor_effect": "Gives the wearer a +5% chance to notice hidden doors or secret passages",
+  "unlock_condition": "find_in:enchanted_forest",
+  "flavor": "A delicate, sparkling pin that shines like a star in the night sky"
+}
+"""
