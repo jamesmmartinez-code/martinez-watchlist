@@ -353,8 +353,6 @@ func _input(event: InputEvent) -> void:
 		if pk == KEY_BACKSPACE or pk == KEY_F1 or pk == KEY_F2 or pk == KEY_BRACKETRIGHT:
 			_panic_unstick(pk)
 			return
-	if is_dead:
-		return
 	if event.is_action_pressed("interact"):
 		interact_pressed.emit()
 	if event.is_action_pressed("attack"):
