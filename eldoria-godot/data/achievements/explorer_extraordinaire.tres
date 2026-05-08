@@ -4,12 +4,12 @@ metadata/_kind = "achievement"
 metadata/_data = """
 {
   "id": "explorer_extraordinaire",
-  "title": "Map Master",
-  "description": "Explored 5 new zones",
-  "trigger": "reach_zone:whimsy_woods|reach_zone:misty_mountains|reach_zone:sparkle_swamp|reach_zone:sunflower_plains|reach_zone:starlight_desert",
-  "reward_title": "Cartographer's Badge",
+  "title": "Cartographer",
+  "description": "Mapped 5 new zones",
+  "trigger": "reach_zone:5",
+  "reward_title": "New Horizons",
   "reward_xp": 200,
   "reward_gold": 100,
-  "flavor": "Keep discovering!"
+  "flavor": "Explore, discover, repeat!"
 }
 """

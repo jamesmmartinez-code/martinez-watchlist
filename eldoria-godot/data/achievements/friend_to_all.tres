@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "friend_to_all",
+  "title": "Diplomat",
+  "description": "Helped 10 NPCs with quests",
+  "trigger": "complete_quest:10",
+  "reward_title": "Hero of the Realm",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "Kindness goes a long way!"
+}
+"""
