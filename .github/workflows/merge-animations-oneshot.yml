@@ -1,0 +1,162 @@
+name: merge-animations-oneshot
+on:
+  workflow_dispatch:
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run animation merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESHY_KEY: msy_qbQ4SjnV3W4tvRTzGUd5uFMsyksZodQ9DNXG
+        run: |
+          python3 - << 'ENDSCRIPT'
+#!/usr/bin/env python3
+"""
+One-shot animation merge script for GitHub Actions.
+Downloads animation GLBs from Meshy, merges into base character GLBs,
+then pushes via Git Blobs API.
+"""
+import urllib.request, json, struct, base64, sys, os, time
+
+MESHY_KEY = os.environ.get("MESHY_KEY", "msy_qbQ4SjnV3W4tvRTzGUd5uFMsyksZodQ9DNXG")
+GH_TOKEN = os.environ.get("GH_TOKEN", "")
+REPO = "jamesmmartinez-code/martinez-watchlist"
+
+CHARACTERS = {
+    "goblin": {
+        "base_path": "eldoria-godot/assets/models/enemies/goblin.glb",
+        "tasks": [
+            ("019e06a4-3090-77c1-b7f7-d955cdb1202b", "walk"),
+            ("019e06a4-5cc9-7360-bfec-75a7a6e4d5ff", "idle"),
+            ("019e06a4-5fad-77de-bca8-dc981fda9b74", "run"),
+            ("019e06a4-621a-7754-bb6d-85fe8995ec21", "attack_1"),
+            ("019e06a4-64e4-7759-882b-2d9d08552238", "die"),
+            ("019e06a4-67b7-7365-8e71-41deccfb6061", "hurt"),
+        ]
+    },
+    "maeve": {
+        "base_path": "eldoria-godot/assets/models/npcs/maeve.glb",
+        "tasks": [
+            ("019e06a4-6a96-7365-bcf6-a1459a2dab08", "walk"),
+            ("019e06a4-6ea0-7365-a47c-37f38bdd1dfa", "idle"),
+            ("019e06a4-71f0-75f8-a353-6d0148b766e7", "run"),
+            ("019e06a4-767d-75f8-b612-366744231b47", "attack_1"),
+            ("019e06a4-7a58-77e1-935b-265d02ad9231", "die"),
+            ("019e06a4-7d00-75f8-b0ae-d31653666c2f", "hurt"),
+        ]
+    }
+}
+
+def gh(method, path, body=None, raw=False):
+    url = f"https://api.github.com{path}"
+    data = json.dumps(body).encode() if body else None
+    req = urllib.request.Request(url, data=data, method=method)
+    req.add_header("Authorization", f"token {GH_TOKEN}")
+    req.add_header("Accept", "application/vnd.github.v3.raw" if raw else "application/vnd.github.v3+json")
+    if data: req.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return r.read() if raw else json.loads(r.read())
+
+def fetch(url, headers=None):
+    req = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return r.read()
+
+def glb_parse(data):
+    assert data[:4] == b"glTF", f"Not GLB: {data[:8]}"
+    chunk0_len = struct.unpack("<I", data[12:16])[0]
+    gltf = json.loads(data[20:20+chunk0_len].rstrip(b"\x00"))
+    bin_data = b""
+    off = 20+chunk0_len
+    if len(data) > off+8:
+        bin_len = struct.unpack("<I", data[off:off+4])[0]
+        bin_data = data[off+8:off+8+bin_len]
+    return gltf, bin_data
+
+def glb_pack(gltf, bin_data):
+    jb = json.dumps(gltf, separators=(",",":")).encode()
+    jp = (4-len(jb)%4)%4; jb += b" "*jp
+    bp = (4-len(bin_data)%4)%4; bin_data = bin_data + b"\x00"*bp
+    total = 12+8+len(jb)+8+len(bin_data)
+    out = struct.pack("<III", 0x46546C67, 2, total)
+    out += struct.pack("<II", len(jb), 0x4E4F534A)+jb
+    out += struct.pack("<II", len(bin_data), 0x004E4942)+bin_data
+    return out
+
+def merge_animations(base_data, anim_list):
+    base_gltf, base_bin = glb_parse(base_data)
+    out = json.loads(json.dumps(base_gltf))
+    ob = bytearray(base_bin)
+    for k in ("animations","accessors","bufferViews"):
+        if k not in out: out[k] = []
+    for anim_data, slot_name in anim_list:
+        ag, ab = glb_parse(anim_data)
+        off = len(ob); ob.extend(ab)
+        bvo = len(out["bufferViews"])
+        for bv in ag.get("bufferViews",[]):
+            nb=dict(bv); nb["buffer"]=0; nb["byteOffset"]=bv.get("byteOffset",0)+off
+            out["bufferViews"].append(nb)
+        aco = len(out["accessors"])
+        for ac in ag.get("accessors",[]):
+            na=dict(ac)
+            if "bufferView" in na: na["bufferView"]+=bvo
+            out["accessors"].append(na)
+        for an in ag.get("animations",[]):
+            na=json.loads(json.dumps(an)); na["name"]=slot_name
+            for s in na.get("samplers",[]): s["input"]+=aco; s["output"]+=aco
+            out["animations"].append(na); break
+    out["buffers"]=[{"byteLength":len(ob)}]
+    return glb_pack(out, bytes(ob))
+
+def push_glb(file_path, data, commit_msg):
+    blob = gh("POST", f"/repos/{REPO}/git/blobs", {
+        "content": base64.b64encode(data).decode(), "encoding": "base64"
+    })
+    ref = gh("GET", f"/repos/{REPO}/git/ref/heads/main")
+    head_sha = ref["object"]["sha"]
+    commit_info = gh("GET", f"/repos/{REPO}/git/commits/{head_sha}")
+    tree = gh("POST", f"/repos/{REPO}/git/trees", {
+        "base_tree": commit_info["tree"]["sha"],
+        "tree": [{"path": file_path, "mode": "100644", "type": "blob", "sha": blob["sha"]}]
+    })
+    new_commit = gh("POST", f"/repos/{REPO}/git/commits", {
+        "message": commit_msg, "tree": tree["sha"], "parents": [head_sha]
+    })
+    gh("PATCH", f"/repos/{REPO}/git/refs/heads/main", {
+        "sha": new_commit["sha"], "force": False
+    })
+    return new_commit["sha"]
+
+for char_name, config in CHARACTERS.items():
+    print(f"\n=== Processing {char_name} ===", flush=True)
+    base_path = config["base_path"]
+    
+    print(f"Fetching base {char_name}.glb from GitHub...", flush=True)
+    base_data = gh("GET", f"/repos/{REPO}/contents/{base_path}", raw=True)
+    print(f"  base: {len(base_data):,} bytes", flush=True)
+    
+    anim_list = []
+    for task_id, slot_name in config["tasks"]:
+        print(f"  Fetching task {task_id} ({slot_name})...", flush=True)
+        req = urllib.request.Request(
+            f"https://api.meshy.ai/v2/text-to-3d/{task_id}",
+            headers={"Authorization": f"Bearer {MESHY_KEY}"}
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:
+            info = json.loads(r.read())
+        glb_url = info["model_urls"]["glb"]
+        anim_data = fetch(glb_url)
+        print(f"    {slot_name}: {len(anim_data):,} bytes", flush=True)
+        anim_list.append((anim_data, slot_name))
+    
+    print(f"  Merging {len(anim_list)} animations...", flush=True)
+    merged = merge_animations(base_data, anim_list)
+    print(f"  merged: {len(merged):,} bytes", flush=True)
+    
+    sha = push_glb(base_path, merged, f"feat: add 6 animations to {char_name} (walk/idle/run/attack/die/hurt)")
+    print(f"  Pushed! commit={sha[:8]}", flush=True)
+
+print("\nAll done!", flush=True)
+
+          ENDSCRIPT
