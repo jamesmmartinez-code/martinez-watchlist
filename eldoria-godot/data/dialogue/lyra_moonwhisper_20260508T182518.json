@@ -1,0 +1,93 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Hello there, young adventurer! I'm Lyra, a humble moonwhisperer. What brings you to our enchanted forest?",
+      "options": [
+        {
+          "player_text": "I'm on a quest to find rare herbs.",
+          "goto": "herbs",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I love your forest, it's so magical!",
+          "goto": "magic",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herbs",
+      "npc_text": "Ah, a noble pursuit indeed! We have some rare herbs growing near the ancient oak. But beware, the path is treacherous. Would you like a map to guide you?",
+      "options": [
+        {
+          "player_text": "Yes, please, I'd love a map!",
+          "goto": "map",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "No, I'll find my way.",
+          "goto": "END",
+          "tags": [
+            "confident"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "magic",
+      "npc_text": "I'm so glad you appreciate the magic of our forest! As a moonwhisperer, I've learned to communicate with the creatures here. Would you like to learn a spell to talk to the animals?",
+      "options": [
+        {
+          "player_text": "That sounds amazing, teach me!",
+          "goto": "spell",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "Maybe later, I'm in a hurry.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "npc_text": "Here's a map to the ancient oak. Be careful, and don't hesitate to ask for help if you need it. May the moon guide you!",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra! I'll be careful.",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "spell",
+      "npc_text": "Wonderful! The spell is called 'Moonwhisper's Gift.' Repeat after me: 'Luna, audientia, animalia...' and focus your heart on the creatures. Remember, magic comes from the heart, not just the words.",
+      "options": [
+        {
+          "player_text": "I'll practice it, thank you, Lyra!",
+          "goto": "END",
+          "tags": [
+            "excited"
+          ]
+        }
+      ]
+    }
+  ]
+}
