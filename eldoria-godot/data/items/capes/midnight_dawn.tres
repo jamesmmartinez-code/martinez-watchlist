@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "midnight_dawn",
+  "name": "Twilight",
+  "palette": [
+    "#3498db",
+    "#f1c40f"
+  ],
+  "emblem": "",
+  "flutter_strength": 5,
+  "effect": "Colors blend at the edges",
+  "flavor": "A cape with hues of dawn and dusk"
+}
+"""
