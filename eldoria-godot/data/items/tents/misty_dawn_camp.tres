@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tent"
+metadata/_data = """
+{
+  "id": "misty_dawn_camp",
+  "name": "Morning Mist",
+  "capacity": 2,
+  "weather_resistance": "all",
+  "palette": [
+    "#87CEEB",
+    "#F7DC6F"
+  ],
+  "flavor": "Softly glowing in dawn's mist"
+}
+"""
