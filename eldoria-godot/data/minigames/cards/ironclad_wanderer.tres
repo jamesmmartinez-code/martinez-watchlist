@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "ironclad_wanderer",
+  "name": "Ironclad Wanderer",
+  "suit": "earth",
+  "power": 8,
+  "effect": "Boost self by 3 after an enemy dies",
+  "art_motif": "Armored figure walking",
+  "flavor": "Unyielding and strong"
+}
+"""
