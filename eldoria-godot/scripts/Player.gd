@@ -341,6 +341,14 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _input(event: InputEvent) -> void:
+	# Panic keys fire before any dead/pause guard
+	if event is InputEventKey and event.pressed and not event.echo:
+		var k: int = event.keycode
+		if k in [KEY_BACKSPACE, KEY_F1, KEY_F2, KEY_BRACKETRIGHT]:
+			_panic_unstick(k)
+			return
+	if is_dead:
+		return
 	# ─── PANIC KEYS — fire BEFORE is_dead early-return AND before any other gating ───
 	# PX hardening 2026-05-05: kids reported "nothing works when stuck". Root cause:
 	#   (a) is_dead early-return below blocked Backspace/F1/F2 if dead-stuck,
@@ -353,8 +361,6 @@ func _input(event: InputEvent) -> void:
 		if pk == KEY_BACKSPACE or pk == KEY_F1 or pk == KEY_F2 or pk == KEY_BRACKETRIGHT:
 			_panic_unstick(pk)
 			return
-	if is_dead:
-		return
 	if event.is_action_pressed("interact"):
 		interact_pressed.emit()
 	if event.is_action_pressed("attack"):
