@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "frosthelm_brew",
+  "name": "Winter's Warmth",
+  "category": "consumable",
+  "subtype": "potion",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 5,
+    "spd": 0
+  },
+  "flavor": "A soothing brew that restores a small amount of health and brings warmth to chilled bones",
+  "realm": "ashenmere"
+}
+"""
