@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "midnight_sun",
+  "name": "Moonlit Mirage",
+  "creature_or_motif": "Luna Moth",
+  "festival_id": "starlight_serenade",
+  "colors": [
+    "#4c5154",
+    "#6495ed"
+  ],
+  "flavor": "Soft, ethereal hues evoke a moonlit night"
+}
+"""
