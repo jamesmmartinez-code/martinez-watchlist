@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mystic_mountain_mistress",
+  "boss_id": "earth_elemental",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Time to shake things up!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

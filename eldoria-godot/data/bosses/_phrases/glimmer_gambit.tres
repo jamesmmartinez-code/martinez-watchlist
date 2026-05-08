@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "glimmer_gambit",
+  "boss_id": "water_elemental",
+  "phrases": [
+    {
+      "trigger": "tell_windup",
+      "text": "Your turn, adventurer!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""
