@@ -1,4 +1,13 @@
 
+## Adaptive Difficulty per Player (run 24)
+- player_difficulty_state: dict in World.gd tracking session deaths/kills/seconds
+- diff_scalar in [0.70, 1.30]: <0.90 = eased, 0.90-1.10 = normal, >1.10 = hardened
+- _apply_adaptive_difficulty() fires every 10s, group-calls receive_difficulty_scalar on enemies
+- Enemy live params (cooldown/chase_speed/damage) lerp 40% toward target each push
+- HUD: DifficultyLabel shows ▿ eased / ◇ normal / ▴ hardened
+- Two-axis system: faction pressure (spawn-time) × player performance (live 10s pulse)
+
+
 
 ## Enchant+Shop System (run 22)
 - Edda: Reforge, Enchant (8 shards, random prefix), Sell Weapon (60%)
