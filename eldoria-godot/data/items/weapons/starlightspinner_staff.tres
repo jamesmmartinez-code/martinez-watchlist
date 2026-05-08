@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlightspinner_staff",
+  "name": "Stardancer's Staff",
+  "category": "weapon",
+  "subtype": "staff",
+  "tier": "rare",
+  "level_req": 20,
+  "stats": {
+    "atk": 15,
+    "def": 5,
+    "hp": 0,
+    "spd": 5
+  },
+  "flavor": "This staff shines with the soft glow of captured starlight, guiding its wielder through the darkest nights.",
+  "realm": "tidesong"
+}
+"""
