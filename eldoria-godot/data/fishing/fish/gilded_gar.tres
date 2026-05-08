@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fish"
+metadata/_data = """
+{
+  "id": "gilded_gar",
+  "name": "Gilded Gar",
+  "rarity": "common",
+  "size_cm": 45,
+  "caught_in": "lake",
+  "bait": "worm",
+  "sell_value": 10,
+  "cookable_into": "",
+  "flavor": "Golden scales shine like sunset on rippled water"
+}
+"""
