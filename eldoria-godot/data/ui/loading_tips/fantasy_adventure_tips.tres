@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "fantasy_adventure_tips",
+  "tips": [
+    {
+      "text": "Explore new zones to discover hidden pets!",
+      "category": "exploration"
+    },
+    {
+      "text": "Craft gear to boost your stats!",
+      "category": "crafting"
+    },
+    {
+      "text": "Make friends to join a guild!",
+      "category": "social"
+    },
+    {
+      "text": "Use skills to defeat tough foes!",
+      "category": "combat"
+    },
+    {
+      "text": "Complete quests for awesome rewards!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Find secret areas for exclusive loot!",
+      "category": "secret"
+    },
+    {
+      "text": "Learn new spells to become a master mage!",
+      "category": "combat"
+    },
+    {
+      "text": "Decorate your home with cool items!",
+      "category": "quality_of_life"
+    }
+  ]
+}
+"""
