@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_luminari",
+  "name": "Luminari",
+  "family": "fey",
+  "tier": "elite",
+  "level": 25,
+  "hp": 300,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1,
+  "move_speed": 4.2,
+  "behavior_tags": [
+    "lone_wanderer"
+  ],
+  "tells": [
+    {
+      "name": "starlight",
+      "wind_up_ms": 1000,
+      "vfx_id": "stardust"
+    }
+  ],
+  "weaknesses": {
+    "darkness": 1.5
+  },
+  "resistances": {
+    "light": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "moonstone",
+      "weight": 0.4
+    },
+    {
+      "item_id": "fey_dust",
+      "weight": 0.3
+    },
+    {
+      "item_id": "starlight_essence",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "a tall, slender creature with delicate wings and a body that shines like the moon"
+}
+"""
