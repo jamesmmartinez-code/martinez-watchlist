@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "sapling"
+metadata/_data = """
+{
+  "id": "desert_marigold",
+  "name": "Desert Marigold",
+  "grow_days": 5,
+  "yield_item": "marigold_petal",
+  "yield_qty": 3,
+  "sun_required": "full",
+  "watering": "low",
+  "flavor": "Vibrant, golden blooms in arid landscapes"
+}
+"""
