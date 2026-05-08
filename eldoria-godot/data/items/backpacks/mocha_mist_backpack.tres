@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "backpack"
+metadata/_data = """
+{
+  "id": "mocha_mist_backpack",
+  "name": "Mocha Mist",
+  "extra_slots": 5,
+  "appearance": "Soft, earthy tones",
+  "unlock_condition": "craft",
+  "flavor": "Worn, paint-splattered straps"
+}
+"""
