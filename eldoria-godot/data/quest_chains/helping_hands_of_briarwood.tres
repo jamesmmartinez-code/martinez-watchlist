@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "helping_hands_of_briarwood",
+  "title": "The Helping Hands of Briarwood",
+  "region": "briarwood",
+  "theme": "Community Aid",
+  "quests": [
+    {
+      "id": "gathering_supplies",
+      "title": "Gathering Supplies",
+      "hook": "Help gather food for the village feast",
+      "stages_count": 3
+    },
+    {
+      "id": "fixing_the_fountain",
+      "title": "Fixing the Fountain",
+      "hook": "Fix the village fountain to restore water supply",
+      "stages_count": 2
+    },
+    {
+      "id": "village_feast_preparations",
+      "title": "Village Feast Preparations",
+      "hook": "Prepare for the village feast by decorating and cooking",
+      "stages_count": 3
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "briarwood_badge"
+  },
+  "flavor": "The village of Briarwood is bustling with activity as the annual Harvest Festival approaches. The villagers are in need of helping hands to prepare for the celebration."
+}
+"""
