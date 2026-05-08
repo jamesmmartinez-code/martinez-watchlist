@@ -10,31 +10,31 @@ metadata/_data = """
       "category": "exploration"
     },
     {
-      "text": "Craft gear to boost stats!",
-      "category": "crafting"
-    },
-    {
-      "text": "Join a guild for new friends!",
+      "text": "Make friends, join a guild!",
       "category": "social"
     },
     {
-      "text": "Use spells to defeat tough foes!",
+      "text": "Craft gear with friends, stronger together!",
+      "category": "crafting"
+    },
+    {
+      "text": "Defeat 5 monsters in a row for a bonus!",
       "category": "combat"
     },
     {
-      "text": "Discover hidden paths for secrets!",
+      "text": "Discover hidden paths, secrets await!",
       "category": "exploration"
     },
     {
-      "text": "Trade items with friends to share!",
+      "text": "Help others, earn rewards!",
       "category": "social"
     },
     {
-      "text": "Master crafting to make cool gear!",
-      "category": "crafting"
+      "text": "Unlock new spells, try them out!",
+      "category": "combat"
     },
     {
-      "text": "Complete quests for awesome rewards!",
+      "text": "Customize your look, express yourself!",
       "category": "quality_of_life"
     }
   ]
