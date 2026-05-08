@@ -146,6 +146,9 @@ jobs:
             exit 0
           fi
           git commit -m "Auto-build Eldoria Web export ($(date -u +%Y-%m-%dT%H:%MZ))"
+          # Back up our freshly-built /eldoria/ so we can restore it after
+          # any rebase conflict — two concurrent builds can't be "merged".
+          cp -r eldoria /tmp/eldoria_freshbuild
           # Retry up to 5 times with rebase to handle concurrent agent pushes.
           for i in 1 2 3 4 5; do
             if git push; then
@@ -153,7 +156,10 @@ jobs:
               exit 0
             fi
             echo "⚠️  push rejected (attempt $i) — pulling with rebase"
-            git pull --rebase --autostash origin main || true
+            git pull --rebase --autostash -X ours origin main || true
+            # Restore our freshly-built /eldoria/ (wins over any rebase conflict)
+            cp -r /tmp/eldoria_freshbuild/* eldoria/
+            git add -A eldoria/
             sleep $((i * 2))
           done
           echo "❌ push failed after 5 retries"
@@ -234,7 +240,7 @@ jobs:
           git commit -m "Auto: re-apply /eldoria/ redirect → Cloudflare ($(date -u +%Y-%m-%dT%H:%MZ))"
           for i in 1 2 3 4 5; do
             if git push; then echo "✅ pushed redirect on attempt $i"; exit 0; fi
-            git pull --rebase --autostash origin main || true
+            git pull --rebase --autostash -X ours origin main || true
             sleep $((i * 2))
           done
           echo "❌ redirect push failed"; exit 1
