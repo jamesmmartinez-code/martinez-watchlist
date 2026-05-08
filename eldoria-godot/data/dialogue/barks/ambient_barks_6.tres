@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "ambient_barks_6",
+  "barks": [
+    {
+      "text": "Humming along...",
+      "npc_role": "merchant",
+      "tone": "humming"
+    }
+  ]
+}
+"""

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "ambient_barks_8",
+  "barks": [
+    {
+      "text": "Seeds to plant...",
+      "npc_role": "farmer",
+      "tone": "grumbling"
+    }
+  ]
+}
+"""
