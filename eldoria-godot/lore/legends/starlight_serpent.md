@@ -1,8 +1,8 @@
 ---
 id: starlight_serpent
 kind: legend
-title: "The Starlight Serpent"
+title: "The Whispering Winds of Whisperwood"
 region: "whisperwood"
 ---
 
-Long ago, in Whisperwood, a serpent made of starlight swam through the forest, leaving a trail of glittering stardust behind. The serpent's scales shone bright, lighting the way for travelers lost in the woods. As it moved, its body wove a magical pattern, imbuing the forest with a soft, ethereal glow. The people of Whisperwood believed the serpent was a harbinger of good fortune, and its appearance was a sign that the forest was at peace. To this day, the Starlight Serpent is said to roam Whisperwood, guiding those who wander through its shimmering woods.
+In Whisperwood, where trees whisper secrets to the wind, a mystical breeze stirs. It carries the soft murmurs of ancient ones, their wisdom and tales of old. The starlight serpent, a shimmering mist, dances upon the forest floor, leaving trails of glittering stardust in its wake. As the moon rises high, the whispers grow louder, and the serpent's path illuminates, guiding dreamers and wanderers through the whispering woods.
