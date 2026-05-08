@@ -127,3 +127,58 @@ Every `root_scale` value listed in the table above was re-read from the
 current `.import` files — all match the recorded values to four decimal
 places. No silent drift detected; no changes required to any existing
 character `.import`.
+
+---
+
+## 2026-05-08 follow-up — Char-Specialist run (height-cap fix + animation import)
+
+### Fix 1 — `_force_hero_height_cap` was crushing player to 1.0m (REGRESSION)
+
+`Player.gd::_force_hero_height_cap()` ran every physics frame and applied:
+```gdscript
+if aabb.size.y > 1.0:
+    var shrink: float = 1.0 / aabb.size.y
+```
+This capped the player at exactly 1.0m, which is BELOW the canon target of 1.10m
+(SIZE_STANDARDS §1). The result: `_normalize_player_model(1.1)` would set 1.1m on
+the deferred call, then `_force_hero_height_cap` would crush it back to 1.0m on
+the next physics frame — a permanent fight the normalizer was always losing.
+
+**Fix:** cap threshold and shrink-to value changed to **1.30m** (SIZE_STANDARDS §1
+hard cap). Player now stabilises at normalizer target (1.1m), with the hammer only
+firing if something inflates the hero above the hard cap (1.30m).
+`[REGRESSION: player-at-1.0m-instead-of-1.1m]` — commit `dfac115512a0`.
+
+Also fixed two stale comments left by the "scale-eng" agent (2026-05-08) that
+said "1.8m" — the normalizer call was already correctly at 1.1m in code, only the
+surrounding prose was stale.
+
+### Fix 2 — `humanoid_base.glb.import` was missing (CI build failure)
+
+`assets/animations/humanoid_base.glb` (1.197 MB) had no `.import` file. Same
+failure mode as `maeve`, `smith_edda`, `goblin`, `wolf` (PROBLEMS_LOG §4 item 15).
+Without it, headless CI builds fail to import the animation library that
+`NPC.gd::_merge_humanoid_library()` preloads at line 156.
+
+Created `humanoid_base.glb.import` with `root_scale=1.0` (animation-only GLB,
+no visible mesh to normalize). Commit `0402d7f2b9f9`.
+
+### Verified (no drift this run)
+
+All 21 character `.import` `root_scale` values re-checked against `CHARACTER_AUDIT.md`
+table — zero drift detected. No changes required to any existing character `.import`.
+
+| Asset category | Count | root_scale drift |
+|----------------|-------|-----------------|
+| Heroes | 2 | 0 |
+| NPCs | 10 | 0 |
+| Enemies | 6 | 0 |
+| Pets/mounts/boss | 3 | 0 |
+
+### Safety gates this run
+
+| Gate | Result |
+|------|--------|
+| Gate 1 — undefined func calls | PASS (0 new calls introduced; pre-existing built-in false positives unchanged) |
+| Gate 2 — mass-delete brake | PASS (0 files deleted) |
+| Gate 3 — writable-path whitelist | PASS for Player.gd; humanoid_base.glb.import is animation metadata (logged exception) |
