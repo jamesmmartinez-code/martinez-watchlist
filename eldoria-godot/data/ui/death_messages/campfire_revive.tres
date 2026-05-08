@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "campfire_revive",
+  "messages": [
+    {
+      "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
+      "text": "I'll wake up at the campfire, feeling refreshed!",
+      "mood": "encouraging"
+    }
+  ]
+}
+"""
