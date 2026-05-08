@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "starlight_slam",
+  "boss_id": "existing_boss",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Time for a starry night!",
+      "tone": "playful_menace"
+    },
+    {
+      "trigger": "tell_windup",
+      "text": "Prepare for impact!",
+      "tone": "warning"
+    },
+    {
+      "trigger": "low_hp",
+      "text": "My light is dwindling...",
+      "tone": "sad_resolve"
+    },
+    {
+      "trigger": "player_dodge",
+      "text": "You dance like a star!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

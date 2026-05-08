@@ -1,0 +1,31 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mythic_maul",
+  "boss_id": "existing_boss",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Legendary fury unleashed!",
+      "tone": "playful_menace"
+    },
+    {
+      "trigger": "tell_windup",
+      "text": "Tremble before me!",
+      "tone": "warning"
+    },
+    {
+      "trigger": "low_hp",
+      "text": "My mythic might falters...",
+      "tone": "sad_resolve"
+    },
+    {
+      "trigger": "player_dodge",
+      "text": "You've got the heart of a hero!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""
