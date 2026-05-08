@@ -1140,6 +1140,16 @@ func _process(delta: float) -> void:
 		# (0.10+0.18) but kept slightly under to avoid the brown-haze return.
 		e.volumetric_fog_emission_energy = 0.06 + dusk_w2 * 0.10
 
+	# Builder run 23 — god-rays through canopy: fade shafts with daylight.
+	# amount_ratio=0 disables emission without removing the node; amount_ratio=1
+	# restores full output. Dawn/dusk get half-intensity (shafts read as morning
+	# mist cutting through), night shuts them off entirely (THEME §1 painterly mood).
+	var daylight_w: float = clamp(elev2 * 3.0, 0.0, 1.0)
+	for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
+		if shaft is GPUParticles3D:
+			shaft.amount_ratio = clamp(daylight_w * 0.85 + 0.15, 0.0, 1.0)
+
+
 # ════════════════════════════════════════════════════════════════════════
 # Dialogue
 # ════════════════════════════════════════════════════════════════════════
