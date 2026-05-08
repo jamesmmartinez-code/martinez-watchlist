@@ -4,60 +4,53 @@ metadata/_kind = "shop"
 metadata/_data = """
 {
   "id": "whisperwood_wonders",
-  "vendor_name": "Luna's Treasures",
+  "vendor_name": "Professor Pecan's Curious Concoctions",
   "region": "whisperwood",
-  "shop_type": "general",
+  "shop_type": "alchemist",
   "stock": [
     {
       "item_id": "NEW",
       "price": 50,
       "quantity": 20,
-      "restock_hours": 24,
-      "item_name": "Moonbeam Morsels"
+      "restock_hours": 12
     },
     {
-      "item_id": "NEW",
-      "price": 100,
-      "quantity": 10,
-      "restock_hours": 24,
-      "item_name": "Fuzzy Fox Tail"
+      "item_id": "minor_health_potion",
+      "price": 10,
+      "quantity": 50,
+      "restock_hours": 6
     },
     {
-      "item_id": "NEW",
-      "price": 200,
-      "quantity": 5,
-      "restock_hours": 48,
-      "item_name": "Whisperwood Whistle"
-    },
-    {
-      "item_id": "NEW",
-      "price": 80,
-      "quantity": 30,
-      "restock_hours": 24,
-      "item_name": "Glimmering Gloop"
-    },
-    {
-      "item_id": "NEW",
-      "price": 150,
+      "item_id": "sparkling_dust",
+      "price": 30,
       "quantity": 15,
-      "restock_hours": 24,
-      "item_name": "Mythril Marble"
+      "restock_hours": 18
     },
     {
-      "item_id": "NEW",
-      "price": 250,
-      "quantity": 8,
-      "restock_hours": 48,
-      "item_name": "Starlight Serenade"
+      "item_id": "healing_balm",
+      "price": 25,
+      "quantity": 30,
+      "restock_hours": 12
     },
     {
-      "item_id": "NEW",
-      "price": 120,
-      "quantity": 25,
-      "restock_hours": 24,
-      "item_name": "Luminous Leaf"
+      "item_id": "mana_crystals",
+      "price": 40,
+      "quantity": 10,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "enchanted_ink",
+      "price": 60,
+      "quantity": 5,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "mystic_mushroom",
+      "price": 80,
+      "quantity": 2,
+      "restock_hours": 48
     }
   ],
-  "flavor": "A cozy little nook tucked away in the heart of Whisperwood, Luna's Treasures is a favorite among adventurers and locals alike. The sign above the door reads 'Curios and Wonders' in elegant, swirling script."
+  "flavor": "A whimsical shop filled with peculiar potions and mysterious elixirs, run by the eccentric Professor Pecan."
 }
 """
