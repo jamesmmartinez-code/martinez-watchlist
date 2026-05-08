@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "golden_earring",
+  "name": "Luminous Drop",
+  "slot": "earring",
+  "minor_effect": "makes the wearer's voice sound more soothing",
+  "unlock_condition": "craft",
+  "flavor": "shines like a miniature moon"
+}
+"""
