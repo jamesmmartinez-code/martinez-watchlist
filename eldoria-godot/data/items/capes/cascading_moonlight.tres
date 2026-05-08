@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "cascading_moonlight",
+  "name": "Glacial",
+  "palette": [
+    "#87CEEB",
+    "#708090"
+  ],
+  "emblem": "❄️",
+  "flutter_strength": 5,
+  "effect": "slows down nearby enemies",
+  "flavor": "brush strokes of a winter sky"
+}
+"""
