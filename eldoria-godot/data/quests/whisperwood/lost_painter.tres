@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_painter",
+  "title": "The Missing Brushstrokes",
+  "region": "whisperwood",
+  "act": 2,
+  "level_band": [
+    1,
+    5
+  ],
+  "hook": "Painter's guild seeks help, master's work ruined",
+  "stages": [
+    {
+      "objective": "Find the missing paintbrushes in the Whispering Woods",
+      "location": "whisperwood",
+      "completion_trigger": "collect:item_id_1234"
+    },
+    {
+      "objective": "Talk to the Painter's Guild Master about the missing brushes",
+      "location": "whisperwood_guild",
+      "completion_trigger": "talk_to_npc:guild_master"
+    },
+    {
+      "objective": "Help the guild master recreate the ruined painting",
+      "location": "whisperwood_guild",
+      "completion_trigger": "defeat:color_wraith"
+    }
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": [
+      "item_id_1234",
+      "painter_guild_badge"
+    ],
+    "faction_rep": {
+      "whisperwood": 10
+    }
+  },
+  "repeatable": false,
+  "flavor": "The soft glow of luminescent mushrooms illuminates the forest floor as you search for the missing paintbrushes, the sweet scent of blooming wildflowers filling the air."
+}
+"""
