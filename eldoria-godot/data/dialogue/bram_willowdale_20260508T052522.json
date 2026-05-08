@@ -1,0 +1,115 @@
+{
+  "npc_slug": "bram_willowdale",
+  "npc_name": "Bram Willowdale",
+  "mood": "wise",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Greetings, young adventurer! I sense you're searching for wisdom. What is it that you seek?",
+      "options": [
+        {
+          "player_text": "I'm looking for a cure for the withered trees.",
+          "goto": "tree_cure",
+          "tags": [
+            "curious",
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I just want to explore the forest.",
+          "goto": "forest_tales",
+          "tags": [
+            "polite",
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tree_cure",
+      "npc_text": "The withered trees, you say? I've studied the ancient lore. The cure lies with the Forest Heart, a hidden glade deep within the woods.",
+      "options": [
+        {
+          "player_text": "Tell me more about the Forest Heart.",
+          "goto": "forest_heart",
+          "tags": [
+            "curious",
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'll go find it myself.",
+          "goto": "END",
+          "tags": [
+            "brave",
+            "determined"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forest_tales",
+      "npc_text": "The forest is full of wonders and secrets. I can share tales of the ancient ones, if you'd like.",
+      "options": [
+        {
+          "player_text": "I love hearing stories!",
+          "goto": "ancient_tales",
+          "tags": [
+            "polite",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm not interested in stories.",
+          "goto": "END",
+          "tags": [
+            "impatient"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forest_heart",
+      "npc_text": "The Forest Heart is a sacred place, where the ancient magic still flows. But beware, the path is treacherous, and the heart is guarded by powerful spirits.",
+      "options": [
+        {
+          "player_text": "I'm willing to take the risk.",
+          "goto": "END",
+          "tags": [
+            "brave",
+            "determined"
+          ]
+        },
+        {
+          "player_text": "I'll come back when I'm more prepared.",
+          "goto": "start",
+          "tags": [
+            "cautious",
+            "wise"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ancient_tales",
+      "npc_text": "Let me tell you of the great Tree King, who ruled over the forest with wisdom and kindness. His spirit still roams these woods, watching over all who dwell here.",
+      "options": [
+        {
+          "player_text": "That's a wonderful story!",
+          "goto": "END",
+          "tags": [
+            "polite",
+            "appreciative"
+          ]
+        },
+        {
+          "player_text": "I've heard enough stories.",
+          "goto": "END",
+          "tags": [
+            "impatient"
+          ]
+        }
+      ]
+    }
+  ]
+}
