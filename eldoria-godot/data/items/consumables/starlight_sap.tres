@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_sap",
+  "name": "Stellar Sap",
+  "category": "consumable",
+  "subtype": "healing_potion",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 10,
+    "spd": 0
+  },
+  "flavor": "A special sap that heals wounds and grants a sense of wonder.",
+  "realm": "eldoria"
+}
+"""
