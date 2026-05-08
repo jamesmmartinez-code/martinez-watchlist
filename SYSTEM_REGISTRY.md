@@ -1,3 +1,22 @@
+## NPC Relationship Score (run 29)
+World.gd schema extension to npc_memory:
+  npc_memory[name][gifts]: int  (incremented by record_npc_gift)
+  npc_memory[name][insults]: int  (incremented by record_npc_insult)
+World.gd new methods:
+  record_npc_gift(npc_name: String) -> void      -- mutator, calls _check_achievements
+  record_npc_insult(npc_name: String) -> void    -- mutator, calls _check_achievements
+  npc_relationship_score(npc_name: String) -> int -- clamp(gifts-insults, -10, 10)
+  npc_any_relationship_above(min_score: int) -> bool -- for achievement predicate
+NPC.gd new exports:
+  warmed_relationship_min: int (default 0 = disabled)
+  warmed_relationship_dialogue_variants: PackedStringArray
+  Tier position: ABOVE visit-count, BELOW faction-pressure
+Achievements.gd:
+  villager_friend: predicate kind=npc_relationship_min, min_score=3
+    -> title the Beloved, priority 18
+  _eval_predicate extended with npc_relationship_min kind
+
+
 ## Road Defense System (run 29)
 World.gd schema:
   road_defense_score: float[0..10] — increments: bandit kill +1.0, bandit_captain kill +2.0; decays 5%/s

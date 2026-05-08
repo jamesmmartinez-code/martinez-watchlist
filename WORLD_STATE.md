@@ -1,3 +1,13 @@
+## NPC Relationship Score System (run 29)
+- npc_memory[name] now carries gifts: int and insults: int in addition to visit fields
+- npc_relationship_score(name) = clamp(gifts - insults, -10, 10) on World
+- NPC.gd warmed_relationship_min tier: fires ABOVE visit-count, BELOW faction-pressure
+  tier ordering: json-tree > npc_flag > world_flag > faction_pressure > relationship_score > visit_count
+- Achievement villager_friend: any NPC score >= 3 -> title the Beloved (priority 18)
+- record_npc_gift / record_npc_insult call _check_achievements on each write
+- Future: attempt_enchant gift to Edda score +1 (wired next pass)
+
+
 ## Faction State — Bandit Road Defense (run 29)
 - road_defense_score: float[0..10] in World.gd — increments on bandit kills (+1.0) and captain kills (+2.0)
 - Decays 5%/s via _process so defended roads soften over time (THEME §12 MOTION — not permanent)

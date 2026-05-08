@@ -255,6 +255,20 @@ const ACHIEVEMENTS: Dictionary = {
 			],
 		},
 	},
+	# run 29 (Builder) — villager_friend: player earned relationship score >= 3
+	# with any NPC. title_priority 18 — below hearthkeeper (22). Uses new
+	# npc_relationship_min predicate kind added to _eval_predicate below.
+	"villager_friend": {
+		"name": "Beloved of Briarwood",
+		"desc": "A villager's eyes light up when you walk through the gate.",
+		"icon": "\U0001f49b",
+		"title_text": "the Beloved",
+		"title_priority": 18,
+		"predicate": {
+			"kind": "npc_relationship_min",
+			"min_score": 3,
+		},
+	},
 }
 
 # Pure evaluator — returns the IDs of every achievement whose predicate is
@@ -343,6 +357,11 @@ static func _eval_predicate(pred: Dictionary, world: Object) -> bool:
 					continue
 				if _eval_predicate(sub2, world):
 					return true
+			return false
+		"npc_relationship_min":
+			var min_rel: int = int(pred.get("min_score", 3))
+			if world.has_method("npc_any_relationship_above"):
+				return world.npc_any_relationship_above(min_rel)
 			return false
 		_:
 			return false

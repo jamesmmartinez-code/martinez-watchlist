@@ -1,6 +1,23 @@
-## Tech debt
-
-QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 20 MiB soft cap (25 MiB hard cap) for the Cloudflare Pages deploy target. Asset is actively referenced by `scenes/Main.tscn`, `scripts/CharacterSelect.gd`, and `scripts/Player.gd` — cannot delete. Action required: compress or split the GLB (e.g., separate mesh from animations, use Draco compression, or replace with a smaller LOD version) to bring it under 20 MiB.
+## 2026-05-08 Auto: run 29 — NPC Relationship Score (Backlog #8 compound)
+I'm building: NPC memory deepening — record_npc_gift / record_npc_insult + relationship tier
+THEME §12 cited: MOTION & LIFE — village NPCs now REACT to kindness, not just visits
+Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md
+Mood board panel: Stardew Valley / Rune Factory — villager warmth earned through actions
+Files: World.gd +record_npc_gift +record_npc_insult +npc_relationship_score +npc_any_relationship_above
+       NPC.gd +warmed_relationship_min +warmed_relationship_dialogue_variants (5th tier)
+       Achievements.gd +villager_friend achievement (score>=3) + npc_relationship_min predicate
+5-output check:
+  i.  Integration: NPC._on_interact calls warmed_relationship tier ABOVE visit-count tier;
+        World._check_achievements() called after every gift/insult write
+  ii. Schema: npc_memory dict extended with gifts: int, insults: int per NPC;
+        NPC_RELATIONSHIP_SCORE_MIN/MAX consts; warmed_relationship_min/@export on NPC
+  iii.Feedback: warmed_relationship_dialogue_variants produces distinct warm lines when score>=min;
+        achievement villager_friend unlocks title the Beloved on score>=3
+  iv. Eval: npc_relationship_score() + npc_any_relationship_above() public accessors;
+        _eval_predicate extended with npc_relationship_min kind
+  v.  2+ hooks: record_npc_gift triggers _check_achievements (Achievement hook);
+        warmed_relationship tier composable with all existing tiers in NPC chain
+Next run picks up: Faction state — bandit boldness scales with road defense (Backlog #9)
 
 ## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
 
@@ -165,5 +182,3 @@ Next: NPC memory or god-rays
 - QA 2026-05-08T14:06 UTC: Build=success, Pages=building (in-progress, no error), §15 Hero.glb 29MiB violation already logged. No new action — existing tech debt entry covers this.
 - QA 2026-05-08T15:14 UTC: Build=success, Pages=built, §15 Hero.glb 29MiB violation persists (logged 07:12 UTC). Asset is referenced — no action taken. No-op run.
 - QA 2026-05-08T15:48 UTC: Build=None (no recent conclusion/queued), Pages=building (in-progress), §15 Hero.glb 29MiB violation persists (logged 07:12 UTC). Asset is referenced — no action taken. No-op run.
-
-- QA 2026-05-08T16:00 UTC: Build=success, Pages=built, §15 Hero.glb 29MiB violation persists (logged 07:12 UTC). Asset is referenced — no action taken. No-op run.
