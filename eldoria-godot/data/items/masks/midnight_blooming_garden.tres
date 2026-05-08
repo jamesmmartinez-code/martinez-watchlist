@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "midnight_blooming_garden",
+  "name": "Lunaria's Kiss",
+  "creature_or_motif": "Moonflower",
+  "festival_id": "luminous_nights",
+  "colors": [
+    "#4567b7",
+    "#6495ed"
+  ],
+  "flavor": "Soft petals shimmer under starlight"
+}
+"""
