@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "rumor_followup"
+metadata/_data = """
+{
+  "id": "lost_city_of_zharrak",
+  "rumor_origin_text": "Ancient city hidden deep",
+  "actual_outcome": "Ruins of Zharrak found, holding artifacts",
+  "reward_hint": "Map to hidden treasure",
+  "flavor": "Moonlit jungle, vines on stone"
+}
+"""
