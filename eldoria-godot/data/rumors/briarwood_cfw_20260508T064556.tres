@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Glimmerbats seen near old oak"
+truth_0 = "true"
+rumor_1 = "Hidden stream runs with glitter"
+truth_1 = "partial"
+rumor_2 = "Briarwood is home to a dragon"
+truth_2 = "false"
+rumor_3 = "Rare wildflowers bloom at dawn"
+truth_3 = "true"
+rumor_4 = "Maeve's lullabies can tame beasts"
+truth_4 = "partial"
