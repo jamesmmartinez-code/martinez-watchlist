@@ -1,3 +1,5 @@
+- QA 2026-05-08T13:16 UTC: `eldoria-godot/assets/models/Hero.glb` is 29 MiB -- exceeds OPERATIONS.md §15 soft cap (20 MiB) and hard cap (25 MiB). Referenced in Main.tscn, cannot delete. Action: mesh optimization/LOD reduction needed.
+
 ## Tech debt
 ## 2026-05-08 Auto: run 24 -- Housing / Player Home (Backlog #10)
 I'm building: Housing / player-shaped spaces (Backlog #10)
