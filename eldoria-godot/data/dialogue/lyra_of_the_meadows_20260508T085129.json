@@ -1,0 +1,133 @@
+{
+  "npc_slug": "lyra_of_the_meadows",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Greetings, young adventurer! I'm Lyra, the guardian of this enchanted meadow. What brings you to our little corner of the world?",
+      "options": [
+        {
+          "player_text": "I'm exploring the area",
+          "goto": "exploring",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a quest",
+          "goto": "quest",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I love the flowers here",
+          "goto": "flowers",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exploring",
+      "npc_text": "Wonderful! There's so much to discover in the meadow. Be sure to visit the sparkling stream and the ancient oak tree. Would you like a map to help you find your way?",
+      "options": [
+        {
+          "player_text": "Yes, please",
+          "goto": "map",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "No, I'm good",
+          "goto": "END",
+          "tags": [
+            "independent"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quest",
+      "npc_text": "A noble quest, I presume? We've had some troubles with mischievous fey creatures in the area. Perhaps I can offer some guidance or assistance?",
+      "options": [
+        {
+          "player_text": "That would be great, thank you",
+          "goto": "fey_guidance",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I can handle it myself",
+          "goto": "END",
+          "tags": [
+            "confident"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flowers",
+      "npc_text": "Aren't they lovely? The meadow is famous for its rare and beautiful blooms. I can show you some of the most exquisite ones, if you'd like.",
+      "options": [
+        {
+          "player_text": "I'd love to see them",
+          "goto": "rare_flowers",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "Maybe later",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "npc_text": "Here's a map of the meadow, highlighting some of the most interesting spots. Be careful, and don't hesitate to ask for help if you need it.",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fey_guidance",
+      "npc_text": "The fey can be tricky to deal with, but I can give you some advice. Try using honey and wildflowers to appease them, and avoid traveling at dusk or dawn.",
+      "options": [
+        {
+          "player_text": "That's really helpful, thanks",
+          "goto": "END",
+          "tags": [
+            "appreciative"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rare_flowers",
+      "npc_text": "Follow me, and I'll show you some of the rarest blooms in the meadow. We have the moonpetal, the sunbloom, and the elusive starlight flower.",
+      "options": [
+        {
+          "player_text": "Wow, they're beautiful",
+          "goto": "END",
+          "tags": [
+            "awed"
+          ]
+        }
+      ]
+    }
+  ]
+}
