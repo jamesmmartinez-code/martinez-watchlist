@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fish"
+metadata/_data = """
+{
+  "id": "silver_fin",
+  "name": "Silver Fin",
+  "rarity": "uncommon",
+  "size_cm": 40,
+  "caught_in": "lake",
+  "bait": "worm",
+  "sell_value": 25,
+  "cookable_into": "golden_soup",
+  "flavor": "Glimmering lake dweller with silvery scales that shine like moonlight on rippling water"
+}
+"""
