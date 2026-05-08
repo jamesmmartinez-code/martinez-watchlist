@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "aero_ace",
+  "boss_id": "air_elemental",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "Swift escape!",
+      "tone": "warning"
+    }
+  ]
+}
+"""
