@@ -1,0 +1,152 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra Moonwhisper",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I'm Lyra, the village's resident dreamweaver. What brings you to our little corner of the world?",
+      "options": [
+        {
+          "player_text": "I'm on a quest!",
+          "goto": "quest_talk",
+          "tags": [
+            "brave",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I love your garden!",
+          "goto": "garden_talk",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quest_talk",
+      "npc_text": "A quest, you say? That sounds like a thrilling tale! What's the nature of your quest?",
+      "options": [
+        {
+          "player_text": "I'm searching for a rare herb.",
+          "goto": "herb_talk",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a mission to help the villagers.",
+          "goto": "village_talk",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "garden_talk",
+      "npc_text": "Ah, my garden is my pride and joy! I've spent many moons tending to these lovely flowers and trees. Would you like to learn more about them?",
+      "options": [
+        {
+          "player_text": "Yes, please teach me!",
+          "goto": "garden_lesson",
+          "tags": [
+            "polite",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "No, I should get going.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herb_talk",
+      "npc_text": "A rare herb, you say? I might know a thing or two about the local flora. Let me see if I can help you find what you're looking for.",
+      "options": [
+        {
+          "player_text": "That would be amazing, thank you!",
+          "goto": "herb_search",
+          "tags": [
+            "grateful"
+          ]
+        },
+        {
+          "player_text": "I think I'll look elsewhere.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "village_talk",
+      "npc_text": "Helping the villagers, eh? We could always use a kind heart around here. What do you think you can do to lend a hand?",
+      "options": [
+        {
+          "player_text": "I can help with the harvest.",
+          "goto": "harvest_talk",
+          "tags": [
+            "brave",
+            "helpful"
+          ]
+        },
+        {
+          "player_text": "I'm not sure, what do you need?",
+          "goto": "village_needs",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "garden_lesson",
+      "npc_text": "Wonderful! Let me show you the secrets of my garden. This flower, for example, only blooms under the light of the full moon.",
+      "options": [
+        {
+          "player_text": "That's beautiful!",
+          "goto": "END",
+          "tags": [
+            "polite",
+            "appreciative"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herb_search",
+      "npc_text": "Ah, I think I know just the place to find that herb. Follow me!",
+      "options": [
+        {
+          "player_text": "Lead the way!",
+          "goto": "END",
+          "tags": [
+            "excited",
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "harvest_talk",
+      "npc_text": "The harvest is a big job, but with your help, I'm sure we can get it done in no time. Let's get started!",
+      "options": [
+        {
+          "player_text": "I'm ready to work!",
+          "goto": "END",
+          "tags": [
+            "brave",
+            "helpful"
+          ]
+        }
+      ]
+    }
+  ]
+}
