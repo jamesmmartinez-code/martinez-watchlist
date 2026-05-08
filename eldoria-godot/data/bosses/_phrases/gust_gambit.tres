@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "gust_gambit",
+  "boss_id": "wind_sorceress",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "You may dodge the gust, but not the gale!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

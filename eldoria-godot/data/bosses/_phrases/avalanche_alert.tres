@@ -3,12 +3,12 @@
 metadata/_kind = "boss_phrase"
 metadata/_data = """
 {
-  "id": "frostbite_frenzy",
+  "id": "avalanche_alert",
   "boss_id": "ice_witch",
   "phrases": [
     {
       "trigger": "phase_2_start",
-      "text": "Frost will fuel my fury!",
+      "text": "The avalanche is coming!",
       "tone": "playful_menace"
     }
   ]

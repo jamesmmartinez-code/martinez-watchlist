@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "ember_endurance",
+  "boss_id": "fire_dragon",
+  "phrases": [
+    {
+      "trigger": "low_hp",
+      "text": "My flames will never fade!",
+      "tone": "sad_resolve"
+    }
+  ]
+}
+"""
