@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "muddy_marsh_stomper",
+  "name": "Marsh Trekker",
+  "kind": "boot",
+  "traction": "all",
+  "minor_effect": "helps with muddy terrain",
+  "flavor": "a sturdy boot with a rugged sole and waterproof upper"
+}
+"""
