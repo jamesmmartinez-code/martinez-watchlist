@@ -4,7 +4,7 @@ metadata/_kind = "shop"
 metadata/_data = """
 {
   "id": "whisperwood_wonders",
-  "vendor_name": "Professor Pecan's Provisions",
+  "vendor_name": "Luna's Treasures",
   "region": "whisperwood",
   "shop_type": "general",
   "stock": [
@@ -12,45 +12,52 @@ metadata/_data = """
       "item_id": "NEW",
       "price": 50,
       "quantity": 20,
-      "restock_hours": 24
+      "restock_hours": 24,
+      "item_name": "Moonbeam Morsels"
     },
     {
-      "item_id": "acorn_cookie",
-      "price": 15,
-      "quantity": 50,
-      "restock_hours": 12
-    },
-    {
-      "item_id": "healing_potion",
+      "item_id": "NEW",
       "price": 100,
       "quantity": 10,
-      "restock_hours": 48
+      "restock_hours": 24,
+      "item_name": "Fuzzy Fox Tail"
     },
     {
-      "item_id": "whisperwood_map",
+      "item_id": "NEW",
       "price": 200,
       "quantity": 5,
-      "restock_hours": 72
+      "restock_hours": 48,
+      "item_name": "Whisperwood Whistle"
     },
     {
-      "item_id": "wildflower_crown",
+      "item_id": "NEW",
       "price": 80,
       "quantity": 30,
-      "restock_hours": 24
+      "restock_hours": 24,
+      "item_name": "Glimmering Gloop"
     },
     {
-      "item_id": "woodland_wand",
+      "item_id": "NEW",
+      "price": 150,
+      "quantity": 15,
+      "restock_hours": 24,
+      "item_name": "Mythril Marble"
+    },
+    {
+      "item_id": "NEW",
       "price": 250,
-      "quantity": 3,
-      "restock_hours": 96
+      "quantity": 8,
+      "restock_hours": 48,
+      "item_name": "Starlight Serenade"
     },
     {
-      "item_id": "mushroom_snack",
-      "price": 25,
-      "quantity": 40,
-      "restock_hours": 12
+      "item_id": "NEW",
+      "price": 120,
+      "quantity": 25,
+      "restock_hours": 24,
+      "item_name": "Luminous Leaf"
     }
   ],
-  "flavor": "Tucked away in a cozy nook of Whisperwood, Professor Pecan's Provisions is a treasure trove of curious goods and tasty treats, all carefully curated by the venerable professor himself."
+  "flavor": "A cozy little nook tucked away in the heart of Whisperwood, Luna's Treasures is a favorite among adventurers and locals alike. The sign above the door reads 'Curios and Wonders' in elegant, swirling script."
 }
 """
