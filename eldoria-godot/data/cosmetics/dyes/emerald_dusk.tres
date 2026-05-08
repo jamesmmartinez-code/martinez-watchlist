@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "emerald_dusk",
+  "name": "Misty Jade",
+  "color_hex": "#45C67B",
+  "source": "flower:orchid",
+  "rarity": "uncommon",
+  "flavor": "Sunlit meadows on the Jade Coast"
+}
+"""
