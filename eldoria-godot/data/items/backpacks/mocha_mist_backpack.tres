@@ -8,6 +8,6 @@ metadata/_data = """
   "extra_slots": 5,
   "appearance": "Soft, earthy tones",
   "unlock_condition": "craft",
-  "flavor": "Worn, paint-splattered straps"
+  "flavor": "A soothing, natural hue"
 }
 """
