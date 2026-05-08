@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_event"
+metadata/_data = """
+{
+  "id": "moonlit_snowflakes",
+  "name": "Moonlit Flurry",
+  "kind": "silver_rain",
+  "duration_min": 10,
+  "region": "whisperwood",
+  "effects": [
+    "spawn:firefly_x",
+    "buff:luck:300s"
+  ],
+  "flavor": "Gentle moonbeams dance across Whisperwood, bringing luck and sparkles"
+}
+"""
