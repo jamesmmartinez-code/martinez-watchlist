@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "midnight_whisper",
+  "name": "Midnight Whisper",
+  "palette": [
+    "#2f4f7f",
+    "#6c5ce7"
+  ],
+  "emblem": "Snake",
+  "flutter_strength": 5,
+  "effect": "Gives the hero a 5% chance to dodge attacks",
+  "flavor": "A dark, mystical cape with an air of mystery and agility"
+}
+"""
