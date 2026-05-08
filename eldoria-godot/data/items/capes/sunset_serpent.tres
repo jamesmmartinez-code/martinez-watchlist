@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "sunset_serpent",
+  "name": "Aurora",
+  "palette": [
+    "#FFC67D",
+    "#8B9467"
+  ],
+  "emblem": "Sun",
+  "flutter_strength": 8,
+  "effect": "Colors shift with light",
+  "flavor": "Warm hues dance across the sky"
+}
+"""
