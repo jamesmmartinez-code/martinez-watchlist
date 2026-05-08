@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weapon_skin"
+metadata/_data = """
+{
+  "id": "mythic_moonwhisper",
+  "name": "Luna's Glow",
+  "applies_to": "sword|bow|staff|hammer|dagger|shield",
+  "palette": [
+    "#87CEEB",
+    "#F7DC6F"
+  ],
+  "motif": "Moonlit Dreams",
+  "unlock_condition": "complete_quest:moonlit_serenade",
+  "flavor": "Soft, ethereal light dances across the surface, like moonbeams on a midsummer night."
+}
+"""
