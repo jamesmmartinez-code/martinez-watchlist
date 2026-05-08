@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fish"
+metadata/_data = """
+{
+  "id": "mudskipper",
+  "name": "Mudskipper",
+  "rarity": "common",
+  "size_cm": 10,
+  "caught_in": "creek",
+  "bait": "worm",
+  "sell_value": 5,
+  "cookable_into": "",
+  "flavor": "Glistening mottled brown and grey, with a distinctive set of pectoral fins."
+}
+"""
