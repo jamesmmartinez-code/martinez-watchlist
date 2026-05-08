@@ -4,18 +4,18 @@ metadata/_kind = "legendary"
 metadata/_data = """
 {
   "id": "starlight_scepter",
-  "name": "Stellar Guardian",
+  "name": "Stardust Scepter",
   "category": "staff",
   "level_req": 30,
   "stats": {
     "atk": 25,
-    "def": 5,
-    "hp": 10,
-    "spd": 3
+    "def": 10,
+    "hp": 5,
+    "spd": 5
   },
-  "unique_effect": "Heals allies within 5m for 5% max HP",
-  "unlock_condition": "unite_three_runes",
-  "backstory": "Forged from a fallen star, this staff was said to have been wielded by the ancient moon goddess to bring peace and prosperity to the land. Its power is rumored to be able to heal the wounds of the heart and bring balance to the universe.",
-  "flavor": "May the celestial light guide you"
+  "unique_effect": "Heals allies within 5m for 10hp every 10s",
+  "unlock_condition": "unite_three_runes:moon_rune:sun_rune:star_rune",
+  "backstory": "Forged from stardust and the essence of celestial bodies, this scepter is said to hold the power of the heavens. It was created by the ancient sky gods to bring balance and harmony to the world. The scepter's wielder is chosen by the gods themselves, and is tasked with maintaining the delicate balance of nature.",
+  "flavor": "May the stars guide my magic"
 }
 """
