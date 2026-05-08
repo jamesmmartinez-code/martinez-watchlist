@@ -566,6 +566,9 @@ func take_damage(amount: int) -> void:
 func _die() -> void:
 	is_dead = true
 	_play_anim("die")
+	# Run 24 (Builder): notify World's adaptive difficulty tracker before save.
+	# Fail-soft: if World isn't ready or lacks the method, no-op.
+	get_tree().call_group("world", "record_player_death")
 	call_deferred("save_game")  # save just before respawn
 	get_tree().call_group("world", "play_sfx", "player_death")
 	# Death overlay
@@ -587,6 +590,8 @@ func _respawn_at_well() -> void:
 # ────────────────────────────────────────────────────────────────────────
 func on_enemy_killed(kind: String) -> void:
 	kills_by_kind[kind] = kills_by_kind.get(kind, 0) + 1
+	# Run 24 (Builder): notify World's adaptive difficulty tracker.
+	get_tree().call_group("world", "record_player_kill", kind)
 	if active_quest.size() > 0 and active_quest.get("kind", "kill") == "kill" and active_quest.get("target", "") == kind:
 		active_quest["killed"] = active_quest.get("killed", 0) + 1
 		stats_changed.emit()
