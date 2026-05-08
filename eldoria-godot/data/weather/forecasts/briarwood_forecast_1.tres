@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_forecast"
+metadata/_data = """
+{
+  "id": "briarwood_forecast_1",
+  "region": "briarwood",
+  "days": [
+    {
+      "label": "Day 1",
+      "weather": "sunny",
+      "high_c": 20,
+      "low_c": 10,
+      "omen": "Morning dew glistens"
+    }
+  ]
+}
+"""
