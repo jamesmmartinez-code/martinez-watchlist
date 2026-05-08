@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "starlight_sugar_cookie",
+  "name": "Starlight Sugar Cookie",
+  "festival_id": "midsummer_nights_dream",
+  "duration_hours": 48,
+  "effect": "buff:lucky:600s|emote_unlock:twinkle_toes",
+  "flavor": "Sweet, shimmering cookie with edible glitter"
+}
+"""
