@@ -4,43 +4,43 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_sproutling",
-  "name": "Briarwood Sproutling",
-  "family": "fey",
-  "tier": "elite",
-  "level": 20,
-  "hp": 250,
-  "armor": 8,
-  "dmg_min": 15,
-  "dmg_max": 30,
-  "attack_speed": 1.5,
-  "move_speed": 5.5,
+  "name": "Sproutling",
+  "family": "elemental",
+  "tier": "trash",
+  "level": 5,
+  "hp": 25,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 3.8,
   "behavior_tags": [
-    "lure"
+    "pack_hunter"
   ],
   "tells": [
     {
-      "name": "photosynthesize",
-      "wind_up_ms": 1000,
+      "name": "photosynthesis",
+      "wind_up_ms": 500,
       "vfx_id": "glow"
     }
   ],
   "weaknesses": {
-    "ice": 1.5
+    "fire": 1.2
   },
   "resistances": {
-    "nature": 0.5
+    "nature": 0.8
   },
-  "xp_value": 100,
+  "xp_value": 10,
   "loot_table": [
     {
       "item_id": "petal",
-      "weight": 0.6
+      "weight": 0.3
     },
     {
       "item_id": "seed",
-      "weight": 0.4
+      "weight": 0.2
     }
   ],
-  "flavor": "A delicate, plant-like creature with leaves for hair and a gentle glow, the Briarwood Sproutling can control the growth of vines to restrain its enemies."
+  "flavor": "a small, sprouting creature with leaves for hair and a body made of twisted vines"
 }
 """
