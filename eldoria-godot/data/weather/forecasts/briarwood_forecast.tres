@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_forecast"
+metadata/_data = """
+{
+  "id": "briarwood_forecast",
+  "region": "briarwood",
+  "days": [
+    {
+      "label": "Day 1",
+      "weather": "sunny",
+      "high_c": 20,
+      "low_c": 10,
+      "omen": "Golden light on dewy grass"
+    },
+    {
+      "label": "Day 2",
+      "weather": "cloudy",
+      "high_c": 18,
+      "low_c": 8,
+      "omen": "Shadows dance upon the wall"
+    },
+    {
+      "label": "Day 3",
+      "weather": "rainy",
+      "high_c": 15,
+      "low_c": 5,
+      "omen": "Raindrops whisper secrets sweet"
+    },
+    {
+      "label": "Day 4",
+      "weather": "misty",
+      "high_c": 12,
+      "low_c": 2,
+      "omen": "Misty veils shroud morning's face"
+    },
+    {
+      "label": "Day 5",
+      "weather": "stormy_warm",
+      "high_c": 25,
+      "low_c": 15,
+      "omen": "Thunder's drumbeat in the night"
+    }
+  ]
+}
+"""
