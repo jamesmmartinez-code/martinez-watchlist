@@ -122,3 +122,4 @@ Files: Inventory.gd +enchant/sell/buy | World.gd +3 buttons+shop | Achievements.
 Next: NPC memory or god-rays
 - QA 2026-05-08T14:06 UTC: Build=success, Pages=building (in-progress, no error), §15 Hero.glb 29MiB violation already logged. No new action — existing tech debt entry covers this.
 - QA 2026-05-08T15:14 UTC: Build=success, Pages=built, §15 Hero.glb 29MiB violation persists (logged 07:12 UTC). Asset is referenced — no action taken. No-op run.
+- QA 2026-05-08T15:48 UTC: Build=None (no recent conclusion/queued), Pages=building (in-progress), §15 Hero.glb 29MiB violation persists (logged 07:12 UTC). Asset is referenced — no action taken. No-op run.
