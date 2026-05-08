@@ -1,0 +1,40 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "greeting"
+metadata/_data = """
+{
+  "id": "village_folk",
+  "greetings": [
+    {
+      "text": "Good morrow!",
+      "mood": "warm",
+      "time_of_day": "morning"
+    },
+    {
+      "text": "Hi there, friend!",
+      "mood": "cheerful",
+      "time_of_day": "any"
+    },
+    {
+      "text": "Oh, hello!",
+      "mood": "shy",
+      "time_of_day": "noon"
+    },
+    {
+      "text": "Welcome to our village!",
+      "mood": "warm",
+      "time_of_day": "any"
+    },
+    {
+      "text": "Hi, how are you?",
+      "mood": "busy",
+      "time_of_day": "evening"
+    },
+    {
+      "text": "Evening to you!",
+      "mood": "tired",
+      "time_of_day": "night"
+    }
+  ]
+}
+"""
