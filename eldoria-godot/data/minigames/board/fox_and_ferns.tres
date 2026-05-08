@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "fox_and_ferns",
+  "name": "Fox & Ferns",
+  "play_at": "tavern",
+  "rules": "Roll dice, move game piece through forest. Land on a fox, pay 2 coppers. Land on a fern, win 2 coppers. First to the end wins.",
+  "reward_win": "copper:5",
+  "flavor": "Little painted foxes dance among the ferns"
+}
+"""
