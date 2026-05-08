@@ -1,3 +1,5 @@
+- QA 2026-05-08T14:23Z: Build=success (pages-build-and-deployment 14:19Z), Pages=built. §15: Hero.glb 29MiB > soft cap — already logged as tech debt in prior runs. No new action needed this run. ✅ All systems green.
+
 ## 2026-05-08 Auto: run 25 — Visual polish (god-ray + hearth)
 Polish category: Visual
 THEME §12 cited: MOTION & LIFE — light through leaves moves; a hearth that emits
