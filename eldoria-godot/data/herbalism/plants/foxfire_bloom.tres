@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "plant"
+metadata/_data = """
+{
+  "id": "foxfire_bloom",
+  "name": "Foxfire Bloom",
+  "habitat": "forest",
+  "season": "autumn",
+  "alchemy_use": "Glowing effects, luminescent potions",
+  "appearance": "Delicate white petals, soft golden glow"
+}
+"""
