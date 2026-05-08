@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mythic_feather",
+  "name": "Mythic Quill",
+  "category": "relic",
+  "subtype": "plume",
+  "tier": "legendary",
+  "level_req": 30,
+  "stats": {
+    "atk": 5,
+    "spd": 3
+  },
+  "flavor": "A feather from the wing of a celestial bird, said to hold the power of the wind.",
+  "realm": "skyreave"
+}
+"""

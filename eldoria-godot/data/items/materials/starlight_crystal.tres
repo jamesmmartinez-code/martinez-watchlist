@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_crystal",
+  "name": "Starlight Shard",
+  "category": "material",
+  "subtype": "ore",
+  "tier": "uncommon",
+  "level_req": 10,
+  "stats": {},
+  "flavor": "A glittering crystal found in the heart of Eldoria's mystical mountains.",
+  "realm": "eldoria"
+}
+"""
