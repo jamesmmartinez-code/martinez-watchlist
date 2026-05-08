@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "backpack"
+metadata/_data = """
+{
+  "id": "mocha_mountain_pack",
+  "name": "Mocha Mountain Pack",
+  "extra_slots": 5,
+  "appearance": "weathered leather",
+  "unlock_condition": "craft",
+  "flavor": "a sturdy pack for the modern adventurer"
+}
+"""
