@@ -4,11 +4,11 @@ metadata/_kind = "wine"
 metadata/_data = """
 {
   "id": "midnight_moonpear",
-  "name": "Midnight Harvest",
+  "name": "Moonlit Serenade",
   "grape_or_fruit": "moonpear",
   "region": "whisperwood",
-  "year": "Under the silvery light of a midnight moon, this vintage was carefully hand-picked to capture the essence of Whisperwood's mystical energies.",
+  "year": "Harvested under the light of a full moon in 2019",
   "effect": "buff:warmth:600s",
-  "flavor": "Notes of honeyed lavender and starlight dance on the palate, leaving a soothing warmth that lingers like a gentle summer breeze."
+  "flavor": "Sweet notes of honey and rose petal, with a hint of citrus"
 }
 """
