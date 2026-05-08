@@ -92,6 +92,7 @@ const WINDMILL_GLB_PATH: String = "res://assets/models/props/windmill.glb"
 
 # ─── PBR material cache ──────────────────────────────────────────────────────
 var _mat_cache: Dictionary = {}
+var _sub_cache: Dictionary = {}  # Substance .tres material cache
 
 func _pbr_mat(albedo_path: String, normal_path: String = "", rough_path: String = "",
 		uv_scale: Vector3 = Vector3(1, 1, 1), tint: Color = Color(1, 1, 1)) -> StandardMaterial3D:
@@ -117,32 +118,61 @@ func _pbr_mat(albedo_path: String, normal_path: String = "", rough_path: String 
 	_mat_cache[key] = m
 	return m
 
+# Loads a Substance .tres StandardMaterial3D, duplicates it, and applies the
+# requested UV scale. Falls back to null so callers can chain _pbr_mat().
+func _sub_mat(tres_path: String, uv: float = 2.0) -> StandardMaterial3D:
+	var key := tres_path + "|" + str(uv)
+	if _sub_cache.has(key):
+		return _sub_cache[key]
+	if not ResourceLoader.exists(tres_path):
+		push_warning("[WorldBuilder] _sub_mat: missing " + tres_path)
+		return null
+	var base = ResourceLoader.load(tres_path, "StandardMaterial3D")
+	if not (base is StandardMaterial3D):
+		push_warning("[WorldBuilder] _sub_mat: not StandardMaterial3D at " + tres_path)
+		return null
+	var m: StandardMaterial3D = base.duplicate()
+	m.uv1_scale = Vector3(uv, uv, 1.0)
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	_sub_cache[key] = m
+	return m
+
 # Convenience accessors
 func MAT_GRASS(uv := 30.0) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/terrain/plateau_grass/plateau_grass.tres", uv)
+	if m: return m
 	return _pbr_mat("res://assets/textures/grass/grass_diff.jpg",
 		"res://assets/textures/grass/grass_norm.jpg",
 		"res://assets/textures/grass/grass_rough.jpg",
 		Vector3(uv, uv, 1))
 
 func MAT_WOOD(uv := 1.5) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/arch/wood_beam/wood_beam.tres", uv)
+	if m: return m
 	return _pbr_mat("res://assets/textures/wood/wood_diff.jpg",
 		"res://assets/textures/wood/wood_norm.jpg",
 		"res://assets/textures/wood/wood_rough.jpg",
 		Vector3(uv, uv, 1), Color(0.85, 0.66, 0.45))
 
 func MAT_DARK_WOOD(uv := 1.5) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/arch/wood_flooring/wood_flooring.tres", uv)
+	if m: return m
 	return _pbr_mat("res://assets/textures/wood/wood_diff.jpg",
 		"res://assets/textures/wood/wood_norm.jpg",
 		"res://assets/textures/wood/wood_rough.jpg",
 		Vector3(uv, uv, 1), Color(0.35, 0.22, 0.13))
 
 func MAT_ROOF(uv := 2.5) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/arch/roof_moss_tiles/roof_moss_tiles.tres", uv)
+	if m: return m
 	return _pbr_mat("res://assets/textures/thatch/shingle_diff.jpg",
 		"res://assets/textures/thatch/shingle_norm.jpg",
 		"",
 		Vector3(uv, uv, 1), Color(0.7, 0.42, 0.32))
 
 func MAT_STONE(uv := 2.0) -> StandardMaterial3D:
+	var m = _sub_mat("res://assets/textures/arch/curtain_wall_stone/curtain_wall_stone.tres", uv)
+	if m: return m
 	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
 		"res://assets/textures/stone/stone_norm.jpg",
 		"res://assets/textures/stone/stone_rough.jpg",
