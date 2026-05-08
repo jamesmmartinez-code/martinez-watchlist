@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "carnival_creature",
+  "name": "Festive Beast",
+  "creature_or_motif": "Butterfly",
+  "festival_id": "mardi_gras",
+  "colors": [
+    "#FF69B4",
+    "#8B0A1A"
+  ],
+  "flavor": "Vibrant colors dance across this mask like a whimsical butterfly"
+}
+"""
