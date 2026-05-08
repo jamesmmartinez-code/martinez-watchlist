@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "copper_cascade",
+  "name": "Coin Flip Frenzy",
+  "play_at": "tavern",
+  "rules": "Players flip coins, winner takes pot. 5 copper entry fee.",
+  "reward_win": "copper:10",
+  "flavor": "Golden coins clinking, laughter and cheers"
+}
+"""
