@@ -7,21 +7,21 @@ metadata/_data = """
   "name": "Mossback Tortoise",
   "family": "beast",
   "tier": "elite",
-  "level": 25,
-  "hp": 350,
+  "level": 20,
+  "hp": 250,
   "armor": 10,
-  "dmg_min": 20,
-  "dmg_max": 35,
+  "dmg_min": 15,
+  "dmg_max": 30,
   "attack_speed": 0.8,
   "move_speed": 2.5,
   "behavior_tags": [
-    "tanky"
+    "defensive"
   ],
   "tells": [
     {
-      "name": "shell_bash",
+      "name": "shell_shield",
       "wind_up_ms": 1000,
-      "vfx_id": "dust"
+      "vfx_id": "shield"
     }
   ],
   "weaknesses": {
@@ -30,21 +30,17 @@ metadata/_data = """
   "resistances": {
     "blunt": 0.7
   },
-  "xp_value": 120,
+  "xp_value": 100,
   "loot_table": [
+    {
+      "item_id": "shell_fragment",
+      "weight": 0.6
+    },
     {
       "item_id": "moss",
       "weight": 0.4
-    },
-    {
-      "item_id": "shell_shard",
-      "weight": 0.3
-    },
-    {
-      "item_id": "rare_herb",
-      "weight": 0.3
     }
   ],
-  "flavor": "A slow-moving tortoise with a shell covered in soft, green moss and a gentle gaze."
+  "flavor": "A gentle, slow-moving tortoise with a shell covered in soft, green moss and a wise, ancient gaze."
 }
 """
