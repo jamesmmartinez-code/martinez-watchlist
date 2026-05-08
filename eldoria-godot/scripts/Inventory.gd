@@ -260,7 +260,18 @@ func attempt_reforge(world: Object) -> Dictionary:
 	}
 
 # -- Enchant/Sell/Buy -- run 22 (Builder) --
-const ENCHANT_SHARD_COST: int = 8
+# REFINE: balance — enchant cost 8 → 6 shards. At 8 shards, a kid who just hit the
+# Crystal Caves for the first time (typical yield: 3-5 shards from a chest_rare run)
+# needs two full runs before their first enchant fires. That's a motivation drain:
+# the forge is visible but unreachable for the first two sessions. 6 shards is
+# reachable in a single focused crystal run (~5 cave clears worth of chest drops)
+# and one Mara purchase if they're short, keeping the enchant beat in the FIRST
+# session Owen or Alden visits Edda. Total shard sink for full forge + enchant:
+# 33 (max reforge) + 6 = 39 shards — still meaningful, still gated, just not
+# invisible. Compounds on the xp_for_next_level eased curve (run prior polish)
+# that already sped the first four level-ups; first enchant should land in the same
+# momentum window.
+const ENCHANT_SHARD_COST: int = 6
 
 func weapon_enchant_prefix(weapon_id: String = "") -> String:
 	var wid: String = weapon_id if weapon_id != "" else String(equipped.get("weapon", ""))
