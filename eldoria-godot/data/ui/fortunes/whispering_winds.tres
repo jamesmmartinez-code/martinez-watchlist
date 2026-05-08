@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fortune"
+metadata/_data = """
+{
+  "id": "whispering_winds",
+  "fortunes": [
+    {
+      "text": "May sunshine brighten your adventures",
+      "mood": "hopeful"
+    }
+  ]
+}
+"""
