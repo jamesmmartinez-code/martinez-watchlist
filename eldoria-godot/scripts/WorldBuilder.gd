@@ -2001,7 +2001,6 @@ func _make_npc(data: Dictionary) -> void:
 		npc.ambient_bark_lines = Array(bark_lines_raw, TYPE_STRING, "", null)
 	npc.ambient_bark_interval_min = float(data.get("bark_min", 22.0))
 	npc.ambient_bark_interval_max = float(data.get("bark_max", 38.0))
-	add_child(npc)
 
 	var col := CollisionShape3D.new()
 	var caps := CapsuleShape3D.new()
@@ -2047,6 +2046,8 @@ func _make_npc(data: Dictionary) -> void:
 
 	var area := Area3D.new()
 	area.name = "InteractArea"
+	area.monitoring = true           # must be true for body_entered to fire
+	area.collision_mask = 2          # layer 2 = player (collision_layer set in Player._ready)
 	npc.add_child(area)
 	var acol := CollisionShape3D.new()
 	var ashape := SphereShape3D.new()
@@ -2056,6 +2057,13 @@ func _make_npc(data: Dictionary) -> void:
 	# REFINE: character — InteractArea y 1.0 → 1.1. Centers the sphere around the villager's chest rather than waist, so a player approaching from a slope still trips the area on the chest line (THEME §13 ground-contact spirit — geometry follows where bodies actually meet).
 	acol.position.y = 1.1
 	area.add_child(acol)
+
+	# PHYSICS FIX 2026-05-08: add_child(npc) moved here from early in _make_npc().
+	# In Godot 4, @onready and _ready() fire when a node enters the scene tree
+	# (i.e. at add_child time). The original code called add_child(npc) before
+	# $Label3D and $InteractArea were added, so both @onready vars resolved to
+	# null — NPC nameplates were invisible and E-key dialogue never connected.
+	add_child(npc)
 
 # ============================================================================
 # Grass tufts — plane cards (cull_mode disabled, lit)
