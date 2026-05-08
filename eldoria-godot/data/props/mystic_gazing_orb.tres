@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "mystic_gazing_orb",
+  "name": "Gazing Orb",
+  "kind": "telescope",
+  "region": "whisperwood",
+  "interaction": "look through to see hidden forest creatures",
+  "reward": "reveal_lore_fragment:whisperwood_creatures",
+  "flavor": "A delicate, crystal orb mounted on a twisted wooden tripod, reflecting dappled forest light and promising secrets to those who dare to gaze within."
+}
+"""
