@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "emote"
+metadata/_data = """
+{
+  "id": "giddy_sway",
+  "name": "Giddy Sway",
+  "trigger_text": "/sway",
+  "duration_sec": 3,
+  "animation": "sways hips with a big grin",
+  "sound": "giggle",
+  "unlock_condition": "free_at_start",
+  "flavor": "playful and carefree"
+}
+"""
