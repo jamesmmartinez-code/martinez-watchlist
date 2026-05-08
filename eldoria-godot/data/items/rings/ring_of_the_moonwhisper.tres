@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "ring_of_the_moonwhisper",
+  "name": "Lunar Whisper",
+  "tier": "legendary",
+  "stat_mod": {
+    "hp": 0,
+    "atk": 0,
+    "def": 0,
+    "spd": 15,
+    "luck": 10
+  },
+  "effect": "Increases chance to dodge by 20% at night",
+  "flavor": "Forged under the light of a full moon"
+}
+"""
