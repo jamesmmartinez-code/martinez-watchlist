@@ -1,0 +1,56 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "briarwood_general_store",
+  "vendor_name": "Professor Pecan's Provisions",
+  "region": "briarwood",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 50,
+      "quantity": 10,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "NEW",
+      "price": 100,
+      "quantity": 5,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 20,
+      "quantity": 20,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "NEW",
+      "price": 80,
+      "quantity": 8,
+      "restock_hours": 18
+    },
+    {
+      "item_id": "NEW",
+      "price": 150,
+      "quantity": 3,
+      "restock_hours": 48
+    },
+    {
+      "item_id": "NEW",
+      "price": 30,
+      "quantity": 15,
+      "restock_hours": 8
+    },
+    {
+      "item_id": "NEW",
+      "price": 120,
+      "quantity": 4,
+      "restock_hours": 36
+    }
+  ],
+  "flavor": "A cozy little shop tucked away near the heart of Briarwood, filled with all manner of curious goods and treats."
+}
+"""
