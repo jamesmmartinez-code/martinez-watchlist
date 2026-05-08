@@ -26,15 +26,17 @@ class_name Enemy
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
 # (the model carries its own hand-painted textures — tinting muddies them).
 const KIND_MODELS := {
-	"goblin":             preload("res://assets/models/enemies/wolf.glb"),  # fallback
+	# 2026-05-08 char-specialist: removed 7 preload entries for non-existent GLBs
+	# (armor-of-the-void-m, barbarian-m, lord-of-darkness-m, untamed-m, castle-guard-m,
+	# imperator-m, roman-soldier-m). Preloading missing files = parse-error at load time.
+	# Corrected: goblin now uses goblin.glb (was wolf.glb — typo; goblin.glb exists).
+	# Unknown kinds fall back to enemy_model (@export, defaults to CesiumMan.glb).
+	"goblin":             preload("res://assets/models/enemies/goblin.glb"),
+	"goblin_scout":       preload("res://assets/models/enemies/goblin_scout.glb"),
 	"wolf":               preload("res://assets/models/enemies/wolf.glb"),
-	"armor_void":         preload("res://assets/models/enemies/armor-of-the-void-m.glb"),
-	"barbarian":          preload("res://assets/models/enemies/barbarian-m.glb"),
-	"lord_darkness":      preload("res://assets/models/enemies/lord-of-darkness-m.glb"),
-	"untamed":            preload("res://assets/models/enemies/untamed-m.glb"),
-	"castle_guard":       preload("res://assets/models/enemies/castle-guard-m.glb"),
-	"imperator":          preload("res://assets/models/enemies/imperator-m.glb"),
-	"roman_soldier":      preload("res://assets/models/enemies/roman-soldier-m.glb"),
+	"bandit":             preload("res://assets/models/enemies/bandit.glb"),
+	"skeleton":           preload("res://assets/models/enemies/skeleton.glb"),
+	"crystal_elemental":  preload("res://assets/models/enemies/crystal_elemental.glb"),
 }
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
