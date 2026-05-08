@@ -6,8 +6,8 @@ metadata/_data = """
   "id": "lucky_stars",
   "fortunes": [
     {
-      "text": "Dreams are the keys to unlock magic",
-      "mood": "hopeful"
+      "text": "Your smile can light up the darkest caves",
+      "mood": "playful"
     }
   ]
 }
