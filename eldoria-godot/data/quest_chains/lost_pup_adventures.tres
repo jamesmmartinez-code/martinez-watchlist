@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "lost_pup_adventures",
+  "title": "Puppy Rescue",
+  "region": "whisperwood",
+  "theme": "Helping Lost Pups",
+  "quests": [
+    {
+      "id": "find_puppy",
+      "title": "Lost Puppy",
+      "hook": "Find a lost puppy in Whisperwood",
+      "stages_count": 3
+    },
+    {
+      "id": "puppy_food",
+      "title": "Puppy Food",
+      "hook": "Gather food for the lost puppy",
+      "stages_count": 2
+    },
+    {
+      "id": "puppy_home",
+      "title": "Puppy's Home",
+      "hook": "Find the puppy's home",
+      "stages_count": 2
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "puppy_friend"
+  },
+  "flavor": "watercolor illustrations of puppies in Whisperwood"
+}
+"""
