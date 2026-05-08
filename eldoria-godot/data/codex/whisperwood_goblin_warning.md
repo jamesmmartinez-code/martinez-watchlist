@@ -1,9 +1,9 @@
 ---
 id: whisperwood_goblin_warning
-title: "Goblin Whispers in the Dark"
-category: creature
-unlock_condition: reach_zone:Whisperwood
-cross_refs: ["whisperwood_history", "goblin_linguistics"]
+title: "Goblin Whispers in the Woods"
+category: legend
+unlock_condition: reach_zone:whisperwood
+cross_refs: ["wild_pantheon","briarwood_faction_politics"]
 ---
 
-Deep within Whisperwood, the soft rustle of leaves and snapping of twigs signal the presence of the mischievous goblin folk. Their whispers weave a subtle magic, warning travelers of hidden dangers and forgotten paths. Listen closely, and the goblins' hushed voices may guide you through the treacherous shadows.
+As the moon dips into the Whisperwood, the trees whisper secrets to the wind. It's said that the mischievous goblins of old would weave warnings into the rustling leaves, cautioning travelers of hidden dangers. Listen closely, and you might just hear the whispers of the forest, guiding you through the shadows.
