@@ -1,0 +1,187 @@
+{
+  "npc_slug": "lyra_larkspur",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, adventurer! I'm Lyra Larkspur, the village's resident botanist. What brings you to our little corner of the world?",
+      "options": [
+        {
+          "player_text": "I'm here to explore!",
+          "goto": "explore",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a quest.",
+          "goto": "quest",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explore",
+      "npc_text": "Wonderful! We have so many fascinating plants and flowers here. Would you like to see my garden?",
+      "options": [
+        {
+          "player_text": "Yes, please!",
+          "goto": "garden",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "No, thanks.",
+          "goto": "END",
+          "tags": [
+            "brusque"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quest",
+      "npc_text": "A quest, you say? That sounds exciting! What's the nature of your quest?",
+      "options": [
+        {
+          "player_text": "I'm searching for rare herbs.",
+          "goto": "herbs",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a mission to defeat a monster.",
+          "goto": "monster",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "garden",
+      "npc_text": "Marvelous! My garden is just through that gate. Be careful, though - my mischievous pixie friends like to play tricks on visitors.",
+      "options": [
+        {
+          "player_text": "I'll be careful!",
+          "goto": "pixies",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "Pixies? That sounds like trouble.",
+          "goto": "END",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herbs",
+      "npc_text": "Ah, rare herbs, you say? I might be able to help you with that. I have a few specimens that might interest you.",
+      "options": [
+        {
+          "player_text": "That would be great, thank you!",
+          "goto": "specimens",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "No, I'm looking for something more... exotic.",
+          "goto": "END",
+          "tags": [
+            "adventurous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "monster",
+      "npc_text": "Oh my, a monster, you say? That does sound serious. I hope you're prepared for the challenge ahead.",
+      "options": [
+        {
+          "player_text": "Don't worry, I've got this!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Actually, I could use some advice.",
+          "goto": "advice",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pixies",
+      "npc_text": "Hehe, my pixie friends can be a handful, but they're harmless. Would you like to meet them?",
+      "options": [
+        {
+          "player_text": "Yes, that would be fun!",
+          "goto": "END",
+          "tags": [
+            "playful"
+          ]
+        },
+        {
+          "player_text": "No, I'm not sure.",
+          "goto": "END",
+          "tags": [
+            "cautious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "specimens",
+      "npc_text": "Excellent! Let me show you some of my rarest specimens. I think you'll find them quite interesting.",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra!",
+          "goto": "END",
+          "tags": [
+            "grateful"
+          ]
+        },
+        {
+          "player_text": "These are nice, but I was thinking of something else.",
+          "goto": "END",
+          "tags": [
+            "disappointed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advice",
+      "npc_text": "Well, I'm no expert on monster-slaying, but I do know that our local creatures can be quite cunning. You might want to try using some of our local plants to your advantage.",
+      "options": [
+        {
+          "player_text": "That's a great idea, thank you!",
+          "goto": "END",
+          "tags": [
+            "appreciative"
+          ]
+        },
+        {
+          "player_text": "I'll keep that in mind.",
+          "goto": "END",
+          "tags": [
+            "thoughtful"
+          ]
+        }
+      ]
+    }
+  ]
+}
