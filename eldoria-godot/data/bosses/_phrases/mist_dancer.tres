@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mist_dancer",
+  "boss_id": "water_spirit",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "You dance around me!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

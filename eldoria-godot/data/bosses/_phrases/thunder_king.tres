@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "thunder_king",
+  "boss_id": "storm_giant",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Thunder booms, heroes fall!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
