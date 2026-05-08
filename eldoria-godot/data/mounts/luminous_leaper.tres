@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "luminous_leaper",
+  "name": "Moonlit Hopper",
+  "species": "giant_owl",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "complete_quest:whisperwood_owl_rescue",
+  "flavor": "A gentle giant with feathers shimmering like moonbeams, the Moonlit Hopper loves to take midnight flights and listen to the forest's secrets."
+}
+"""
