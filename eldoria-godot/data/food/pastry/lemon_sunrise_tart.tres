@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "lemon_sunrise_tart",
+  "name": "Lemon Sunrise",
+  "kind": "tart",
+  "filling": "lemon curd",
+  "heal": 25,
+  "effect": "buff:cheerful:300s",
+  "flavor": "Bright citrus notes dance on the palate, as warm sunshine in a buttery crust"
+}
+"""
