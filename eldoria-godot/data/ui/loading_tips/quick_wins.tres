@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "quick_wins",
+  "tips": [
+    {
+      "text": "Use your dash to escape danger!",
+      "category": "combat"
+    },
+    {
+      "text": "Explore nearby caves for hidden loot!",
+      "category": "exploration"
+    },
+    {
+      "text": "Craft potions to heal friends!",
+      "category": "crafting"
+    },
+    {
+      "text": "Join a guild to make friends!",
+      "category": "social"
+    },
+    {
+      "text": "Use mounts to travel fast!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Discover secret areas with your map!",
+      "category": "secret"
+    },
+    {
+      "text": "Defeat bosses to earn rewards!",
+      "category": "combat"
+    },
+    {
+      "text": "Trade items with friends to share gear!",
+      "category": "social"
+    }
+  ]
+}
+"""
