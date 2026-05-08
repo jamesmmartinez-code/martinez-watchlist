@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "ember_storm",
+  "name": "Molten Fury",
+  "suit": "fire",
+  "power": 7,
+  "effect": "Deal 2 damage to all enemies",
+  "art_motif": "flames engulfing a mountain",
+  "flavor": "Inferno's wrath"
+}
+"""
