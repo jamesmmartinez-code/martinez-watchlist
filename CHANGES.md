@@ -1,3 +1,4 @@
+- QA 2026-05-08T14:45Z: Build=in_progress (pages-build-and-deployment), Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run.
 - QA 2026-05-08T14:42Z: Build=success, Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn (player model), cannot delete; already logged as tech debt. No new action needed this run. All systems green.
 - QA 2026-05-08T14:23Z: Build=success (pages-build-and-deployment 14:19Z), Pages=built. §15: Hero.glb 29MiB > soft cap — already logged as tech debt in prior runs. No new action needed this run. ✅ All systems green.
 
