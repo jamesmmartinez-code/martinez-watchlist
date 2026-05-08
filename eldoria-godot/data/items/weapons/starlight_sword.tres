@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_sword",
+  "name": "Stellaluna Blade",
+  "category": "weapon",
+  "subtype": "sword",
+  "tier": "rare",
+  "level_req": 25,
+  "stats": {
+    "atk": 10,
+    "def": 5,
+    "hp": 0,
+    "spd": 2
+  },
+  "flavor": "Forged from the essence of stardust, this sword shines with a gentle, lunar light.",
+  "realm": "tidesong"
+}
+"""

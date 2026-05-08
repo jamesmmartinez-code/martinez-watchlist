@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mythril_acorn",
+  "name": "Ancient Oak Acorn",
+  "category": "relic",
+  "subtype": "nature",
+  "tier": "epic",
+  "level_req": 40,
+  "stats": {
+    "atk": 0,
+    "def": 10,
+    "hp": 20,
+    "spd": 0
+  },
+  "flavor": "A rare, glowing acorn said to hold the secrets of the ancient forest.",
+  "realm": "shadewood"
+}
+"""

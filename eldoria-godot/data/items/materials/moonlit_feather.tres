@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonlit_feather",
+  "name": "Luminous Quill",
+  "category": "material",
+  "subtype": "crafting",
+  "tier": "uncommon",
+  "level_req": 1,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A delicate feather that shines with a soft, ethereal glow.",
+  "realm": "eldoria"
+}
+"""
