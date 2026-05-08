@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tent"
+metadata/_data = """
+{
+  "id": "misty_dawn",
+  "name": "Morning Dew",
+  "capacity": 2,
+  "weather_resistance": "all",
+  "palette": [
+    "#87CEEB",
+    "#32CD32"
+  ],
+  "flavor": "Softly glowing, like a sunrise"
+}
+"""
