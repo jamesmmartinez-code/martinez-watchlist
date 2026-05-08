@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "instrument"
+metadata/_data = """
+{
+  "id": "wolf_whistle",
+  "name": "Wolf's Call",
+  "kind": "whistle",
+  "unlock_condition": "reach village",
+  "play_effect": "attract_pet:1",
+  "flavor": "a mournful, wavering melody"
+}
+"""
