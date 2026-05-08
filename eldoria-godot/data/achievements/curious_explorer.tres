@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "curious_explorer",
+  "title": "Map Master",
+  "description": "Reached 5 new zones!",
+  "trigger": "reach_zone:zone_1|reach_zone:zone_2|reach_zone:zone_3|reach_zone:zone_4|reach_zone:zone_5",
+  "reward_title": "Cartographer's Badge",
+  "reward_xp": 200,
+  "reward_gold": 100,
+  "flavor": "Keep exploring!"
+}
+"""

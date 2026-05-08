@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "kind_soul",
+  "title": "Helper Hero",
+  "description": "Helped 10 NPCs in need!",
+  "trigger": "talk_to_n_npcs:10",
+  "reward_title": "Heart of Gold",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "You're making a difference!"
+}
+"""
