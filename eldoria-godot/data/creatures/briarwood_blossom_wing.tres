@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_blossom_wing",
+  "name": "Petalwing",
+  "family": "fey",
+  "tier": "trash",
+  "level": 7,
+  "hp": 50,
+  "armor": 2,
+  "dmg_min": 4,
+  "dmg_max": 8,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "lure_victim"
+  ],
+  "tells": [
+    {
+      "name": "glow",
+      "wind_up_ms": 300,
+      "vfx_id": "soft_light"
+    }
+  ],
+  "weaknesses": {
+    "ice": 1.2
+  },
+  "resistances": {
+    "nature": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "petal",
+      "weight": 0.6
+    },
+    {
+      "item_id": "honey",
+      "weight": 0.4
+    }
+  ],
+  "flavor": "Iridescent wings fluttering, a delicate creature flits about the forest, leaving trails of glittering petals in its wake."
+}
+"""
