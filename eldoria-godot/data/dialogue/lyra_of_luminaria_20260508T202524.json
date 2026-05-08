@@ -1,0 +1,129 @@
+{
+  "npc_slug": "lyra_of_luminaria",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome to Luminaria! I'm Lyra. What brings you to our enchanted realm?",
+      "options": [
+        {
+          "player_text": "I'm here to explore!",
+          "goto": "explore",
+          "tags": [
+            "curious",
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'm looking for friends.",
+          "goto": "friends",
+          "tags": [
+            "polite",
+            "friendly"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explore",
+      "npc_text": "Marvelous! Luminaria is full of wonders. Would you like to discover the secrets of the ancient forest or the mystical mountains?",
+      "options": [
+        {
+          "player_text": "I'll choose the forest!",
+          "goto": "forest",
+          "tags": [
+            "curious",
+            "adventurous"
+          ]
+        },
+        {
+          "player_text": "The mountains sound intriguing.",
+          "goto": "mountains",
+          "tags": [
+            "brave",
+            "daring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "friends",
+      "npc_text": "You've come to the right place! We have a wonderful community here. Would you like to meet our village elder or join a group of young adventurers?",
+      "options": [
+        {
+          "player_text": "I'd love to meet the elder.",
+          "goto": "elder",
+          "tags": [
+            "polite",
+            "respectful"
+          ]
+        },
+        {
+          "player_text": "The young adventurers sound like fun!",
+          "goto": "adventurers",
+          "tags": [
+            "friendly",
+            "outgoing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forest",
+      "npc_text": "The ancient forest is home to the wise trees and the mischievous fey. Be careful, and may the light of Luminaria guide you!",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra! I'll be careful.",
+          "goto": "END",
+          "tags": [
+            "grateful",
+            "cautious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mountains",
+      "npc_text": "The mystical mountains hold many secrets and dangers. Remember, courage is not the absence of fear, but the judgment that something else is more important.",
+      "options": [
+        {
+          "player_text": "I'll remember that, Lyra.",
+          "goto": "END",
+          "tags": [
+            "brave",
+            "determined"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elder",
+      "npc_text": "Our village elder, Edda, is a wise and kind soul. I'm sure you'll learn much from her. Go, and may the wisdom of the ages be with you!",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra. I'll go meet Edda.",
+          "goto": "END",
+          "tags": [
+            "polite",
+            "respectful"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adventurers",
+      "npc_text": "The young adventurers are a lively bunch. I'm sure you'll have a wonderful time with them. Just remember to always look out for one another!",
+      "options": [
+        {
+          "player_text": "I will, Lyra. Thanks for the advice!",
+          "goto": "END",
+          "tags": [
+            "friendly",
+            "outgoing"
+          ]
+        }
+      ]
+    }
+  ]
+}
