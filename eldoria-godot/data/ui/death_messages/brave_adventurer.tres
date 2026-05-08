@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "brave_adventurer",
+  "messages": [
+    {
+      "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
+      "text": "Don't worry, brave adventurer, you'll try again soon!",
+      "mood": "encouraging"
+    }
+  ]
+}
+"""
