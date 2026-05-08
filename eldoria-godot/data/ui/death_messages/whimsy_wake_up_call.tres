@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "whimsy_wake_up_call",
+  "messages": [
+    {
+      "trigger": "fall_damage",
+      "text": "Whoops! Time to wake up at the campfire!",
+      "mood": "playful"
+    }
+  ]
+}
+"""

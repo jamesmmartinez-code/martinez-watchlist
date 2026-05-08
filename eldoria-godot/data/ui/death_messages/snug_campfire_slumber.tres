@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "snug_campfire_slumber",
+  "messages": [
+    {
+      "trigger": "kill_zone",
+      "text": "You're waking up at the campfire. Ready to try again?",
+      "mood": "playful"
+    }
+  ]
+}
+"""

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "cozy_wayshrine_nap",
+  "messages": [
+    {
+      "trigger": "enemy_defeat",
+      "text": "You're resting at the wayshrine. Sweet dreams!",
+      "mood": "gentle"
+    }
+  ]
+}
+"""
