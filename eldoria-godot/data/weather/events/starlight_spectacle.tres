@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_event"
+metadata/_data = """
+{
+  "id": "starlight_spectacle",
+  "name": "Twinkling Starlight",
+  "kind": "fairy_lights",
+  "duration_min": 15,
+  "region": "whisperwood",
+  "effects": [
+    "spawn:firefly_x",
+    "buff:luck:300s"
+  ],
+  "flavor": "Glittering lights dance across the sky"
+}
+"""
