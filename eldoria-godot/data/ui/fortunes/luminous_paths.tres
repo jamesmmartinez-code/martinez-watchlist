@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fortune"
+metadata/_data = """
+{
+  "id": "luminous_paths",
+  "fortunes": [
+    {
+      "text": "Your path is lit with kindness and courage",
+      "mood": "wise"
+    }
+  ]
+}
+"""

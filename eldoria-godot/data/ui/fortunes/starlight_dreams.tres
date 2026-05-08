@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "fortune"
+metadata/_data = """
+{
+  "id": "starlight_dreams",
+  "fortunes": [
+    {
+      "text": "Dream big and chase your heart's desires",
+      "mood": "playful"
+    }
+  ]
+}
+"""
