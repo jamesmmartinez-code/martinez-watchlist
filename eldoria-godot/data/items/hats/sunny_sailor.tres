@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "hat"
+metadata/_data = """
+{
+  "id": "sunny_sailor",
+  "name": "Sailor's Delight",
+  "silhouette": "rounded top hat",
+  "material": "straw",
+  "unlock_condition": "festival:spring_flair",
+  "flavor": "vibrant colors, adorned with tiny bells"
+}
+"""
