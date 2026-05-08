@@ -1039,6 +1039,24 @@ func _setup_dialogue_actions() -> void:
 		reforge.visible = false
 		reforge.pressed.connect(_on_reforge_pressed)
 		actions.add_child(reforge)
+		var eb2 := Button.new()
+		eb2.name = "EnchantBtn"
+		eb2.text = "Enchant Weapon"
+		eb2.visible = false
+		eb2.pressed.connect(_on_enchant_pressed)
+		actions.add_child(eb2)
+		var sw2 := Button.new()
+		sw2.name = "SellWeaponBtn"
+		sw2.text = "Sell Weapon"
+		sw2.visible = false
+		sw2.pressed.connect(_on_sell_weapon_pressed)
+		actions.add_child(sw2)
+		var sb2 := Button.new()
+		sb2.name = "ShopBtn"
+		sb2.text = "Browse Shop"
+		sb2.visible = false
+		sb2.pressed.connect(_on_shop_btn_pressed)
+		actions.add_child(sb2)
 		vbox.add_child(actions)
 		var close_btn := vbox.get_node_or_null("CloseBtn")
 		if close_btn:
@@ -1155,6 +1173,15 @@ func show_dialogue(speaker: String, text: String, role: String = "") -> void:
 	var reforge_btn = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/ReforgeBtn")
 	if reforge_btn:
 		_refresh_reforge_button(reforge_btn, role, player)
+	var enc_btn = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/EnchantBtn")
+	if enc_btn:
+		_refresh_enchant_button(enc_btn, role, player)
+	var sell_btn = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/SellWeaponBtn")
+	if sell_btn:
+		_refresh_sell_weapon_button(sell_btn, role, player)
+	var shop_btn_n = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/ShopBtn")
+	if shop_btn_n:
+		shop_btn_n.visible = (role == "shop")
 	dialogue_panel.visible = true
 	# COMPOUND (run 20 — Builder): mark this NPC seen AFTER the panel is
 	# populated. show_dialogue is called from NPC.gd::_on_interact AFTER
@@ -1281,6 +1308,157 @@ func _on_reforge_pressed() -> void:
 				_show_toast("🔨 Need %d Crystal Shards (you have %d)." % [int(result.get("need", 0)), int(result.get("have", 0))])
 			_:
 				_show_toast("🔨 The anvil rings hollow.")
+
+# -- Enchant+Sell+Shop (run 22 Builder) --
+
+func _refresh_enchant_button(btn: Button, role: String, player) -> void:
+	btn.visible = (role == "smithy"); btn.disabled = true
+	if role != "smithy": return
+	if not (player and player.inventory): btn.text = "Enchant Weapon"; return
+	var inv = player.inventory
+	var wid: String = inv.equipped_weapon_id()
+	if wid == "": btn.text = "Enchant Weapon - equip one first"; return
+	var ex: String = inv.weapon_enchant_prefix(wid)
+	if ex != "": btn.text = "Enchanted: %s" % ex; return
+	var have: int = inv.count_item("crystal_shard")
+	var cost: int = inv.ENCHANT_SHARD_COST
+	var wname: String = String(Items.get_item(wid).get("name", wid))
+	if have < cost: btn.text = "Enchant %s (need %d shards, have %d)" % [wname, cost, have]; return
+	btn.text = "Enchant %s (%d shards)" % [wname, cost]
+	btn.disabled = false
+
+func _on_enchant_pressed() -> void:
+	var player := get_node_or_null("Player")
+	if not (player and player.inventory): return
+	var result: Dictionary = player.inventory.attempt_enchant(self)
+	if result.get("ok", false):
+		var prefix: String = String(result.get("prefix", ""))
+		var dmg: int = int(result.get("new_damage", 0))
+		_show_toast("Edda whispers the rune -- \"%s\" blazes in the steel (%d dmg)" % [prefix, dmg])
+		play_sfx("sword_hit")
+		var eb = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/EnchantBtn") if dialogue_panel else null
+		if eb: _refresh_enchant_button(eb, _current_npc_role, player)
+		player.stats_changed.emit(); _check_achievements()
+	else:
+		var reason: String = String(result.get("reason", ""))
+		match reason:
+			"no_weapon": _show_toast("Bring a weapon to the forge first.")
+			"already_enchanted": _show_toast("One enchantment per blade.")
+			"not_enough_shards": _show_toast("Need %d Crystal Shards (have %d)." % [int(result.get("need",0)), int(result.get("have",0))])
+			_: _show_toast("The rune fades -- try again.")
+
+func _refresh_sell_weapon_button(btn: Button, role: String, player) -> void:
+	btn.visible = (role == "smithy"); btn.disabled = true
+	if role != "smithy": return
+	if not (player and player.inventory): btn.text = "Sell Weapon"; return
+	var inv = player.inventory
+	var wid: String = inv.equipped_weapon_id()
+	if wid == "": btn.text = "Sell Weapon - none equipped"; return
+	var item: Dictionary = Items.get_item(wid)
+	var sp: int = max(1, int(int(item.get("value", 0)) * inv.SELL_RATE))
+	btn.text = "Sell %s (+%dg)" % [String(item.get("name", wid)), sp]
+	btn.disabled = false
+
+func _on_sell_weapon_pressed() -> void:
+	var player := get_node_or_null("Player")
+	if not (player and player.inventory): return
+	var result: Dictionary = player.inventory.attempt_sell_weapon(self)
+	if result.get("ok", false):
+		player.gold += int(result.get("gold", 0))
+		_refresh_hud()
+		_show_toast("Edda takes the blade -- %s sold for %dg" % [String(result.get("item_name", "weapon")), int(result.get("gold", 0))])
+		play_sfx("coin")
+		var sb = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/SellWeaponBtn") if dialogue_panel else null
+		if sb: _refresh_sell_weapon_button(sb, _current_npc_role, player)
+	else:
+		match String(result.get("reason", "")):
+			"no_weapon": _show_toast("Nothing to sell -- equip a weapon first.")
+			_: _show_toast("Edda shakes her head.")
+
+# -- Mara Shop (run 22) --
+const MARA_STOCK: Array = [
+	{"id": "hp_potion_s",   "price": 18, "label": "Small HP Potion"},
+	{"id": "hp_potion_m",   "price": 45, "label": "Medium HP Potion"},
+	{"id": "mp_potion_s",   "price": 20, "label": "Small MP Potion"},
+	{"id": "antidote",      "price": 30, "label": "Antidote"},
+	{"id": "crystal_shard", "price": 55, "label": "Crystal Shard"},
+]
+var _shop_panel: Panel = null
+
+func _on_shop_btn_pressed() -> void:
+	if _shop_panel != null and is_instance_valid(_shop_panel):
+		_shop_panel.queue_free(); _shop_panel = null; return
+	_build_shop_panel()
+
+func _build_shop_panel() -> void:
+	var ui_root = get_node_or_null("UI")
+	if not ui_root: return
+	var panel := Panel.new(); panel.name = "MaraShopPanel"
+	var pstyle := StyleBoxFlat.new()
+	pstyle.bg_color = Color(0.855, 0.788, 0.608, 0.97)
+	pstyle.corner_radius_top_left = 8; pstyle.corner_radius_top_right = 8
+	pstyle.corner_radius_bottom_left = 8; pstyle.corner_radius_bottom_right = 8
+	pstyle.border_width_top = 3; pstyle.border_width_bottom = 3
+	pstyle.border_width_left = 3; pstyle.border_width_right = 3
+	pstyle.border_color = Color(0.502, 0.314, 0.118)
+	panel.add_theme_stylebox_override("panel", pstyle)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	panel.custom_minimum_size = Vector2(320, 280)
+	panel.position = Vector2(-160, -140)
+	var vb := VBoxContainer.new()
+	vb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vb.add_theme_constant_override("separation", 6)
+	panel.add_child(vb)
+	var title_lbl := Label.new()
+	title_lbl.text = "Mara's Wares"
+	title_lbl.add_theme_color_override("font_color", Color(0.35, 0.18, 0.05))
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(title_lbl)
+	var player := get_node_or_null("Player")
+	var gold_lbl := Label.new()
+	gold_lbl.text = "Your gold: %dg" % (int(player.gold) if player else 0)
+	gold_lbl.name = "GoldLbl"
+	gold_lbl.add_theme_color_override("font_color", Color(0.55, 0.35, 0.05))
+	gold_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vb.add_child(gold_lbl)
+	for stock_entry in MARA_STOCK:
+		var item_id: String = String(stock_entry.get("id", ""))
+		var price: int = int(stock_entry.get("price", 99))
+		var lstr: String = String(stock_entry.get("label", item_id))
+		var idat: Dictionary = Items.get_item(item_id)
+		if not idat.is_empty(): lstr = String(idat.get("name", lstr))
+		var row := HBoxContainer.new()
+		var lbl := Label.new()
+		lbl.text = "%s  --  %dg" % [lstr, price]
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.add_theme_color_override("font_color", Color(0.20, 0.12, 0.05))
+		row.add_child(lbl)
+		var buy_btn := Button.new()
+		buy_btn.text = "Buy"
+		var _iid: String = item_id; var _pr: int = price
+		buy_btn.pressed.connect(func(): _on_buy_item(_iid, _pr))
+		row.add_child(buy_btn); vb.add_child(row)
+	var close_b := Button.new(); close_b.text = "Close"
+	close_b.pressed.connect(func():
+		if _shop_panel and is_instance_valid(_shop_panel): _shop_panel.queue_free(); _shop_panel = null
+	)
+	vb.add_child(close_b); ui_root.add_child(panel); _shop_panel = panel
+
+func _on_buy_item(item_id: String, price: int) -> void:
+	var player := get_node_or_null("Player")
+	if not (player and player.inventory): return
+	var result: Dictionary = player.inventory.attempt_buy_item(item_id, price, self)
+	if result.get("ok", false):
+		_show_toast("Mara smiles -- %s bought for %dg" % [String(result.get("item_name", item_id)), int(result.get("gold_spent", 0))])
+		play_sfx("coin")
+		if _shop_panel and is_instance_valid(_shop_panel):
+			var gl = _shop_panel.get_node_or_null("VBoxContainer/GoldLbl")
+			if gl is Label: (gl as Label).text = "Your gold: %dg" % int(player.gold)
+	else:
+		match String(result.get("reason", "")):
+			"not_enough_gold": _show_toast("Need %dg (have %dg)." % [int(result.get("need",0)), int(result.get("have",0))])
+			"bag_full": _show_toast("Your bag is full.")
+			_: _show_toast("Mara shrugs.")
 
 func on_quest_accepted(quest: Dictionary) -> void:
 	if quest_panel:

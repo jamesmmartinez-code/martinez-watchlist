@@ -69,6 +69,15 @@ const ACHIEVEMENTS: Dictionary = {
 	# closes the cave→village gameplay loop. Title slots between Apprentice
 	# (10) and Wolf-Friend (30) so the auto-equipper picks it up early but
 	# yields cleanly when the player earns a faction-driven title.
+	"first_enchant": {
+		"name": "Rune Singer",
+		"desc": "Edda's whisper holds. The first enchantment settles into the steel.",
+		"icon": "E",
+		"icon_path": "res://assets/icons/achievements/first_enchant.png",
+		"title_text": "the Rune-Touched",
+		"title_priority": 28,
+		"predicate": {"kind": "world_flag", "flag": "first_enchant_done"},
+	},
 	"first_forge": {
 		"name": "First Forge",
 		# REFINE: character — desc made specific to Edda's soot and spark
