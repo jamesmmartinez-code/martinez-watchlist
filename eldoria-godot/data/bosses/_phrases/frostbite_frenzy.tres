@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "frostbite_frenzy",
+  "boss_id": "frostbite_troll",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Chill winds ahead!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
