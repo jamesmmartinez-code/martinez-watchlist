@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "ancient_leafcaller",
+  "name": "Leafcaller's Boon",
+  "suit": "earth",
+  "power": 4,
+  "effect": "Heal 2 to all allies",
+  "art_motif": "Ancient trees",
+  "flavor": "Nature's whispers guide us"
+}
+"""
