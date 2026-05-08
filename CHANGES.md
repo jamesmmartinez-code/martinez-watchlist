@@ -1,3 +1,28 @@
+
+## 2026-05-08 Auto: run 24 -- Adaptive difficulty per player
+
+I'm building: Adaptive difficulty per player (Backlog #11)
+THEME §1 cited: difficulty is invisible — no MODE banner, just a tiny ▿/◇/▴ glyph on HUD
+THEME §12 cited: diff_scalar lerps 30% toward target every 10s — drifts, never snaps
+THEME §13 cited: receive_difficulty_scalar skips dead enemies — no stat mutation on floor contacts
+Mood board panel: Zelda BotW natural-rhythm tuning, Soulsborne difficulty-that-feels-fair
+
+Files: World.gd +player_difficulty_state dict +_adaptive_diff_timer +_process tick
+       +record_player_death() +record_player_kill() +get_difficulty_tier()
+       +get_difficulty_scalar() +_apply_adaptive_difficulty() +_refresh_difficulty_hud()
+       Enemy.gd +receive_difficulty_scalar() (live-mutates cooldown/speed/damage via lerp)
+       Player.gd +record_player_death hook in _die() +record_player_kill hook in on_enemy_killed()
+
+5-output check:
+  i.  Integration: _apply_adaptive_difficulty() wired into World._process every 10s
+  ii. Schema: player_difficulty_state dict (deaths/kills/seconds/diff_scalar/tier) in World.gd
+  iii. Feedback: _refresh_difficulty_hud() creates DifficultyLabel in HUD (▿/◇/▴)
+  iv. Eval: get_difficulty_tier() + get_difficulty_scalar() public accessors
+  v.  2+ hooks: Player._die() -> record_player_death() | Player.on_enemy_killed() -> record_player_kill()
+      Enemy.receive_difficulty_scalar() group-called on all live enemies
+
+Next run picks up: Housing / player-shaped spaces (Backlog #10)
+
 - QA 2026-05-08T13:16 UTC: `eldoria-godot/assets/models/Hero.glb` is 29 MiB -- exceeds OPERATIONS.md §15 soft cap (20 MiB) and hard cap (25 MiB). Referenced in Main.tscn, cannot delete. Action: mesh optimization/LOD reduction needed.
 
 ## Tech debt
