@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "inky_squash_seeds",
+  "name": "Inky Squash",
+  "grows_into": "inky_squash_sapling",
+  "price": 10,
+  "obtained_from": "forage:zha'thik",
+  "flavor": "Deep purple, with swirling silver"
+}
+"""
