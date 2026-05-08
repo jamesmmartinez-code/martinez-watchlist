@@ -28,6 +28,15 @@ const INTERACT_RADIUS: float = 3.2
 const CANDLE_FREQ: float     = 1.4
 const CANDLE_AMP: float      = 0.18
 const CANDLE_BASE: float     = 1.10
+# REFINE: visual — candle flicker depth (run 25). A single-frequency sine reads
+# as mechanical; real flame combines a slow drift and a fast flicker. Adding a
+# second harmonic at 3.7× the base frequency and 40% the amplitude produces an
+# irregular beat that the eye reads as "fire" rather than "metronome". The two
+# frequencies (1.4 Hz and 5.18 Hz) are incommensurable so they never visually
+# sync into a repeating loop. THEME §12 MOTION & LIFE: light that pulses
+# metronomically is as static as light that doesn't pulse at all.
+const CANDLE_FREQ2: float    = 5.18
+const CANDLE_AMP2: float     = 0.07
 
 var interior_unlocked: bool  = false
 var _visited: bool           = false
@@ -35,6 +44,11 @@ var _player_in_range: bool   = false
 var _player: Node            = null
 var _candle_mat: StandardMaterial3D = null
 var _candle_t: float         = 0.0
+# REFINE: visual — hearth light pulse (run 25). Cache ref to the hearth OmniLight
+# so _process can apply the same dual-harmonic drift to the hearth glow, tying
+# hearth and candle into one breathing visual system. Null-safe: skip if interior
+# not yet unlocked or light not spawned.
+var _hearth_light: OmniLight3D = null
 var _world_node: Node        = null
 var _storage_chest: Node3D   = null
 
@@ -61,7 +75,21 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _candle_mat != null:
 		_candle_t += delta * CANDLE_FREQ * TAU
-		_candle_mat.emission_energy_multiplier = CANDLE_BASE + sin(_candle_t) * CANDLE_AMP
+		# REFINE: visual — dual-harmonic candle flicker (run 25). Second sine at
+		# CANDLE_FREQ2 (5.18 Hz) and CANDLE_AMP2 (0.07) — incommensurable with the
+		# 1.4 Hz primary so the combined waveform never visually repeats within a
+		# 30-second window. Deepens run 24's single-sine into a real flame shape.
+		var flicker: float = sin(_candle_t) * CANDLE_AMP + sin(_candle_t * (CANDLE_FREQ2 / CANDLE_FREQ)) * CANDLE_AMP2
+		_candle_mat.emission_energy_multiplier = CANDLE_BASE + flicker
+	# REFINE: visual — hearth light pulse (run 25). Tie the OmniLight3D energy
+	# to the same _candle_t so the hearth glow breathes with the candle — not
+	# in lockstep (different amplitude, offset by π/3) but in sympathy, the way
+	# two real flames in the same room share the same air. Range: 1.8→2.3 energy.
+	# THEME §12 MOTION & LIFE: a hearth that emits constant flat energy reads as
+	# a light bulb, not a fire.
+	if _hearth_light != null:
+		var hearth_pulse: float = sin(_candle_t * 0.73 + PI / 3.0) * 0.25
+		_hearth_light.light_energy = clamp(2.05 + hearth_pulse, 1.8, 2.3)
 	if _player_in_range and _player != null:
 		if Input.is_action_just_pressed("interact"):
 			_on_player_interact()
@@ -217,11 +245,13 @@ func _show_interior_dressing() -> void:
 	# Hearth glow — THEME §3 warm amber
 	var hearth_light := OmniLight3D.new()
 	hearth_light.light_color  = Color(1.0, 0.68, 0.28)
-	hearth_light.light_energy = 1.8
+	hearth_light.light_energy = 2.05  # REFINE: visual — raised center to 2.05; _process pulses ±0.25 around this (run 25)
 	hearth_light.omni_range   = 6.0
 	hearth_light.position     = Vector3(1.2, 0.6, -1.4)
 	hearth_light.name         = "HearthLight"
 	add_child(hearth_light)
+	# REFINE: visual — hearth light pulse (run 25). Cache for _process pulsing.
+	_hearth_light = hearth_light
 
 	# Hearth flame sparks — THEME §12 MOTION
 	var flame := CPUParticles3D.new()
@@ -347,3 +377,4 @@ func _mat_roof() -> StandardMaterial3D:
 	m.albedo_color = Color(0.62, 0.38, 0.28)
 	m.roughness    = 0.92
 	return m
+
