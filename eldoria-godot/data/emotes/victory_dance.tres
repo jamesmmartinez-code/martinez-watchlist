@@ -5,11 +5,11 @@ metadata/_data = """
 {
   "id": "victory_dance",
   "name": "Victory Dance",
-  "trigger_text": "/victory",
+  "trigger_text": "/dance",
   "duration_sec": 3,
-  "animation": "character does a little jig",
-  "sound": "cheering crowd",
-  "unlock_condition": "complete_quest:main_1",
-  "flavor": "Triumphant"
+  "animation": "Spins and raises arms",
+  "sound": "Cheering crowd",
+  "unlock_condition": "complete_quest:main_story_1",
+  "flavor": "Triumphant and joyful"
 }
 """
