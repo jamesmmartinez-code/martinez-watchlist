@@ -1,0 +1,169 @@
+{
+  "npc_slug": "lyra_of_luminaria",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I'm Lyra, the village's resident star whisperer. What brings you to our little corner of Luminaria?",
+      "options": [
+        {
+          "player_text": "I'm here to explore!",
+          "goto": "explore_luminaria",
+          "tags": [
+            "curious",
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'm looking for a place to rest.",
+          "goto": "rest_and_relax",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explore_luminaria",
+      "npc_text": "Ah, wonderful! Luminaria has many secrets waiting to be uncovered. Be sure to visit the ancient tree at the heart of the village. Its bark shimmers with stardust!",
+      "options": [
+        {
+          "player_text": "That sounds magical!",
+          "goto": "ancient_tree",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'll keep that in mind.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rest_and_relax",
+      "npc_text": "You're welcome to rest by the village stream. The water is said to have soothing properties. Would you like some herbal tea to calm your mind?",
+      "options": [
+        {
+          "player_text": "Yes, please!",
+          "goto": "herbal_tea",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "No, thank you.",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ancient_tree",
+      "npc_text": "As you approach the ancient tree, you'll notice the air is filled with a soft, ethereal glow. It's said that the tree holds the memories of our ancestors.",
+      "options": [
+        {
+          "player_text": "I feel a strange connection to the tree.",
+          "goto": "tree_connection",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "It's beautiful, but I should get going.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herbal_tea",
+      "npc_text": "I'll brew you a special blend to calm your mind and soothe your spirit. As we sip our tea, tell me about your journey so far.",
+      "options": [
+        {
+          "player_text": "It's been an amazing adventure!",
+          "goto": "adventure_stories",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'm just getting started.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tree_connection",
+      "npc_text": "The tree is responding to your presence! It seems to be sharing a message with you. Listen carefully, and you might just uncover a hidden secret.",
+      "options": [
+        {
+          "player_text": "I think I heard something!",
+          "goto": "hidden_secret",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I didn't hear anything.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "adventure_stories",
+      "npc_text": "I'd love to hear more about your adventures! Perhaps you've discovered hidden wonders or made new friends along the way?",
+      "options": [
+        {
+          "player_text": "I've met some incredible creatures!",
+          "goto": "creature_friends",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'd rather not share.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hidden_secret",
+      "npc_text": "The tree has shared a secret with you! It seems that a hidden path, only visible under the light of the full moon, leads to a mysterious glade. Will you explore it?",
+      "options": [
+        {
+          "player_text": "Yes, I'll explore the glade!",
+          "goto": "END",
+          "tags": [
+            "brave",
+            "curious"
+          ]
+        },
+        {
+          "player_text": "Maybe another time.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    }
+  ]
+}
