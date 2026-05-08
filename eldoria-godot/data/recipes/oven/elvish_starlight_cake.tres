@@ -1,0 +1,38 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "elvish_starlight_cake",
+  "name": "Starlight Cake of Lothlórien",
+  "station_required": "oven",
+  "station_tier_min": 3,
+  "inputs": [
+    {
+      "item_id": "flour",
+      "qty": 2
+    },
+    {
+      "item_id": "sugar",
+      "qty": 1
+    },
+    {
+      "item_id": "egg",
+      "qty": 1
+    },
+    {
+      "item_id": "starlight_sugar",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "elvish_starlight_cake",
+    "qty": 1
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A delicate cake infused with the essence of starlight, reminiscent of the golden wood of Lothlórien, with a subtle sweetness and a hint of magic."
+}
+"""

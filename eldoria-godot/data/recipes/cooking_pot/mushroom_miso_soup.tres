@@ -4,21 +4,21 @@ metadata/_kind = "recipe"
 metadata/_data = """
 {
   "id": "mushroom_miso_soup",
-  "name": "Mushroom Miso Soup",
+  "name": "Miso Soup of the Forest",
   "station_required": "cooking_pot",
-  "station_tier_min": 1,
+  "station_tier_min": 2,
   "inputs": [
     {
-      "item_id": "wild_mushroom",
-      "qty": 2
+      "item_id": "mushroom",
+      "qty": 3
     },
     {
       "item_id": "miso_paste",
       "qty": 1
     },
     {
-      "item_id": "spring_water",
-      "qty": 1
+      "item_id": "water",
+      "qty": 2
     }
   ],
   "output": {
@@ -29,6 +29,6 @@ metadata/_data = """
   "fuel_cost": 2,
   "unlock_condition": "auto",
   "failure_behavior": "none",
-  "flavor": "A hearty soup inspired by the rolling hills of the Shire, with the earthy flavors of wild mushrooms and the savory taste of miso paste."
+  "flavor": "A hearty soup inspired by the forests of Spirited Away, with the earthy flavor of mushrooms and the savory taste of miso paste."
 }
 """
