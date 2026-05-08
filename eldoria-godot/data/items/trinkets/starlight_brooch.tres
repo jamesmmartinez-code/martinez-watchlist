@@ -4,10 +4,10 @@ metadata/_kind = "trinket"
 metadata/_data = """
 {
   "id": "starlight_brooch",
-  "name": "Twinkling Star",
-  "slot": "hairpin",
-  "minor_effect": "attracts fireflies at night",
-  "unlock_condition": "find_in:forest",
-  "flavor": "delicate, shimmering silver"
+  "name": "Moonlit Star",
+  "slot": "pocket",
+  "minor_effect": "Glowing in the dark",
+  "unlock_condition": "find_in:moonlit_garden",
+  "flavor": "Twinkling like a night sky"
 }
 """
