@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tent"
+metadata/_data = """
+{
+  "id": "cozy_sunset_shack",
+  "name": "Sunset Getaway",
+  "capacity": 2,
+  "weather_resistance": "all",
+  "palette": [
+    "#FFC499",
+    "#8B9467"
+  ],
+  "flavor": "Warm, golden light on a peaceful beach"
+}
+"""
