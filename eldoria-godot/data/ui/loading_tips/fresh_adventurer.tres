@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "fresh_adventurer",
+  "tips": [
+    {
+      "text": "Explore caves for hidden gems!",
+      "category": "exploration"
+    },
+    {
+      "text": "Team up with friends to conquer tough foes!",
+      "category": "social"
+    },
+    {
+      "text": "Craft your own gear for a unique look!",
+      "category": "crafting"
+    },
+    {
+      "text": "Discover new spells to boost your magic!",
+      "category": "combat"
+    },
+    {
+      "text": "Join a guild to make lasting friendships!",
+      "category": "social"
+    },
+    {
+      "text": "Unlock secret areas with hidden keys!",
+      "category": "secret"
+    },
+    {
+      "text": "Improve your gear with enchantments!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Help others to earn rewards and fame!",
+      "category": "social"
+    }
+  ]
+}
+"""
