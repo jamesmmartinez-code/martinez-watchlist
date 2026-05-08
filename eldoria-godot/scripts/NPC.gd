@@ -46,6 +46,13 @@ class_name NPC
 # fresh-eyes greetings the first two times.
 @export var warmed_memory_visits_min: int = 0
 @export var warmed_memory_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 29 — Builder): a FIFTH warmed tier keyed on relationship score.
+# Higher priority than visit-count (personal acts of giving/insult outweigh
+# cadence of hellos). Fires when World.npc_relationship_score(npc_name) >=
+# warmed_relationship_min. Threshold 0 = tier disabled (default).
+# Author convention: 1 = "you gave me something once"; 3 = "trusted friend".
+@export var warmed_relationship_min: int = 0
+@export var warmed_relationship_dialogue_variants: PackedStringArray = PackedStringArray()
 # COMPOUND (run 9 — JSON dialogue tree): when set true, this NPC's lines are
 # resolved by `DialogueDB.choose_line(npc_name, ctx)` from a JSON tree at
 # `res://data/dialogue/<npc_slug>.json` BEFORE falling back to the
@@ -427,6 +434,14 @@ func _on_interact() -> void:
 		var fp: float = float(w.faction_pressure(warmed_faction_id))
 		if fp < warmed_faction_below:
 			variants = warmed_faction_dialogue_variants
+	# COMPOUND (run 29 — Builder): relationship score tier. Fires ABOVE
+	# visit-count because a concrete gift/insult act is a stronger signal
+	# than visit cadence. Threshold 0 disables the tier (default). Reads
+	# World.npc_relationship_score() — fail-soft on older World autoloads.
+	if variants == dialogue_variants and warmed_relationship_min > 0 and not warmed_relationship_dialogue_variants.is_empty() and w and w.has_method("npc_relationship_score"):
+		var rel_score: int = int(w.npc_relationship_score(npc_name))
+		if rel_score >= warmed_relationship_min:
+			variants = warmed_relationship_dialogue_variants
 	# COMPOUND (run 16 — Builder): memory tier fires only when no higher tier
 	# already promoted variants. Reads `World.npc_visits(npc_name)` (the
 	# accessor wraps the internal `npc_memory` dict so future schema changes
