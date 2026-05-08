@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "golden_acorn",
+  "name": "Golden Acorn",
+  "slot": "pocket",
+  "minor_effect": "glows in dark",
+  "unlock_condition": "find_in:forest",
+  "flavor": "Gilded forest treasure"
+}
+"""
