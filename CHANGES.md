@@ -1,3 +1,24 @@
+## 2026-05-08 Auto: run 29 — NPC Relationship Score (Backlog #8 compound)
+I'm building: NPC memory deepening — record_npc_gift / record_npc_insult + relationship tier
+THEME §12 cited: MOTION & LIFE — village NPCs now REACT to kindness, not just visits
+Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md
+Mood board panel: Stardew Valley / Rune Factory — villager warmth earned through actions
+Files: World.gd +record_npc_gift +record_npc_insult +npc_relationship_score +npc_any_relationship_above
+       NPC.gd +warmed_relationship_min +warmed_relationship_dialogue_variants (5th tier)
+       Achievements.gd +villager_friend achievement (score>=3) + npc_relationship_min predicate
+5-output check:
+  i.  Integration: NPC._on_interact calls warmed_relationship tier ABOVE visit-count tier;
+        World._check_achievements() called after every gift/insult write
+  ii. Schema: npc_memory dict extended with gifts: int, insults: int per NPC;
+        NPC_RELATIONSHIP_SCORE_MIN/MAX consts; warmed_relationship_min/@export on NPC
+  iii.Feedback: warmed_relationship_dialogue_variants produces distinct warm lines when score>=min;
+        achievement villager_friend unlocks title the Beloved on score>=3
+  iv. Eval: npc_relationship_score() + npc_any_relationship_above() public accessors;
+        _eval_predicate extended with npc_relationship_min kind
+  v.  2+ hooks: record_npc_gift triggers _check_achievements (Achievement hook);
+        warmed_relationship tier composable with all existing tiers in NPC chain
+Next run picks up: Faction state — bandit boldness scales with road defense (Backlog #9)
+
 ## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
 
 I'm building: Faction state — bandit boldness scales with road defense (Backlog #9)
