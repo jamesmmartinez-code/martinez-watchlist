@@ -6,16 +6,8 @@ metadata/_data = """
   "id": "lucky_dragon",
   "fortunes": [
     {
-      "text": "Dream big, adventurer!",
-      "mood": "hopeful"
-    },
-    {
-      "text": "Smile often, wonder always",
+      "text": "Smile often, adventure always!",
       "mood": "playful"
-    },
-    {
-      "text": "Kindness is the greatest magic",
-      "mood": "wise"
     }
   ]
 }
