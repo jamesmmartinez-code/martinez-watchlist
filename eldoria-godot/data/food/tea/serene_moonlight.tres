@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tea"
+metadata/_data = """
+{
+  "id": "serene_moonlight",
+  "name": "Moonlit Serenity",
+  "leaves": [
+    "chamomile",
+    "peppermint"
+  ],
+  "effect": "buff:focus:300s|buff:calm:600s|warm:cold_zone",
+  "brew_time_min": 5,
+  "flavor": "soft minty mist"
+}
+"""
