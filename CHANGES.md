@@ -1,3 +1,23 @@
+## 2026-05-08 Auto: run 27 — Ambient NPC Barks (THEME §12)
+I'm building: Ambient bark system wiring — all 7 villagers (Backlog #8 compound)
+THEME §12 cited: MOTION & LIFE — idle one-liners float above NPCs between interactions;
+  world feels inhabited, not posed. Every villager has a role-specific voice.
+Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md
+Mood board panel: cosy village at dusk, each villager muttering to themselves
+Files: WorldBuilder.gd (bark_lines added to all 7 NPCS[] entries + _make_npc wiring)
+5-output check:
+  i.  Integration: _make_npc() copies bark_lines → npc.ambient_bark_lines;
+        NPC._ready initialises _bark_cooldown to staggered random;
+        NPC._process calls _tick_ambient_bark(delta) each frame
+  ii. Schema: bark_lines key added to all 7 NPCS[] dict entries (4 lines each);
+        interval stays at NPC.gd defaults (22-38s) — per-role tuning in next pass
+  iii.Feedback: Label3D floats above NPC head, fades over 3s (NPC._tick_ambient_bark)
+  iv. Eval: no bark fires when player is in interact range (ambient_bark_player_near_only=true)
+  v.  2+ hooks: group 'npcs' (Minimap already reads it); 'use_dialogue_json' chain untouched;
+        schedule_anchors wiring untouched — both compound systems still active
+Next run picks up: NPC memory system deepening (record_npc_gift / record_npc_insult) or
+  Faction state — bandit boldness scales with road defense (Backlog #9)
+
 - QA 2026-05-08T14:58Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T14:46Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T14:45Z: Build=in_progress (pages-build-and-deployment), Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run.
