@@ -56,6 +56,26 @@ class_name NPC
 # pipeline below is used unchanged. Defaults false so legacy NPCs are
 # untouched. WorldBuilder.gd opts NPCs in via `"use_json_dialogue": true`.
 @export var use_dialogue_json: bool = false
+# COMPOUND (run 26 — Builder): ambient bark system — THEME §12 MOTION & LIFE.
+# NPCs occasionally float a short idle one-liner above their head without any
+# player interaction. Barks are cosmetic-only (no World state change, no dialogue
+# panel). They bring the world alive: Bram mutters about his ale, Maeve talks to
+# her herbs, Hala barks a training drill count at the air.
+#
+# `ambient_bark_lines` — authored list of short one-liners for this NPC.
+#    Indexed randomly each tick. Empty = no ambient barks (default; all existing
+#    NPCs are silent until WorldBuilder wires them in this run).
+# `ambient_bark_interval_min/max` — seconds between barks. Random in [min, max]
+#    so two NPCs standing near each other don't bark in unison. Default 22–38s
+#    so each NPC speaks roughly once per ~30s awake period — audible but not
+#    chatty. WorldBuilder may tighten for busy roles (smiths, trainers) or widen
+#    for reserved roles (herbalists, elders).
+# `ambient_bark_player_near_only` — when true, barks only when the player is NOT
+#    in interact range (i.e. not mid-conversation). Defaults true: during dialogue
+#    the show_dialogue panel is up; ambient floats would overlap it.
+@export var ambient_bark_lines: Array[String] = []
+@export var ambient_bark_interval_min: float = 22.0
+@export var ambient_bark_interval_max: float = 38.0
 
 # COMPOUND (run 11 — NPC SCHEDULES): each visible villager moves between
 # role-specific anchor positions throughout the day, keyed off
@@ -112,6 +132,16 @@ var _breathe_phase: float = 0.0
 # the same _breathe_phase roll. randf() * TAU, same as _breathe_phase, but
 # drawn independently so the two sinusoids start at different points per NPC.
 var _breathe_phase2: float = 0.0
+# COMPOUND (run 26): ambient bark timer state.
+# `_bark_cooldown` counts down to the next bark emission; reset to a random
+# value in [ambient_bark_interval_min, ambient_bark_interval_max] each time a
+# bark fires. Initialised to a per-NPC random in [0, max] at _ready so the
+# whole village doesn't bark simultaneously on scene load (THEME §12 — life
+# should feel staggered, not metronomic).
+var _bark_cooldown: float = 0.0
+# Per-NPC bark float node — Label3D created on demand, auto-freed after fade.
+# Kept as a ref so we never spawn a second bark while one is still fading.
+var _bark_label: Label3D = null
 # REFINE: character — animation timing. Whether the schedule walker is
 # currently in transit (true) vs idling at an anchor (false). Toggled by
 # _tick_schedule so the anim swap fires ON THE TRANSITION rather than
@@ -211,6 +241,12 @@ func _ready() -> void:
 	# of 0.9 putting feet on ground — schedule must not re-base y or the
 	# NPC sinks/floats.
 	_spawn_y = global_position.y
+	# COMPOUND (run 26): stagger bark timer start so NPCs don't all bark at t=0.
+	# Use per-NPC name hash for deterministic stagger (same name = same phase
+	# across runs — quest-scripted NPCs land in predictable windows).
+	if not ambient_bark_lines.is_empty():
+		var name_hash: float = float(npc_name.hash() & 0xFFFF) / float(0xFFFF)
+		_bark_cooldown = ambient_bark_interval_min + name_hash * (ambient_bark_interval_max - ambient_bark_interval_min)
 
 func _process(delta: float) -> void:
 	# Show name label only when player is in range
@@ -257,6 +293,63 @@ func _process(delta: float) -> void:
 		# REFINE: character — dual-harmonic bob: primary (slow chest-rise) + secondary (fast shoulder-shift).
 		var bob: float = sin(t * 2.513 + _breathe_phase) * 0.022 + sin(t * 10.982 + _breathe_phase2) * 0.008
 		global_position.y = _spawn_y + bob
+	# COMPOUND (run 26): ambient bark timer tick.
+	_tick_ambient_bark(delta)
+
+# ────────────────────────────────────────────────────────────────────────
+# COMPOUND (run 26): ambient bark system
+# Emits a short floating Label3D above the NPC's head on a random timer.
+# THEME §12: NPCs "talk to themselves" — mutters, training counts, prayers —
+# so the world sounds inhabited even when the player is just passing through.
+# THEME §13: label spawns at y=2.8 (well above any authored NPC height) and
+# never sinks below it.
+# ────────────────────────────────────────────────────────────────────────
+func _tick_ambient_bark(delta: float) -> void:
+	if ambient_bark_lines.is_empty():
+		return
+	# Skip while player is in range (dialogue panel is open) and during night
+	# (THEME §3 — after dark the village quiets; only the watchman murmurs).
+	if player_in_range:
+		return
+	var w: Node = get_tree().get_first_node_in_group("world")
+	var tod: float = 11.0
+	if w and ("time_of_day" in w):
+		tod = float(w.time_of_day)
+	# Silence between 21:00 and 05:00 — THEME §3 night quiet.
+	if tod < 5.0 or tod >= 21.0:
+		return
+	# Only bark if previous bark label has fully gone (prevents overlap).
+	if _bark_label != null and is_instance_valid(_bark_label):
+		return
+	_bark_cooldown -= delta
+	if _bark_cooldown > 0.0:
+		return
+	# Reset cooldown — next bark in a fresh random window.
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	_bark_cooldown = rng.randf_range(ambient_bark_interval_min, ambient_bark_interval_max)
+	# Pick a random line.
+	var idx: int = rng.randi_range(0, ambient_bark_lines.size() - 1)
+	var text: String = ambient_bark_lines[idx]
+	# Spawn a floating Label3D at y=2.8 above NPC. Billboard so it faces camera.
+	var lbl := Label3D.new()
+	lbl.text = text
+	lbl.font_size = 22
+	lbl.outline_size = 5
+	lbl.outline_modulate = Color(0.0, 0.0, 0.0, 0.9)
+	# Warm parchment tint — THEME §3 colour palette (sunset-amber family).
+	lbl.modulate = Color(1.0, 0.92, 0.72, 1.0)
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.no_depth_test = true
+	lbl.position = Vector3(0.0, 2.8, 0.0)
+	lbl.name = "BarkLabel"
+	add_child(lbl)
+	_bark_label = lbl
+	# Tween: hold 2.4s at full opacity, then fade out over 1.0s, then free.
+	var tw: Tween = create_tween()
+	tw.tween_interval(2.4)
+	tw.tween_property(lbl, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE)
+	tw.tween_callback(lbl.queue_free)
 
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
@@ -505,4 +598,5 @@ func _lift_npc_to_ground() -> void:
 	if lowest < floor_y - 0.05:
 		var lift := floor_y - lowest
 		global_position.y += lift
+
 
