@@ -1281,9 +1281,10 @@ func _process(delta: float) -> void:
 	# friendly), midday is crisp, and night is moody-blue. THEME §1 painterly +
 	# §11 BotW-style watercolor mood. Conservative deltas (~±25%) so no scene
 	# disappears into pea soup; the value bands stay inside the Main.tscn baseline.
+	var elev2: float = sin((time_of_day - 6.0) * PI / 12.0)
 	if world_env and world_env.environment:
 		var e := world_env.environment
-		var elev2: float = sin((time_of_day - 6.0) * PI / 12.0)
+		elev2 = sin((time_of_day - 6.0) * PI / 12.0)
 		var dusk_w2: float = clamp(1.0 - abs(elev2) / 0.30, 0.0, 1.0)
 		var night_w2: float = clamp(-elev2 / 0.30, 0.0, 1.0)
 		# Fog: thicker at horizon (dusk haze), thinner at midday, slightly thicker
@@ -2553,4 +2554,5 @@ func _pulse_card(node: Control) -> void:
 	var tw: Tween = create_tween().set_loops(2)
 	tw.tween_property(node, "modulate", pulse_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(node, "modulate", base_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
 
