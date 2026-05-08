@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "lemon_lavender_biscuit",
+  "name": "Sunrise Delight",
+  "kind": "scone",
+  "filling": "lemon curd",
+  "heal": 20,
+  "effect": "buff:cheerful:300s",
+  "flavor": "Buttery notes dance with zesty lemon and the subtle nuance of lavender, evoking a warm summer morning"
+}
+"""
