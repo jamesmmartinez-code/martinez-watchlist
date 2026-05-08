@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "rumor_followup"
+metadata/_data = """
+{
+  "id": "lost_city_of_zenith",
+  "rumor_origin_text": "Ancient city hidden deep",
+  "actual_outcome": "Ruins of Zenith found, holding artifacts",
+  "reward_hint": "Map to hidden temple",
+  "flavor": "Moonlit jungle, vines on spires"
+}
+"""
