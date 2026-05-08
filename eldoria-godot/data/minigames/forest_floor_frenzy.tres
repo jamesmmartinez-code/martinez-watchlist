@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "forest_floor_frenzy",
+  "name": "Catch The Acorn",
+  "kind": "catching",
+  "location": "npc:squirrel",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 10,
+    "gold": 5,
+    "item_id": "acorn_seed"
+  },
+  "flavor": "Dappled sunlight filters"
+}
+"""
