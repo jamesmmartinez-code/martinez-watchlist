@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Glimmerbats can be found in Briarwood caves at dawn."
+truth_0 = "true"
+rumor_1 = "Maeve's special vendor sells rare seeds."
+truth_1 = "partial"
+rumor_2 = "Briarwood is home to a secret underground city."
+truth_2 = "false"
+rumor_3 = "The ancient trees in Briarwood hold magical properties."
+truth_3 = "true"
+rumor_4 = "A hidden glade in Briarwood is filled with wild, glowing mushrooms."
+truth_4 = "partial"
