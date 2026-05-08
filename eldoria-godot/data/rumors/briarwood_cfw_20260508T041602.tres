@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve has a hidden glade in the forest."
+truth_0 = "true"
+rumor_1 = "A rare flower blooms only under moonlight."
+truth_1 = "partial"
+rumor_2 = "The ancient trees are whispering secrets."
+truth_2 = "true"
+rumor_3 = "Glimmering fairy dust is hidden in the forest."
+truth_3 = "partial"
+rumor_4 = "Maeve is hiding a dragon in the forest."
+truth_4 = "false"
