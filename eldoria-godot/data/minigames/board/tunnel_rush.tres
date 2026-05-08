@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "tunnel_rush",
+  "name": "Tunnel Rush",
+  "play_at": "tavern",
+  "rules": "Players take turns rolling a die to move a token through a tunnel. First to exit wins. Wager 5 coppers.",
+  "reward_win": "copper:10",
+  "flavor": "A colorful tunnel stretches before you, will you rush to victory?"
+}
+"""
