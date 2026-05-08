@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "wine"
+metadata/_data = """
+{
+  "id": "midnight_moonpear",
+  "name": "Midnight Harvest",
+  "grape_or_fruit": "moonpear",
+  "region": "whisperwood",
+  "year": "Under the silvery light of a midnight moon, this vintage was carefully hand-picked to capture the essence of Whisperwood's mystical energies.",
+  "effect": "buff:warmth:600s",
+  "flavor": "Notes of honeyed lavender and starlight dance on the palate, leaving a soothing warmth that lingers like a gentle summer breeze."
+}
+"""
