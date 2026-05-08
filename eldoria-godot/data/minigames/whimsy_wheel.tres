@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "whimsy_wheel",
+  "name": "Spin the Whimsy Wheel",
+  "kind": "timing",
+  "location": "festival:summer_fair",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 10,
+    "gold": 5,
+    "item_id": "cotton_candy"
+  },
+  "flavor": "Twirling colors under sunny skies"
+}
+"""
