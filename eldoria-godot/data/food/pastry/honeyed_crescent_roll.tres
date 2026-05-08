@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "honeyed_crescent_roll",
+  "name": "Sunrise Delight",
+  "kind": "bun",
+  "filling": "honey",
+  "heal": 20,
+  "effect": "buff:cheerful:300s",
+  "flavor": "warm golden hues like a sunrise over a field of wheat"
+}
+"""
