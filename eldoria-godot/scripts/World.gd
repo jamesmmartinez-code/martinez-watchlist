@@ -130,6 +130,28 @@ var npc_memory: Dictionary = {}
 #     the first call and the NEW (true) value from the second onward.
 var npc_seen: Dictionary = {}
 
+# Run 24 (Builder) — adaptive difficulty per player. Schema:
+#   player_difficulty_state = {
+#     "session_deaths":   int,    # deaths since session start (resets on _ready)
+#     "session_kills":    int,    # enemy kills since session start
+#     "session_seconds":  float,  # real seconds elapsed this session
+#     "diff_scalar":      float,  # current difficulty scalar [0.7, 1.3]
+#                                 # <1.0 = eased, 1.0 = normal, >1.0 = hardened
+#     "tier":             String, # "eased" | "normal" | "hardened"
+#   }
+# WRITES: record_player_death() (Player._die hook), record_player_kill(kind).
+# READS: get_difficulty_tier() (eval surface), get_difficulty_scalar() (Enemy hook).
+# PUSH: _apply_adaptive_difficulty() runs every 10s, group-calls
+#       receive_difficulty_scalar(float) on every live enemy.
+var player_difficulty_state: Dictionary = {
+	"session_deaths":  0,
+	"session_kills":   0,
+	"session_seconds": 0.0,
+	"diff_scalar":     1.0,
+	"tier":            "normal",
+}
+var _adaptive_diff_timer: float = 0.0  # counts up; fires every 10s
+
 # Achievement / Title state — read-only externally; mutated only by
 # `_check_achievements()` which is invoked at the end of `apply_consequence`
 # and once at `_ready` (so a fresh world boot picks up any pre-existing
@@ -1149,6 +1171,126 @@ func _process(delta: float) -> void:
 		if shaft is GPUParticles3D:
 			shaft.amount_ratio = clamp(daylight_w * 0.85 + 0.15, 0.0, 1.0)
 
+	# Run 24 (Builder): adaptive difficulty tick — fires every 10s.
+	# THEME §12: diff drifts via lerp, never hard-snaps.
+	player_difficulty_state["session_seconds"] = player_difficulty_state["session_seconds"] + delta
+	_adaptive_diff_timer += delta
+	if _adaptive_diff_timer >= 10.0:
+		_adaptive_diff_timer = 0.0
+		_apply_adaptive_difficulty()
+
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Adaptive Difficulty — per-player (Run 24, Builder)
+# ════════════════════════════════════════════════════════════════════════
+# Schema contract (SYSTEM_REGISTRY.md):
+#   diff_scalar in 0.70..1.30  — enemies read via receive_difficulty_scalar
+#   tier "eased"     : diff_scalar < 0.90   — player dying too fast
+#   tier "normal"    : diff_scalar 0.90..1.10
+#   tier "hardened"  : diff_scalar > 1.10   — player breezing through
+#
+# Formula: death_rate = deaths / max(1, session_minutes)
+#          kill_rate  = kills  / max(1, session_minutes)
+#   base from death_rate: 0 deaths => push toward 1.15; >=2/min => push toward 0.75
+#   modifier from kill_rate: >=8/min (breezy) => +0.15; <=2/min => -0.10
+#   combined lerped 30% toward target each tick so it drifts not snaps.
+#
+# THEME §1 "lived-in": diff is invisible — no "EASY" banner, just a tiny
+# tier glyph on the HUD. THEME §12 MOTION: scalar never hard-sets, always lerps.
+# ════════════════════════════════════════════════════════════════════════
+
+# Mutator — called by Player._die()
+func record_player_death() -> void:
+	var s: int = int(player_difficulty_state.get("session_deaths", 0))
+	player_difficulty_state["session_deaths"] = s + 1
+
+# Mutator — called by Player.on_enemy_killed()
+func record_player_kill(_kind: String) -> void:
+	var k: int = int(player_difficulty_state.get("session_kills", 0))
+	player_difficulty_state["session_kills"] = k + 1
+
+# Eval surface — returns "eased" | "normal" | "hardened"
+func get_difficulty_tier() -> String:
+	return String(player_difficulty_state.get("tier", "normal"))
+
+# Eval surface — returns current scalar in 0.70..1.30
+func get_difficulty_scalar() -> float:
+	return float(player_difficulty_state.get("diff_scalar", 1.0))
+
+# Internal — recomputes scalar + tier, pushes to enemies, updates HUD glyph.
+# Called every 10s from _process; also safe to call manually.
+func _apply_adaptive_difficulty() -> void:
+	var deaths: int = int(player_difficulty_state.get("session_deaths", 0))
+	var kills: int = int(player_difficulty_state.get("session_kills", 0))
+	var secs: float = float(player_difficulty_state.get("session_seconds", 0.0))
+	var mins: float = max(secs / 60.0, 1.0)  # floor at 1 min to avoid first-tick spike
+
+	var death_rate: float = float(deaths) / mins   # deaths per minute
+	var kill_rate: float  = float(kills)  / mins   # kills per minute
+
+	# Base scalar: invert death rate — dying fast => ease, surviving => harden.
+	# death_rate 0.0 => base 1.15; death_rate 1.0 => base 1.0; >=2.0 => base 0.75
+	var base_scalar: float
+	if death_rate <= 0.0:
+		base_scalar = 1.15
+	elif death_rate <= 1.0:
+		base_scalar = lerp(1.15, 1.0, death_rate)
+	else:
+		base_scalar = lerp(1.0, 0.75, clamp((death_rate - 1.0) / 1.0, 0.0, 1.0))
+
+	# Kill-rate modifier: breezing (>=8 kills/min) => +0.15, barely killing (<=2) => -0.10
+	var kill_mod: float = 0.0
+	if kill_rate >= 8.0:
+		kill_mod = 0.15
+	elif kill_rate >= 4.0:
+		kill_mod = lerp(0.0, 0.15, (kill_rate - 4.0) / 4.0)
+	elif kill_rate <= 2.0 and kills > 0:
+		kill_mod = -0.10
+
+	var target_scalar: float = clamp(base_scalar + kill_mod, 0.70, 1.30)
+
+	# Lerp 30% toward target each 10s tick — drift, not snap (THEME §12 MOTION)
+	var current: float = float(player_difficulty_state.get("diff_scalar", 1.0))
+	var new_scalar: float = lerp(current, target_scalar, 0.30)
+	new_scalar = clamp(new_scalar, 0.70, 1.30)
+	player_difficulty_state["diff_scalar"] = new_scalar
+
+	# Tier classification
+	var new_tier: String = "normal"
+	if new_scalar < 0.90:
+		new_tier = "eased"
+	elif new_scalar > 1.10:
+		new_tier = "hardened"
+	player_difficulty_state["tier"] = new_tier
+
+	# Push to all live enemies (group call — zero coupling to individual instances)
+	get_tree().call_group("enemies", "receive_difficulty_scalar", new_scalar)
+
+	# HUD feedback — tiny tier glyph (THEME §1: invisible to casual players)
+	_refresh_difficulty_hud(new_tier)
+
+# Updates (or creates) a small difficulty-tier Label in the HUD.
+# Fail-soft: if hud is null (headless test) this is a no-op.
+func _refresh_difficulty_hud(tier: String) -> void:
+	if not hud:
+		return
+	var diff_label: Label = hud.get_node_or_null("DifficultyLabel") as Label
+	if diff_label == null:
+		diff_label = Label.new()
+		diff_label.name = "DifficultyLabel"
+		diff_label.position = Vector2(8, 96)  # below renown label
+		diff_label.add_theme_font_size_override("font_size", 13)
+		diff_label.add_theme_color_override("font_color", Color(0.72, 0.72, 0.65, 0.75))
+		diff_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.6))
+		diff_label.add_theme_constant_override("outline_size", 2)
+		hud.add_child(diff_label)
+	var glyph: String
+	match tier:
+		"eased":    glyph = "▿ eased"
+		"hardened": glyph = "▴ hardened"
+		_:          glyph = "◇"
+	diff_label.text = glyph
 
 # ════════════════════════════════════════════════════════════════════════
 # Dialogue
