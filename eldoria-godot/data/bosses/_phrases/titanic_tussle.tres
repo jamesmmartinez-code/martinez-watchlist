@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "titanic_tussle",
+  "boss_id": "earth_shaker",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Time to rumble!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

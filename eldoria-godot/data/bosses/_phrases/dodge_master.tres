@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "dodge_master",
+  "boss_id": "shadow_dancer",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "Nice dodge!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

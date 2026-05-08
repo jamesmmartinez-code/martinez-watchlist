@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "frosty_frenzy_start",
+  "boss_id": "winter_wyrm",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Chill out, adventurers!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
