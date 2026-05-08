@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "adventurous_beginnings",
+  "tips": [
+    {
+      "text": "Explore & discover hidden areas!",
+      "category": "exploration"
+    },
+    {
+      "text": "Make friends & join a guild!",
+      "category": "social"
+    },
+    {
+      "text": "Craft items to upgrade gear!",
+      "category": "crafting"
+    },
+    {
+      "text": "Unlock new spells & abilities!",
+      "category": "combat"
+    },
+    {
+      "text": "Use mounts to travel faster!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Participate in events for rewards!",
+      "category": "secret"
+    },
+    {
+      "text": "Customize your character's look!",
+      "category": "quality_of_life"
+    },
+    {
+      "text": "Help others & earn good karma!",
+      "category": "social"
+    }
+  ]
+}
+"""
