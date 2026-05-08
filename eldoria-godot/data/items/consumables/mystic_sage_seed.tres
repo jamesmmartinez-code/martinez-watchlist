@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mystic_sage_seed",
+  "name": "Sage's Blessing",
+  "category": "consumable",
+  "subtype": "seed",
+  "tier": "uncommon",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 10,
+    "spd": 0
+  },
+  "flavor": "Plant this seed to summon a gentle, healing breeze.",
+  "realm": "eldoria"
+}
+"""

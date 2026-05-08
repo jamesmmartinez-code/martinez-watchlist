@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "luminous_moonwhisper_cloak",
+  "name": "Moonwhisper Cape",
+  "category": "armor",
+  "subtype": "cloak",
+  "tier": "epic",
+  "level_req": 40,
+  "stats": {
+    "atk": 0,
+    "def": 20,
+    "hp": 20,
+    "spd": 10
+  },
+  "flavor": "This enchanted cloak carries the whispers of the moon, granting its wearer the power to move unseen and unheard.",
+  "realm": "skyreave"
+}
+"""
