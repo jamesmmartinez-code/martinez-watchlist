@@ -1,0 +1,40 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "greeting"
+metadata/_data = """
+{
+  "id": "friendly_villager",
+  "greetings": [
+    {
+      "text": "Good day!",
+      "mood": "warm",
+      "time_of_day": "morning"
+    },
+    {
+      "text": "Welcome!",
+      "mood": "cheerful",
+      "time_of_day": "noon"
+    },
+    {
+      "text": "Hi there!",
+      "mood": "busy",
+      "time_of_day": "evening"
+    },
+    {
+      "text": "Evening!",
+      "mood": "tired",
+      "time_of_day": "night"
+    },
+    {
+      "text": "Hello!",
+      "mood": "warm",
+      "time_of_day": "any"
+    },
+    {
+      "text": "Hi!",
+      "mood": "shy",
+      "time_of_day": "any"
+    }
+  ]
+}
+"""
