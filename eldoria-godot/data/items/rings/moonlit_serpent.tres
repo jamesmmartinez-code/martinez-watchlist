@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "moonlit_serpent",
+  "name": "Glimmering Coil",
+  "tier": "uncommon",
+  "stat_mod": {
+    "hp": 10,
+    "atk": 5,
+    "def": 0,
+    "spd": 5,
+    "luck": 0
+  },
+  "effect": "Passive: 10% chance to dodge attacks",
+  "flavor": "Forged under moonlight, its gentle hum is said to ward off evil"
+}
+"""
