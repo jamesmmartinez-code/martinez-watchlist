@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "mythic_foxfire",
+  "name": "Ember Runner",
+  "species": "giant_owl",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "complete_quest:foxfire_saga",
+  "flavor": "With feathers ablaze like wildfire, the Ember Runner swoops through the night sky, leaving a trail of sparks in its wake, as if the stars themselves had descended to guide you on your journey."
+}
+"""
