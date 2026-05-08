@@ -169,16 +169,31 @@ func _ready() -> void:
 		# Prefer common spellings in order of likelihood, then fall back to
 		# the first list entry for "Idle" so even unusually-named clips like
 		# "ArmatureAction.001" (Mixamo default) still pin something.
-		for n in ["Idle", "idle", "IdleAnimation", "Standing"]:
+		for n in ["Idle", "idle", "IdleAnimation", "Standing", "ArmatureAction.001", "Take 001", "mixamo.com"]:
 			if ap_resolved.has_animation(n):
 				_idle_anim_name = n
 				break
 		if _idle_anim_name == "" and names.size() > 0:
-			_idle_anim_name = String(names[0])
-		for n in ["Walk", "walk", "Walking", "WalkForward", "Run", "run"]:
+			# Prefix scan: some GLBs use "Prefix|AnimName" convention
+			for n in names:
+				var ns := String(n).to_lower()
+				if ns.contains("idle") or ns.contains("stand") or ns.contains("rest"):
+					_idle_anim_name = String(n)
+					break
+			# Final fallback: just use first animation
+			if _idle_anim_name == "":
+				_idle_anim_name = String(names[0])
+		for n in ["Walk", "walk", "Walking", "WalkForward", "Run", "run", "WalkAnimation", "RunAnimation"]:
 			if ap_resolved.has_animation(n):
 				_walk_anim_name = n
 				break
+		# Prefix scan for walk/run if not found yet
+		if _walk_anim_name == "":
+			for n in names:
+				var ns := String(n).to_lower()
+				if ns.contains("walk") or ns.contains("run") or ns.contains("locomot"):
+					_walk_anim_name = String(n)
+					break
 	# REFINE: character — animation timing. Per-NPC breathe phase prevents
 	# group-sync "rise/fall in unison" effect when multiple anim-less NPCs
 	# share frame (THEME §12 — life should look incidental, not metronomic).
