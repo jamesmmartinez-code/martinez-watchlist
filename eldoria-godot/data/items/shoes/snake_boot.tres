@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "snake_boot",
+  "name": "Desert Runner",
+  "kind": "boot",
+  "traction": "sand|stone",
+  "minor_effect": "slightly boosts speed",
+  "flavor": "Brown leather with gold buckles, looks like it has been through the desert"
+}
+"""
