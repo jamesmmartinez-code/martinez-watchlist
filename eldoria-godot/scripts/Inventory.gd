@@ -258,3 +258,78 @@ func attempt_reforge(world: Object) -> Dictionary:
 		"new_damage": base_dmg + Items.forge_damage_bonus(new_tier),
 		"shards_spent": cost,
 	}
+
+# -- Enchant/Sell/Buy -- run 22 (Builder) --
+const ENCHANT_SHARD_COST: int = 8
+
+func weapon_enchant_prefix(weapon_id: String = "") -> String:
+	var wid: String = weapon_id if weapon_id != "" else String(equipped.get("weapon", ""))
+	if wid == "": return ""
+	return String(Items.get_item(wid).get("_enchant_prefix", ""))
+
+func attempt_enchant(world: Object) -> Dictionary:
+	var weapon_id: String = String(equipped.get("weapon", ""))
+	if weapon_id == "": return {"ok": false, "reason": "no_weapon"}
+	var item: Dictionary = Items.get_item(weapon_id)
+	var existing: String = String(item.get("_enchant_prefix", ""))
+	if existing != "": return {"ok": false, "reason": "already_enchanted", "prefix": existing}
+	if not has_item("crystal_shard", ENCHANT_SHARD_COST):
+		return {"ok": false, "reason": "not_enough_shards",
+			"have": count_item("crystal_shard"), "need": ENCHANT_SHARD_COST}
+	if not consume_item("crystal_shard", ENCHANT_SHARD_COST): return {"ok": false, "reason": "consume_failed"}
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var prefix: String = Items._pick_weighted(Items.AFFIX_PREFIXES, rng)
+	var mods: Dictionary = Items.AFFIX_PREFIXES.get(prefix, {})
+	var ni: Dictionary = item.duplicate(true)
+	ni["name"] = prefix + " " + String(item.get("name", weapon_id))
+	ni["_enchant_prefix"] = prefix
+	ni["affix"] = true
+	if mods.has("damage_pct") and ni.has("damage"):
+		ni["damage"] = int(float(ni.get("damage", 0)) * (1.0 + float(mods.get("damage_pct", 0.0))))
+	if mods.has("hp_bonus"): ni["hp_bonus"] = int(ni.get("hp_bonus", 0)) + int(mods.hp_bonus)
+	if mods.has("mp_bonus"): ni["mp_bonus"] = int(ni.get("mp_bonus", 0)) + int(mods.mp_bonus)
+	if mods.has("crit_bonus"): ni["crit_bonus"] = float(ni.get("crit_bonus", 0.0)) + float(mods.crit_bonus)
+	if mods.has("rarity"): ni["rarity"] = Items._bump_rarity(String(ni.get("rarity","common")), String(mods.rarity))
+	if mods.has("tint"): ni["color"] = mods.tint
+	ni["value"] = int(ni.get("value", 1)) * 2
+	var stamp: String = str(rng.randi_range(1000, 9999))
+	var base_id: String = weapon_id if not weapon_id.begins_with("@") else String(item.get("base_id", weapon_id))
+	ni["base_id"] = base_id
+	ni["runtime_id"] = "@%s#ench_%s_%s" % [base_id, prefix.to_lower(), stamp]
+	var new_id: String = ni["runtime_id"]
+	if world and world.has_method("register_runtime_item"):
+		world.register_runtime_item(new_id, ni)
+	equipped["weapon"] = new_id
+	if world and world.has_method("set_world_flag"):
+		world.set_world_flag("first_enchant_done", true)
+	equipment_changed.emit()
+	inventory_changed.emit()
+	var new_dmg: int = int(ni.get("damage", 0)) + Items.forge_damage_bonus(weapon_forge_tier(base_id))
+	return {"ok": true, "weapon_id": new_id, "prefix": prefix,
+		"new_damage": new_dmg, "shards_spent": ENCHANT_SHARD_COST}
+
+const SELL_RATE: float = 0.60
+func attempt_sell_weapon(_world: Object) -> Dictionary:
+	var weapon_id: String = String(equipped.get("weapon", ""))
+	if weapon_id == "": return {"ok": false, "reason": "no_weapon"}
+	var item: Dictionary = Items.get_item(weapon_id)
+	if item.is_empty(): return {"ok": false, "reason": "unknown_item"}
+	var sell_price: int = max(1, int(int(item.get("value", 0)) * SELL_RATE))
+	var item_name: String = String(item.get("name", weapon_id))
+	unequip("weapon")
+	consume_item(weapon_id, 1)
+	return {"ok": true, "gold": sell_price, "item_name": item_name}
+
+func attempt_buy_item(item_id: String, price: int, world: Object) -> Dictionary:
+	var item: Dictionary = Items.get_item(item_id)
+	if item.is_empty(): return {"ok": false, "reason": "unknown_item"}
+	var player = world.get_node_or_null("Player") if world else null
+	if not player: return {"ok": false, "reason": "no_player"}
+	if int(player.gold) < price: return {"ok": false, "reason": "not_enough_gold",
+		"have": int(player.gold), "need": price}
+	if bag.size() >= MAX_SLOTS: return {"ok": false, "reason": "bag_full"}
+	player.gold -= price
+	add_item(item_id, 1)
+	if world and world.has_method("_refresh_hud"): world._refresh_hud()
+	return {"ok": true, "item_name": String(item.get("name", item_id)), "gold_spent": price}
