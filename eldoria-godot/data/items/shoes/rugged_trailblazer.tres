@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "rugged_trailblazer",
+  "name": "Terrain Trekker",
+  "kind": "boot",
+  "traction": "all",
+  "minor_effect": "increases stamina recovery",
+  "flavor": "A sturdy boot fit for the wilderness, with laces as rough as the terrain"
+}
+"""
