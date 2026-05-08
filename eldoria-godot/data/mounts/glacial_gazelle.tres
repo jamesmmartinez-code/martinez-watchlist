@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "glacial_gazelle",
+  "name": "Froststep",
+  "species": "moose",
+  "speed_mult": 1.5,
+  "stamina": 120,
+  "region_unlock": "tidesong",
+  "unlock_condition": "stable_purchase:500",
+  "flavor": "With a coat as white as freshly fallen snow and antlers that shimmer like icicles, Froststep is a gentle giant with a heart as cold as the glaciers she calls home. She loves to run along the frozen shores, feeling the rush of the icy wind in her fur."
+}
+"""
