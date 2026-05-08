@@ -1,0 +1,12 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "rumor_followup"
+metadata/_data = """
+{
+  "id": "ancient_tomb_discovery",
+  "rumor_origin_text": "Lost city hidden in mountains",
+  "actual_outcome": "Ancient temple found with artifacts",
+  "reward_hint": "Map to hidden treasure",
+  "flavor": "Misty mountains conceal secrets"
+}
+"""
