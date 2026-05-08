@@ -87,6 +87,11 @@ var npc_flags: Dictionary = {}        # npc_name -> Array[String]
 #     "first_tod":      float, # time_of_day on first visit
 #     "last_tod":       float, # time_of_day on most recent visit
 #   }
+# Run 29 (Builder) — npc_memory extended with relationship score fields:
+#     "gifts":   int,   # times player gave a gift to this NPC (record_npc_gift)
+#     "insults": int,   # times player insulted this NPC (record_npc_insult)
+# relationship_score = clamp(gifts - insults, -10, 10). Tier-resolution in
+# NPC.gd reads npc_relationship_score() as a fifth dialogue tier above visit-count.
 # WRITES: `record_npc_visit(name)` only — invoked by NPC.gd at the top of
 # _on_interact BEFORE any tier resolution, so visit-count includes the
 # triggering call.
@@ -875,6 +880,51 @@ func is_stranger(npc_name: String) -> bool:
 	if npc_name == "":
 		return true
 	return not bool(npc_seen.get(npc_name, false))
+
+# ────────────────────────────────────────────────────────────────────────
+# NPC relationship score (run 29 — Builder)
+# ────────────────────────────────────────────────────────────────────────
+# Relationship score = clamp(gifts - insults, -10, 10).
+# record_npc_gift / record_npc_insult are the ONLY public mutators.
+# Score ≥ 3 = trusted friend; used by villager_friend achievement.
+const NPC_RELATIONSHIP_SCORE_MIN: int = -10
+const NPC_RELATIONSHIP_SCORE_MAX: int = 10
+
+func record_npc_gift(npc_name: String) -> void:
+	if npc_name == "":
+		return
+	var entry: Dictionary = npc_memory.get(npc_name, {
+		"visits": 0, "first_day": -1, "last_day": -1,
+		"first_tod": -1.0, "last_tod": -1.0, "gifts": 0, "insults": 0,
+	})
+	entry["gifts"] = int(entry.get("gifts", 0)) + 1
+	npc_memory[npc_name] = entry
+	_check_achievements()
+
+func record_npc_insult(npc_name: String) -> void:
+	if npc_name == "":
+		return
+	var entry: Dictionary = npc_memory.get(npc_name, {
+		"visits": 0, "first_day": -1, "last_day": -1,
+		"first_tod": -1.0, "last_tod": -1.0, "gifts": 0, "insults": 0,
+	})
+	entry["insults"] = int(entry.get("insults", 0)) + 1
+	npc_memory[npc_name] = entry
+	_check_achievements()
+
+func npc_relationship_score(npc_name: String) -> int:
+	var entry: Dictionary = npc_memory.get(npc_name, {})
+	var gifts: int = int(entry.get("gifts", 0))
+	var insults: int = int(entry.get("insults", 0))
+	return clamp(gifts - insults, NPC_RELATIONSHIP_SCORE_MIN, NPC_RELATIONSHIP_SCORE_MAX)
+
+func npc_any_relationship_above(min_score: int) -> bool:
+	# Returns true if ANY NPC has relationship_score >= min_score.
+	# Used by the villager_friend achievement predicate.
+	for key: String in npc_memory.keys():
+		if npc_relationship_score(key) >= min_score:
+			return true
+	return false
 
 # Direct world-flag write — sister to apply_consequence's flag step but with
 # no faction / npc / toast side-effects. Used when an emergent runtime event
