@@ -242,6 +242,16 @@ const NPCS = [
 		"You've a way of finding my doorstep at dusk. Sit — the bread's still warm.",
 		"Late again? My door knows your knock by now. Come in from the cold.",
 	 ],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Maeve mutters
+	 # to her herb bundles and the Whisperwood. Interval 28–42s: she speaks slowly.
+	 "bark_lines":[
+		"Whisperwood's listening today. Can you hear it?",
+		"These roots remember older names than ours.",
+		"A good healer knows when to let the wound breathe.",
+		"The crow flew north twice this morning. Mark that.",
+		"Mmm. Wolf-sage is blooming. Strange for this season.",
+	 ],
+	 "bark_min":28.0, "bark_max":42.0,
 	 "use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -259,6 +269,17 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): tiny shifts around the forge — Edda is
 	 # the smithy and never strays far. Quenching trough at night.
 	 "schedule":[Vector3(-5.4, 0,  3.0), Vector3(-6.0, 0,  3.0), Vector3(-6.0, 0,  2.4), Vector3(-6.4, 0,  3.4)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Edda grumbles
+	 # at the forge and talks to her work. Interval 20–32s: she's industrious.
+	 "bark_lines":[
+		"Iron remembers every strike. So does Edda.",
+		"Bellows need air — just like good steel needs time.",
+		"This blade'll hold. Unlike the last apprentice.",
+		"Sparks mean it's working. No sparks, start over.",
+		"Morning dew cooled my tongs. Nature's temper. I respect it.",
+		"A dull blade is just a heavy stick. Don't bring me heavy sticks.",
+	 ],
+	 "bark_min":20.0, "bark_max":32.0,
 	 "use_json_dialogue":true},
 	{"name":"Mara the Merchant", "role":"shop",    "pos":Vector3(  3,  0, -5), "tint":Color(0.7,0.5,0.25),
 	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
@@ -277,7 +298,18 @@ const NPCS = [
 	 ],
 	 # COMPOUND (run 11 — schedule): market stall during the day, drinks at
 	 # the inn at night. Closes the believable-merchant loop with Bram.
-	 "schedule":[Vector3( 2.5, 0,  0.0), Vector3( 2.5, 0,  0.0), Vector3( 3.0, 0, -5.0), Vector3( 8.6, 0, -2.0)]},
+	 "schedule":[Vector3( 2.5, 0,  0.0), Vector3( 2.5, 0,  0.0), Vector3( 3.0, 0, -5.0), Vector3( 8.6, 0, -2.0)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Mara counts
+	 # stock and mutters about coin. Interval 18–30s: a merchant never stops.
+	 "bark_lines":[
+		"Four potions, three salves, two satchels. Good. Good.",
+		"Someone always wants more and pays less. Someone named Everyone.",
+		"I did not carry this stock three valleys for BROWSING.",
+		"Hmm. Crystal shards are moving faster this week.",
+		"Counts right. Mara's counts always right.",
+		"If it gleams, it sells. If it stinks, it heals. Mara knows both.",
+	 ],
+	 "bark_min":18.0, "bark_max":30.0},
 	{"name":"Herbalist Lyra",    "role":"alchemy", "pos":Vector3( -3,  0, -5), "tint":Color(0.4,0.7,0.35),
 	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
 	 "lines":[
@@ -316,6 +348,17 @@ const NPCS = [
 	 # marshmint she eulogizes in her morning line is at the forest edge),
 	 # then back to her hut for the rest of the day.
 	 "schedule":[Vector3(-7.5, 0, -7.5), Vector3(-3.0, 0, -5.0), Vector3(-3.0, 0, -4.4), Vector3(-3.0, 0, -5.0)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Lyra hums and
+	 # talks to her plants. Interval 25–40s: she's contemplative.
+	 "bark_lines":[
+		"Feverfew dries best on the east wall. Mother was right.",
+		"Hmm. This batch smells of the deep wood. Strong.",
+		"Three pinches, not two. Always three.",
+		"The meadow iris is early this year. Rain's coming.",
+		"These roots won't grind themselves… actually, let me check.",
+		"Poultice, poultice, tincture, poultice. Busy season.",
+	 ],
+	 "bark_min":25.0, "bark_max":40.0,
 	 "use_json_dialogue":true},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
 	 # COMPOUND (run 19 — Builder): swap the legacy "pull up a stool" line for
@@ -369,6 +412,17 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): sweeps the doorstep at dawn, peak
 	 # service in the evening when Mara joins him for a drink.
 	 "schedule":[Vector3( 9.4, 0, -1.0), Vector3(10.0, 0, -2.0), Vector3( 9.0, 0, -2.0), Vector3(10.0, 0, -2.5)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Bram talks to
+	 # himself about the inn, ale, and gossip. Interval 22–35s: publican rhythm.
+	 "bark_lines":[
+		"Mug's clean. Mug's always clean. That's the standard.",
+		"Three valleys, three ales, one Bram. That's the legend.",
+		"Fire needs a log. Fire always needs a log.",
+		"Roan looked worried this morning. I'll pull him an extra.",
+		"Trade's good when the road's safe. Road's been good lately.",
+		"Maeve ordered chamomile again. Worried woman drinks chamomile.",
+	 ],
+	 "bark_min":22.0, "bark_max":35.0,
 	 # COMPOUND (run 16 — Builder): visit-memory tier. Bram is the village
 	 # rumor-exchange — by the third pull-up he's calling you a regular.
 	 # Threshold 3 mirrors Maeve so cross-NPC pacing matches; tune individual
@@ -460,6 +514,17 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): brushes a horse outside the stable in
 	 # the morning, leads the team in for the evening.
 	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Roan talks to
+	 # his horses and the road. Interval 20–34s: stable work is constant.
+	 "bark_lines":[
+		"Easy, Pippin. Easy. Road's still quiet.",
+		"Good mare. Good. You heard the wolves last night too, hm?",
+		"South road's dry. That'll be mud by sundown — felt the air.",
+		"Saddle this side, brush that side. Order matters.",
+		"Three travelers came through smelling of fear. I said nothing.",
+		"Horses know. Before men know, horses know.",
+	 ],
+	 "bark_min":20.0, "bark_max":34.0,
 	 "use_json_dialogue":true},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
 	 # COMPOUND (run 18 — Builder): swap the legacy "spirit" koan for the
@@ -491,6 +556,17 @@ const NPCS = [
 	 # COMPOUND (run 11 — schedule): never leaves the training field. Slight
 	 # position shifts at evening (lantern-side practice) and night (watch).
 	 "schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)],
+	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Hala barks
+	 # drill counts and koans at the air. Interval 15–26s: a trainer never rests.
+	 "bark_lines":[
+		"One. Two. Three. HOLD. Again.",
+		"Footwork is thinking. Slow feet, slow mind.",
+		"You breathe out on the strike. Always out. Always.",
+		"Pivot on the ball. Never the heel. Ball.",
+		"A wolf doesn't telegraph. Neither should you.",
+		"AGAIN. From the hip, not the shoulder. AGAIN.",
+	 ],
+	 "bark_min":15.0, "bark_max":26.0,
 	 # COMPOUND (run 16 — Builder): visit-memory tier. Hala is THE skill
 	 # mentor — by the third session her tone shifts from generic koan to
 	 # named-student attention. Threshold 3, same as the others, so all
@@ -1835,6 +1911,15 @@ func _make_npc(data: Dictionary) -> void:
 			if v is Vector3:
 				anchors.append(v)
 		npc.schedule_anchors = anchors
+	# REFINE: character — ambient bark wiring. THEME §12 MOTION & LIFE: the bark
+	# system was defined in NPC.gd (run 26) but no NPC had lines authored in
+	# WorldBuilder. Now each NPC's dict may carry "bark_lines", "bark_min",
+	# "bark_max"; absent keys default to silent (empty array, 22-38s defaults).
+	var bark_lines_raw = data.get("bark_lines", [])
+	if bark_lines_raw is Array and (bark_lines_raw as Array).size() > 0:
+		npc.ambient_bark_lines = Array(bark_lines_raw, TYPE_STRING, "", null)
+	npc.ambient_bark_interval_min = float(data.get("bark_min", 22.0))
+	npc.ambient_bark_interval_max = float(data.get("bark_max", 38.0))
 	add_child(npc)
 
 	var col := CollisionShape3D.new()
