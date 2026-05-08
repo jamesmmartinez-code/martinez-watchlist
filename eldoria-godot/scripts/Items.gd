@@ -572,11 +572,14 @@ const REFORGE_MAX_TIER: int = 3
 const REFORGE_COSTS: Array[int] = [5, 10, 18]
 
 # Cumulative damage bonus per tier — flat int that adds to weapon.damage.
-# +2/+4/+6 lifts are tuned so even a rusty_sword (3 dmg) at +3 (9 dmg) reads
-# as a real upgrade for Alden's first cave run, while a dragonfang (42 dmg)
-# at +3 (48 dmg) is still inside the same combat tier — Owen's Mastery loop
-# stays meaningful without the forge becoming the dominant damage source.
-const REFORGE_DAMAGE_BONUS: Array[int] = [2, 4, 6]
+# REFINE: balance — damage steps +2/+4/+6 → +3/+6/+10. Original per-tier steps
+# read as thin in the hit-number feedback (+2 on T1 was nearly invisible).
+# New steps keep the loot-pyramid ceiling intact (dragonfang 42→52 dmg at T3,
+# +24% — safely below the next loot tier) while making EACH STEP a chunky read.
+# T1 +3 means Alden's first reforge (5 shards, first cave session) is felt
+# immediately — his short-session-win affinity beat. Compounds with enchant
+# cost 8→6 and Mara shard price 55→45g in this polish run.
+const REFORGE_DAMAGE_BONUS: Array[int] = [3, 6, 10]
 
 # Per-tier suffix for HUD/UI display.
 const REFORGE_SUFFIXES: Array[String] = ["+1", "+2", "+3"]

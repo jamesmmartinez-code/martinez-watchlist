@@ -1285,7 +1285,11 @@ func _on_reforge_pressed() -> void:
 		var new_tier: int = int(result.get("new_tier", 0))
 		var nm: String = Items.forged_name(weapon_id, new_tier)
 		var dmg: int = int(result.get("new_damage", 0))
-		_show_toast("🔨 Edda hammers the steel — %s sings (%d dmg)" % [nm, dmg])
+		# REFINE: balance — reforge toast now names the tier suffix so Owen reads his mastery rung
+		# at a glance (e.g. "Iron Sword +2 — 18 dmg"). The old message only named the weapon; the
+		# tier is the POINT of the reforge beat. forged_name(weapon_id, new_tier) already embeds the
+		# suffix — we just surface it here. THEME §3 sunset-gold toasts (🔨 icon preserved).
+		_show_toast("🔨 %s — %d dmg" % [nm, dmg])
 		play_sfx("sword_hit")
 		# Refresh the dialogue button immediately so the new state is visible
 		# without re-talking to Edda. _refresh_reforge_button is pure read of
@@ -1334,7 +1338,10 @@ func _on_enchant_pressed() -> void:
 	if result.get("ok", false):
 		var prefix: String = String(result.get("prefix", ""))
 		var dmg: int = int(result.get("new_damage", 0))
-		_show_toast("Edda whispers the rune -- \"%s\" blazes in the steel (%d dmg)" % [prefix, dmg])
+		# REFINE: balance — enchant toast restructured: prefix leads so Owen reads his mastery rune FIRST.
+		# Old order buried the affix mid-sentence; new order: signal then flavour.
+		# THEME §3: ✦ star-dot is the mastery-tier marker (boss banner, achievement toasts).
+		_show_toast("✦ %s — Edda seals the rune (%d dmg)" % [prefix, dmg])
 		play_sfx("sword_hit")
 		var eb = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/EnchantBtn") if dialogue_panel else null
 		if eb: _refresh_enchant_button(eb, _current_npc_role, player)
@@ -1381,7 +1388,13 @@ const MARA_STOCK: Array = [
 	{"id": "hp_potion_m",   "price": 45, "label": "Medium HP Potion"},
 	{"id": "mp_potion_s",   "price": 20, "label": "Small MP Potion"},
 	{"id": "antidote",      "price": 30, "label": "Antidote"},
-	{"id": "crystal_shard", "price": 55, "label": "Crystal Shard"},
+	# REFINE: balance — Mara crystal_shard price 55 → 45g. At 55g a fresh-spawn player (gold: 50) can
+	# afford exactly zero shards from Mara. The forge is visible in the first dialogue but the economy
+	# locks them out until they have farmed ~110g in drops. 45g lets the starting purse buy one shard
+	# (50g − 45g = 5g change) so Edda's first reforge (cost 5 shards) is VISIBLE after one session of
+	# mixed farming + one Mara visit. Compounds with enchant_cost 8→6 and xp curve easing: the
+	# whole progression arc now has a reachable first beat inside session 1.
+	{"id": "crystal_shard", "price": 45, "label": "Crystal Shard"},
 ]
 var _shop_panel: Panel = null
 
