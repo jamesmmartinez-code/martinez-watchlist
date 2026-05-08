@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "mossy_agate_pendant",
+  "name": "Mossy Agate Pendant",
+  "slot": "belt",
+  "minor_effect": "Gives a 5% chance to find rare herbs",
+  "unlock_condition": "craft",
+  "flavor": "A delicate pendant with a moss-covered agate stone"
+}
+"""
