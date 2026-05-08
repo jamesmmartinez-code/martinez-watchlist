@@ -4,11 +4,11 @@ metadata/_kind = "prop"
 metadata/_data = """
 {
   "id": "mystic_mirror",
-  "name": "Ancient Reflections",
+  "name": "Moonlit Reflections",
   "kind": "telescope",
   "region": "whisperwood",
-  "interaction": "peers through to a hidden glade",
-  "reward": "reveal_lore_fragment:whisperwood_history",
-  "flavor": "A delicate, gemstone-encrusted telescope stands atop a toadstool, its brass surface adorned with whispering leaves and vines, as if the forest itself is sharing secrets with those who dare to listen."
+  "interaction": "peer through to see a mystical forest scene",
+  "reward": "reveal_lore_fragment:whisperwood_history_1",
+  "flavor": "A beautifully crafted, antique telescope stands atop a moss-covered pedestal, its brass tube adorned with delicate, swirling patterns that shimmer in the moonlight, as if beckoning young adventurers to gaze through its lens and uncover the secrets of Whisperwood."
 }
 """
