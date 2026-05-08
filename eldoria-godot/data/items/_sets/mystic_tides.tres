@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "mystic_tides",
+  "name": "Tidal Treasure",
+  "theme": "sea",
+  "piece_ids": [
+    "trident_of_the_deep",
+    "shell_shield",
+    "kelp_cloak",
+    "oceanic_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 3,
+      "effect": "+5% swim speed",
+      "stat_mod": {
+        "agi": 3
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "+20% underwater hp regen",
+      "stat_mod": {
+        "int": 10
+      }
+    }
+  ],
+  "flavor": "Legend says the sea goddess hid her treasure within the tides, and only those who brave the depths may claim it"
+}
+"""
