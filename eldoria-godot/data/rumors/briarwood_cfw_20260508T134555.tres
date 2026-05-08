@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Rare flowers bloom under moonlight"
+truth_0 = "true"
+rumor_1 = "The ancient trees whisper secrets"
+truth_1 = "partial"
+rumor_2 = "Maeve's sister is hiding in the woods"
+truth_2 = "partial"
+rumor_3 = "Briarwood is home to a dragon"
+truth_3 = "false"
+rumor_4 = "The blossoms grant magical powers"
+truth_4 = "true"
