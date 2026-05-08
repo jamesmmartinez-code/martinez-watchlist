@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mystic_acorn",
+  "name": "Mystic Acorn",
+  "category": "consumable",
+  "subtype": "healing",
+  "tier": "uncommon",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 50,
+    "spd": 0
+  },
+  "flavor": "Restores a moderate amount of health to the consumer.",
+  "realm": "eldoria"
+}
+"""
