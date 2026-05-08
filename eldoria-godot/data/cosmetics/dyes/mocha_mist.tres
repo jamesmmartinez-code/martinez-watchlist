@@ -4,10 +4,10 @@ metadata/_kind = "dye"
 metadata/_data = """
 {
   "id": "mocha_mist",
-  "name": "Dusky Brown",
+  "name": "Mocha Mist",
   "color_hex": "#964B00",
   "source": "mineral:iron_ore",
   "rarity": "uncommon",
-  "flavor": "Forged in the earth's core"
+  "flavor": "Forged in the earth's depths"
 }
 """
