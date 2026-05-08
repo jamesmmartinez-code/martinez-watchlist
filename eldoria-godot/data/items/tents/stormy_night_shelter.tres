@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tent"
+metadata/_data = """
+{
+  "id": "stormy_night_shelter",
+  "name": "Tent of Twilight",
+  "capacity": 2,
+  "weather_resistance": "all",
+  "palette": [
+    "#3498db",
+    "#2ecc71"
+  ],
+  "flavor": "A midnight sky's dark hue"
+}
+"""
