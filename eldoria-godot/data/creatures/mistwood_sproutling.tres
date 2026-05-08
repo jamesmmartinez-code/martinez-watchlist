@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "mistwood_sproutling",
+  "name": "Mistwood Sproutling",
+  "family": "fey",
+  "tier": "elite",
+  "level": 25,
+  "hp": 380,
+  "armor": 10,
+  "dmg_min": 20,
+  "dmg_max": 35,
+  "attack_speed": 1.5,
+  "move_speed": 5,
+  "behavior_tags": [
+    "ambusher",
+    "healer"
+  ],
+  "tells": [
+    {
+      "name": "photosynthesize",
+      "wind_up_ms": 1000,
+      "vfx_id": "leaf_glow"
+    }
+  ],
+  "weaknesses": {
+    "ice": 1.2
+  },
+  "resistances": {
+    "nature": 0.8
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "mistwood_leaf",
+      "weight": 0.6
+    },
+    {
+      "item_id": "fey_dust",
+      "weight": 0.4
+    }
+  ]
+}
+"""
