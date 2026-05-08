@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "midnight_mooncake",
+  "name": "Lucky Cake",
+  "festival_id": "midnight_festival",
+  "duration_hours": 48,
+  "effect": "buff:lucky:600s|emote_unlock:moon_dance",
+  "flavor": "Golden crust, silvery moonbeam"
+}
+"""
