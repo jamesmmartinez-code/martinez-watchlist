@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_forecast"
+metadata/_data = """
+{
+  "id": "whisperwood_forecast",
+  "region": "whisperwood",
+  "days": [
+    {
+      "label": "Day 5",
+      "weather": "stormy_warm",
+      "high_c": 20,
+      "low_c": 15,
+      "omen": "Thunder roars, a warm storm awakes"
+    }
+  ]
+}
+"""
