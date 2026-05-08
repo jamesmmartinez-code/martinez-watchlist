@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weapon_skin"
+metadata/_data = """
+{
+  "id": "mythic_dewdrop",
+  "name": "Misty Morn",
+  "applies_to": "sword|bow|staff|hammer|dagger",
+  "palette": [
+    "#87CEEB",
+    "#4682B4"
+  ],
+  "motif": "ethereal mist",
+  "unlock_condition": "complete_quest:whispering_woods",
+  "flavor": "Dew-kissed petals dancing in morning haze"
+}
+"""
