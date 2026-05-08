@@ -1013,17 +1013,14 @@ func _build_windmill() -> void:
 			mill_col.position.y = 2.5
 			mill_body.add_child(mill_col)
 			mill.add_child(mill_body)
-			# THEME §13 — settle so the stone base contacts ground rather
-			# than half-sinking into the plaza.
-			call_deferred("_settle_to_ground", mill)
-			# After AABB resolves, lift the procedural blade pivot to sit at
-			# ~85% of the GLB's height (the typical hub location on a
-			# stylized windmill silhouette).
-			call_deferred("_position_windmill_blades_after_settle", mill)
-			# If the GLB ships with its own baked blades, hide them so they
-			# don't double-up with the procedural rotating overlay. Looks
-			# for child nodes whose name suggests a blade/sail/wing mesh.
-			call_deferred("_hide_baked_blades", mill_inst)
+			# 2026-05-08: Use hardcoded hub_y for GLB path instead of deferred AABB.
+			# The windmill GLB at scale 1.55 is ~8.5m tall; hub at 85% = 7.2m.
+			# Deferred AABB fires too early (GLB not yet rendered) → blades at y=4.0.
+			hub_y = 7.2
+			hub_z = 1.5
+			# Hide baked blades via a one-shot timer (0.1s) so GLB is fully rendered.
+			var _t := get_tree().create_timer(0.1)
+			_t.timeout.connect(func(): _hide_baked_blades(mill_inst))
 
 	if not mill_used_glb:
 		# scale-eng 2026-05-05: measured roof-tip 5.7m, canon windmill floor 8m
