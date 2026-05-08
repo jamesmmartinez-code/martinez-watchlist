@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "barks_in_the_village",
+  "barks": [
+    {
+      "text": "Fresh bread today!",
+      "npc_role": "baker",
+      "tone": "contented"
+    },
+    {
+      "text": "Rainy days are best",
+      "npc_role": "farmer",
+      "tone": "contented"
+    },
+    {
+      "text": "Stupid rusty hammer",
+      "npc_role": "smith",
+      "tone": "grumbling"
+    },
+    {
+      "text": "I found a pretty rock!",
+      "npc_role": "child",
+      "tone": "wondering"
+    },
+    {
+      "text": "Who left the gate open?",
+      "npc_role": "guard",
+      "tone": "grumbling"
+    },
+    {
+      "text": "Need more sugar...",
+      "npc_role": "merchant",
+      "tone": "grumbling"
+    },
+    {
+      "text": "Remember when...",
+      "npc_role": "elder",
+      "tone": "contented"
+    },
+    {
+      "text": "Hmmm, what's for lunch?",
+      "npc_role": "baker",
+      "tone": "humming"
+    }
+  ]
+}
+"""
