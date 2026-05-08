@@ -4,10 +4,10 @@ metadata/_kind = "festival_food"
 metadata/_data = """
 {
   "id": "midnight_mooncake",
-  "name": "Lucky Cake",
-  "festival_id": "midnight_festival",
-  "duration_hours": 48,
-  "effect": "buff:lucky:600s|emote_unlock:moon_dance",
-  "flavor": "Golden crust, silvery moonbeam"
+  "name": "Moonlit Delight",
+  "festival_id": "lunar_celebration",
+  "duration_hours": 24,
+  "effect": "buff:lucky:600s|emote_unlock:moonwalk",
+  "flavor": "Silky pastry filled with sweet, shimmering cream"
 }
 """
