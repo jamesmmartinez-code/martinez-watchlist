@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "plant"
+metadata/_data = """
+{
+  "id": "wild_basil",
+  "name": "Wild Basil",
+  "habitat": "forest|meadow",
+  "season": "spring|summer",
+  "alchemy_use": "digestion aid",
+  "appearance": "small, delicate green leaves with tiny white flowers"
+}
+"""
