@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "ember_mistress",
+  "name": "Ember Mistress",
+  "suit": "spark",
+  "power": 6,
+  "effect": "+2 Spark",
+  "art_motif": "volcanic",
+  "flavor": "Painting by Lucien"
+}
+"""
