@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "mudskipper",
+  "name": "Mirestomper",
+  "kind": "boot",
+  "traction": "all",
+  "minor_effect": "resistant to mud",
+  "flavor": "Dark brown leather with rusty buckles"
+}
+"""
