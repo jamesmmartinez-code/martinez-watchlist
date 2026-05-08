@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "aurora_bloom",
+  "name": "Aurora Bloom",
+  "color_hex": "#C9E4CA",
+  "source": "flower:lavender",
+  "rarity": "uncommon",
+  "flavor": "Petals of dawn-kissed lavender"
+}
+"""
