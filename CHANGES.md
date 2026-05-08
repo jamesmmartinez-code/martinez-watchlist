@@ -1,3 +1,7 @@
+## Tech debt
+
+QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 25 MiB hard cap (20 MiB soft cap) for Cloudflare Pages deploy target. Asset is actively referenced in `scripts/Player.gd`, `scripts/CharacterSelect.gd`, and `scenes/Main.tscn` — cannot be deleted. Action required: compress/LOD-bake Hero.glb below 20 MiB or split into streaming chunks before Cloudflare Pages migration.
+
 ## 2026-05-08 Auto: run 27 — Ambient NPC Barks (THEME §12)
 I'm building: Ambient bark system wiring — all 7 villagers (Backlog #8 compound)
 THEME §12 cited: MOTION & LIFE — idle one-liners float above NPCs between interactions;
