@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "moonlight_morsel",
+  "name": "Moonbeam Macaron",
+  "festival_id": "midnight_lantern_festival",
+  "duration_hours": 48,
+  "effect": "buff:lucky:600s|emote_unlock:twirl",
+  "flavor": "Delicate, shimmering pastry"
+}
+"""
