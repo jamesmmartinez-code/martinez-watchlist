@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cheese"
+metadata/_data = """
+{
+  "id": "crescenza_cheese",
+  "name": "Crescenza",
+  "milk_source": "cow",
+  "aging_days": 30,
+  "effect": "buff:satiated:1200s",
+  "flavor": "sweet cream with a hint of tang"
+}
+"""
