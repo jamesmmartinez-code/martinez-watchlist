@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "mud_stomper",
+  "name": "Terra Trekker",
+  "kind": "boot",
+  "traction": "all",
+  "minor_effect": "+10% walking speed",
+  "flavor": "rugged, dependable, and ready to take on the toughest trails"
+}
+"""
