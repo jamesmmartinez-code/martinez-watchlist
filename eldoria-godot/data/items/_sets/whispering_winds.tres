@@ -4,30 +4,30 @@ metadata/_kind = "set"
 metadata/_data = """
 {
   "id": "whispering_winds",
-  "name": "Zephyr's Breeze",
+  "name": "Zephyr's Whisper",
   "theme": "sky",
   "piece_ids": [
-    "wind_dancer_sword",
-    "cloud_hopper_helm",
-    "skyward_chest",
-    "breeze_walker_boots"
+    "sword_zephyr",
+    "helm_zephyr",
+    "chest_zephyr",
+    "boots_zephyr"
   ],
   "bonuses": [
     {
       "pieces": 2,
-      "effect": "Gust Boost",
+      "effect": "Gentle Gust",
       "stat_mod": {
-        "spd": 3
+        "spd": 10
       }
     },
     {
       "pieces": 4,
-      "effect": "Storm Shield",
+      "effect": "Whispering Winds",
       "stat_mod": {
-        "def": 20
+        "mp": 20
       }
     }
   ],
-  "flavor": "Forged from the whispers of the wind, this set was crafted by the cloud weavers to aid adventurers in their journey across the skies."
+  "flavor": "Forged from the whispers of the wind, this set was crafted by a young sky mage who sought to harness the breeze's gentle power."
 }
 """
