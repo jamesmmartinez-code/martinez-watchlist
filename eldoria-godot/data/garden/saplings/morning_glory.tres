@@ -6,10 +6,10 @@ metadata/_data = """
   "id": "morning_glory",
   "name": "Morning Glory",
   "grow_days": 7,
-  "yield_item": "blue_flower",
+  "yield_item": "morning_glory_flower",
   "yield_qty": 4,
   "sun_required": "full",
   "watering": "medium",
-  "flavor": "a delicate, skyward climber with trumpet blooms"
+  "flavor": "Vibrant, trumpet-shaped blooms"
 }
 """
