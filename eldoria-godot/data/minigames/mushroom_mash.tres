@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "mushroom_mash",
+  "name": "Fungi Frenzy",
+  "kind": "timing",
+  "location": "festival:harvest",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 10,
+    "gold": 5,
+    "item_id": "rare_spore"
+  },
+  "flavor": "Glowing mushrooms burst in rhythm, tap to the beat"
+}
+"""
