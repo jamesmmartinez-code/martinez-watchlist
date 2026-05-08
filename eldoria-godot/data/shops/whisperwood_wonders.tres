@@ -4,41 +4,53 @@ metadata/_kind = "shop"
 metadata/_data = """
 {
   "id": "whisperwood_wonders",
-  "vendor_name": "Luna Sparkspanner",
+  "vendor_name": "Professor Pecan's Provisions",
   "region": "whisperwood",
   "shop_type": "general",
   "stock": [
     {
       "item_id": "NEW",
       "price": 50,
-      "quantity": 25,
+      "quantity": 20,
       "restock_hours": 24
     },
     {
-      "item_id": "acorn_potion",
-      "price": 75,
-      "quantity": 15,
+      "item_id": "acorn_cookie",
+      "price": 15,
+      "quantity": 50,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "healing_potion",
+      "price": 100,
+      "quantity": 10,
       "restock_hours": 48
     },
     {
-      "item_id": "NEW",
-      "price": 100,
-      "quantity": 10,
+      "item_id": "whisperwood_map",
+      "price": 200,
+      "quantity": 5,
       "restock_hours": 72
     },
     {
-      "item_id": "sparkling_dust",
-      "price": 20,
+      "item_id": "wildflower_crown",
+      "price": 80,
       "quantity": 30,
       "restock_hours": 24
     },
     {
-      "item_id": "NEW",
-      "price": 200,
-      "quantity": 5,
+      "item_id": "woodland_wand",
+      "price": 250,
+      "quantity": 3,
       "restock_hours": 96
+    },
+    {
+      "item_id": "mushroom_snack",
+      "price": 25,
+      "quantity": 40,
+      "restock_hours": 12
     }
   ],
-  "flavor": "Tucked away in the heart of Whisperwood, Luna Sparkspanner's shop, Whisperwood Wonders, is a treasure trove of enchanted trinkets and curious goods, where the soft glow of luminescent mushrooms and the sweet scent of blossoming wildflowers guide you through a maze of wonders."
+  "flavor": "Tucked away in a cozy nook of Whisperwood, Professor Pecan's Provisions is a treasure trove of curious goods and tasty treats, all carefully curated by the venerable professor himself."
 }
 """
