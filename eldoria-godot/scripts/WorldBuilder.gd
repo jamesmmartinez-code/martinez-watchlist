@@ -132,6 +132,12 @@ func _sub_mat(tres_path: String, uv: float = 2.0) -> StandardMaterial3D:
 		push_warning("[WorldBuilder] _sub_mat: not StandardMaterial3D at " + tres_path)
 		return null
 	var m: StandardMaterial3D = base.duplicate()
+	# Guard: albedo_texture null means images aren't in the .pck yet
+	# (missing .import sidecars) — fall back to _pbr_mat() instead of
+	# serving a textureless white material.
+	if m.albedo_texture == null:
+		push_warning("[WorldBuilder] _sub_mat: albedo null (images not imported?) at " + tres_path)
+		return null
 	m.uv1_scale = Vector3(uv, uv, 1.0)
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	_sub_cache[key] = m
@@ -754,6 +760,7 @@ func _build_ground_overlay() -> void:
 	ground.material_override = MAT_GRASS(40)
 	ground.position.y = 0.01  # avoid z-fighting with the existing ground
 	ground.name = "GroundPBR"
+	ground.custom_aabb = AABB(Vector3(-150, -2, -150), Vector3(300, 4, 300))
 	add_child(ground)
 
 # ============================================================================
@@ -778,6 +785,7 @@ func _build_path_network() -> void:
 		path.position = center + Vector3(0, 0.02, 0)
 		path.rotation.y = atan2(dir.x, dir.z)
 		path.name = "Path"
+		path.custom_aabb = AABB(Vector3(-200, -1, -200), Vector3(400, 2, 400))
 		add_child(path)
 
 # ============================================================================
@@ -3785,6 +3793,8 @@ func _emergency_shrink(body: Node, aabb: AABB, target_h: float) -> void:
 	# Node3D child until target height is reached.
 	if aabb.size.y <= 0.001: return
 	for child in body.get_children():
+		if child is CollisionShape3D or child is AnimationPlayer:
+			continue
 		if child is Node3D and child.has_method("get_children"):
 			var c := child as Node3D
 			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
@@ -3982,6 +3992,8 @@ func _check_and_normalize(body: Node, target_height: float) -> void:
 	# Otherwise rescale via the FIRST direct Node3D child (the model wrapper).
 	# Compute the absolute scale needed: current_visual_scale * (target / current_height).
 	for child in body.get_children():
+		if child is CollisionShape3D or child is AnimationPlayer:
+			continue
 		if child is Node3D and child.has_method("get_children"):
 			var c := child as Node3D
 			var avg_cur: float = (c.scale.x + c.scale.y + c.scale.z) / 3.0
