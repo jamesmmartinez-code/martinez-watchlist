@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "luminous_bough",
+  "name": "Glimmering Branch",
+  "category": "material",
+  "subtype": "wood",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 1,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A sturdy, glowing branch that can be used to craft wands and other wooden items.",
+  "realm": "eldoria"
+}
+"""
