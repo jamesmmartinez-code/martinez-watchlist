@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "sapling"
+metadata/_data = """
+{
+  "id": "sunset_bloom",
+  "name": "Sunset Bloom",
+  "grow_days": 7,
+  "yield_item": "dye_red",
+  "yield_qty": 3,
+  "sun_required": "full",
+  "watering": "medium",
+  "flavor": "Vibrant petals shine like sunset hues"
+}
+"""
