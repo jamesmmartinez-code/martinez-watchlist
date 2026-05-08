@@ -1,0 +1,45 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_beekeeper",
+  "title": "The Missing Beekeeper",
+  "region": "briarwood",
+  "act": 2,
+  "level_band": [
+    3,
+    5
+  ],
+  "hook": "Beekeeper Elara has gone missing!",
+  "stages": [
+    {
+      "objective": "Find Elara's last known location",
+      "location": "Briarwood Apiary",
+      "completion_trigger": "talk_to_npc:apiary_owner"
+    },
+    {
+      "objective": "Gather clues about Elara's disappearance",
+      "location": "Briarwood Apiary",
+      "completion_trigger": "collect:item_id_honeycomb"
+    },
+    {
+      "objective": "Rescue Elara from the Honey Grotto",
+      "location": "Honey Grotto",
+      "completion_trigger": "defeat:creature_id_honey_wraith"
+    }
+  ],
+  "rewards": {
+    "xp": 100,
+    "gold": 20,
+    "items": [
+      "item_id_honey_jar"
+    ],
+    "faction_rep": {
+      "briarwood": 10
+    }
+  },
+  "repeatable": false,
+  "flavor": "In the heart of Briarwood, the sweet scent of honey fills the air, but the apiary is in disarray. The bees buzz anxiously, and the owner is frantic with worry. Elara, the skilled beekeeper, has vanished, leaving behind only a trail of clues and a whisper of danger."
+}
+"""
