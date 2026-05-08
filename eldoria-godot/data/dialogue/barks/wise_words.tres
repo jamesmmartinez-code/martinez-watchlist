@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ambient_bark"
+metadata/_data = """
+{
+  "id": "wise_words",
+  "barks": [
+    {
+      "text": "Life's simple joys",
+      "npc_role": "elder",
+      "tone": "humming"
+    }
+  ]
+}
+"""
