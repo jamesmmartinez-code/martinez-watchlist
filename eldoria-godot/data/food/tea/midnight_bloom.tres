@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "tea"
+metadata/_data = """
+{
+  "id": "midnight_bloom",
+  "name": "Moonlit Dream",
+  "leaves": [
+    "jasmine",
+    "chamomile"
+  ],
+  "effect": "buff:focus:300s|buff:calm:600s|warm:cold_zone",
+  "brew_time_min": 5,
+  "flavor": "softly glowing floral"
+}
+"""
