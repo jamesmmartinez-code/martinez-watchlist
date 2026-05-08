@@ -15,8 +15,8 @@
 ; 2026-05-07: replaced panorama sunset JPG (had baked white clouds that
 ; jm couldn't stand) with a clean procedural gradient. No clouds, ever.
 sky_top_color = Color(0.32, 0.20, 0.36, 1)
-sky_horizon_color = Color(0.95, 0.55, 0.30, 1)
-sky_curve = 0.18
+sky_horizon_color = Color(0.72, 0.38, 0.18, 1)
+sky_curve = 0.40
 ground_horizon_color = Color(0.55, 0.40, 0.32, 1)
 ground_bottom_color = Color(0.10, 0.08, 0.10, 1)
 ground_curve = 0.05
@@ -62,8 +62,8 @@ fog_enabled = true
 ; REFINE: visual — outdoor — fog tint warmer (R 0.92→0.94, G 0.78→0.80, B 0.62→0.60). Pairs with World.gd dusk-density swing so god-rays read sunset-gold not paper-white.
 fog_light_color = Color(0.94, 0.80, 0.60, 1)
 fog_light_energy = 0.5
-fog_density = 0.0018 ; 2026-05-07: 0.0032 -> 0.0018 (distance was washing out)
-fog_sky_affect = 0.7
+fog_density = 0.0012 ; 2026-05-08: 0.0018 -> 0.0012 (reduced to clear sky horizon)
+fog_sky_affect = 0.10 ; 2026-05-08: 0.7 -> 0.10 (fog was washing out horizon sky)
 fog_height = 0.0
 fog_height_density = 0.05
 volumetric_fog_enabled = true
