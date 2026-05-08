@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "legendary"
+metadata/_data = """
+{
+  "id": "starlight_scepter",
+  "name": "Stellar Guardian",
+  "category": "staff",
+  "level_req": 30,
+  "stats": {
+    "atk": 25,
+    "def": 5,
+    "hp": 10,
+    "spd": 3
+  },
+  "unique_effect": "Heals allies within 5m for 5% max HP",
+  "unlock_condition": "unite_three_runes",
+  "backstory": "Forged from a fallen star, this staff was said to have been wielded by the ancient moon goddess to bring peace and prosperity to the land. Its power is rumored to be able to heal the wounds of the heart and bring balance to the universe.",
+  "flavor": "May the celestial light guide you"
+}
+"""
