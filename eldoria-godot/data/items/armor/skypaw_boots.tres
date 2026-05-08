@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "skypaw_boots",
+  "name": "Cloudstrider Boots",
+  "category": "armor",
+  "subtype": "boots",
+  "tier": "rare",
+  "level_req": 25,
+  "stats": {
+    "atk": 0,
+    "def": 5,
+    "hp": 0,
+    "spd": 3
+  },
+  "flavor": "Light, airy boots that grant the wearer increased speed and agility, as if walking on clouds.",
+  "realm": "skyreave"
+}
+"""

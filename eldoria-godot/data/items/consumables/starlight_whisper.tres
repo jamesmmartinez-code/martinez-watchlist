@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_whisper",
+  "name": "Moonlit Whisper",
+  "category": "consumable",
+  "subtype": "elixir",
+  "tier": "uncommon",
+  "level_req": 10,
+  "stats": {
+    "atk": 2,
+    "def": 0,
+    "hp": 10,
+    "spd": 1
+  },
+  "flavor": "A gentle, shimmering elixir that restores health and grants a soft whisper of magical energy.",
+  "realm": "tidesong"
+}
+"""
