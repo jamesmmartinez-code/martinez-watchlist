@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "stardust_sceptre",
+  "name": "Twinkling Rod",
+  "category": "weapon",
+  "subtype": "staff",
+  "tier": "rare",
+  "level_req": 20,
+  "stats": {
+    "atk": 10,
+    "def": 5,
+    "hp": 0,
+    "spd": 2
+  },
+  "flavor": "A staff imbued with the essence of stardust, shining brightly in the dark.",
+  "realm": "skyreave"
+}
+"""
