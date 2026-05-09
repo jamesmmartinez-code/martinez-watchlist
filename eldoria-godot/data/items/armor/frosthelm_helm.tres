@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "frosthelm_helm",
+  "name": "Frosthelm's Visage",
+  "category": "armor",
+  "subtype": "helmet",
+  "tier": "epic",
+  "level_req": 40,
+  "stats": {
+    "atk": 0,
+    "def": 15,
+    "hp": 0,
+    "spd": 5
+  },
+  "flavor": "A helmet forged from the icy essence of the Frozen Spires, said to grant the wearer the cunning and ferocity of the winter wolves. Its frozen visage is rumored to strike fear into the hearts of even the most daunting foes.",
+  "realm": "ashenmere"
+}
+"""

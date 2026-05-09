@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_strand",
+  "name": "Stardust Braid",
+  "category": "material",
+  "subtype": "thread",
+  "tier": "rare",
+  "level_req": 25,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A shimmering strand of starlight-infused thread, said to possess the essence of celestial magic. Weavers of great skill can craft garments of unparalleled beauty and strength.",
+  "realm": "skyreave"
+}
+"""
