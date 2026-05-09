@@ -33,6 +33,8 @@ func _populate_npc_models() -> void:
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
 		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
 		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
+		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
 	}
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {
@@ -43,6 +45,8 @@ const NPC_SCALES := {
 	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
 	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
 	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
+	"Village Guard":        Vector3(1.05, 1.05, 1.05),
+	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
 }
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
@@ -659,6 +663,75 @@ const NPCS = [
 		"Past curfew, training under stars. I knew you for the type. Begin.",
 	 ],
 	 "use_json_dialogue":true},
+	# THEME §4 — warrior.glb (CC-BY): armoured guard silhouette reads from 30m.
+	# North gate placement — first NPC the player sees. THEME §12: gate patrol schedule.
+	{"name":"Village Guard",    "role":"guard",   "pos":Vector3(  0,  0,  18), "tint":Color(0.55,0.55,0.65),
+	 "line":"Stay close to the village walls — the forest has ears tonight.",
+	 "lines":[
+		"Stay close to the village walls — the forest has ears tonight.",
+		"Gate's held since dawn. Your road look clear?",
+		"I count my rounds by lantern-lights. Seven lanterns, seven rounds.",
+		"Rest well, friend. I'll keep watch.",
+	 ],
+	 "warm_flag":"first_quest_done",
+	 "warm_lines":[
+		"The wood's quieter since your errand. Makes my rounds easier. Thank you.",
+		"Fewer shadows at the treeline tonight. Word travels — so does gratitude.",
+		"You made the night shorter for all of us. Gate's yours to pass, always.",
+		"Seven lanterns, and none of them flickered last night. First time in weeks.",
+	 ],
+	 "schedule":[
+		Vector3( 0.0, 0,  18.0),  # morning: north gate post
+		Vector3( 0.0, 0,  16.0),  # midday: patrol south
+		Vector3( 0.0, 0,  17.0),  # evening: mid-gate
+		Vector3( 0.0, 0,  18.5),  # night: outer gate
+	 ],
+	 "bark_lines":[
+		"All clear on the north. For now.",
+		"Seven rounds since midnight. Still counting.",
+		"Wind's picking up from the Whisperwood. Watch the treeline.",
+		"Gate holds. Village sleeps. Guard stands. Order of things.",
+		"You hear that? … No. Good. That's the sound of a quiet night.",
+	 ],
+	 "bark_min":25.0, "bark_max":40.0},
+	# THEME §4 — worker_girl.glb (CC-BY): farmer silhouette reads from 30m.
+	# East fields placement. THEME §12: field→market→home schedule. memory_visits_min=2.
+	{"name":"Farm Worker",      "role":"villager","pos":Vector3( 18,  0,  5), "tint":Color(0.6,0.5,0.30),
+	 "line":"The harvest's thin when the goblins raid our stores. Stay sharp.",
+	 "lines":[
+		"The harvest's thin when the goblins raid our stores. Stay sharp.",
+		"Soil's good this season, if I can keep the pests away. Two-legged ones, mostly.",
+		"Evening already? The rows still need another pass.",
+		"No rest for the fields. They grow at night whether I watch or not.",
+	 ],
+	 "warm_flag":"first_quest_done",
+	 "warm_lines":[
+		"I slept without nightmares last night. First time in months. Thank you.",
+		"The stores are fuller since you drove them off. We'll eat well this winter.",
+		"Children played past the fence today. They didn't used to do that.",
+		"Even the birds are louder now. Field feels alive again.",
+	 ],
+	 "memory_visits_min":2,
+	 "memory_lines":[
+		"You pass this way often. The field thanks you for the company.",
+		"Back again? I'll save you the corner root — it's the sweetest.",
+		"Three visits now? Most folks don't notice the farmer. You do. Appreciated.",
+		"Come every day and I'll teach you which rows need turning. Honest work.",
+	 ],
+	 "schedule":[
+		Vector3( 20.0, 0,  6.0),  # morning: east field work
+		Vector3( 14.0, 0,  2.0),  # midday: market
+		Vector3( 18.0, 0,  5.0),  # evening: field last check
+		Vector3( 16.0, 0,  3.0),  # night: home
+	 ],
+	 "bark_lines":[
+		"These rows don't turn themselves.",
+		"Good soil is quiet soil. This soil's been too quiet lately.",
+		"Root vegetables first, then the greens. Always.",
+		"Rain's overdue. I've started counting clouds.",
+		"Harvest comes whether you're ready or not. I'm always ready.",
+	 ],
+	 "bark_min":20.0, "bark_max":35.0},
 ]
 
 const BUILDINGS = [
