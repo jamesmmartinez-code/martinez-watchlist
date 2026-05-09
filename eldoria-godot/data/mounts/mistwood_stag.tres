@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "mistwood_stag",
+  "name": "Moonlit Runner",
+  "species": "stag",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "complete_quest:ww_stag_friend",
+  "flavor": "A gentle stag with a coat as white as moonlight, and antlers that shine like the stars. It is said to appear only at dawn and dusk, when the forest is at its most magical."
+}
+"""
