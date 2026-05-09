@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "copper_coin_flip",
+  "name": "Copper's Chance",
+  "play_at": "tavern",
+  "rules": "Flip a copper coin. Heads wins, tails loses. Winner takes 5 coppers from the loser.",
+  "reward_win": "copper:5",
+  "flavor": "A game of luck, where fate decides the winner."
+}
+"""
