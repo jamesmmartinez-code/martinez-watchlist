@@ -13,22 +13,22 @@ metadata/_data = """
       "qty": 2
     },
     {
-      "item_id": "forest_berry",
+      "item_id": "fresh_thyme",
       "qty": 1
     },
     {
-      "item_id": "treebeard_thyme",
+      "item_id": "ancient_ent_ale",
       "qty": 1
     }
   ],
   "output": {
-    "item_id": "entwash_broth",
-    "qty": 2
+    "item_id": "entwash_stew",
+    "qty": 1
   },
   "time_seconds": 15,
   "fuel_cost": 3,
-  "unlock_condition": "complete_entwood_quest",
+  "unlock_condition": "reach_level_10",
   "failure_behavior": "none",
-  "flavor": "A hearty, earthy stew that warms the soul and strengthens the body."
+  "flavor": "A hearty, slow-cooked stew inspired by the ancient wisdom of the Ents, with the rich flavors of the forest and the warmth of a fireside gathering"
 }
 """
