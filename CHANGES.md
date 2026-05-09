@@ -1,5 +1,8 @@
 ## Tech debt
 
+QA 2026-05-09T04:48Z — Build: ✅ success | Pages: /pages/builds API shows errored record (build ~04:34Z) but deployment 4629164204 queued at 04:45Z indicates recovery; site likely live. No action taken — monitoring. Tech debt: OPERATIONS.md §15 does not exist as a file in repo (policy only documented in QA_OVERSIZED_ASSETS.md); Hero.glb 29.55 MB owner-override non-blocking (logged previously).
+
+
 ## run-33 — NPC Defense Witness System (2026-05-08)
 
 **Backlog**: #8 NPC Memory — proximity defense awareness  
