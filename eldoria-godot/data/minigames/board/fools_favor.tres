@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "fools_favor",
+  "name": "Fool's Favor",
+  "play_at": "tavern",
+  "rules": "Players take turns rolling a single six-sided die. The first player to roll a 6 wins. Loser pays winner 5 coppers.",
+  "reward_win": "copper:5",
+  "flavor": "A game of chance for the brave and foolhardy."
+}
+"""
