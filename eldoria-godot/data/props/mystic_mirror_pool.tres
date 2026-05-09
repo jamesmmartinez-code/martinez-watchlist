@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "mystic_mirror_pool",
+  "name": "Mystic Mirror Pool",
+  "kind": "carved_stone",
+  "region": "whisperwood",
+  "interaction": "Reflects a fun riddle, answered by interacting again",
+  "reward": "reveal_lore_fragment:whisperwood_ancients",
+  "flavor": "A shimmering pool surrounded by moss-covered stones, adorned with ancient runes that seem to dance with an otherworldly glow under the Whisperwood's dappled light"
+}
+"""
