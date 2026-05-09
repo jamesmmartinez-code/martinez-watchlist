@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "ring"
+metadata/_data = """
+{
+  "id": "gilded_wraith",
+  "name": "Moonlit Oath",
+  "tier": "legendary",
+  "stat_mod": {
+    "hp": 10,
+    "atk": 15,
+    "def": 8,
+    "spd": 12,
+    "luck": 5
+  },
+  "effect": "Heals 5 HP at dusk and dawn",
+  "flavor": "Forged from moonbeams"
+}
+"""
