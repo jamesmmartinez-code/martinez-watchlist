@@ -9,13 +9,13 @@ metadata/_data = """
   "tier": "trash",
   "level": 5,
   "hp": 25,
-  "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 4,
+  "armor": 0,
+  "dmg_min": 1,
+  "dmg_max": 2,
   "attack_speed": 1.2,
   "move_speed": 4,
   "behavior_tags": [
-    "lone_wanderer"
+    "plant_like"
   ],
   "tells": [
     {
@@ -28,16 +28,16 @@ metadata/_data = """
     "fire": 1.2
   },
   "resistances": {
-    "nature": 0.8
+    "poison": 0.8
   },
   "xp_value": 10,
   "loot_table": [
     {
-      "item_id": "petal",
+      "item_id": "acorn",
       "weight": 0.3
     },
     {
-      "item_id": "seed",
+      "item_id": "petal",
       "weight": 0.2
     },
     {
@@ -45,6 +45,6 @@ metadata/_data = """
       "weight": 0.5
     }
   ],
-  "flavor": "A small, delicate fey creature with leaves for hair and skin like the petals of a flower."
+  "flavor": "A tiny, delicate fey creature with leaves for hair and a body made of twisted vines."
 }
 """

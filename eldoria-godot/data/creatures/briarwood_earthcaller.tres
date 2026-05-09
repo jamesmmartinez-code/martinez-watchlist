@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_earthcaller",
+  "name": "Briarwood Earthcaller",
+  "family": "elemental",
+  "tier": "elite",
+  "level": 25,
+  "hp": 400,
+  "armor": 10,
+  "dmg_min": 20,
+  "dmg_max": 40,
+  "attack_speed": 1.5,
+  "move_speed": 3,
+  "behavior_tags": [
+    "summoner"
+  ],
+  "tells": [
+    {
+      "name": "earthquake",
+      "wind_up_ms": 1000,
+      "vfx_id": "rumble"
+    }
+  ],
+  "weaknesses": {
+    "air": 1.5
+  },
+  "resistances": {
+    "earth": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "geode",
+      "weight": 0.4
+    },
+    {
+      "item_id": "earthstone",
+      "weight": 0.3
+    },
+    {
+      "item_id": "root",
+      "weight": 0.3
+    }
+  ],
+  "flavor": "A sturdy, elemental creature with skin like rough stone and hair that resembles wild moss."
+}
+"""
