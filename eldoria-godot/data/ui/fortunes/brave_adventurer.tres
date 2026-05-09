@@ -6,8 +6,8 @@ metadata/_data = """
   "id": "brave_adventurer",
   "fortunes": [
     {
-      "text": "Courage guides your quest",
-      "mood": "wise"
+      "text": "Courage grows with every step forward",
+      "mood": "hopeful"
     }
   ]
 }
