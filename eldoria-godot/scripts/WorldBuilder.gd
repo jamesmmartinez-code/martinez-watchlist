@@ -154,7 +154,7 @@ func MAT_GRASS(uv := 30.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/grass/grass_diff.jpg",
 		"res://assets/textures/grass/grass_norm.jpg",
 		"res://assets/textures/grass/grass_rough.jpg",
-		Vector3(uv, uv, 1))
+		Vector3(uv, uv, 1), Color(0.38, 0.55, 0.28))
 
 func MAT_WOOD(uv := 1.5) -> StandardMaterial3D:
 	var m = _sub_mat("res://assets/textures/arch/wood_beam/wood_beam.tres", uv)
@@ -218,19 +218,19 @@ func MAT_BARK(uv := 2.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/bark/bark_diff.jpg",
 		"res://assets/textures/bark/bark_norm.jpg",
 		"",
-		Vector3(uv, uv, 1))
+		Vector3(uv, uv, 1), Color(0.35, 0.22, 0.15))
 
 func MAT_ROCK(uv := 1.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/rock/rock_diff.jpg",
 		"res://assets/textures/rock/rock_norm.jpg",
 		"",
-		Vector3(uv, uv, 1))
+		Vector3(uv, uv, 1), Color(0.45, 0.42, 0.40))
 
 func MAT_SNOW(uv := 1.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/snow/snow_diff.jpg",
 		"res://assets/textures/snow/snow_norm.jpg",
-		"",
-		Vector3(uv, uv, 1), Color(0.95, 0.96, 1.0))
+		"res://assets/textures/snow/snow_rough.jpg",
+		Vector3(uv, uv, 1), Color(0.82, 0.86, 0.90))
 
 func MAT_LEAF(tint: Color) -> StandardMaterial3D:
 	# Stylized leaves — slight subsurface look
