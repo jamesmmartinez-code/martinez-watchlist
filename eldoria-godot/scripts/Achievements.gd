@@ -269,6 +269,22 @@ const ACHIEVEMENTS: Dictionary = {
 			"min_score": 3,
 		},
 	},
+	# run-31 (Builder) — cave_delver: player has defeated the Crystal Guardian.
+	# Completes the dungeon loop: Crystal Caves has a boss (crystal_guardian)
+	# but no achievement to mark clearing it. Predicate reads the world_flag
+	# "crystal_guardian_slain" that is set by World.apply_consequence when the
+	# guardian's kill_quest_target matches. title_priority 45 — sits between
+	# realm_warden (100) and first_enchant (28), so a Guardian kill outranks
+	# most early titles but still yields to a full-warden clear.
+	"cave_delver": {
+		"name": "Cave Delver",
+		"desc": "The Crystal Guardian stirs no more. The deep light is yours now.",
+		"icon": "💎",
+		"icon_path": "res://assets/icons/achievements/cave_delver.png",
+		"title_text": "the Cave Delver",
+		"title_priority": 45,
+		"predicate": {"kind": "world_flag", "flag": "crystal_guardian_slain"},
+	},
 }
 
 # Pure evaluator — returns the IDs of every achievement whose predicate is
