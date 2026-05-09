@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "aerial_assassin",
+  "boss_id": "existing_harpy",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "You're quick, I'll give you that!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

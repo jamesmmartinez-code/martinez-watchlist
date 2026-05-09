@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "stormbringer_scorch",
+  "boss_id": "existing_fire_dragon",
+  "phrases": [
+    {
+      "trigger": "tell_windup",
+      "text": "Feel the heat rising!",
+      "tone": "warning"
+    }
+  ]
+}
+"""

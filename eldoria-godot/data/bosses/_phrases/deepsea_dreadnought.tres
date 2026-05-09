@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "deepsea_dreadnought",
+  "boss_id": "generic_sea_monster",
+  "phrases": [
+    {
+      "trigger": "low_hp",
+      "text": "My depths are drying...",
+      "tone": "sad_resolve"
+    }
+  ]
+}
+"""
