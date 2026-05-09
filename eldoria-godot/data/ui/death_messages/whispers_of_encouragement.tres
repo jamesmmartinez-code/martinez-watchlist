@@ -1,0 +1,35 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "death_message"
+metadata/_data = """
+{
+  "id": "whispers_of_encouragement",
+  "messages": [
+    {
+      "trigger": "fall_damage",
+      "text": "Whoops, time for a little rest!",
+      "mood": "playful"
+    },
+    {
+      "trigger": "enemy_defeat",
+      "text": "Back to camp for a cozy nap!",
+      "mood": "gentle"
+    },
+    {
+      "trigger": "kill_zone",
+      "text": "Let's try again, adventurer!",
+      "mood": "encouraging"
+    },
+    {
+      "trigger": "drowning",
+      "text": "Splish splash, back to shore!",
+      "mood": "playful"
+    },
+    {
+      "trigger": "fall_damage",
+      "text": "Don't worry, you'll bounce back!",
+      "mood": "encouraging"
+    }
+  ]
+}
+"""
