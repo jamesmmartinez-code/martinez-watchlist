@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shoe"
+metadata/_data = """
+{
+  "id": "desert_digger",
+  "name": "Dune Stomper",
+  "kind": "boot",
+  "traction": "sand",
+  "minor_effect": "+5% speed in desert biomes",
+  "flavor": "leather uppers, canvas laces, and a sole that's seen some miles"
+}
+"""
