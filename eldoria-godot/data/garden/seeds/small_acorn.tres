@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "small_acorn",
+  "name": "Small Acorn",
+  "grows_into": "oak_sapling",
+  "price": 2,
+  "obtained_from": "forage:forest",
+  "flavor": "Tiny forest treasure"
+}
+"""
