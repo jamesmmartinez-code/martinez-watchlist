@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "misty_dawn",
+  "name": "Dusk Whisper",
+  "palette": [
+    "#964B00",
+    "#F7F7F7"
+  ],
+  "emblem": "",
+  "flutter_strength": 8,
+  "effect": "Gives a gentle hum of magic in the vicinity",
+  "flavor": "Soft, feathery brushstrokes evoke a serene landscape"
+}
+"""
