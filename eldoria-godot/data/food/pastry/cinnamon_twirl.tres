@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "pastry"
+metadata/_data = """
+{
+  "id": "cinnamon_twirl",
+  "name": "Cinnamon Swirl",
+  "kind": "bun",
+  "filling": "cinnamon sugar",
+  "heal": 20,
+  "effect": "buff:cheerful:300s",
+  "flavor": "Warm, comforting, and sweetly spiced, like a cozy afternoon in a rustic bakery"
+}
+"""
