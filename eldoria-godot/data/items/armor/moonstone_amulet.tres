@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonstone_amulet",
+  "name": "Moonstone Amulet",
+  "category": "armor",
+  "subtype": "necklace",
+  "tier": "uncommon",
+  "level_req": 15,
+  "stats": {
+    "atk": 0,
+    "def": 5,
+    "hp": 10,
+    "spd": 2
+  },
+  "flavor": "A delicate, glowing pendant that shines brightly under the light of the full moon.",
+  "realm": "eldoria"
+}
+"""
