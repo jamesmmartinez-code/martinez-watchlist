@@ -384,13 +384,30 @@ func take_damage(amount: int) -> void:
 	var dn := Label3D.new()
 	dn.set_script(DAMAGE_NUMBER_SCRIPT)
 	dn.text = "-%d" % actual
-	dn.font_size = 32
-	dn.outline_size = 5
+	# REFINE: combat-feel — hit weight readable at a glance: light/medium/heavy each
+	# have distinct size, color, and spawn height. Deepens run-28 HP-bar coloring
+	# into the moment-of-impact feedback loop. THEME §12: temporal motion cues.
+	if actual <= 5:
+		# Light graze — muted dusty-rose, small, low spawn
+		dn.font_size = 30
+		dn.outline_size = 4
+		dn.modulate = Color(0.92, 0.52, 0.52)
+		dn.position = global_position + Vector3(0, 2.2, 0)
+	elif actual <= 13:
+		# Medium hit — warm red, readable size, standard height
+		dn.font_size = 40
+		dn.outline_size = 5
+		dn.modulate = Color(1.0, 0.28, 0.22)
+		dn.position = global_position + Vector3(0, 2.4, 0)
+	else:
+		# Heavy blow — deep crimson, large, high spawn for max airtime
+		dn.font_size = 54
+		dn.outline_size = 7
+		dn.modulate = Color(1.0, 0.10, 0.06)
+		dn.position = global_position + Vector3(0, 2.8, 0)
 	dn.outline_modulate = Color(0, 0, 0)
-	dn.modulate = Color(1.0, 0.30, 0.30)
 	dn.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	dn.no_depth_test = true
-	dn.position = global_position + Vector3(0, 2.4, 0)
 	get_tree().current_scene.add_child(dn)
 	if hp <= 0:
 		_die()
