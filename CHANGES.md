@@ -1,5 +1,12 @@
 ## Tech debt
 
+- **[2026-05-09] QA §15 violation — `eldoria-godot/assets/models/Hero.glb` is 29.55 MiB (exceeds 20 MiB soft cap, 25 MiB hard cap per OPERATIONS.md §15 / Cloudflare Pages budget)**
+  - Asset is actively referenced in `Main.tscn` (player model) and cannot be deleted without breaking the game.
+  - Action required: compress or LOD-swap Hero.glb below 20 MiB before Cloudflare Pages migration.
+  - Logged by Eldoria QA Watchdog on 2026-05-09.
+
+## Tech debt
+
 QA 2026-05-09T04:48Z — Build: ✅ success | Pages: /pages/builds API shows errored record (build ~04:34Z) but deployment 4629164204 queued at 04:45Z indicates recovery; site likely live. No action taken — monitoring. Tech debt: OPERATIONS.md §15 does not exist as a file in repo (policy only documented in QA_OVERSIZED_ASSETS.md); Hero.glb 29.55 MB owner-override non-blocking (logged previously).
 
 
