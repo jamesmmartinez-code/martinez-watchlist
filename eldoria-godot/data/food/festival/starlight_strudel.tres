@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "starlight_strudel",
+  "name": "Starlight Strudel",
+  "festival_id": "midsummer_night",
+  "duration_hours": 24,
+  "effect": "buff:lucky:600s|emote_unlock:twinkle_toes",
+  "flavor": "Golden pastry filled with sparkling cream"
+}
+"""
