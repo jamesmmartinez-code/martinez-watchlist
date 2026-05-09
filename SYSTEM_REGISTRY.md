@@ -87,3 +87,29 @@ PlayerHome.gd: StaticBody3D at WorldBuilder.HOME_POS = Vector3(0,0,14)
   group "chests" (StorageChest only): Minimap plots bronze ring
 WorldBuilder hooks: HOME_POS const, HOME_SCRIPT const, _build_player_home() via _safe_call
 Achievement "hearthkeeper": predicate all_of[first_quest_done, player_home_visited] → title "the Hearthkeeper" (priority 22)
+
+
+
+## Enemy Model Registry (run 25)
+KIND_MODEL_PATHS: Dictionary — maps enemy_kind string → GLB asset path
+  "goblin"            → "res://assets/models/enemies/goblin.glb"
+  "goblin_scout"      → "res://assets/models/enemies/goblin_scout.glb"
+  "wolf"              → "res://assets/models/enemies/wolf.glb"
+  "bandit"            → "res://assets/models/enemies/bandit.glb"
+  "skeleton"          → "res://assets/models/enemies/skeleton.glb"
+  "crystal_elemental" → "res://assets/models/enemies/crystal_elemental.glb"
+_get_kind_model(kind: String) -> PackedScene
+  bandit_captain resolves to bandit path
+  Unknown kinds or missing files return null → caller uses enemy_model placeholder
+  load() used (not preload()) so missing assets degrade gracefully at runtime
+_NORMALIZE_TARGET_BY_KIND: per-kind height targets (scale-eng 2026-05-08)
+  crystal_guardian=4.00m, bandit_captain=2.50m, wolf=1.00m, goblin_warlord=2.80m
+
+## New Villager NPCs — Village Guard + Farm Worker (run 30)
+NPC_MODELS: "Village Guard"→warrior.glb, "Farm Worker"→worker_girl.glb
+NPC_SCALES: Village Guard 1.05×, Farm Worker 1.00×
+NPCS[7]: Village Guard — role=guard, pos=Vector3(0,0,18), warm_flag=first_quest_done, 4-bucket schedule, 5 barks 25-40s
+NPCS[8]: Farm Worker — role=villager, pos=Vector3(18,0,5), warm_flag=first_quest_done, memory_visits_min=2, 4-bucket schedule, 5 barks 20-35s
+_make_npc new wiring: warmed_relationship_min + warmed_relationship_dialogue_variants (completes run 29 NPC.gd schema)
+GLBs now used: warrior.glb (was unused), worker_girl.glb (was unused)
+Hooks: group "npcs" (Minimap), schedule_anchors (NPC walker), warmed_relationship_min (ready for gift/insult)
