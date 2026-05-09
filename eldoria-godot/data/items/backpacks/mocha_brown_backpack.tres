@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "backpack"
+metadata/_data = """
+{
+  "id": "mocha_brown_backpack",
+  "name": "Brown Explorer",
+  "extra_slots": 5,
+  "appearance": "leather brown straps",
+  "unlock_condition": "craft",
+  "flavor": "worn from adventure"
+}
+"""
