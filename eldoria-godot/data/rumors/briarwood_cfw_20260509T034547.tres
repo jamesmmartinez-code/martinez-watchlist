@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's seeds grant wishes"
+truth_0 = "false"
+rumor_1 = "New Briarwood trail opens soon"
+truth_1 = "true"
+rumor_2 = "Glimmerwings hide in Briarwood"
+truth_2 = "partial"
+rumor_3 = "Briarwood ancient magic stirs"
+truth_3 = "true"
+rumor_4 = "Maeve's seeds summon creatures"
+truth_4 = "partial"

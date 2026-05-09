@@ -1,7 +1,6 @@
 [gd_resource type="Resource" load_steps=1 format=3]
 [resource]
 metadata/_kind = "event"
-metadata/_category = "festival"
 metadata/_data = """
 {
   "id": "luminous_leaf_festival",
@@ -21,6 +20,6 @@ metadata/_data = """
     "items": []
   },
   "repeats_yearly": true,
-  "flavor": "Celebrate the changing colors of the leaves with Maeve in the Briarwood region, featuring a special vendor selling rare autumnal items."
+  "flavor": "Celebrate the changing colors of the Briarwood leaves with a magical festival! Maeve will sell rare, glowing seeds during the event."
 }
 """
