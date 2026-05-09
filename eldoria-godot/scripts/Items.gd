@@ -155,6 +155,44 @@ const ITEMS = {
 	                  "icon":"🕯", "icon_path":"res://assets/icons/captain_seal.png","color":Color(0.55,0.45,0.30),"stack":true,"value":60},
 	"warlord_horn":  {"name":"Warlord's Horn",  "type":"material","slot":"","rarity":"epic",
 	                  "icon":"🐃", "icon_path":"res://assets/icons/warlord_horn.png","color":Color(0.85,0.30,0.20),"stack":true,"value":250},
+
+	# ── CQ-S2-02 (Builder run 32): .tres-defined items missing from ITEMS dict ─
+	# briar_shortbow, mossbound_buckler, roan_woodbow were defined as .tres
+	# resources but absent from the legacy ITEMS dict — Items.get_item() returned
+	# {} for all three, breaking any UI that called it (forge sell, shop display,
+	# loot popup name, drop table label). Stats mirrored from each .tres file.
+	# THEME §1: all three are period-correct — a carved-briar hunting bow,
+	# a moss-lashed buckler from Whisperwood oakwood, a stable master's gift bow.
+	"briar_shortbow": {"name":"Briar Shortbow",  "type":"weapon", "slot":"weapon", "rarity":"uncommon",
+	                   "icon":"🏹", "icon_path":"res://assets/icons/briar_shortbow.png",
+	                   "color":Color(0.55, 0.35, 0.18), "damage":8, "crit_bonus":0.04, "value":65},
+	"mossbound_buckler": {"name":"Mossbound Buckler", "type":"armor", "slot":"shield", "rarity":"common",
+	                   "icon":"🛡", "icon_path":"res://assets/icons/mossbound_buckler.png",
+	                   "color":Color(0.35, 0.55, 0.25), "armor":4, "value":18},
+	"roan_woodbow":   {"name":"Roan Woodbow",    "type":"weapon", "slot":"weapon", "rarity":"common",
+	                   "icon":"🏹", "icon_path":"res://assets/icons/roan_woodbow.png",
+	                   "color":Color(0.60, 0.42, 0.20), "damage":3, "value":10},
+
+	# ── CQ-S2-03 (Builder run 32): practice_cudgel — Hala's after_first_quest_complete gift ─
+	# Trainer Hala's dialogue tree references this item but it had no ITEMS entry,
+	# no .tres, and no icon. "Mara stocks them; I make them." — a hand-bound
+	# training weapon from Hala's workshop row. Common rarity, low damage —
+	# it's a teaching tool, not a combat weapon. Sets world_flag cudgel_acknowledged.
+	# THEME §1: wrapped leather grip, bound briar-wood haft — no metal.
+	"practice_cudgel": {"name":"Practice Cudgel", "type":"weapon", "slot":"weapon", "rarity":"common",
+	                   "icon":"🪵", "icon_path":"res://assets/icons/practice_cudgel.png",
+	                   "color":Color(0.52, 0.38, 0.22), "damage":4, "value":8},
+
+	# ── CQ-S2-04 (Builder run 32): roan_steppe_halter — Roan's gift item ────────
+	# Stablemaster Roan's dialogue sets `roan_halter_gifted` on after_first_quest_
+	# complete but the item itself was undefined — no ITEMS entry, no .tres.
+	# A steppe-patterned decorative halter for Pippin (Roan's horse); the player
+	# receives it as a keepsake. It has no combat stats — it's a friendship token.
+	# Trinket slot so it can sit in the inventory paperdoll. THEME §1: woven
+	# hemp with geometric step-dye pattern — nomadic steppe craft, period-correct.
+	"roan_steppe_halter": {"name":"Steppe-Patterned Halter", "type":"trinket", "slot":"trinket", "rarity":"uncommon",
+	                   "icon":"🐎", "icon_path":"res://assets/icons/roan_steppe_halter.png",
+	                   "color":Color(0.65, 0.45, 0.20), "value":22},
 }
 
 # Drop tables — used by Enemy on death to roll loot
