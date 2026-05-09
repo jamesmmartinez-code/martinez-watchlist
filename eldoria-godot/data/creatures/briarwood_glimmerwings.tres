@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "briarwood_glimmerwings",
+  "name": "Glimmerwing",
+  "family": "elemental",
+  "tier": "elite",
+  "level": 25,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "loner",
+    "ambusher"
+  ],
+  "tells": [
+    {
+      "name": "glow",
+      "wind_up_ms": 900,
+      "vfx_id": "sparkles"
+    }
+  ],
+  "weaknesses": {
+    "darkness": 1.5
+  },
+  "resistances": {
+    "light": 0.7
+  },
+  "xp_value": 100,
+  "loot_table": [
+    {
+      "item_id": "glowdust",
+      "weight": 0.6
+    },
+    {
+      "item_id": "iridescent_scale",
+      "weight": 0.4
+    }
+  ]
+}
+"""

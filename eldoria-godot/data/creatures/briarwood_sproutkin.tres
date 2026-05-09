@@ -8,29 +8,29 @@ metadata/_data = """
   "family": "fey",
   "tier": "trash",
   "level": 5,
-  "hp": 35,
-  "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 4,
-  "attack_speed": 1.2,
-  "move_speed": 3.8,
+  "hp": 25,
+  "armor": 0,
+  "dmg_min": 1,
+  "dmg_max": 2,
+  "attack_speed": 1,
+  "move_speed": 3.5,
   "behavior_tags": [
-    "lone_wanderer"
+    "pack_hunter"
   ],
   "tells": [
     {
-      "name": "photosynthesize",
-      "wind_up_ms": 1000,
-      "vfx_id": "leaf_glow"
+      "name": "sprout",
+      "wind_up_ms": 500,
+      "vfx_id": "green_glow"
     }
   ],
   "weaknesses": {
-    "fire": 1.2
+    "ice": 1.2
   },
   "resistances": {
     "nature": 0.8
   },
-  "xp_value": 10,
+  "xp_value": 5,
   "loot_table": [
     {
       "item_id": "acorn",
@@ -39,8 +39,11 @@ metadata/_data = """
     {
       "item_id": "petal",
       "weight": 0.2
+    },
+    {
+      "item_id": "twig",
+      "weight": 0.5
     }
-  ],
-  "flavor": "Small, mischievous fey creatures that resemble walking, talking sprouts with leaves for hair and skin like the tender bark of a young tree."
+  ]
 }
 """
