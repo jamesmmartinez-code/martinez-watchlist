@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "moonlit_mushroom_meal",
+  "name": "Moonlit Mushroom Delight",
+  "station_required": "cooking_pot",
+  "station_tier_min": 1,
+  "inputs": [
+    {
+      "item_id": "moonpetal",
+      "qty": 1
+    },
+    {
+      "item_id": "forest_mushroom",
+      "qty": 2
+    },
+    {
+      "item_id": "dreamcream",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "lunar_stew",
+    "qty": 1
+  },
+  "time_seconds": 10,
+  "fuel_cost": 2,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A hearty stew that shines like the moon, filling the belly and warming the heart."
+}
+"""

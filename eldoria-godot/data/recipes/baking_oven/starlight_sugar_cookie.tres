@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "starlight_sugar_cookie",
+  "name": "Starlight Sugar Cookie",
+  "station_required": "baking_oven",
+  "station_tier_min": 2,
+  "inputs": [
+    {
+      "item_id": "stardust_sugar",
+      "qty": 2
+    },
+    {
+      "item_id": "moonmilk",
+      "qty": 1
+    },
+    {
+      "item_id": "twinkleberry",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "starlight_cookie",
+    "qty": 2
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "level_10",
+  "failure_behavior": "none",
+  "flavor": "A sweet treat that twinkles like the stars, bringing joy and wonder to those who taste it."
+}
+"""
