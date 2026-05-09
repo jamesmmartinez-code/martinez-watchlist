@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mystic_acorn",
+  "name": "Ancient Oak's Blessing",
+  "category": "material",
+  "subtype": "seed",
+  "tier": "common",
+  "level_req": 1,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 2,
+    "spd": 0
+  },
+  "flavor": "A rare acorn from the ancient oak tree, said to hold the power of growth and renewal.",
+  "realm": "eldoria"
+}
+"""
