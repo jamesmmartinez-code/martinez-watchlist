@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "moss_spore",
+  "name": "Moss Spore",
+  "grows_into": "moss_sapling",
+  "price": 5,
+  "obtained_from": "forage:forest",
+  "flavor": "Tiny, green spore."
+}
+"""
