@@ -4,43 +4,43 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_glimmerwings",
-  "name": "Glimmerwing",
-  "family": "elemental",
+  "name": "Glimmerwings",
+  "family": "beast",
   "tier": "elite",
   "level": 25,
   "hp": 250,
   "armor": 8,
   "dmg_min": 15,
   "dmg_max": 30,
-  "attack_speed": 1.2,
-  "move_speed": 4,
+  "attack_speed": 1.5,
+  "move_speed": 4.2,
   "behavior_tags": [
-    "loner",
-    "ambusher"
+    "solo_roamer"
   ],
   "tells": [
     {
-      "name": "glow",
-      "wind_up_ms": 900,
-      "vfx_id": "sparkles"
+      "name": "glow_burst",
+      "wind_up_ms": 1000,
+      "vfx_id": "glow_explosion"
     }
   ],
   "weaknesses": {
     "darkness": 1.5
   },
   "resistances": {
-    "light": 0.7
+    "light": 0.5
   },
-  "xp_value": 100,
+  "xp_value": 120,
   "loot_table": [
     {
-      "item_id": "glowdust",
+      "item_id": "iridescent_scale",
       "weight": 0.6
     },
     {
-      "item_id": "iridescent_scale",
+      "item_id": "glow_dust",
       "weight": 0.4
     }
-  ]
+  ],
+  "flavor": "A majestic, iridescent-winged creature that flits about the Briarwood, leaving trails of glittering dust in its wake, and is said to possess the essence of the forest's luminescent magic."
 }
 """
