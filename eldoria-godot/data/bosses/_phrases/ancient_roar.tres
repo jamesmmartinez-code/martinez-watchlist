@@ -3,13 +3,13 @@
 metadata/_kind = "boss_phrase"
 metadata/_data = """
 {
-  "id": "ember_warning",
-  "boss_id": "fire_sorcerer",
+  "id": "ancient_roar",
+  "boss_id": "mountain_troll",
   "phrases": [
     {
-      "trigger": "tell_windup",
-      "text": "Flames are coming!",
-      "tone": "warning"
+      "trigger": "low_hp",
+      "text": "I will not fall!",
+      "tone": "sad_resolve"
     }
   ]
 }

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "darkness_descends",
+  "boss_id": "shadow_knight",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Shadows will consume you!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
