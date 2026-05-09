@@ -4,10 +4,10 @@ metadata/_kind = "backpack"
 metadata/_data = """
 {
   "id": "mocha_mountain_pack",
-  "name": "Trailblazer's Pack",
+  "name": "Mocha Mountain",
   "extra_slots": 5,
-  "appearance": "Worn leather straps",
+  "appearance": "earth tones",
   "unlock_condition": "craft",
-  "flavor": "For the adventurer with a taste for the great outdoors"
+  "flavor": "hiking in the mountains"
 }
 """
