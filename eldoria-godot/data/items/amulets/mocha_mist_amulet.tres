@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "amulet"
+metadata/_data = """
+{
+  "id": "mocha_mist_amulet",
+  "name": "Moonlit Mist",
+  "wards_against": "cold|fear",
+  "tier": "uncommon",
+  "glow_color_hex": "#964B00",
+  "flavor": "Forged in moonlit mountains"
+}
+"""
