@@ -142,3 +142,29 @@ Enemy.gd hook: _die() crystal_guardian branch
   → call_group("world", "set_world_flag", "crystal_guardian_slain", true)
   → call_group("world", "_check_achievements")
 World flag "crystal_guardian_slain": bool, set once on first Guardian kill (respawns don't re-clear it)
+
+## Gift-Giving System (run 35)
+Items.gd new type="gift" items:
+  wildflower_bunch  — common, value=5g, stack=true
+  herb_bundle       — common, value=8g, stack=true
+  sweet_roll        — common, value=6g, stack=true
+  painted_stone     — uncommon, value=14g, stack=false
+  All carry "gift_flavor" field (String) for toast display.
+
+World.gd new symbols:
+  GiftBtn                        — Button in dialogue Actions bar, visible when player holds a gift + NPC is not shop/smithy
+  _refresh_gift_button(btn, role, player)  — updates visibility + label text to "Give <item_name>"
+  _find_gift_item(player) -> String        — returns cheapest gift item id from inventory, or ""
+  _on_gift_btn_pressed()                   — removes 1 gift, calls record_npc_gift, _check_achievements, shows toast
+  npc_count_with_relationship_above(min_score) -> int  — counts NPCs at or above score threshold
+
+WorldBuilder.gd new NPC wiring in _make_npc:
+  npc.warmed_relationship_min = data.get("relationship_min", 0)
+  npc.warmed_relationship_dialogue_variants = data.get("relationship_lines", [])
+  Maeve: relationship_min=2, 4 authored lines
+  Bram:  relationship_min=2, 4 authored lines
+
+Achievements.gd new entries:
+  gift_giver           — predicate npc_relationship_min >= 1 → title "the Generous" (priority 12)
+  beloved_of_briarwood — predicate beloved_of_briarwood (3+ NPCs at score >= 3) → title "Friend of Briarwood" (priority 38)
+  New eval branch: "beloved_of_briarwood" → npc_count_with_relationship_above(3) >= 3

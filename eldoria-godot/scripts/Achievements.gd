@@ -289,6 +289,25 @@ const ACHIEVEMENTS: Dictionary = {
 			"min_count": 3,
 		},
 	},
+	# run-35 (Builder): gift-giving achievements.
+	"gift_giver": {
+		"name": "Gift Giver",
+		"desc": "You gave a gift to a villager of Briarwood. Small kindnesses matter.",
+		"icon": "🎁",
+		"icon_path": "res://assets/icons/achievements/gift_giver.png",
+		"title_text": "the Generous",
+		"title_priority": 12,
+		"predicate": {"kind": "npc_relationship_min", "min_score": 1},
+	},
+	"beloved_of_briarwood": {
+		"name": "Beloved of Briarwood",
+		"desc": "Three villagers call you true friend. The village is yours.",
+		"icon": "💛",
+		"icon_path": "res://assets/icons/achievements/beloved_of_briarwood.png",
+		"title_text": "Friend of Briarwood",
+		"title_priority": 38,
+		"predicate": {"kind": "beloved_of_briarwood"},
+	},
 	"cave_delver": {
 		"name": "Cave Delver",
 		"desc": "The Crystal Guardian stirs no more. The deep light is yours now.",
@@ -391,6 +410,10 @@ static func _eval_predicate(pred: Dictionary, world: Object) -> bool:
 			var min_rel: int = int(pred.get("min_score", 3))
 			if world.has_method("npc_any_relationship_above"):
 				return world.npc_any_relationship_above(min_rel)
+			return false
+		"beloved_of_briarwood":
+			if world.has_method("npc_count_with_relationship_above"):
+				return world.npc_count_with_relationship_above(3) >= 3
 			return false
 		"npc_defense_count":
 			if not world.has_method("npc_count_with_defense_above"):
