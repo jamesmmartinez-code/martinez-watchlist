@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "loading_tip"
+metadata/_data = """
+{
+  "id": "new_game_tips",
+  "tips": [
+    {
+      "text": "Explore caves for rare gems!",
+      "category": "exploration"
+    },
+    {
+      "text": "Craft new gear to boost stats!",
+      "category": "crafting"
+    },
+    {
+      "text": "Join a guild for friend fun!",
+      "category": "social"
+    },
+    {
+      "text": "Use potions to heal in combat!",
+      "category": "combat"
+    },
+    {
+      "text": "Discover hidden paths for secrets!",
+      "category": "exploration"
+    },
+    {
+      "text": "Make friends with NPCs for rewards!",
+      "category": "social"
+    },
+    {
+      "text": "Learn new skills to defeat bosses!",
+      "category": "combat"
+    },
+    {
+      "text": "Customize your character's look!",
+      "category": "quality_of_life"
+    }
+  ]
+}
+"""
