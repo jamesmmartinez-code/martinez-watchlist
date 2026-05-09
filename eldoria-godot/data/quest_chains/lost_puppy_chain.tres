@@ -4,34 +4,34 @@ metadata/_kind = "quest_chain"
 metadata/_data = """
 {
   "id": "lost_puppy_chain",
-  "title": "The Lost Puppy",
+  "title": "Lost Puppy",
   "region": "whisperwood",
-  "theme": "helping a lost puppy",
+  "theme": "Helping a lost puppy",
   "quests": [
     {
       "id": "find_puppy",
       "title": "Find the Puppy",
-      "hook": "A puppy is lost in Whisperwood",
+      "hook": "Puppy went missing!",
       "stages_count": 3
     },
     {
-      "id": "calm_puppy",
-      "title": "Calm the Puppy",
-      "hook": "The puppy is scared and needs calming",
+      "id": "puppy_food",
+      "title": "Find Puppy Food",
+      "hook": "Puppy is hungry!",
       "stages_count": 2
     },
     {
-      "id": "return_puppy",
-      "title": "Return the Puppy",
-      "hook": "Return the puppy to its grateful owner",
+      "id": "puppy_home",
+      "title": "Find Puppy's Home",
+      "hook": "Puppy needs home!",
       "stages_count": 2
     }
   ],
   "final_reward": {
     "xp": 250,
     "gold": 150,
-    "item_id": "puppy_companion"
+    "item_id": "cute_puppy_pet"
   },
-  "flavor": "a watercolor painting of a puppy in a forest"
+  "flavor": "A cute puppy is lost in Whisperwood, and it needs your help to find its way home."
 }
 """
