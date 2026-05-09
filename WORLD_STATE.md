@@ -123,3 +123,18 @@
 - StorageChest joins group "chests" — Minimap plots bronze ring on it
 - World flag "player_home_visited" set on first E-key interaction
 - Achievement "hearthkeeper" / title "the Hearthkeeper" unlocks on first_quest_done + player_home_visited
+
+
+## Enemy GLB Asset Wiring (run 25)
+- Enemy.gd KIND_MODELS preload() crash removed; replaced with KIND_MODEL_PATHS + _get_kind_model(load())
+- Active enemy GLB mappings: goblin→goblin.glb, goblin_scout→goblin_scout.glb, wolf→wolf.glb,
+  bandit→bandit.glb, skeleton→skeleton.glb, crystal_elemental→crystal_elemental.glb
+- bandit_captain resolves to bandit.glb until dedicated GLB ships
+- crystal_guardian falls back to CesiumMan.glb placeholder (no GLB yet; SIZE_STANDARDS §2 scale-mult still applied)
+- _NORMALIZE_TARGET_BY_KIND: bandit_captain clamped 2.30→2.50m (boss floor; joins boss_silhouettes)
+
+## New Villagers — Village Guard + Farm Worker (run 30)
+- **Village Guard** — warrior.glb, north gate Vector3(0,0,18), role=guard. Patrols gate day/night. Warm after first_quest_done. 5 barks 25-40s.
+- **Farm Worker** — worker_girl.glb, east fields Vector3(18,0,5), role=villager. Field→market→home schedule. Memory tier at 2 visits. Warm after first_quest_done. 5 barks 20-35s.
+- Both in group "npcs" — Minimap gold-dot plots. Both have 4-bucket schedule_anchors.
+- warmed_relationship_min wiring added to _make_npc (completes run 29 schema).
