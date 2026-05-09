@@ -455,9 +455,18 @@ func gain_xp(amount: int) -> void:
 	while xp >= xp_for_next_level():
 		xp -= xp_for_next_level()
 		level += 1
-		max_hp += 18
+		# REFINE: balance — HP grant per level-up 18 → 22. At base 120 HP, +18 was
+		# +15%/level — readable but thin for Alden (9yo) who reads the HP bar more
+		# than the number. +22 = +18%/level: each ding fills the bar noticeably further
+		# without breaking the TTK band (goblin 6 dmg → 20+ hits to kill at level 5).
+		# Compounds on the existing stat-grant system — no new field, no schema change.
+		max_hp += 22
 		hp = max_hp
-		max_mp += 10
+		# REFINE: balance — MP grant per level-up 10 → 14. Base 30 MP is very tight;
+		# +10 left level-5 players at 70 MP — one or two spells per fight. +14 reaches
+		# 86 MP at level 5, enough for 3–4 skill uses before the fight ends. Encourages
+		# Owen (11yo mastery axis) to weave skills rather than hoarding mana.
+		max_mp += 14
 		mp = max_mp
 		get_tree().call_group("world", "play_sfx", "level_up")
 		var pop := Label3D.new()
@@ -471,6 +480,23 @@ func gain_xp(amount: int) -> void:
 		pop.no_depth_test = true
 		pop.position = global_position + Vector3(0, 3.0, 0)
 		get_tree().current_scene.add_child(pop)
+		# REFINE: balance — stat-delta popup. THEME §12 MOTION & LIFE: the LEVEL UP
+		# shout already fires but kids never SEE what they gained — the number lives
+		# silently in the stats panel. A second floater speaks the grant: "+22 HP +14 MP"
+		# spawns 0.35s after the main pop, offset slightly right so they don't overlap.
+		# Reuses DAMAGE_NUMBER_SCRIPT (same billboard/fade pipeline). Zero new nodes
+		# or scene edits — purely deepens what gain_xp() already does.
+		var stat_pop := Label3D.new()
+		stat_pop.set_script(DAMAGE_NUMBER_SCRIPT)
+		stat_pop.text = "+%d HP  +%d MP" % [22, 14]
+		stat_pop.font_size = 28
+		stat_pop.outline_size = 5
+		stat_pop.outline_modulate = Color(0, 0, 0)
+		stat_pop.modulate = Color(0.55, 0.95, 0.65)
+		stat_pop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		stat_pop.no_depth_test = true
+		stat_pop.position = global_position + Vector3(0.6, 2.5, 0)
+		get_tree().current_scene.add_child(stat_pop)
 	if level > 1:
 		call_deferred("save_game")
 	stats_changed.emit()
@@ -780,3 +806,4 @@ func reset_save() -> void:
 	# For "New Game" button later
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
+
