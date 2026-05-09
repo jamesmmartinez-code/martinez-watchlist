@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "tigerclaw_set",
+  "name": "Tigerclaw Adventurer",
+  "theme": "forest",
+  "piece_ids": [
+    "tigerclaw_sword",
+    "tigerclaw_helm",
+    "tigerclaw_chest",
+    "tigerclaw_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Increased Attack",
+      "stat_mod": {
+        "atk": 5
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Enhanced Health",
+      "stat_mod": {
+        "hp": 50
+      }
+    }
+  ],
+  "flavor": "In the heart of the Whispering Woods, the ancient Tigerclaw tribe forged this set, imbuing it with the ferocity and agility of their namesake beasts."
+}
+"""
