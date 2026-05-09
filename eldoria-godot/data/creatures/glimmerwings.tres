@@ -1,0 +1,51 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "glimmerwings",
+  "name": "Glimmerwing Sprites",
+  "family": "fey",
+  "tier": "trash",
+  "level": 5,
+  "hp": 30,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "swarm",
+    "distract"
+  ],
+  "tells": [
+    {
+      "name": "twinkle",
+      "wind_up_ms": 300,
+      "vfx_id": "glitter"
+    }
+  ],
+  "weaknesses": {
+    "darkness": 1.2
+  },
+  "resistances": {
+    "light": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "petal",
+      "weight": 0.3
+    },
+    {
+      "item_id": "sparkle_dust",
+      "weight": 0.2
+    },
+    {
+      "item_id": "fey_wing",
+      "weight": 0.5
+    }
+  ],
+  "flavor": "Iridescent, delicate creatures with wings like stained glass, leaving trails of glitter behind them."
+}
+"""
