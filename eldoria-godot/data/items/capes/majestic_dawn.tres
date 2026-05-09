@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "majestic_dawn",
+  "name": "Vibrant Display",
+  "palette": [
+    "#3498db",
+    "#f1c40f"
+  ],
+  "emblem": "Sun",
+  "flutter_strength": 8,
+  "effect": "Gives nearby allies 5% increased magic damage",
+  "flavor": "A cape that shines like the morning sun"
+}
+"""
