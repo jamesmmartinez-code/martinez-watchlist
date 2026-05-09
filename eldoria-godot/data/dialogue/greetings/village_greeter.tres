@@ -6,34 +6,34 @@ metadata/_data = """
   "id": "village_greeter",
   "greetings": [
     {
-      "text": "Good morning!",
-      "mood": "warm",
+      "text": "Hi there!",
+      "mood": "cheerful",
       "time_of_day": "morning"
     },
     {
-      "text": "Hi there!",
-      "mood": "cheerful",
+      "text": "Hello friend!",
+      "mood": "warm",
       "time_of_day": "any"
     },
     {
-      "text": "Welcome!",
-      "mood": "warm",
-      "time_of_day": "noon"
-    },
-    {
-      "text": "Long day...",
+      "text": "What's up?",
       "mood": "tired",
       "time_of_day": "evening"
     },
     {
-      "text": "Hello friend!",
+      "text": "Hi, how are you?",
+      "mood": "shy",
+      "time_of_day": "noon"
+    },
+    {
+      "text": "Hey, welcome!",
       "mood": "cheerful",
       "time_of_day": "any"
     },
     {
-      "text": "Good evening!",
-      "mood": "warm",
-      "time_of_day": "evening"
+      "text": "Hi, what brings you here?",
+      "mood": "busy",
+      "time_of_day": "night"
     }
   ]
 }
