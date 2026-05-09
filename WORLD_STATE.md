@@ -1,3 +1,21 @@
+## Combat-feel polish — HP bar color lerp + attack telegraph (run 32)
+- HP fill color: smooth tri-band lerp on hp ratio. >60% = green→yellow transition;
+  30–60% = yellow→warm-red transition; <30% = warm-red deepen (0.90,0.20,0.10 → 0.70,0.05,0.05).
+  No two-state pop — lerp is continuous per hp point. THEME §3 palette: warm red, not pure-red.
+  Alden (9yo visual learner) reads "almost dead" at a glance; Owen (11yo mastery) gets
+  tactical press/retreat intel. Zero new nodes — modulates existing HPFill StandardMaterial3D.
+- Attack telegraph windup: in the 0.22s window before each swing, enemy label lerps from its
+  base color toward warm-orange TELEGRAPH_COLOR (0.98, 0.38, 0.18) as _attack_timer → 0.
+  At the moment the hit fires (_do_attack resets timer to attack_cooldown), the lerp immediately
+  pulls back toward base — flash is fast, readable, self-resetting. Resets to base color also
+  in chase and wander/idle states so a broken-off windup never leaves the label stuck orange.
+- _label_base_color var cached at _ready (deferred 1 frame) so the reset value is exact, not
+  a hardcoded white. TELEGRAPH_WINDOW + TELEGRAPH_COLOR defined as module-level consts for
+  Godot 4.6 parse safety (not inside func body).
+- THEME §12 MOTION & LIFE cited: static HP bar gains continuous color motion; label gains
+  temporal motion — breathing danger before the hit lands.
+- Branch: auto/polisher
+
 ## Balance polish — level-up stat grants + stat-delta popup (run 31)
 - HP grant per level-up: 18 → 22 (+22%). Base 120 HP, +18 was thin for Alden
   (9yo visual learner who reads the HP bar). +22 = +18%/level: each ding
