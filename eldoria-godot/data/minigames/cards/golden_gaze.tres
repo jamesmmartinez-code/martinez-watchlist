@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "golden_gaze",
+  "name": "Gaze of the Ancients",
+  "suit": "spirit",
+  "power": 8,
+  "effect": "+2 power when paired with a sky card",
+  "art_motif": "Ancient runes",
+  "flavor": "Eyes that see beyond the veil"
+}
+"""
