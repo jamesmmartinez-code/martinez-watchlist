@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "fools_frenzy",
+  "name": "Fool's Frenzy",
+  "play_at": "tavern",
+  "rules": "Roll dice, score 3+ to move. Reach 10 spaces to win.",
+  "reward_win": "copper:5",
+  "flavor": "Vibrant dice scatter across a worn tavern table"
+}
+"""
