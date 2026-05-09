@@ -9,15 +9,15 @@ metadata/_data = """
   "station_tier_min": 1,
   "inputs": [
     {
-      "item_id": "forest_mushroom",
-      "qty": 2
+      "item_id": "wild_mushroom",
+      "qty": 3
     },
     {
       "item_id": "miso_paste",
-      "qty": 1
+      "qty": 2
     },
     {
-      "item_id": "sakura_spring_water",
+      "item_id": "water",
       "qty": 1
     }
   ],
@@ -25,10 +25,10 @@ metadata/_data = """
     "item_id": "mushroom_miso_soup",
     "qty": 1
   },
-  "time_seconds": 5,
-  "fuel_cost": 1,
+  "time_seconds": 10,
+  "fuel_cost": 2,
   "unlock_condition": "auto",
   "failure_behavior": "none",
-  "flavor": "A hearty and comforting soup, reminiscent of the whimsical forests of Princess Mononoke."
+  "flavor": "A hearty, earthy soup inspired by the forests of the Shire"
 }
 """
