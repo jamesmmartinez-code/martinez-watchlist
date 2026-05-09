@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "emerald_sentinels",
+  "name": "Emerald Guardians",
+  "theme": "forest",
+  "piece_ids": [
+    "emerald_sword",
+    "leafy_helm",
+    "mossy_chest",
+    "rooted_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Thorns of Protection",
+      "stat_mod": {
+        "def": 10
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Forest's Fury",
+      "stat_mod": {
+        "atk": 20
+      }
+    }
+  ],
+  "flavor": "Forged from the ancient magic of the forest, these emerald guardians were said to have protected the land from darkness for centuries."
+}
+"""
