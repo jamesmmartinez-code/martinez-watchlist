@@ -4,7 +4,7 @@
   - File: `eldoria-godot/assets/models/Hero.glb` — 29.55 MB (soft cap: 20 MiB, hard cap: 25 MiB)
   - Status: **REFERENCED** in `scenes/Main.tscn`, `scripts/Player.gd`, `scripts/CharacterSelect.gd` — cannot delete
   - Action required: Replace with a compressed/LOD version of Hero.glb before Cloudflare Pages migration
-  - First logged: 2026-05-09T02:57:48Z | Re-confirmed: 2026-05-09T03:17:00Z
+  - First logged: 2026-05-09T02:57:48Z | Re-confirmed: 2026-05-09T03:21:00Z
 
 QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 25 MiB hard cap (20 MiB soft cap) for Cloudflare Pages deploy target. Asset is actively referenced in `scripts/Player.gd`, `scripts/CharacterSelect.gd`, and `scenes/Main.tscn` — cannot be deleted. Action required: compress/LOD-bake Hero.glb below 20 MiB or split into streaming chunks before Cloudflare Pages migration.
 
@@ -142,4 +142,3 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 
 - QA 2026-05-09T03:13Z: Build=success (run 25590059331, 03:10Z), Pages=built (03:09Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-
