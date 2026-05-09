@@ -1,0 +1,45 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "mist_dancer",
+  "name": "Mist Dancer",
+  "family": "fey",
+  "tier": "trash",
+  "level": 5,
+  "hp": 30,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4,
+  "behavior_tags": [
+    "lone_wanderer"
+  ],
+  "tells": [
+    {
+      "name": "twirl",
+      "wind_up_ms": 500,
+      "vfx_id": "mist_swirl"
+    }
+  ],
+  "weaknesses": {
+    "dark": 1.2
+  },
+  "resistances": {
+    "light": 0.8
+  },
+  "xp_value": 10,
+  "loot_table": [
+    {
+      "item_id": "petal",
+      "weight": 0.3
+    },
+    {
+      "item_id": "glowdust",
+      "weight": 0.2
+    }
+  ]
+}
+"""
