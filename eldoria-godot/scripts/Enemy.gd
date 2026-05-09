@@ -25,19 +25,34 @@ class_name Enemy
 # Source-credited GLBs (CC-BY) live under assets/models/enemies/. When a kind has
 # a dedicated model here, _spawn_model uses it AND skips the green-tint modulate
 # (the model carries its own hand-painted textures — tinting muddies them).
-const KIND_MODELS := {
-	# 2026-05-08 char-specialist: removed 7 preload entries for non-existent GLBs
-	# (armor-of-the-void-m, barbarian-m, lord-of-darkness-m, untamed-m, castle-guard-m,
-	# imperator-m, roman-soldier-m). Preloading missing files = parse-error at load time.
-	# Corrected: goblin now uses goblin.glb (was wolf.glb — typo; goblin.glb exists).
-	# Unknown kinds fall back to enemy_model (@export, defaults to CesiumMan.glb).
-	"goblin":             preload("res://assets/models/enemies/goblin.glb"),
-	"goblin_scout":       preload("res://assets/models/enemies/goblin_scout.glb"),
-	"wolf":               preload("res://assets/models/enemies/wolf.glb"),
-	"bandit":             preload("res://assets/models/enemies/bandit.glb"),
-	"skeleton":           preload("res://assets/models/enemies/skeleton.glb"),
-	"crystal_elemental":  preload("res://assets/models/enemies/crystal_elemental.glb"),
+# KIND_MODEL_PATHS: maps enemy_kind -> GLB path for all available enemy assets.
+# Uses load() not preload() so missing files degrade gracefully (null -> fallback)
+# rather than aborting parse. Keep in sync with assets/models/enemies/.
+# run-25: fixed goblin->goblin.glb (was wolf.glb); added bandit, skeleton,
+# crystal_elemental, goblin_scout; removed 7 non-existent actor-pack GLBs that
+# caused preload() parse crashes.
+const KIND_MODEL_PATHS: Dictionary = {
+	"goblin":            "res://assets/models/enemies/goblin.glb",
+	"goblin_scout":      "res://assets/models/enemies/goblin_scout.glb",
+	"wolf":              "res://assets/models/enemies/wolf.glb",
+	"bandit":            "res://assets/models/enemies/bandit.glb",
+	"skeleton":          "res://assets/models/enemies/skeleton.glb",
+	"crystal_elemental": "res://assets/models/enemies/crystal_elemental.glb",
 }
+
+func _get_kind_model(kind: String) -> PackedScene:
+	# Returns the per-kind GLB scene, or null if unavailable (caller falls back
+	# to enemy_model placeholder). load() is used intentionally — preload() on
+	# a missing path aborts the entire script parse in Godot 4.x.
+	# bandit_captain reuses the bandit rig until a dedicated GLB ships
+	var resolved_kind: String = "bandit" if kind == "bandit_captain" else kind
+	var path: String = KIND_MODEL_PATHS.get(resolved_kind, "")
+	if path.is_empty():
+		return null
+	var res: Resource = load(path)
+	if res == null or not (res is PackedScene):
+		return null
+	return res as PackedScene
 
 # Map of enemy kind → faction id for the run-7 adaptive-cooldown schema.
 # When a kind's faction has a `pressure` entry in `World.factions`, the enemy
@@ -173,8 +188,9 @@ func _spawn_model() -> void:
 		_model.queue_free()
 	# THEME §4: prefer a per-kind hand-crafted GLB (assets/models/enemies/) when present;
 	# fall back to the @export'd placeholder for kinds we haven't sourced yet.
-	var src: PackedScene = KIND_MODELS.get(enemy_kind, enemy_model)
-	var uses_real_model: bool = src != enemy_model
+	var kind_scene: PackedScene = _get_kind_model(enemy_kind)
+	var src: PackedScene = kind_scene if kind_scene != null else enemy_model
+	var uses_real_model: bool = kind_scene != null
 	_model = src.instantiate()
 	# 2026-05-08: multiply the import's root_scale rather than replacing it.
 	# Actor-pack GLBs are cm-unit with root_scale=0.01 baked in; assigning an
@@ -197,6 +213,8 @@ func _spawn_model() -> void:
 			kind_mult = Vector3(1.55, 1.65, 1.55)
 	_model.scale = _model.scale * kind_mult
 	add_child(_model)
+	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
+	call_deferred("_normalize_to_height", _model, _norm_target)
 	# Real fantasy models carry their own painted textures — applying the
 	# placeholder's green tint would muddy them. Tint only the fallback robot.
 	if not uses_real_model:
@@ -525,6 +543,16 @@ func _resolve_adaptive_cooldown() -> void:
 	if resolved < AGITATED_COOLDOWN_THRESHOLD:
 		enemy_name = "⚡ " + enemy_name
 
+
+# Per-kind normalize targets — scale-eng 2026-05-08.
+# bandit_captain clamped 2.30→2.50 (canon boss floor; joins boss_silhouettes).
+# Kinds not listed here use default 1.55m (medium enemy).
+const _NORMALIZE_TARGET_BY_KIND := {
+	"crystal_guardian": 4.00, # SIZE_STANDARDS §2 gargantuan boss
+	"bandit_captain":   2.50, # scale-eng 2026-05-08: boss floor 2.5m
+	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped
+	"goblin_warlord":   2.80, # SIZE_STANDARDS §2 boss-standard
+}
 
 # Normalize 3D model scale so it ends up ~target_height tall.
 # Prevents giants from Sketchfab GLBs with mixed units.
