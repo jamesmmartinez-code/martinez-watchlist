@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "card"
+metadata/_data = """
+{
+  "id": "ember_fox",
+  "name": "Ember Fox",
+  "suit": "spark",
+  "power": 6,
+  "effect": "Deal 2 damage to opponent's creatures.",
+  "art_motif": "Fox with embers for fur",
+  "flavor": "A fiery spirit in a forest of flames"
+}
+"""
