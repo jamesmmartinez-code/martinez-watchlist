@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "soup"
+metadata/_data = """
+{
+  "id": "winter_warmth",
+  "name": "Creamy Leek Soup",
+  "main_ingredients": [
+    "leek",
+    "potato"
+  ],
+  "heal": 20,
+  "effect": "buff:warm:300s|cure:cold",
+  "flavor": "Rich and velvety, with subtle onion notes"
+}
+"""
