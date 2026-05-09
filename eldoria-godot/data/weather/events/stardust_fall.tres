@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_event"
+metadata/_data = """
+{
+  "id": "stardust_fall",
+  "name": "Twinkling Skies",
+  "kind": "meteor_shower",
+  "duration_min": 15,
+  "region": "all",
+  "effects": [
+    "spawn:firefly_x",
+    "buff:luck:300s"
+  ],
+  "flavor": "Glittering stars fall from the sky, filling hearts with wonder"
+}
+"""
