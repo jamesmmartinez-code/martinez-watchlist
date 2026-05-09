@@ -4,7 +4,7 @@ metadata/_kind = "legendary"
 metadata/_data = """
 {
   "id": "starlight_serpent",
-  "name": "Stellar Fang (the Starlight Serpent)",
+  "name": "Stellar Fang (the Serpent's Tooth)",
   "category": "dagger",
   "level_req": 30,
   "stats": {
@@ -13,9 +13,9 @@ metadata/_data = """
     "hp": 10,
     "spd": 5
   },
-  "unique_effect": "Critical hits have 20% chance to summon a starlight serpent, dealing 10 damage to enemies within 5 meters.",
-  "unlock_condition": "unite_three_runes:moonstone|sunstone|starstone",
-  "backstory": "In ancient times, the Moon Goddess, Sun God, and Starlight Serpent united to bring balance to the world. The serpent's fang, imbued with the essence of the celestial bodies, was left behind as a symbol of their harmony. It is said that the wielder of Stellar Fang will bring light to the darkness.",
-  "flavor": "May the celestial balance guide my strikes."
+  "unique_effect": "Deals bonus damage to shadow enemies",
+  "unlock_condition": "defeat_boss:dark_dragon",
+  "backstory": "Forged from a fallen star, the Stellar Fang is said to hold the essence of the celestial serpent, a creature of light that brought hope to the world. It is rumored that the serpent's tooth can vanquish any darkness.",
+  "flavor": "May the light of the stars guide my blade"
 }
 """
