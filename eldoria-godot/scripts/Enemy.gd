@@ -613,10 +613,19 @@ func _resolve_adaptive_cooldown() -> void:
 # bandit_captain clamped 2.30→2.50 (canon boss floor; joins boss_silhouettes).
 # Kinds not listed here use default 1.55m (medium enemy).
 const _NORMALIZE_TARGET_BY_KIND := {
+	# ── Gargantuan / boss ─────────────────────────────────────────────────────
 	"crystal_guardian": 4.00, # SIZE_STANDARDS §2 gargantuan boss
-	"bandit_captain":   2.50, # scale-eng 2026-05-08: boss floor 2.5m
-	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped
 	"goblin_warlord":   2.80, # SIZE_STANDARDS §2 boss-standard
+	"bandit_captain":   2.50, # scale-eng 2026-05-08: boss floor 2.5m
+	# ── Medium enemies (1.55m) — listed explicitly for clarity ───────────────
+	"bandit":           1.55, # SIZE_STANDARDS §2 medium enemy — char-spec 2026-05-08
+	"skeleton":         1.55, # SIZE_STANDARDS §2 medium enemy — char-spec 2026-05-08
+	"crystal_elemental":1.55, # SIZE_STANDARDS §2 medium enemy — char-spec 2026-05-08
+	# ── Small enemies (1.20m) ─────────────────────────────────────────────────
+	"goblin":           1.20, # SIZE_STANDARDS §2 small enemy — char-spec 2026-05-08
+	"goblin_scout":     1.20, # SIZE_STANDARDS §2 small enemy — char-spec 2026-05-08
+	# ── Quadrupeds ────────────────────────────────────────────────────────────
+	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped
 }
 
 # Normalize 3D model scale so it ends up ~target_height tall.
