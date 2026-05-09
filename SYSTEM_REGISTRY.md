@@ -113,3 +113,21 @@ NPCS[8]: Farm Worker — role=villager, pos=Vector3(18,0,5), warm_flag=first_que
 _make_npc new wiring: warmed_relationship_min + warmed_relationship_dialogue_variants (completes run 29 NPC.gd schema)
 GLBs now used: warrior.glb (was unused), worker_girl.glb (was unused)
 Hooks: group "npcs" (Minimap), schedule_anchors (NPC walker), warmed_relationship_min (ready for gift/insult)
+
+## Wandering Herbalist NPC (run 31)
+NPCS[9]: "Wandering Herbalist" — role=alchemy, model=maeve.glb, scale=1.10×
+  pos=Vector3(-22, 0, -8) — NW forest/cave approach
+  schedule_anchors: [Vector3(-30,0,-18), Vector3(-14,0,-4), Vector3(-22,0,-8), Vector3(-18,0,-12)]
+    [0]=morning deep forest  [1]=midday village well  [2]=evening edge  [3]=night cave path
+  memory_visits_min=2, warm_flag="first_quest_done"
+  ambient_bark_interval_min=18.0, ambient_bark_interval_max=32.0
+  group "npcs" (Minimap gold-dot); schedule walker via NPC._process
+
+## Cave Delver Achievement (run 31)
+Achievements.cave_delver: world_flag predicate "crystal_guardian_slain"
+  name="Cave Delver", title="the Cave Delver", priority=45
+  icon_path="res://assets/icons/achievements/cave_delver.png"
+Enemy.gd hook: _die() crystal_guardian branch
+  → call_group("world", "set_world_flag", "crystal_guardian_slain", true)
+  → call_group("world", "_check_achievements")
+World flag "crystal_guardian_slain": bool, set once on first Guardian kill (respawns don't re-clear it)
