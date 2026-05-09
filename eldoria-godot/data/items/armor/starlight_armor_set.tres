@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "starlight_armor_set",
+  "name": "Stardust Guardian",
+  "category": "armor",
+  "subtype": "chestplate",
+  "tier": "rare",
+  "level_req": 30,
+  "stats": {
+    "atk": 0,
+    "def": 18,
+    "hp": 10,
+    "spd": 2
+  },
+  "flavor": "A chestplate forged from stardust, offering protection and a hint of celestial magic.",
+  "realm": "skyreave"
+}
+"""

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "luminous_mushroom",
+  "name": "Glimmercap",
+  "category": "consumable",
+  "subtype": "mushroom",
+  "tier": "common",
+  "level_req": 5,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 8,
+    "spd": 0
+  },
+  "flavor": "A rare, glowing mushroom found in the heart of the Shadewood forest, restoring a small amount of health when consumed.",
+  "realm": "shadewood"
+}
+"""
