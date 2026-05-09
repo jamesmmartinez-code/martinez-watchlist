@@ -103,6 +103,13 @@ var _label: Label3D
 # same gate NPC.gd uses for its schedule-walker override.
 var _breathe_phase: float = 0.0   # primary slow chest-rise harmonic
 var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
+# REFINE: combat-feel — THEME §12 MOTION & LIFE. Attack telegraph windup:
+# tracks how much of the attack_cooldown has been "charging" since the timer
+# last reset. When dist < attack_range and _attack_timer > 0, this counts UP
+# from 0; the label color lerps toward warm-orange as the swing approaches.
+# _base_label_color cached at _ready so resets are precise (not hardcoded).
+var _attack_charge_timer: float = 0.0  # seconds since last swing (counts up while in attack state)
+var _base_label_color: Color = Color(1.0, 0.55, 0.45)  # overwritten in _ready after label built
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -172,6 +179,7 @@ func _ready() -> void:
 	_label.outline_size = 4
 	_label.outline_modulate = Color(0, 0, 0)
 	_label.modulate = Color(1.0, 0.55, 0.45) if enemy_kind == "goblin" else Color(0.85, 0.85, 1.0)
+	_base_label_color = _label.modulate  # REFINE: combat-feel — cache base for telegraph reset
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_label.position = Vector3(0, 2.1, 0)
 	_label.no_depth_test = true
@@ -299,6 +307,28 @@ func _update_hp_bar() -> void:
 	fill.scale.x = max(0.001, ratio)
 	# Hide HP bar at full HP for cleaner look
 	_hp_bar.visible = (hp < max_hp and hp > 0)
+	# REFINE: combat-feel — HP bar color progression. THEME §3 fantasy-warm palette.
+	# Green (ratio > 0.60) → yellow (0.30–0.60) → red (<0.30). Smooth lerp so
+	# there is no two-state pop — Alden reads "almost dead" at a glance; Owen gets
+	# tactical press/retreat intel. Warm red keeps within fantasy-warm range (no
+	# pure red). Uses the HPFill material_override already set at build time.
+	if fill.material_override:
+		var mat := fill.material_override as StandardMaterial3D
+		if mat:
+			var hp_color: Color
+			if ratio > 0.60:
+				# full health green → mid yellow: lerp in upper band
+				var t: float = (ratio - 0.60) / 0.40  # 1.0 at full, 0.0 at 0.60
+				hp_color = Color(0.30, 0.85, 0.35).lerp(Color(0.95, 0.85, 0.10), 1.0 - t)
+			elif ratio > 0.30:
+				# mid yellow → danger orange: lerp in mid band
+				var t: float = (ratio - 0.30) / 0.30  # 1.0 at 0.60, 0.0 at 0.30
+				hp_color = Color(0.95, 0.85, 0.10).lerp(Color(0.90, 0.20, 0.10), 1.0 - t)
+			else:
+				# danger orange → critical red: lerp in low band
+				var t: float = ratio / 0.30  # 1.0 at 0.30, 0.0 at 0
+				hp_color = Color(0.90, 0.20, 0.10).lerp(Color(0.80, 0.10, 0.05), 1.0 - t)
+			mat.albedo_color = hp_color
 
 func _process(delta: float) -> void:
 	# REFINE: character — THEME §12 MOTION & LIFE. Dual-harmonic Y-bob breathing
@@ -322,6 +352,31 @@ func _process(delta: float) -> void:
 			var bob: float = sin(t * 2.513 + _breathe_phase) * 0.018 \
 				+ sin(t * 10.982 + _breathe_phase2) * 0.006
 			global_position.y = _spawn_y + bob
+	# REFINE: combat-feel — THEME §12 MOTION & LIFE. Attack telegraph windup.
+	# When the enemy is in attack state and the attack_timer is counting down,
+	# the floating name label lerps from its base color toward warm-orange
+	# (Color 0.98, 0.38, 0.18) in the 0.22s window before the swing lands.
+	# This gives Alden (9yo) a readable "danger flash" cue and lets Owen (11yo)
+	# time a dodge. The label resets to _base_label_color in non-attack states
+	# so a broken-off windup never leaves the name stuck orange.
+	# _attack_charge_timer counts UP while in attack state (reset on each swing);
+	# it measures the gap since the last attack fired, not the cooldown itself.
+	if not _label: return
+	if _state == "attack" and _attack_timer > 0.0:
+		_attack_charge_timer += delta
+		# windup_window: the last 0.22s of the cooldown is the "telegraph zone"
+		var windup_window: float = 0.22
+		var time_to_swing: float = _attack_timer  # counts down toward 0
+		if time_to_swing <= windup_window:
+			# t=0 when swing is 0.22s away, t=1 when swing lands
+			var t: float = 1.0 - (time_to_swing / windup_window)
+			_label.modulate = _base_label_color.lerp(Color(0.98, 0.38, 0.18), t)
+		else:
+			_label.modulate = _base_label_color
+	else:
+		# chase / wander / dead — always reset telegraph color
+		_attack_charge_timer = 0.0
+		_label.modulate = _base_label_color
 
 func _physics_process(delta: float) -> void:
 	if _state == "dead":
@@ -489,7 +544,10 @@ func _respawn() -> void:
 	hp = max_hp
 	global_position = _spawn_pos
 	if _model: _model.visible = true
-	if _label: _label.visible = true
+	if _label:
+		_label.visible = true
+		_label.modulate = _base_label_color  # REFINE: combat-feel — clear telegraph color on respawn
+	_attack_charge_timer = 0.0
 	_state = "idle"
 	_player = null
 	_update_hp_bar()
