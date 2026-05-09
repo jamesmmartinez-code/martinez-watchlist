@@ -4,4 +4,4 @@ kind: faction
 name: "Luminari Guardians"
 ---
 
-The Luminari Guardians are a beacon of hope in Whisperwood, dedicated to safeguarding the forest and its inhabitants from harm. With their unwavering commitment to justice and their unshakeable faith in the power of knowledge, they strive to maintain the delicate balance of nature. Led by the wise and courageous Aurora Brightshield, the Guardians are the first line of defense against any darkness that may threaten their beloved home.
+The Luminari Guardians are a group of skilled warriors and mages dedicated to protecting the mystical realm of Whisperwood. Led by the enigmatic Eira Shadowglow, they patrol the shimmering forests and glowing meadows, ever vigilant for signs of darkness. With their mastery of light and shadow, they uncover hidden secrets and defend against the unknown. Their ultimate goal is to preserve the delicate balance of nature and magic within Whisperwood, ensuring the land remains a beacon of hope and wonder.
