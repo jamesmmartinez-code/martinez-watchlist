@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "seed"
+metadata/_data = """
+{
+  "id": "starlight_petunia",
+  "name": "Starlight Petunia",
+  "grows_into": "starlight_petunia_sapling",
+  "price": 10,
+  "obtained_from": "vendor:botanicals|forage:secret_garden",
+  "flavor": "Twinkling, star-shaped blooms"
+}
+"""
