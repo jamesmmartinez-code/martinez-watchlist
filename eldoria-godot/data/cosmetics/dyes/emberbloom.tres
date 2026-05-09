@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "emberbloom",
+  "name": "Blazing Ember",
+  "color_hex": "#FF9900",
+  "source": "flower:torchbloom",
+  "rarity": "uncommon",
+  "flavor": "Forged in fiery mountain peaks"
+}
+"""
