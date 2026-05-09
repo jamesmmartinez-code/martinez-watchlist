@@ -74,6 +74,10 @@ func _ready() -> void:
 	add_to_group("quest_listeners")
 	collision_layer = 2  # player layer
 	collision_mask = 1 | 4  # collide with world (1) and enemies (4)
+	# CHECK 10 — floor physics: snap keeps character glued to ramps;
+	# max_angle 46° lets them climb gentle slopes without sliding off.
+	floor_snap_length = 0.3
+	floor_max_angle = deg_to_rad(46.0)
 	# Auto-wire camera_pivot if the editor didn't assign it
 	if not camera_pivot:
 		var root := get_tree().current_scene
