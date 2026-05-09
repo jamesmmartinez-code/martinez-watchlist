@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "minigame"
+metadata/_data = """
+{
+  "id": "blossom_breeze",
+  "name": "Petal Catch",
+  "kind": "catching",
+  "location": "festival:spring_floral",
+  "rounds": 3,
+  "reward_per_win": {
+    "xp": 10,
+    "gold": 5,
+    "item_id": "flower_crown"
+  },
+  "flavor": "Gentle petals fall from above, catch them in your basket"
+}
+"""
