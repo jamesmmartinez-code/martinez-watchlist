@@ -3,11 +3,11 @@
 metadata/_kind = "fortune"
 metadata/_data = """
 {
-  "id": "happy_trails",
+  "id": "cosmic_dreams",
   "fortunes": [
     {
-      "text": "Every step forward is a step closer to magic",
-      "mood": "playful"
+      "text": "The universe is full of wonder, go explore",
+      "mood": "wise"
     }
   ]
 }
