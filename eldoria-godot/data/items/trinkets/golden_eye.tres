@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "golden_eye",
+  "name": "Ardent Opal",
+  "slot": "pocket",
+  "minor_effect": "Gives the owner a faint glow in dark environments",
+  "unlock_condition": "craft",
+  "flavor": "A tiny, shimmering opal set in a delicate golden frame"
+}
+"""
