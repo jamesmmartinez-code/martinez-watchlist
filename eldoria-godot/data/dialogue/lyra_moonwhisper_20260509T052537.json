@@ -1,0 +1,180 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra Moonwhisper",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I've been expecting you. The forest has been whispering about your bravery.",
+      "options": [
+        {
+          "player_text": "What do you mean?",
+          "goto": "curious",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm here to help!",
+          "goto": "helpful",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "curious",
+      "npc_text": "The forest spirits have been sharing stories about your kindness and courage. I think you might be the one to help us with a problem.",
+      "options": [
+        {
+          "player_text": "What's the problem?",
+          "goto": "problem",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'm not sure I can help.",
+          "goto": "doubtful",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "helpful",
+      "npc_text": "Wonderful! We've been having trouble with a group of mischievous fey creatures. They've been playing tricks on the other forest dwellers.",
+      "options": [
+        {
+          "player_text": "I'll help you catch them!",
+          "goto": "fey_catchers",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Maybe we can just talk to them?",
+          "goto": "fey_talkers",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "problem",
+      "npc_text": "The fey creatures have been stealing our magical berries, which are essential for the forest's balance. We need someone to retrieve them.",
+      "options": [
+        {
+          "player_text": "I'll get the berries back!",
+          "goto": "berry_quest",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "That sounds like a big task.",
+          "goto": "doubtful",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "doubtful",
+      "npc_text": "Don't worry, I believe in you. You can do it! Just be careful and clever.",
+      "options": [
+        {
+          "player_text": "Thanks for the encouragement!",
+          "goto": "berry_quest",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'm not sure...",
+          "goto": "END",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fey_catchers",
+      "npc_text": "Be careful, the fey can be tricky. You'll need to outsmart them to catch them.",
+      "options": [
+        {
+          "player_text": "I'm ready for the challenge!",
+          "goto": "berry_quest",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Maybe I should just talk to them instead.",
+          "goto": "fey_talkers",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fey_talkers",
+      "npc_text": "That's a wonderful idea! The fey love to chat and might be willing to return the berries if you can solve their riddle.",
+      "options": [
+        {
+          "player_text": "I love riddles!",
+          "goto": "riddle_time",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm not good at riddles.",
+          "goto": "END",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "berry_quest",
+      "npc_text": "Great! I'll give you a map to the fey's hideout. Be careful and good luck!",
+      "options": [
+        {
+          "player_text": "Thanks, I'll get the berries!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "riddle_time",
+      "npc_text": "The fey's riddle is: 'What can be broken, but never held? What can be given, but never sold?'",
+      "options": [
+        {
+          "player_text": "The answer is a promise!",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I don't know.",
+          "goto": "END",
+          "tags": [
+            "nervous"
+          ]
+        }
+      ]
+    }
+  ]
+}
