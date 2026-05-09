@@ -536,6 +536,13 @@ func _die(source: Node) -> void:
 	died.emit(self)
 	# Notify quest system
 	get_tree().call_group("quest_listeners", "on_enemy_killed", enemy_kind)
+	# run-31 (Builder): set world flag when Crystal Guardian is slain so the
+	# cave_delver achievement can fire. Uses call_group("world") so it degrades
+	# gracefully when World.gd is not yet initialised (no crash on early test scenes).
+	# THEME §1 "consequence is lived-in" — clearing the boss changes the world state.
+	if enemy_kind == "crystal_guardian":
+		get_tree().call_group("world", "set_world_flag", "crystal_guardian_slain", true)
+		get_tree().call_group("world", "_check_achievements")
 	# Schedule respawn
 	await get_tree().create_timer(respawn_delay).timeout
 	_respawn()
