@@ -4,12 +4,12 @@ metadata/_kind = "achievement"
 metadata/_data = """
 {
   "id": "kindness_chain",
-  "title": "Friend to All",
+  "title": "Chain of Kindness",
   "description": "Helped 10 NPCs in need",
   "trigger": "talk_to_n_npcs:10",
-  "reward_title": "Hero's Heart",
-  "reward_xp": 300,
-  "reward_gold": 200,
+  "reward_title": "The Helper",
+  "reward_xp": 200,
+  "reward_gold": 150,
   "flavor": "Your kindness inspires others!"
 }
 """

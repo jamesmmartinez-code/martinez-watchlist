@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "master_craftsman",
+  "title": "Crafting Mastery",
+  "description": "Crafted 50 unique items",
+  "trigger": "collect_n:item:50",
+  "reward_title": "The Artisan",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "Your creations bring joy to the land!"
+}
+"""
