@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "moonlight_morsels",
+  "name": "Moonlight Morsels",
+  "station_required": "cooking_pot",
+  "station_tier_min": 2,
+  "inputs": [
+    {
+      "item_id": "starlight_sugar",
+      "qty": 1
+    },
+    {
+      "item_id": "mythril_milk",
+      "qty": 2
+    },
+    {
+      "item_id": "dreamweaver_spices",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "moonbeam_cookies",
+    "qty": 3
+  },
+  "time_seconds": 10,
+  "fuel_cost": 2,
+  "unlock_condition": "reach_level_5",
+  "failure_behavior": "none",
+  "flavor": "A delicate, shimmering treat that captures the essence of the night sky."
+}
+"""

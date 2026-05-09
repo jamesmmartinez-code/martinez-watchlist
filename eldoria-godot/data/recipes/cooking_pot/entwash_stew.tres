@@ -10,25 +10,25 @@ metadata/_data = """
   "inputs": [
     {
       "item_id": "entwood_mushrooms",
-      "qty": 3
-    },
-    {
-      "item_id": "forest_berry",
       "qty": 2
     },
     {
-      "item_id": "ancient_ale",
+      "item_id": "forest_berry",
+      "qty": 1
+    },
+    {
+      "item_id": "treebeard_thyme",
       "qty": 1
     }
   ],
   "output": {
-    "item_id": "entwash_stew_bowl",
-    "qty": 1
+    "item_id": "entwash_broth",
+    "qty": 2
   },
   "time_seconds": 15,
   "fuel_cost": 3,
-  "unlock_condition": "reputation:ent_ally",
-  "failure_behavior": " spoiled_meal",
-  "flavor": "Hearty, earthy stew brewed with the ancient wisdom of the Ents"
+  "unlock_condition": "complete_entwood_quest",
+  "failure_behavior": "none",
+  "flavor": "A hearty, earthy stew that warms the soul and strengthens the body."
 }
 """
