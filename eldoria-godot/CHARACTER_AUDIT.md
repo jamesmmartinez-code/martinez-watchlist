@@ -182,3 +182,47 @@ table — zero drift detected. No changes required to any existing character `.i
 | Gate 1 — undefined func calls | PASS (0 new calls introduced; pre-existing built-in false positives unchanged) |
 | Gate 2 — mass-delete brake | PASS (0 files deleted) |
 | Gate 3 — writable-path whitelist | PASS for Player.gd; humanoid_base.glb.import is animation metadata (logged exception) |
+
+## Char-Specialist Run — 2026-05-08 (character auto-run)
+
+### Changes made
+
+**Enemy.gd — `_NORMALIZE_TARGET_BY_KIND` dict expanded**
+
+Previously the dict only listed 4 entries; goblin, goblin_scout, bandit, skeleton, and
+crystal_elemental all fell through to the default 1.55m (medium). Goblins and goblin scouts
+are SIZE_STANDARDS §2 *small* enemies (target 1.20m, hard cap 1.40m) — the 1.55m default
+made them read the same height as bandits and skeletons, collapsing the threat-tier visual
+hierarchy.
+
+| Kind | Before (implicit default) | After (explicit) | Standard |
+|------|--------------------------|-------------------|----------|
+| `goblin` | 1.55m | **1.20m** | §2 small enemy |
+| `goblin_scout` | 1.55m | **1.20m** | §2 small enemy |
+| `bandit` | 1.55m | 1.55m (explicit) | §2 medium enemy |
+| `skeleton` | 1.55m | 1.55m (explicit) | §2 medium enemy |
+| `crystal_elemental` | 1.55m | 1.55m (explicit) | §2 medium enemy |
+
+**Player.gd — `_normalize_player_model` + `_force_hero_height_cap` added**
+
+The canon preamble (AGENT_CANON_PREAMBLE.md) and PROBLEMS_LOG.md §1.2 both reference
+`_normalize_player_model(1.1)` and `_force_hero_height_cap` as locked canon functions,
+but neither existed in Player.gd — the runtime had no height normalization for the hero
+model at all. Added both functions:
+
+- `_normalize_player_model(1.1)`: walks body-mesh AABB (skipping BoneAttachment3D gear
+  subtrees), corrects root model scale so visible height ≈ 1.10m. Called deferred on
+  _ready + 3 retry timers at 0.5s / 1.5s / 3.0s to absorb Godot 4 deferred-AABB lag.
+- `_force_hero_height_cap(1.3)`: hard ceiling applied at t=3.0s — clamps to 1.30m if
+  bone-rest AABB underestimates live skin AABB. Fires after the three normalize retries.
+
+LOCKED values: target_height = 1.1, cap = 1.3. Per SIZE_STANDARDS.md §1.
+
+### Safety gates
+- Gate 1 (undefined function calls): PASSED
+- Gate 2 (mass-delete brake, 0 deletes): PASSED
+- Gate 3 (writable-path whitelist — both files are scripts/Enemy.gd and scripts/Player.gd): PASSED
+
+### Commits on auto/character
+- `c8f1a7126e` — Char: goblin/goblin_scout 1.55m→1.20m; explicit medium/small/boss normalize targets
+- `ef4e3ceaf8` — Char: add _normalize_player_model(1.1) + _force_hero_height_cap(1.3) per CANON
