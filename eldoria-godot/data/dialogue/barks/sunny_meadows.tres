@@ -3,12 +3,12 @@
 metadata/_kind = "ambient_bark"
 metadata/_data = """
 {
-  "id": "trading_post",
+  "id": "sunny_meadows",
   "barks": [
     {
-      "text": "Good day, sir",
-      "npc_role": "merchant",
-      "tone": "contented"
+      "text": "Need more seeds",
+      "npc_role": "farmer",
+      "tone": "grumbling"
     }
   ]
 }

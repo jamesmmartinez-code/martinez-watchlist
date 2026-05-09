@@ -3,11 +3,11 @@
 metadata/_kind = "ambient_bark"
 metadata/_data = """
 {
-  "id": "trading_post",
+  "id": "whispering_winds",
   "barks": [
     {
-      "text": "Good day, sir",
-      "npc_role": "merchant",
+      "text": "Just right",
+      "npc_role": "smith",
       "tone": "contented"
     }
   ]
