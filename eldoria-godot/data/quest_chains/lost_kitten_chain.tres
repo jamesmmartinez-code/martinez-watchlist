@@ -4,26 +4,26 @@ metadata/_kind = "quest_chain"
 metadata/_data = """
 {
   "id": "lost_kitten_chain",
-  "title": "Whisker's Big Adventure",
+  "title": "Mittens' Big Adventure",
   "region": "whisperwood",
   "theme": "Lost Kitten",
   "quests": [
     {
-      "id": "find_kitten",
-      "title": "Find Whisker",
-      "hook": "Kitten lost in woods!",
+      "id": "find_mittens",
+      "title": "Find Mittens",
+      "hook": "Help find a lost kitten!",
       "stages_count": 3
     },
     {
-      "id": "follow_clues",
-      "title": "Follow the Trail",
-      "hook": "Find hidden clues!",
+      "id": "chase_butterfly",
+      "title": "Chase the Butterfly",
+      "hook": "Mittens is chasing a butterfly!",
       "stages_count": 2
     },
     {
-      "id": "rescue_kitten",
-      "title": "Rescue Whisker",
-      "hook": "Save the kitten!",
+      "id": "kitten_home",
+      "title": "Get Mittens Home",
+      "hook": "Mittens is tired, get her home!",
       "stages_count": 2
     }
   ],
@@ -32,6 +32,6 @@ metadata/_data = """
     "gold": 150,
     "item_id": "kitten_friend"
   },
-  "flavor": "A heartwarming tale of a lost kitten"
+  "flavor": "A heartwarming tale of a lost kitten's journey home, with beautiful watercolor illustrations of Whisperwood's lovely landscapes."
 }
 """
