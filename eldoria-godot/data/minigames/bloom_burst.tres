@@ -4,15 +4,15 @@ metadata/_kind = "minigame"
 metadata/_data = """
 {
   "id": "bloom_burst",
-  "name": "Seed Toss",
-  "kind": "timing",
-  "location": "festival:lavender_fair",
+  "name": "Petal Puzzle",
+  "kind": "matching",
+  "location": "festival:flower_festival",
   "rounds": 3,
   "reward_per_win": {
     "xp": 5,
     "gold": 2,
-    "item_id": "lavender_seed"
+    "item_id": "flower_crown"
   },
-  "flavor": "Delicate petals unfurl with each toss"
+  "flavor": "Delicate petals swirl in a colorful dance"
 }
 """
