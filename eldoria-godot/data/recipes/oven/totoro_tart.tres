@@ -10,19 +10,15 @@ metadata/_data = """
   "inputs": [
     {
       "item_id": "flour",
-      "qty": 3
+      "qty": 2
     },
     {
       "item_id": "sugar",
-      "qty": 2
-    },
-    {
-      "item_id": "forest_berry",
-      "qty": 2
-    },
-    {
-      "item_id": "cream",
       "qty": 1
+    },
+    {
+      "item_id": "forest_fruit",
+      "qty": 3
     }
   ],
   "output": {
@@ -33,6 +29,6 @@ metadata/_data = """
   "fuel_cost": 3,
   "unlock_condition": "auto",
   "failure_behavior": "none",
-  "flavor": "A sweet and tangy tart inspired by the whimsical world of My Neighbor Totoro, with a crust made from forest berries and a creamy topping fit for a forest spirit."
+  "flavor": "A sweet and tangy tart inspired by the whimsical world of My Neighbor Totoro"
 }
 """
