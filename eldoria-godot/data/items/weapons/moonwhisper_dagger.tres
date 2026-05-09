@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "moonwhisper_dagger",
+  "name": "Moonwhisper's Bite",
+  "category": "weapon",
+  "subtype": "dagger",
+  "tier": "uncommon",
+  "level_req": 15,
+  "stats": {
+    "atk": 12,
+    "def": 0,
+    "hp": 0,
+    "spd": 4
+  },
+  "flavor": "A dagger said to contain the essence of the moon, granting its wielder increased speed.",
+  "realm": "tidesong"
+}
+"""
