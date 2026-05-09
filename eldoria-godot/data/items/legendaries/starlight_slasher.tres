@@ -4,18 +4,18 @@ metadata/_kind = "legendary"
 metadata/_data = """
 {
   "id": "starlight_slasher",
-  "name": "Luna's Glimmer",
+  "name": "Stardust Slice",
   "category": "sword",
   "level_req": 30,
   "stats": {
     "atk": 25,
     "def": 5,
-    "hp": 10,
-    "spd": 5
+    "hp": 0,
+    "spd": 3
   },
-  "unique_effect": "Moonlight Strike: +10% damage at night",
-  "unlock_condition": "defeat_boss:lunar_dragon",
-  "backstory": "Forged from a fallen star, Luna's Glimmer was said to be wielded by the ancient lunar warriors who protected the land from darkness. Its blade shines brightest under the light of the full moon.",
-  "flavor": "May the starlight guide my blade"
+  "unique_effect": "Chance to blind enemies on hit",
+  "unlock_condition": "defeat_boss:galactic_golem",
+  "backstory": "Forged from a fallen star, this sword shines bright with the essence of the celestial bodies. It is said that the sword chooses its wielder, imbuing them with the courage of a thousand suns.",
+  "flavor": "May the stars guide my blade"
 }
 """
