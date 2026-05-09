@@ -28,6 +28,7 @@ Files: WorldBuilder.gd (bark_lines added to all 7 NPCS[] entries + _make_npc wir
 Next run picks up: NPC memory system deepening (record_npc_gift / record_npc_insult) or
   Faction state — bandit boldness scales with road defense (Backlog #9)
 
+- QA 2026-05-08T20:00Z: Build=None/in_progress, Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run.
 - QA 2026-05-08T15:08Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt in prior runs. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T15:27Z: Build=in_progress (Godot Web Export), Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run.
 - QA 2026-05-08T14:58Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
