@@ -1,3 +1,14 @@
+## NPC Defense Witness System (run-33)
+- **Trigger**: `Enemy._die()` calls `World.record_npc_defense_witness(kill_pos)`
+- **Radius**: 12m (flat XZ plane)
+- **Counter**: `npc_memory[name]["defenses_witnessed"]` incremented per witness event
+- **Bark**: NPC fires `_fire_witness_bark()` immediately — warm-gold Label3D for 3.5s
+- **Dialogue tier**: `witnessed_defense_lines` (highest priority, above relationship score)
+- **Achievement**: `village_defender` — 3 NPCs each witness ≥1 defense
+- **Predicate**: `npc_defense_count { min_defenses, min_count }` via `npc_count_with_defense_above()`
+- **Files**: Enemy.gd, NPC.gd, World.gd, Achievements.gd, WorldBuilder.gd
+- **THEME**: §1 (consequence), §12 (life/motion — bark popup)
+
 ## NPC Relationship Score (run 29)
 World.gd schema extension to npc_memory:
   npc_memory[name][gifts]: int  (incremented by record_npc_gift)
