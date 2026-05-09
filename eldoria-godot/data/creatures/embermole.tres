@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "embermole",
+  "name": "Embermole",
+  "family": "elemental",
+  "tier": "elite",
+  "level": 25,
+  "hp": 350,
+  "armor": 10,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 0.8,
+  "move_speed": 2.5,
+  "behavior_tags": [
+    "burrower"
+  ],
+  "tells": [
+    {
+      "name": "ember_burst",
+      "wind_up_ms": 1000,
+      "vfx_id": "glowing_coals"
+    }
+  ],
+  "weaknesses": {
+    "water": 1.5
+  },
+  "resistances": {
+    "fire": 0.5
+  },
+  "xp_value": 120,
+  "loot_table": [
+    {
+      "item_id": "glowing_ember",
+      "weight": 0.6
+    },
+    {
+      "item_id": "mole_hide",
+      "weight": 0.2
+    },
+    {
+      "item_id": "rare_mineral",
+      "weight": 0.2
+    }
+  ],
+  "flavor": "Large, lumbering elemental creatures that tunnel through the earth, leaving trails of warm embers and glowing coals in their wake."
+}
+"""

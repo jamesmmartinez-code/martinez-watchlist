@@ -4,46 +4,43 @@ metadata/_kind = "bestiary"
 metadata/_data = """
 {
   "id": "briarwood_sproutkin",
-  "name": "Sproutkin",
+  "name": "Briarwood Sproutkin",
   "family": "fey",
   "tier": "trash",
   "level": 5,
   "hp": 25,
-  "armor": 0,
-  "dmg_min": 1,
-  "dmg_max": 2,
-  "attack_speed": 1,
-  "move_speed": 3.5,
+  "armor": 2,
+  "dmg_min": 2,
+  "dmg_max": 4,
+  "attack_speed": 1.2,
+  "move_speed": 4,
   "behavior_tags": [
     "pack_hunter"
   ],
   "tells": [
     {
-      "name": "sprout",
+      "name": "leaf_flick",
       "wind_up_ms": 500,
-      "vfx_id": "green_glow"
+      "vfx_id": "petal_burst"
     }
   ],
   "weaknesses": {
-    "ice": 1.2
+    "fire": 1.2
   },
   "resistances": {
     "nature": 0.8
   },
-  "xp_value": 5,
+  "xp_value": 10,
   "loot_table": [
     {
       "item_id": "acorn",
       "weight": 0.3
     },
     {
-      "item_id": "petal",
+      "item_id": "wildflower_petal",
       "weight": 0.2
-    },
-    {
-      "item_id": "twig",
-      "weight": 0.5
     }
-  ]
+  ],
+  "flavor": "Small, mischievous fey creatures with leaves for hair and skin like the tender bark of young trees."
 }
 """
