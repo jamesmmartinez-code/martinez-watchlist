@@ -1,0 +1,50 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest"
+metadata/_data = """
+{
+  "id": "lost_painting",
+  "title": "The Missing Masterpiece",
+  "region": "whisperwood",
+  "act": 2,
+  "level_band": [
+    3,
+    5
+  ],
+  "hook": "Eira's famous painting vanished! Help me find it",
+  "stages": [
+    {
+      "objective": "Gather clues about the missing painting",
+      "location": "Whisperwood Artist's Guild",
+      "completion_trigger": "talk_to_npc:eira|talk_to_npc:guildmaster"
+    },
+    {
+      "objective": "Search for the thief in the Whisperwood forest",
+      "location": "Whisperwood Forest",
+      "completion_trigger": "reach_zone:old_oak_tree"
+    },
+    {
+      "objective": "Confront the mischievous Pixie thieves",
+      "location": "Pixie Glen",
+      "completion_trigger": "defeat:pixie_thief"
+    },
+    {
+      "objective": "Return the painting to Eira",
+      "location": "Whisperwood Artist's Guild",
+      "completion_trigger": "talk_to_npc:eira"
+    }
+  ],
+  "rewards": {
+    "xp": 100,
+    "gold": 20,
+    "items": [
+      "artist_brush"
+    ],
+    "faction_rep": {
+      "whisperwood": 10
+    }
+  },
+  "repeatable": false,
+  "flavor": "A watercolor world of wonder, where trees wear leaves like emeralds and wildflowers bloom in every color of the rainbow. The sweet scent of honey and blooming heather fills the air, as the soft chirping of birds provides a soothing background melody."
+}
+"""
