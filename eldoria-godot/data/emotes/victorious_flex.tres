@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "emote"
+metadata/_data = """
+{
+  "id": "victorious_flex",
+  "name": "Victory Pose",
+  "trigger_text": "/flex",
+  "duration_sec": 3,
+  "animation": "raises arms in triumph",
+  "sound": "cheering crowd",
+  "unlock_condition": "complete_quest:main_story_1",
+  "flavor": "confident and proud"
+}
+"""
