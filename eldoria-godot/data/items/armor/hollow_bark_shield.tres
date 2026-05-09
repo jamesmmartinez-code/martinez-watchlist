@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "hollow_bark_shield",
+  "name": "Guardian's Shield",
+  "category": "armor",
+  "subtype": "shield",
+  "tier": "epic",
+  "level_req": 45,
+  "stats": {
+    "atk": 0,
+    "def": 30,
+    "hp": 20,
+    "spd": 0
+  },
+  "flavor": "A shield crafted from the ancient, hollowed bark of a sacred tree, protecting its wielder from harm.",
+  "realm": "shadewood"
+}
+"""
