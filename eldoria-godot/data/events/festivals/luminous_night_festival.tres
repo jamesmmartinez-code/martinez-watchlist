@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "event"
+metadata/_data = """
+{
+  "id": "luminous_night_festival",
+  "name": "Luminous Night",
+  "category": "festival",
+  "trigger": "date",
+  "duration_hours": 4,
+  "participants": [
+    "maeve"
+  ],
+  "mechanics": [
+    "special_vendor"
+  ],
+  "rewards": {
+    "xp": 50,
+    "gold": 10,
+    "items": []
+  },
+  "repeats_yearly": true,
+  "flavor": "Under the light of the full moon, the creatures of Briarwood gather to celebrate the magic that brings them together."
+}
+"""

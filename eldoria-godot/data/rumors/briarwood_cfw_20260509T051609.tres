@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve has a secret garden in the heart of Briarwood"
+truth_0 = "true"
+rumor_1 = "The ancient trees of Briarwood are whispering to each other"
+truth_1 = "partial"
+rumor_2 = "A hidden path in Briarwood leads to a mystical realm"
+truth_2 = "partial"
+rumor_3 = "The creatures of Briarwood are planning a surprise party for Maeve"
+truth_3 = "false"
+rumor_4 = "A rare species of firefly can be found in Briarwood during the Luminous Night festival"
+truth_4 = "true"
