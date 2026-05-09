@@ -79,6 +79,11 @@ const ATTACK_COOLDOWN_MIN: float = 1.05
 # a ⚡ prefix on its floating name. Corresponds to roughly pressure ≤ 0.625
 # — clearly past the first reducer for either goblins or wolves.
 const AGITATED_COOLDOWN_THRESHOLD: float = 1.30
+# REFINE: combat-feel — attack telegraph constants. Defined at module level
+# (not inside func body) for Godot 4.6 parse safety. TELEGRAPH_WINDOW is the
+# lookahead window in seconds; TELEGRAPH_COLOR is the warm-orange danger tint.
+const TELEGRAPH_WINDOW: float = 0.22
+const TELEGRAPH_COLOR: Color = Color(0.98, 0.38, 0.18)
 
 var hp: int
 var _state: String = "idle"  # idle | wander | chase | attack | dead
@@ -103,6 +108,12 @@ var _label: Label3D
 # same gate NPC.gd uses for its schedule-walker override.
 var _breathe_phase: float = 0.0   # primary slow chest-rise harmonic
 var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
+# REFINE: combat-feel — attack telegraph. Cached base color of the enemy
+# name label so the windup flash can lerp TO warm-orange and BACK cleanly
+# without hardcoding the reset value. Set in _ready once the label exists.
+# THEME §12 MOTION & LIFE: the label gains temporal motion — it "breathes
+# danger" in the 0.22s before the hit lands, giving Alden a readable cue.
+var _label_base_color: Color = Color(1.0, 1.0, 1.0)  # default white; set in _ready
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -120,6 +131,10 @@ func _ready() -> void:
 	var _rng_breathe := RandomNumberGenerator.new(); _rng_breathe.randomize()
 	_breathe_phase = _rng_breathe.randf() * TAU
 	_breathe_phase2 = _rng_breathe.randf() * TAU
+	# REFINE: combat-feel — cache label base color once label is built. The
+	# label is created in _setup_label() which runs in _ready before this line.
+	# Defer one frame so the label node is guaranteed in the tree.
+	call_deferred("_cache_label_base_color")
 	add_to_group("enemies")
 	collision_layer = 4    # enemy layer
 	collision_mask = 1 | 4 # collide with world (1) and other enemies (4)
@@ -297,6 +312,27 @@ func _update_hp_bar() -> void:
 	if not fill: return
 	var ratio := float(hp) / float(max_hp)
 	fill.scale.x = max(0.001, ratio)
+	# REFINE: combat-feel — HP bar color progression: green (>60%) → yellow
+	# (30–60%) → red (<30%). Smooth lerp on ratio — no two-state pop. Palette
+	# stays within THEME §3 fantasy-warm range (warm red, no pure-red).
+	# Alden (9yo) reads "almost dead" at a glance; Owen (11yo) gets tactical
+	# press/retreat intel. Zero new nodes — modulates the existing HPFill mat.
+	var mat := fill.material_override as StandardMaterial3D
+	if mat:
+		var hp_color: Color
+		if ratio > 0.60:
+			# Green band: lerp from full-green toward yellow as ratio drops to 0.60
+			var t: float = (ratio - 0.60) / 0.40  # 1.0 at full HP, 0.0 at 60%
+			hp_color = Color(0.30, 0.85, 0.35).lerp(Color(0.90, 0.82, 0.10), 1.0 - t)
+		elif ratio > 0.30:
+			# Yellow band: lerp from yellow toward warm-red as ratio drops to 0.30
+			var t: float = (ratio - 0.30) / 0.30  # 1.0 at 60%, 0.0 at 30%
+			hp_color = Color(0.90, 0.82, 0.10).lerp(Color(0.90, 0.20, 0.10), 1.0 - t)
+		else:
+			# Red band: deepen red as ratio falls toward 0
+			var t: float = ratio / 0.30  # 1.0 at 30%, 0.0 at 0%
+			hp_color = Color(0.90, 0.20, 0.10).lerp(Color(0.70, 0.05, 0.05), 1.0 - t)
+		mat.albedo_color = hp_color
 	# Hide HP bar at full HP for cleaner look
 	_hp_bar.visible = (hp < max_hp and hp > 0)
 
@@ -354,6 +390,21 @@ func _physics_process(delta: float) -> void:
 		_state = "attack"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
+		# REFINE: combat-feel — attack telegraph windup flash. In the 0.22s
+		# window before each swing, the enemy label lerps from its base color
+		# toward warm-orange (TELEGRAPH_COLOR) as _attack_timer approaches 0.
+		# At the moment the hit fires, _do_attack() resets the timer to
+		# attack_cooldown, immediately pulling the lerp back toward base — the
+		# flash is fast, readable, and self-resetting. THEME §12 MOTION & LIFE:
+		# the label gains temporal motion, breathing danger before the hit lands.
+		# Kid-design note: Alden (9yo) tested poorly on "enemy about to hit" reads;
+		# this warm pulse gives a spatial cue that doesn't require reading text.
+		if _label:
+			if _attack_timer <= TELEGRAPH_WINDOW and _attack_timer > 0.0:
+				var t: float = 1.0 - (_attack_timer / TELEGRAPH_WINDOW)  # 0→1 as timer → 0
+				_label.modulate = _label_base_color.lerp(TELEGRAPH_COLOR, t)
+			else:
+				_label.modulate = _label_base_color
 		if _attack_timer <= 0:
 			_do_attack()
 	elif dist < aggro_range:
@@ -362,8 +413,16 @@ func _physics_process(delta: float) -> void:
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
+		# REFINE: combat-feel — reset telegraph when breaking off to chase so a
+		# broken-off windup doesn't leave the label stuck orange mid-chase.
+		if _label:
+			_label.modulate = _label_base_color
 	else:
 		_idle_drift(delta)
+		# REFINE: combat-feel — reset telegraph in wander/idle so any lingering
+		# orange from a chase-abort fully clears during the idle dwell-pause.
+		if _label:
+			_label.modulate = _label_base_color
 
 	move_and_slide()
 
@@ -511,6 +570,16 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 	get_tree().current_scene.add_child(pop)
 
 # ──────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
+# REFINE: combat-feel — cache the label's default modulate color so the
+# telegraph lerp knows where to lerp back TO. Called deferred from _ready
+# so the label node has had one frame to settle in the scene tree.
+# Falls back to Color.WHITE if the label isn't found (safe no-op).
+# ──────────────────────────────────────────────────────────────────────────
+func _cache_label_base_color() -> void:
+	if _label:
+		_label_base_color = _label.modulate
+
 # Run-7: Adaptive attack cooldown (THIRD output on faction_pressure scalar).
 # ──────────────────────────────────────────────────────────────────────────
 # Reads `World.faction_pressure(faction_id)` once at spawn and lerps the
@@ -577,3 +646,4 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 		return
 	var correction: float = clamp(target_height / aabb.size.y, 0.001, 100.0)
 	model.scale = model.scale * correction
+
