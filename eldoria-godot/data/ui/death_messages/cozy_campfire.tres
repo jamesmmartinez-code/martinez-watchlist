@@ -7,7 +7,7 @@ metadata/_data = """
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "I wake up by the campfire, feeling refreshed!",
+      "text": "You wake up by the campfire, feeling refreshed!",
       "mood": "gentle"
     }
   ]

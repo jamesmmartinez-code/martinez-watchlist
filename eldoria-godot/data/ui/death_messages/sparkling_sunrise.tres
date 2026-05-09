@@ -3,12 +3,12 @@
 metadata/_kind = "death_message"
 metadata/_data = """
 {
-  "id": "wayshrine_slumber",
+  "id": "sparkling_sunrise",
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "You're resting at the wayshrine, all cozy and safe!",
-      "mood": "encouraging"
+      "text": "Whoops, time for a quick rest!",
+      "mood": "playful"
     }
   ]
 }

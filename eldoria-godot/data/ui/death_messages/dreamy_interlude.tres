@@ -3,12 +3,12 @@
 metadata/_kind = "death_message"
 metadata/_data = """
 {
-  "id": "wayshrine_slumber",
+  "id": "dreamy_interlude",
   "messages": [
     {
       "trigger": "fall_damage|enemy_defeat|kill_zone|drowning",
-      "text": "You're resting at the wayshrine, all cozy and safe!",
-      "mood": "encouraging"
+      "text": "You take a dreamy detour, but you're back in the game!",
+      "mood": "gentle"
     }
   ]
 }
