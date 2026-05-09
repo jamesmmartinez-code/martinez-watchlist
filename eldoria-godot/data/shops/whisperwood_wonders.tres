@@ -4,7 +4,7 @@ metadata/_kind = "shop"
 metadata/_data = """
 {
   "id": "whisperwood_wonders",
-  "vendor_name": "Professor Paws",
+  "vendor_name": "Luna's Marvels",
   "region": "whisperwood",
   "shop_type": "general",
   "stock": [
@@ -12,45 +12,52 @@ metadata/_data = """
       "item_id": "NEW",
       "price": 50,
       "quantity": 20,
-      "restock_hours": 12
+      "restock_hours": 12,
+      "item_name": "Moonbeam Morsels"
     },
     {
       "item_id": "NEW",
-      "price": 200,
-      "quantity": 5,
-      "restock_hours": 24
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 24,
+      "item_name": "Starlight Sugar Cookies"
     },
     {
-      "item_id": "acorn_cookie",
-      "price": 15,
-      "quantity": 50,
-      "restock_hours": 6
+      "item_id": "crystal_vial",
+      "price": 200,
+      "quantity": 5,
+      "restock_hours": 48,
+      "item_name": "Crystal Vial"
+    },
+    {
+      "item_id": "NEW",
+      "price": 80,
+      "quantity": 15,
+      "restock_hours": 18,
+      "item_name": "Mythril Dust"
+    },
+    {
+      "item_id": "NEW",
+      "price": 150,
+      "quantity": 8,
+      "restock_hours": 36,
+      "item_name": "Fae Wings"
+    },
+    {
+      "item_id": "NEW",
+      "price": 250,
+      "quantity": 3,
+      "restock_hours": 72,
+      "item_name": "Unicorn Tears"
     },
     {
       "item_id": "healing_potion",
-      "price": 100,
-      "quantity": 10,
-      "restock_hours": 12
-    },
-    {
-      "item_id": "sparkle_dust",
-      "price": 80,
-      "quantity": 30,
-      "restock_hours": 8
-    },
-    {
-      "item_id": "enchanted_feather",
-      "price": 300,
-      "quantity": 2,
-      "restock_hours": 24
-    },
-    {
-      "item_id": "NEW",
       "price": 120,
-      "quantity": 15,
-      "restock_hours": 18
+      "quantity": 12,
+      "restock_hours": 24,
+      "item_name": "Healing Potion"
     }
   ],
-  "flavor": "A cozy little shop nestled in the heart of Whisperwood, filled with all manner of curious items and treasures."
+  "flavor": "A whimsical shop filled with treasures that shine like the stars in the night sky, welcoming young adventurers to explore its wonders."
 }
 """
