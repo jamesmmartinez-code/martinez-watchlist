@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "prop"
+metadata/_data = """
+{
+  "id": "mystic_moon_gazing_orb",
+  "name": "Moonlight Gazer",
+  "kind": "telescope",
+  "region": "whisperwood",
+  "interaction": "Peer into the orb to see the constellations of Whisperwood's past",
+  "reward": "reveal_lore_fragment:whisperwood_ancient_skies",
+  "flavor": "A delicate, glowing orb rests atop a twisted wooden tripod, surrounded by soft, ethereal mist that shimmers like stardust under the moon's gentle light"
+}
+"""
