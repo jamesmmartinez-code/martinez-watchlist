@@ -1,71 +1,10 @@
 ## Tech debt
 
-- **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap**
-  - File: `eldoria-godot/assets/models/Hero.glb` — 29 MB (soft cap: 20 MiB, hard cap: 25 MiB)
+- **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap** *(still open — re-confirmed 2026-05-09T03:17:00Z)*
+  - File: `eldoria-godot/assets/models/Hero.glb` — 29.55 MB (soft cap: 20 MiB, hard cap: 25 MiB)
   - Status: **REFERENCED** in `scenes/Main.tscn`, `scripts/Player.gd`, `scripts/CharacterSelect.gd` — cannot delete
   - Action required: Replace with a compressed/LOD version of Hero.glb before Cloudflare Pages migration
-  - Logged by: Eldoria QA Watchdog — 2026-05-09T02:57:48Z
-
-## 2026-05-08 Auto: run 29 — NPC Relationship Score (Backlog #8 compound)
-I'm building: NPC memory deepening — record_npc_gift / record_npc_insult + relationship tier
-THEME §12 cited: MOTION & LIFE — village NPCs now REACT to kindness, not just visits
-Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md
-Mood board panel: Stardew Valley / Rune Factory — villager warmth earned through actions
-Files: World.gd +record_npc_gift +record_npc_insult +npc_relationship_score +npc_any_relationship_above
-       NPC.gd +warmed_relationship_min +warmed_relationship_dialogue_variants (5th tier)
-       Achievements.gd +villager_friend achievement (score>=3) + npc_relationship_min predicate
-5-output check:
-  i.  Integration: NPC._on_interact calls warmed_relationship tier ABOVE visit-count tier;
-        World._check_achievements() called after every gift/insult write
-  ii. Schema: npc_memory dict extended with gifts: int, insults: int per NPC;
-        NPC_RELATIONSHIP_SCORE_MIN/MAX consts; warmed_relationship_min/@export on NPC
-  iii.Feedback: warmed_relationship_dialogue_variants produces distinct warm lines when score>=min;
-        achievement villager_friend unlocks title the Beloved on score>=3
-  iv. Eval: npc_relationship_score() + npc_any_relationship_above() public accessors;
-        _eval_predicate extended with npc_relationship_min kind
-  v.  2+ hooks: record_npc_gift triggers _check_achievements (Achievement hook);
-        warmed_relationship tier composable with all existing tiers in NPC chain
-Next run picks up: Faction state — bandit boldness scales with road defense (Backlog #9)
-
-## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
-
-I'm building: Faction state — bandit boldness scales with road defense (Backlog #9)
-THEME §1 cited: road_defense_score decays slowly so defended roads soften back — consequence is lived-in, not permanent
-THEME §12 cited: road_defense_score decays 5%/s via _process — drifts, never hard-clears; patrol spawns at 90s interval bring the road alive
-THEME §13 cited: patrol bandit spawns at y=0 (GROUND CONTACT), south road corridor clamped to x∈[-8,8]
-Mood board panel: Zelda BotW emergent threat ecology — world responds to what you've done
-
-Files:
-  World.gd  +road_defense_score float  +_bandit_patrol_timer float
-            +BANDIT_PATROL_INTERVAL const  +BANDIT_PATROL_BOLDNESS_THRESHOLD const
-            +ROAD_DEFENSE_DECAY const  +ROAD_DEFENSE_CAP const
-            +record_road_kill(kind) mutator
-            +get_road_defense_score() eval accessor
-            +_tick_bandit_patrol() internal patrol spawner
-            update_bandit_pressure() — defense_damper term subtracts from boldness
-            _process — road_defense_score decay + _bandit_patrol_timer tick
-  Enemy.gd  _die() — bandit/bandit_captain kill → record_road_kill() on world
-  WorldBuilder.gd — Roan warmed_world_flag:"bandit_road_cleared" + 4 morning/midday/evening/night lines
-
-5-output check:
-  i.   Integration:  _tick_bandit_patrol() wired into World._process every BANDIT_PATROL_INTERVAL (90s)
-                     record_road_kill() called from Enemy._die() for bandit/bandit_captain kinds
-  ii.  Schema:       road_defense_score float[0..10], _bandit_patrol_timer, 4 consts in World.gd
-                     SYSTEM_REGISTRY.md updated with full contract
-  iii. Feedback:     "The road breathes easier." toast on bandit_road_cleared flag (score>=3)
-                     "A bandit patrol stirs on the south road." toast on patrol spawn
-                     Minimap ping at south road on cleared flag
-  iv.  Eval:         get_road_defense_score() public accessor
-                     faction_pressure("bandits") is the eval surface for boldness (pre-existing)
-  v.   2+ hooks:     Enemy._die() → record_road_kill() (hook 1, per-kill)
-                     _process → _bandit_patrol_timer → _tick_bandit_patrol() (hook 2, interval)
-                     Roan warmed_world_flag:"bandit_road_cleared" (hook 3, NPC dialogue)
-                     update_bandit_pressure() defense_damper (hook 4, boldness derivation)
-
-Next run picks up: NPC memory deepening (record_npc_gift / record_npc_insult / relation_score)
-  or Crystal Caves deepening (boss lore, new crystal_guardian patrol pattern)
-
-## Tech debt
+  - First logged: 2026-05-09T02:57:48Z | Re-confirmed: 2026-05-09T03:17:00Z
 
 QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 25 MiB hard cap (20 MiB soft cap) for Cloudflare Pages deploy target. Asset is actively referenced in `scripts/Player.gd`, `scripts/CharacterSelect.gd`, and `scenes/Main.tscn` — cannot be deleted. Action required: compress/LOD-bake Hero.glb below 20 MiB or split into streaming chunks before Cloudflare Pages migration.
 
@@ -203,3 +142,4 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 
 - QA 2026-05-09T03:13Z: Build=success (run 25590059331, 03:10Z), Pages=built (03:09Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
+
