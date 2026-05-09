@@ -759,7 +759,7 @@ func _ready() -> void:
 	_safe_call("_scatter_ferns", [48])
 	_safe_call("_scatter_mushrooms", [24])
 	_safe_call("_build_village_barrels")
-	_safe_call("_build_mountain_ring")
+	# _safe_call("_build_mountain_ring")  # removed — mountains disabled
 	_safe_call("_build_market_stalls")
 	_safe_call("_build_windmill")
 	_safe_call("_build_lanterns")
