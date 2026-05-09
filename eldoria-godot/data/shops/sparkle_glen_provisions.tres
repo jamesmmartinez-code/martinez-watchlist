@@ -1,0 +1,62 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "sparkle_glen_provisions",
+  "vendor_name": "Penny's Pantry",
+  "region": "whisperwood",
+  "shop_type": "general",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 50,
+      "quantity": 25,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "NEW",
+      "price": 20,
+      "quantity": 50,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "acorn_cookie",
+      "price": 15,
+      "quantity": 75,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "dewdrop_juice",
+      "price": 30,
+      "quantity": 40,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "fluffy_tail_potion",
+      "price": 80,
+      "quantity": 15,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "moonbeam_bread",
+      "price": 25,
+      "quantity": 60,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "NEW",
+      "price": 120,
+      "quantity": 5,
+      "restock_hours": 24
+    }
+  ],
+  "flavor": "A cozy little shop tucked away in a sun-dappled glade, filled with the warm scent of fresh bread and the gentle hum of happy chatter."
+}
+"""
