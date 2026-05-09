@@ -4,4 +4,4 @@ kind: faction
 name: "Luminari Guardians"
 ---
 
-The Luminari Guardians are a group of skilled warriors and mages dedicated to protecting the mystical realm of Whisperwood. Led by the enigmatic Eira Shadowglow, they patrol the shimmering forests and glowing meadows, ever vigilant for signs of darkness. With their mastery of light and shadow, they uncover hidden secrets and defend against the unknown. Their ultimate goal is to preserve the delicate balance of nature and magic within Whisperwood, ensuring the land remains a beacon of hope and wonder.
+The Luminari Guardians are a group of skilled warriors and nature enthusiasts dedicated to preserving the balance of Whisperwood. Led by Eira Shadowleaf, they work tirelessly to protect the forest and its inhabitants from harm. With a focus on growth, harmony, and protection, the Guardians strive to maintain the delicate ecosystem of the woods. They believe in living in sync with nature and promoting peaceful coexistence among all creatures. As they face the looming threat of the Shadow's return, the Guardians remain vigilant and prepared to defend their home.
