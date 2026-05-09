@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "coral_bloom",
+  "name": "Coral Bloom",
+  "color_hex": "#FFC67D",
+  "source": "flower:coral_bloom",
+  "rarity": "uncommon",
+  "flavor": "A delicate, sunset-hued blossom"
+}
+"""
