@@ -4,18 +4,18 @@ metadata/_kind = "item"
 metadata/_data = """
 {
   "id": "starlight_scepter",
-  "name": "Stellar Wand",
+  "name": "Starlight Scepter",
   "category": "weapon",
-  "subtype": "staff",
+  "subtype": "scepter",
   "tier": "rare",
   "level_req": 30,
   "stats": {
     "atk": 20,
-    "def": 5,
+    "def": 0,
     "hp": 0,
-    "spd": 10
+    "spd": 5
   },
-  "flavor": "A staff imbued with the magic of the stars, granting its wielder celestial power.",
-  "realm": "tidesong"
+  "flavor": "A staff imbued with the essence of stardust, granting the wielder unparalleled magical prowess.",
+  "realm": "skyreave"
 }
 """

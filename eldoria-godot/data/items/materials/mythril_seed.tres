@@ -1,0 +1,21 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "item"
+metadata/_data = """
+{
+  "id": "mythril_seed",
+  "name": "Mythril Seed",
+  "category": "material",
+  "subtype": "ore",
+  "tier": "epic",
+  "level_req": 0,
+  "stats": {
+    "atk": 0,
+    "def": 0,
+    "hp": 0,
+    "spd": 0
+  },
+  "flavor": "A rare, glittering seed that can be planted to grow a tree of pure mythril, said to grant immense power to those who harvest it.",
+  "realm": "ashenmere"
+}
+"""
