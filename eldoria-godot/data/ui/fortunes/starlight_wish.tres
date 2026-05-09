@@ -6,8 +6,8 @@ metadata/_data = """
   "id": "starlight_wish",
   "fortunes": [
     {
-      "text": "Wishes have wings, let them fly",
-      "mood": "hopeful"
+      "text": "Wishes shine like stars",
+      "mood": "playful"
     }
   ]
 }
