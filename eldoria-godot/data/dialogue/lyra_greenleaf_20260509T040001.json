@@ -1,0 +1,167 @@
+{
+  "npc_slug": "lyra_greenleaf",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Hello there, young adventurer! I'm Lyra Greenleaf. I've been tending to this forest for as long as I can remember.",
+      "options": [
+        {
+          "player_text": "What's your favorite part about the forest?",
+          "goto": "favorite_part",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a quest, can you help me?",
+          "goto": "quest_help",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "favorite_part",
+      "npc_text": "Oh, I just love watching the wildflowers bloom in the spring! The whole forest comes alive with color and scent.",
+      "options": [
+        {
+          "player_text": "That sounds beautiful! Can you show me?",
+          "goto": "wildflower_walk",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'll have to come back in the spring then!",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quest_help",
+      "npc_text": "Of course, I'd be happy to help! What's your quest about?",
+      "options": [
+        {
+          "player_text": "I'm looking for a rare herb to heal my friend.",
+          "goto": "rare_herb",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'm just exploring, no quest in particular.",
+          "goto": "exploring",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wildflower_walk",
+      "npc_text": "Let's take a stroll through the meadow! The wildflowers are in full bloom this time of year.",
+      "options": [
+        {
+          "player_text": "This is lovely! Thank you for showing me.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I see some bees collecting nectar, can you tell me about them?",
+          "goto": "bees",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rare_herb",
+      "npc_text": "Ah, I think I know just the thing! The rare Starlight Bloom grows on the eastern side of the forest. Be careful, though - the path can be treacherous.",
+      "options": [
+        {
+          "player_text": "Thank you, I'll be careful!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Can you come with me and show me the way?",
+          "goto": "guided_venture",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exploring",
+      "npc_text": "Well, you've certainly come to the right place! The forest is full of wonders and secrets.",
+      "options": [
+        {
+          "player_text": "What kind of secrets?",
+          "goto": "forest_secrets",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I think I'll just wander around then!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bees",
+      "npc_text": "The bees here are very special - they collect nectar from the magical flowers and make a honey that grants wisdom.",
+      "options": [
+        {
+          "player_text": "That sounds amazing! Can I try some?",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'll make sure to leave them be then.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guided_venture",
+      "npc_text": "Of course, I'd be happy to guide you! Let's set off towards the eastern side of the forest.",
+      "options": [
+        {
+          "player_text": "Thank you, Lyra! I feel safer with you leading the way.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I think I can handle it from here, thanks!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    }
+  ]
+}
