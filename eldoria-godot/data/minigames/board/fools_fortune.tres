@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "board_game"
+metadata/_data = """
+{
+  "id": "fools_fortune",
+  "name": "Fool's Fortune",
+  "play_at": "tavern",
+  "rules": "Roll 2 dice, add numbers. 7+ wins, 3- loses. Bet 1-5 coppers.",
+  "reward_win": "copper:5",
+  "flavor": "A lucky roll, a merry night"
+}
+"""
