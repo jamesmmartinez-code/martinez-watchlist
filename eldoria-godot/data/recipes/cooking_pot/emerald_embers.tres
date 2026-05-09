@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "emerald_embers",
+  "name": "Forestfire Fritters",
+  "station_required": "cooking_pot",
+  "station_tier_min": 2,
+  "inputs": [
+    {
+      "item_id": "emerald_herb",
+      "qty": 2
+    },
+    {
+      "item_id": "honeycomb",
+      "qty": 1
+    },
+    {
+      "item_id": "crunchy_nuts",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "forestfire_fritters",
+    "qty": 2
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "Crispy, golden fritters that evoke the warmth of a forest fire"
+}
+"""
