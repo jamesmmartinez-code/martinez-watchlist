@@ -13,6 +13,6 @@ metadata/_data = """
     "gold": 5,
     "item_id": "sakura_petals"
   },
-  "flavor": "Soft pink petals gently fall"
+  "flavor": "Soft pink petals gently falling from above"
 }
 """
