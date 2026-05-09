@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mythic_dragon_admiration",
+  "boss_id": "existing_boss_3",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "Clever!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""

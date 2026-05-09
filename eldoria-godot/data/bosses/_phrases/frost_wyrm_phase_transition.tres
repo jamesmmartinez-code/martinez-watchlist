@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "frost_wyrm_phase_transition",
+  "boss_id": "generic",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Chill begins!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

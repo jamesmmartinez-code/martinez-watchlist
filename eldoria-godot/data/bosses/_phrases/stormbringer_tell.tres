@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "stormbringer_tell",
+  "boss_id": "existing_boss_1",
+  "phrases": [
+    {
+      "trigger": "tell_windup",
+      "text": "Gathering storm!",
+      "tone": "warning"
+    }
+  ]
+}
+"""

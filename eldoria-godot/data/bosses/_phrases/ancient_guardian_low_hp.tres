@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "ancient_guardian_low_hp",
+  "boss_id": "existing_boss_2",
+  "phrases": [
+    {
+      "trigger": "low_hp",
+      "text": "Not...yet...",
+      "tone": "sad_resolve"
+    }
+  ]
+}
+"""
