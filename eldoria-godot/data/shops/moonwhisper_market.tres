@@ -1,0 +1,44 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "shop"
+metadata/_data = """
+{
+  "id": "moonwhisper_market",
+  "vendor_name": "Luna's Enchanted Elixirs",
+  "region": "whisperwood",
+  "shop_type": "alchemist",
+  "stock": [
+    {
+      "item_id": "NEW",
+      "price": 120,
+      "quantity": 5,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "mystic_meadow_potion",
+      "price": 250,
+      "quantity": 2,
+      "restock_hours": 24
+    },
+    {
+      "item_id": "healing_balm",
+      "price": 50,
+      "quantity": 20,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "mana_draught",
+      "price": 180,
+      "quantity": 8,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "whisperwood_wine",
+      "price": 300,
+      "quantity": 1,
+      "restock_hours": 48
+    }
+  ],
+  "flavor": "Step into Luna's cozy shop, where the scent of mystical herbs and simmering potions fills the air, and discover the magical elixirs that have made Whisperwood's creatures thrive for generations."
+}
+"""
