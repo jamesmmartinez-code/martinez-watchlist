@@ -1,3 +1,4 @@
+- QA 2026-05-09T03:43:13Z: Build=queued (pages build and deployment), Pages=building. §15: Hero.glb 29.55MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run.
 ## Tech debt
 
 - **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap** *(still open — re-confirmed 2026-05-09T03:17:00Z)*
