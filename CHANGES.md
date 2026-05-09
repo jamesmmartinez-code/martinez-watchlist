@@ -143,3 +143,5 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 
 - QA 2026-05-09T03:13Z: Build=success (run 25590059331, 03:10Z), Pages=built (03:09Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
+
+- QA 2026-05-09T03:28Z: Build=success (pages-build-and-deployment run #1054, 03:26Z), Pages=built (03:26Z). Prior errored build (03:25Z) was a transient cancellation, immediately superseded by successful run. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
