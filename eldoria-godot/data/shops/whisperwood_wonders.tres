@@ -4,9 +4,9 @@ metadata/_kind = "shop"
 metadata/_data = """
 {
   "id": "whisperwood_wonders",
-  "vendor_name": "Professor Pecan's Curious Concoctions",
+  "vendor_name": "Professor Paws",
   "region": "whisperwood",
-  "shop_type": "alchemist",
+  "shop_type": "general",
   "stock": [
     {
       "item_id": "NEW",
@@ -15,42 +15,42 @@ metadata/_data = """
       "restock_hours": 12
     },
     {
-      "item_id": "minor_health_potion",
-      "price": 10,
-      "quantity": 50,
-      "restock_hours": 6
-    },
-    {
-      "item_id": "sparkling_dust",
-      "price": 30,
-      "quantity": 15,
-      "restock_hours": 18
-    },
-    {
-      "item_id": "healing_balm",
-      "price": 25,
-      "quantity": 30,
-      "restock_hours": 12
-    },
-    {
-      "item_id": "mana_crystals",
-      "price": 40,
-      "quantity": 10,
-      "restock_hours": 24
-    },
-    {
-      "item_id": "enchanted_ink",
-      "price": 60,
+      "item_id": "NEW",
+      "price": 200,
       "quantity": 5,
       "restock_hours": 24
     },
     {
-      "item_id": "mystic_mushroom",
+      "item_id": "acorn_cookie",
+      "price": 15,
+      "quantity": 50,
+      "restock_hours": 6
+    },
+    {
+      "item_id": "healing_potion",
+      "price": 100,
+      "quantity": 10,
+      "restock_hours": 12
+    },
+    {
+      "item_id": "sparkle_dust",
       "price": 80,
+      "quantity": 30,
+      "restock_hours": 8
+    },
+    {
+      "item_id": "enchanted_feather",
+      "price": 300,
       "quantity": 2,
-      "restock_hours": 48
+      "restock_hours": 24
+    },
+    {
+      "item_id": "NEW",
+      "price": 120,
+      "quantity": 15,
+      "restock_hours": 18
     }
   ],
-  "flavor": "A whimsical shop filled with peculiar potions and mysterious elixirs, run by the eccentric Professor Pecan."
+  "flavor": "A cozy little shop nestled in the heart of Whisperwood, filled with all manner of curious items and treasures."
 }
 """
