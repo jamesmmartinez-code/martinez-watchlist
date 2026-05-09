@@ -392,5 +392,11 @@ static func _eval_predicate(pred: Dictionary, world: Object) -> bool:
 			if world.has_method("npc_any_relationship_above"):
 				return world.npc_any_relationship_above(min_rel)
 			return false
+		"npc_defense_count":
+			if not world.has_method("npc_count_with_defense_above"):
+				return false
+			var _md: int = int(pred.get("min_defenses", 1))
+			var _mc: int = int(pred.get("min_count", 1))
+			return world.npc_count_with_defense_above(_md) >= _mc
 		_:
 			return false
