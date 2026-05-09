@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "mystic_mountain_mauler",
+  "boss_id": "generic_giant",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Time to shake the peaks!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "frozen_fury",
+  "boss_id": "generic_ice_giant",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "The chill is coming!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""
