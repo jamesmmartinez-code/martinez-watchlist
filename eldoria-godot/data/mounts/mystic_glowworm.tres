@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mount"
+metadata/_data = """
+{
+  "id": "mystic_glowworm",
+  "name": "Glimmer",
+  "species": "giant_owl",
+  "speed_mult": 1.5,
+  "stamina": 100,
+  "region_unlock": "whisperwood",
+  "unlock_condition": "tame_in_wild:whisperwood_night",
+  "flavor": "A gentle giant with soft, ethereal feathers and eyes that shine like tiny stars, Glimmer is a mystical owl with a quiet wisdom and a love for moonlit flights."
+}
+"""
