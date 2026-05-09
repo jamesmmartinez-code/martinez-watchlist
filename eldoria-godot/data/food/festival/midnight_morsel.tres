@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "festival_food"
+metadata/_data = """
+{
+  "id": "midnight_morsel",
+  "name": "Starlight Sugar Cookie",
+  "festival_id": "luminous_night",
+  "duration_hours": 48,
+  "effect": "buff:lucky:3600s|emote_unlock:twinkle_dance",
+  "flavor": "A delicate, shimmering treat that tastes like stardust"
+}
+"""
