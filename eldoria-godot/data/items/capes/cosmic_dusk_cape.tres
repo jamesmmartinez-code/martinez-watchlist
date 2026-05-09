@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "cape"
+metadata/_data = """
+{
+  "id": "cosmic_dusk_cape",
+  "name": "Stellar Wrap",
+  "palette": [
+    "#3498db",
+    "#f1c40f"
+  ],
+  "emblem": "\u2b50",
+  "flutter_strength": 8,
+  "effect": "Grants a 5% chance to reflect projectiles",
+  "flavor": "A celestial shroud woven from the essence of shooting stars"
+}
+"""
