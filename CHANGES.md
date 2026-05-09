@@ -1,3 +1,17 @@
+## Tech debt
+
+### OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB hard cap
+- **File:** `eldoria-godot/assets/models/Hero.glb`
+- **Size:** ~29 MiB (hard cap: 25 MiB, soft cap: 20 MiB per OPERATIONS.md §15)
+- **Status:** REFERENCED — cannot auto-delete
+- **References found in:**
+  - `eldoria-godot/scenes/Main.tscn` (ext_resource uid://b0j4kdyg3stf2)
+  - `eldoria-godot/scripts/Player.gd` (Mixamo-retarget skeleton)
+  - `eldoria-godot/scripts/CharacterSelect.gd` (default fallback model)
+- **Context:** Replaced castle_guard.fbx on 2026-05-07. Meshy biped export at ~2.4-2.6m scale. GLB includes embedded textures which likely accounts for the size overage.
+- **Required action (manual):** Re-export Hero.glb with external textures (gltf/embedded_image_handling=0) or compress/reduce embedded textures to bring file under 20 MiB soft cap. Alternatively, strip unused animation tracks before re-export.
+- **Detected:** 2026-05-09 by QA Watchdog (automated)
+
 ## 2026-05-09 Auto: run 32 — Items.gd CQ-S2-02/03/04 (Builder canon-flag fixes)
 
 I'm building: Fix builder-owned canon flags CQ-S2-02, CQ-S2-03, CQ-S2-04
