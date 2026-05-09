@@ -781,7 +781,7 @@ func _ready() -> void:
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
-	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
+	# _safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])  # removed — crystal caves disabled
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
