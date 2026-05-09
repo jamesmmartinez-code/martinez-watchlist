@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "fierce_frostbite",
+  "boss_id": "winter_witch",
+  "phrases": [
+    {
+      "trigger": "phase_2_start",
+      "text": "Frosty fury unleashed!",
+      "tone": "playful_menace"
+    }
+  ]
+}
+"""

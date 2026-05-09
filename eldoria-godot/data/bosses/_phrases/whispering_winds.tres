@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "boss_phrase"
+metadata/_data = """
+{
+  "id": "whispering_winds",
+  "boss_id": "storm_sorceress",
+  "phrases": [
+    {
+      "trigger": "player_dodge",
+      "text": "Clever, but not clever enough!",
+      "tone": "admiration"
+    }
+  ]
+}
+"""
