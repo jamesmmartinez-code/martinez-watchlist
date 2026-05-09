@@ -124,6 +124,7 @@ var road_defense_score: float = 0.0
 var _bandit_patrol_timer: float = 0.0
 # THEME §13 GROUND CONTACT — patrol spawns at y=0, same plane as road.
 const BANDIT_PATROL_INTERVAL: float = 90.0
+const NPC_DEFENSE_WITNESS_RADIUS: float = 12.0
 const BANDIT_PATROL_BOLDNESS_THRESHOLD: float = 0.50
 const ROAD_DEFENSE_DECAY: float = 0.05   # per second — 5% drain
 const ROAD_DEFENSE_CAP: float = 10.0
@@ -925,6 +926,41 @@ func npc_any_relationship_above(min_score: int) -> bool:
 		if npc_relationship_score(key) >= min_score:
 			return true
 	return false
+
+
+# run-33: NPC Defense Witness System ─ Backlog #8. THEME §1 §12.
+func record_npc_defense_witness(kill_pos: Vector3) -> void:
+	var npcs: Array = get_tree().get_nodes_in_group("npcs")
+	for npc_node: Node in npcs:
+		if not is_instance_valid(npc_node): continue
+		var np: Vector3 = npc_node.global_position
+		var dist: float = Vector2(np.x - kill_pos.x, np.z - kill_pos.z).length()
+		if dist > NPC_DEFENSE_WITNESS_RADIUS: continue
+		var nname: String = ""
+		if "npc_name" in npc_node: nname = String(npc_node.npc_name)
+		if nname == "": continue
+		var entry: Dictionary = npc_memory.get(nname, {
+			"visits": 0, "first_day": -1, "last_day": -1,
+			"first_tod": -1.0, "last_tod": -1.0, "gifts": 0, "insults": 0,
+			"defenses_witnessed": 0,
+		})
+		entry["defenses_witnessed"] = int(entry.get("defenses_witnessed", 0)) + 1
+		npc_memory[nname] = entry
+		record_npc_gift(nname)
+		if npc_node.has_method("_fire_witness_bark"):
+			npc_node._fire_witness_bark()
+	_check_achievements()
+
+func npc_defense_witnessed(npc_name: String) -> int:
+	var entry: Dictionary = npc_memory.get(npc_name, {})
+	return int(entry.get("defenses_witnessed", 0))
+
+func npc_count_with_defense_above(min_defenses: int) -> int:
+	var count: int = 0
+	for key: String in npc_memory.keys():
+		if int(npc_memory[key].get("defenses_witnessed", 0)) >= min_defenses:
+			count += 1
+	return count
 
 # Direct world-flag write — sister to apply_consequence's flag step but with
 # no faction / npc / toast side-effects. Used when an emergent runtime event

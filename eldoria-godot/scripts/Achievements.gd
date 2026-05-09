@@ -276,6 +276,19 @@ const ACHIEVEMENTS: Dictionary = {
 	# guardian's kill_quest_target matches. title_priority 45 — sits between
 	# realm_warden (100) and first_enchant (28), so a Guardian kill outranks
 	# most early titles but still yields to a full-warden clear.
+	"village_defender": {
+		"name": "Village Defender",
+		"desc": "Three villagers watched you fight for them. The village remembers.",
+		"icon": "S",
+		"icon_path": "res://assets/icons/achievements/village_defender.png",
+		"title_text": "the Defender",
+		"title_priority": 35,
+		"predicate": {
+			"kind": "npc_defense_count",
+			"min_defenses": 1,
+			"min_count": 3,
+		},
+	},
 	"cave_delver": {
 		"name": "Cave Delver",
 		"desc": "The Crystal Guardian stirs no more. The deep light is yours now.",
@@ -379,5 +392,11 @@ static func _eval_predicate(pred: Dictionary, world: Object) -> bool:
 			if world.has_method("npc_any_relationship_above"):
 				return world.npc_any_relationship_above(min_rel)
 			return false
+		"npc_defense_count":
+			if not world.has_method("npc_count_with_defense_above"):
+				return false
+			var _md: int = int(pred.get("min_defenses", 1))
+			var _mc: int = int(pred.get("min_count", 1))
+			return world.npc_count_with_defense_above(_md) >= _mc
 		_:
 			return false

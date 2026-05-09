@@ -53,6 +53,9 @@ class_name NPC
 # Author convention: 1 = "you gave me something once"; 3 = "trusted friend".
 @export var warmed_relationship_min: int = 0
 @export var warmed_relationship_dialogue_variants: PackedStringArray = PackedStringArray()
+# COMPOUND (run 33 — Builder): proximity-defense tier — HIGHEST priority.
+# Fires when npc_memory["defenses_witnessed"] >= 1. THEME §1 lived-in consequence.
+@export var witnessed_defense_lines: Array[String] = []
 # COMPOUND (run 9 — JSON dialogue tree): when set true, this NPC's lines are
 # resolved by `DialogueDB.choose_line(npc_name, ctx)` from a JSON tree at
 # `res://data/dialogue/<npc_slug>.json` BEFORE falling back to the
@@ -434,7 +437,13 @@ func _on_interact() -> void:
 		var fp: float = float(w.faction_pressure(warmed_faction_id))
 		if fp < warmed_faction_below:
 			variants = warmed_faction_dialogue_variants
-	# COMPOUND (run 29 — Builder): relationship score tier. Fires ABOVE
+	# COMPOUND (run 33 — Builder): witnessed-defense tier — HIGHEST priority.
+	if variants == dialogue_variants and not witnessed_defense_lines.is_empty() and w and w.has_method("npc_defense_witnessed"):
+		if int(w.npc_defense_witnessed(npc_name)) >= 1:
+			var _di: int = randi() % witnessed_defense_lines.size()
+			var _dl: String = witnessed_defense_lines[_di]
+			variants = PackedStringArray([_dl, _dl, _dl, _dl])
+		# COMPOUND (run 29 — Builder): relationship score tier. Fires ABOVE
 	# visit-count because a concrete gift/insult act is a stronger signal
 	# than visit cadence. Threshold 0 disables the tier (default). Reads
 	# World.npc_relationship_score() — fail-soft on older World autoloads.
@@ -487,6 +496,29 @@ func _npc_play_idle_anim_if_any() -> void:
 	var names := ap.get_animation_list()
 	if names.size() > 0:
 		ap.play(names[0])
+
+func _fire_witness_bark() -> void:
+	# Warm-gold bark popup when player kills enemy within 12m. THEME §12.
+	if _bark_label != null:
+		return
+	var _fallback: Array[String] = ["You saved me!", "I won't forget that.", "The village owes you.", "Thank you!"]
+	var _src: Array[String] = witnessed_defense_lines if not witnessed_defense_lines.is_empty() else _fallback
+	var _bark: String = _src[randi() % _src.size()]
+	var _lbl := Label3D.new()
+	_lbl.text = _bark
+	_lbl.font_size = 28
+	_lbl.outline_size = 4
+	_lbl.outline_modulate = Color(0, 0, 0)
+	_lbl.modulate = Color(1.0, 0.90, 0.40)
+	_lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_lbl.no_depth_test = true
+	_lbl.position = Vector3(0, 2.6, 0)
+	add_child(_lbl)
+	_bark_label = _lbl
+	get_tree().create_timer(3.5).timeout.connect(func() -> void:
+		if is_instance_valid(_lbl): _lbl.queue_free()
+		_bark_label = null
+	)
 
 func _find_first_anim_player(n: Node) -> AnimationPlayer:
 	if n is AnimationPlayer:

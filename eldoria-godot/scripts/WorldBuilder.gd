@@ -320,6 +320,21 @@ const NPCS = [
 		"Mmm. Wolf-sage is blooming. Strange for this season.",
 	 ],
 	 "bark_min":28.0, "bark_max":42.0,
+				"defense_lines": [
+					"Your blade rings true, child.",
+					"The spirits guided your arm.",
+					"Eldoria thanks you.",
+				],
+				"defense_lines": [
+					"Strong arm! My forge respects that.",
+					"I'll sharpen your blade free of charge.",
+					"Didn't think you had it in you.",
+				],
+				"defense_lines": [
+					"Drinks are on me tonight!",
+					"I've never seen fighting like that.",
+					"The whole inn saw what you did.",
+				],
 	 "use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
 	 "line":"Bring me ore and I'll forge you a blade.",
@@ -2097,6 +2112,10 @@ func _make_npc(data: Dictionary) -> void:
 	# `memory_visits_min` + `memory_lines` to their NPCS dict entry.
 	npc.warmed_memory_visits_min = int(data.get("memory_visits_min", 0))
 	npc.warmed_memory_dialogue_variants = PackedStringArray(data.get("memory_lines", []))
+		# run-33: wire witnessed_defense_lines
+		if "witnessed_defense_lines" in npc and data.has("defense_lines"):
+			for _dl: String in data["defense_lines"]:
+				npc.witnessed_defense_lines.append(_dl)
 	# COMPOUND (run 9 — JSON dialogue tree): opt-in flag for JSON-tree
 	# resolution via DialogueDB. Defaults false so legacy NPCs are untouched.
 	npc.use_dialogue_json = bool(data.get("use_json_dialogue", false))

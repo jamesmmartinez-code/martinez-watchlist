@@ -1,5 +1,26 @@
 ## Tech debt
 
+## run-33 — NPC Defense Witness System (2026-05-08)
+
+**Backlog**: #8 NPC Memory — proximity defense awareness  
+**THEME**: §1 (lived-in consequence), §12 (MOTION & LIFE — bark popup)
+
+### What was built
+- `Enemy.gd` `_die()`: calls `World.record_npc_defense_witness(global_position)` via call_group
+- `World.gd`: `record_npc_defense_witness()` scans NPCs within 12m, increments `defenses_witnessed`, fires bark
+- `World.gd`: `npc_defense_witnessed(name)` and `npc_count_with_defense_above(n)` query helpers
+- `NPC.gd`: `witnessed_defense_lines: Array[String]` export, highest-priority dialogue tier, `_fire_witness_bark()` warm-gold popup
+- `Achievements.gd`: `village_defender` achievement (3 NPCs witness ≥1 defense), `npc_defense_count` predicate
+- `WorldBuilder.gd`: wires `defense_lines` for Elder Maeve, Smith Edda, Innkeeper Bram
+
+### 5-output checklist
+- ✅ Integration: Enemy→World→NPC call chain
+- ✅ Schema: `defenses_witnessed` in npc_memory dict
+- ✅ Feedback: `_fire_witness_bark()` warm-gold Label3D popup
+- ✅ Eval: `village_defender` achievement + `npc_defense_count` predicate
+- ✅ Hooks (×2): `record_npc_defense_witness` + `_fire_witness_bark`
+
+
 ### OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB hard cap
 - **File:** `eldoria-godot/assets/models/Hero.glb`
 - **Size:** ~29 MiB (hard cap: 25 MiB, soft cap: 20 MiB per OPERATIONS.md §15)
