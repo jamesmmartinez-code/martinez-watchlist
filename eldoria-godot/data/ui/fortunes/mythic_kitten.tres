@@ -6,8 +6,8 @@ metadata/_data = """
   "id": "mythic_kitten",
   "fortunes": [
     {
-      "text": "Kindness is a superpower",
-      "mood": "wise"
+      "text": "Smile often, sparkle always",
+      "mood": "playful"
     }
   ]
 }
