@@ -1,0 +1,40 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "greeting"
+metadata/_data = """
+{
+  "id": "sunflower_village_greeter",
+  "greetings": [
+    {
+      "text": "Hi there!",
+      "mood": "cheerful",
+      "time_of_day": "any"
+    },
+    {
+      "text": "Good morning!",
+      "mood": "warm",
+      "time_of_day": "morning"
+    },
+    {
+      "text": "Howdy!",
+      "mood": "busy",
+      "time_of_day": "noon"
+    },
+    {
+      "text": "Evening!",
+      "mood": "tired",
+      "time_of_day": "evening"
+    },
+    {
+      "text": "Hi!",
+      "mood": "shy",
+      "time_of_day": "night"
+    },
+    {
+      "text": "Hello!",
+      "mood": "warm",
+      "time_of_day": "any"
+    }
+  ]
+}
+"""
