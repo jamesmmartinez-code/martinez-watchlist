@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "lost_kitten_chain",
+  "title": "Whisker's Big Adventure",
+  "region": "whisperwood",
+  "theme": "Lost Kitten",
+  "quests": [
+    {
+      "id": "find_kitten",
+      "title": "Find Whisker",
+      "hook": "Kitten lost in woods!",
+      "stages_count": 3
+    },
+    {
+      "id": "follow_clues",
+      "title": "Follow the Trail",
+      "hook": "Find hidden clues!",
+      "stages_count": 2
+    },
+    {
+      "id": "rescue_kitten",
+      "title": "Rescue Whisker",
+      "hook": "Save the kitten!",
+      "stages_count": 2
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "kitten_friend"
+  },
+  "flavor": "A heartwarming tale of a lost kitten"
+}
+"""
