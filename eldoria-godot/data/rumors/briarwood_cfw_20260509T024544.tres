@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's famous pumpkin pie recipe has been stolen!"
+truth_0 = "false"
+rumor_1 = "A secret garden hidden deep in Briarwood is blooming with rare wildflowers"
+truth_1 = "partial"
+rumor_2 = "The ancient trees in Briarwood are whispering secrets to those who listen"
+truth_2 = "true"
+rumor_3 = "A mischievous band of fairies has been playing tricks on travelers in Briarwood"
+truth_3 = "partial"
+rumor_4 = "The legendary Golden Acorn can be found hidden in a hollow tree in Briarwood"
+truth_4 = "true"
