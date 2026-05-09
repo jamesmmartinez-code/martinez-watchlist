@@ -6,19 +6,19 @@ metadata/_data = """
   "id": "moonlit_morsel",
   "name": "Luminous Leaf Wrap",
   "station_required": "cooking_pot",
-  "station_tier_min": 2,
+  "station_tier_min": 1,
   "inputs": [
     {
-      "item_id": "silver_leaf",
+      "item_id": "moonpetal",
       "qty": 1
     },
     {
-      "item_id": "mythril_sugar",
-      "qty": 3
+      "item_id": "starlight_salt",
+      "qty": 1
     },
     {
-      "item_id": "starlight_salt",
-      "qty": 2
+      "item_id": "fresh_fish",
+      "qty": 1
     }
   ],
   "output": {
@@ -27,8 +27,8 @@ metadata/_data = """
   },
   "time_seconds": 10,
   "fuel_cost": 2,
-  "unlock_condition": "complete_quest_woodland_whispers",
-  "failure_behavior": "return_inputs",
-  "flavor": "Inspired by the moonlit forests of Lothlórien, this dish is said to grant the consumer visions of ancient wisdom."
+  "unlock_condition": "auto",
+  "failure_behavior": "none",
+  "flavor": "A delicate, shimmering wrap that tastes like a moonlit night"
 }
 """
