@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "recipe"
+metadata/_data = """
+{
+  "id": "elven_earthsong_stew",
+  "name": "Elven Earthsong Stew",
+  "station_required": "cooking_pot",
+  "station_tier_min": 3,
+  "inputs": [
+    {
+      "item_id": "wild_mushrooms",
+      "qty": 2
+    },
+    {
+      "item_id": "ancient_tree_bark",
+      "qty": 1
+    },
+    {
+      "item_id": "crystal_clear_water",
+      "qty": 1
+    }
+  ],
+  "output": {
+    "item_id": "nature_s_bounty",
+    "qty": 1
+  },
+  "time_seconds": 15,
+  "fuel_cost": 3,
+  "unlock_condition": "reach_level_10",
+  "failure_behavior": "none",
+  "flavor": "A hearty stew that resonates with the harmony of nature, blending the earthy flavors of wild mushrooms and ancient tree bark with the clarity of crystal clear water."
+}
+"""
