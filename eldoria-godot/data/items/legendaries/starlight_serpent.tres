@@ -4,7 +4,7 @@ metadata/_kind = "legendary"
 metadata/_data = """
 {
   "id": "starlight_serpent",
-  "name": "Stellar Fang (the Serpent's Tooth)",
+  "name": "Stellar Fang (the Celestial Snake)",
   "category": "dagger",
   "level_req": 30,
   "stats": {
@@ -13,9 +13,9 @@ metadata/_data = """
     "hp": 10,
     "spd": 5
   },
-  "unique_effect": "Deals bonus damage to shadow enemies",
-  "unlock_condition": "defeat_boss:dark_dragon",
-  "backstory": "Forged from a fallen star, the Stellar Fang is said to hold the essence of the celestial serpent, a creature of light that brought hope to the world. It is rumored that the serpent's tooth can vanquish any darkness.",
-  "flavor": "May the light of the stars guide my blade"
+  "unique_effect": "Deals 10% more damage to undead enemies",
+  "unlock_condition": "defeat_boss:undead_lord",
+  "backstory": "Forged from a fallen star, this dagger was said to have been wielded by the great hero, Astral, who vanquished the darkness with its celestial power. Its blade shines with a soft, ethereal glow, guiding its wielder through the shadows.",
+  "flavor": "May the light of the stars guide your strikes."
 }
 """
