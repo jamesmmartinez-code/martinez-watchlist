@@ -1,0 +1,166 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra Moonwhisper",
+  "mood": "wise",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Greetings, young adventurer. I sense you're searching for something. The forest is full of secrets, but also full of danger.",
+      "options": [
+        {
+          "player_text": "What secrets?",
+          "goto": "secrets",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "What dangers?",
+          "goto": "dangers",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "secrets",
+      "npc_text": "The forest holds ancient magic, hidden streams, and whispers of old tales. But to find them, you must listen with your heart.",
+      "options": [
+        {
+          "player_text": "How do I listen with my heart?",
+          "goto": "listen",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'm looking for a specific secret.",
+          "goto": "specific_secret",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dangers",
+      "npc_text": "The shadows hide dark creatures, and the wind can be treacherous. But do not fear, for courage is not the absence of fear, but the judgment that something else is more important.",
+      "options": [
+        {
+          "player_text": "What's more important than fear?",
+          "goto": "more_important",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'll be careful.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "listen",
+      "npc_text": "To listen with your heart, you must quiet your mind and feel the pulse of nature. Come, let me show you.",
+      "options": [
+        {
+          "player_text": "Show me.",
+          "goto": "show",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I think I understand.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "specific_secret",
+      "npc_text": "Ah, you're looking for something specific. The forest is vast, but I can sense you're searching for the fabled Moonflower. It blooms only under the light of the full moon.",
+      "options": [
+        {
+          "player_text": "Where can I find it?",
+          "goto": "moonflower_location",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'll search for it.",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more_important",
+      "npc_text": "What's more important than fear is the desire to protect and preserve the beauty of the world. The forest needs guardians like you.",
+      "options": [
+        {
+          "player_text": "I want to be a guardian.",
+          "goto": "guardian",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'll think about it.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "show",
+      "npc_text": "Come, sit with me, and let the forest speak to you. Feel the earth beneath you, the wind in your hair, and the sun on your face.",
+      "options": [
+        {
+          "player_text": "I feel it.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moonflower_location",
+      "npc_text": "The Moonflower blooms in a hidden glade, deep within the forest. Follow the stream that sings the sweetest melody, and you shall find it.",
+      "options": [
+        {
+          "player_text": "Thank you.",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guardian",
+      "npc_text": "Then let us begin your journey as a guardian of the forest. Together, we shall explore the depths of this enchanted land and uncover its secrets.",
+      "options": [
+        {
+          "player_text": "Let's start.",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    }
+  ]
+}
