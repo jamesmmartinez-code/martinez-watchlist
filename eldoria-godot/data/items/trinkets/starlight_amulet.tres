@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "trinket"
+metadata/_data = """
+{
+  "id": "starlight_amulet",
+  "name": "Moonlit Pendant",
+  "slot": "pocket",
+  "minor_effect": "Gives the wearer a gentle, calming aura",
+  "unlock_condition": "craft",
+  "flavor": "A delicate silver pendant adorned with a glowing opal"
+}
+"""
