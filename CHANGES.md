@@ -1,11 +1,145 @@
-- QA 2026-05-09T03:43:13Z: Build=queued (pages build and deployment), Pages=building. §15: Hero.glb 29.55MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run.
+## 2026-05-09 Auto: run 32 — Items.gd CQ-S2-02/03/04 (Builder canon-flag fixes)
+
+I'm building: Fix builder-owned canon flags CQ-S2-02, CQ-S2-03, CQ-S2-04
+THEME §1 cited: all 5 items are period-correct fantasy materials (carved briar, moss-lashed oak, hemp halter, hand-bound cudgel — no modern materials)
+Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md, qa/_canon_flags.md
+Mood board panel: Briarwood village market stall — Mara's row of six cudgels, Roan's stable shelf
+
+Files: eldoria-godot/scripts/Items.gd (+5 entries to ITEMS dict)
+
+5-output check:
+  i.  Integration: Items.get_item("briar_shortbow") / ("mossbound_buckler") / ("roan_woodbow")
+        / ("practice_cudgel") / ("roan_steppe_halter") now return full dicts instead of {};
+        forge sell UI, loot popup, shop display, and drop table label all consume Items.get_item()
+        — all 5 now work without any caller changes.
+  ii. Schema: 5 new ITEMS entries. briar_shortbow (uncommon bow, dmg 8, crit 0.04, val 65);
+        mossbound_buckler (common shield, armor 4, val 18); roan_woodbow (common bow, dmg 3, val 10);
+        practice_cudgel (common weapon, dmg 4, val 8); roan_steppe_halter (uncommon trinket, val 22).
+        Stats mirror corresponding .tres files exactly (CQ-S2-02). CQ-S2-03/04 authored fresh.
+  iii. Feedback: loot popups and forge sell panel will now show correct item names/colors/icons
+        instead of blank / "?" fallbacks. Roan's roan_halter_gifted flag chain now has a named item
+        to show in paperdoll. Hala's after_first_quest_complete cudgel gift displays correctly.
+  iv. Eval: Items.get_item(id).is_empty() == false for all 5 new ids — verifiable from any caller.
+  v.  2+ hooks: Items.roll_loot (drop table) / World.show_dialogue (gift reward display) /
+        Inventory.add_item (paperdoll slot resolution) / Inventory.attempt_sell_weapon (forge sell)
+        — all 4 callers of Items.get_item() now resolve correctly for these ids.
+
+Canon flags closed this run:
+  CQ-S2-02 CLOSED: briar_shortbow, mossbound_buckler, roan_woodbow added to ITEMS dict
+  CQ-S2-03 CLOSED: practice_cudgel authored (weapon, common, Hala gift)
+  CQ-S2-04 CLOSED: roan_steppe_halter authored (trinket, uncommon, Roan gift)
+
+Branch: auto/builder
+
+Next run picks up:
+  CQ-S2-01: items_flavor.json needs 4 entries (briar_shortbow, mossbound_buckler, roan_woodbow, wolf_heart)
+  CQ-S2-05: mossbound_buckler recipe (craft via Lyra's herb_shed or new wood_shed station)
+  CQ-S2-06: tree collision radius audit in _make_glb_tree
+
 ## Tech debt
 
-- **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap** *(still open — re-confirmed 2026-05-09T03:17:00Z)*
-  - File: `eldoria-godot/assets/models/Hero.glb` — 29.55 MB (soft cap: 20 MiB, hard cap: 25 MiB)
+## 2026-05-09 Auto: run 31 — Wandering Herbalist NPC + Cave Delver Achievement
+
+I'm building: Wandering Herbalist NPC (maeve.glb, previously unused) + cave_delver achievement
+THEME §1 cited: wandering healer is classic fantasy archetype — no modern gear, rootcraft and restoratives
+THEME §12 cited: MOTION & LIFE — Wandering Herbalist has a wide day-arc schedule (deep forest→village well→cave approach), never static
+THEME §13 cited: all schedule anchors y=0, no floating or buried geometry
+Mood board panel: BotW travelling merchant at forest edge, lantern-lit dusk path
+
+Files:
+  WorldBuilder.gd  +NPC_MODELS "Wandering Herbalist"→maeve.glb
+                   +NPC_SCALES "Wandering Herbalist" 1.10×
+                   +NPCS[9]: Wandering Herbalist — role=alchemy, pos=Vector3(-22,0,-8)
+                     4-bucket schedule (deep forest/village well/forest edge/cave approach)
+                     memory_visits_min=2, warm_flag=first_quest_done
+                     5 ambient barks 18-32s interval
+  Enemy.gd         _die(): crystal_guardian → set_world_flag("crystal_guardian_slain") + _check_achievements
+  Achievements.gd  +cave_delver achievement: predicate world_flag "crystal_guardian_slain"
+                     title "the Cave Delver", priority 45
+
+5-output check:
+  i.   Integration: Wandering Herbalist spawned via existing _make_npc() path in _build_village();
+         Enemy._die() crystal_guardian branch calls set_world_flag + _check_achievements
+  ii.  Schema: NPCS[9] dict with full schedule/bark/memory/warm structure;
+         Achievements "cave_delver" entry with world_flag predicate; crystal_guardian_slain flag
+  iii. Feedback: warmed_flag lines fire after first_quest_done; memory_visits_min=2 warm tier at third visit;
+         cave_delver achievement toast "the Cave Delver" on Guardian kill
+  iv.  Eval: Achievements.cave_delver predicate evaluable via _check_achievements() in World.gd;
+         Wandering Herbalist schedule walk readable via NPC._get_schedule_target()
+  v.   2+ hooks: group "npcs" (Minimap gold-dot); schedule_anchors (NPC walker);
+         warmed_memory tier (visit ledger); crystal_guardian_slain flag read by Achievements
+         AND available as future dialogue predicate for Wandering Herbalist advanced lines
+
+GLBs consumed this run: maeve.glb (NPC, Wandering Herbalist)
+Next run picks up: Housing depth (storage chest contents, bed-rest heal), or Boss.glb wiring as Mountain Ogre
+
+
+- **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap**
+  - File: `eldoria-godot/assets/models/Hero.glb` — 29 MB (soft cap: 20 MiB, hard cap: 25 MiB)
   - Status: **REFERENCED** in `scenes/Main.tscn`, `scripts/Player.gd`, `scripts/CharacterSelect.gd` — cannot delete
   - Action required: Replace with a compressed/LOD version of Hero.glb before Cloudflare Pages migration
-  - First logged: 2026-05-09T02:57:48Z | Re-confirmed: 2026-05-09T03:21:00Z
+  - Logged by: Eldoria QA Watchdog — 2026-05-09T02:57:48Z
+
+## 2026-05-08 Auto: run 29 — NPC Relationship Score (Backlog #8 compound)
+I'm building: NPC memory deepening — record_npc_gift / record_npc_insult + relationship tier
+THEME §12 cited: MOTION & LIFE — village NPCs now REACT to kindness, not just visits
+Canon docs read: AGENT_CANON_PREAMBLE.md, SIZE_STANDARDS.md, PROBLEMS_LOG.md
+Mood board panel: Stardew Valley / Rune Factory — villager warmth earned through actions
+Files: World.gd +record_npc_gift +record_npc_insult +npc_relationship_score +npc_any_relationship_above
+       NPC.gd +warmed_relationship_min +warmed_relationship_dialogue_variants (5th tier)
+       Achievements.gd +villager_friend achievement (score>=3) + npc_relationship_min predicate
+5-output check:
+  i.  Integration: NPC._on_interact calls warmed_relationship tier ABOVE visit-count tier;
+        World._check_achievements() called after every gift/insult write
+  ii. Schema: npc_memory dict extended with gifts: int, insults: int per NPC;
+        NPC_RELATIONSHIP_SCORE_MIN/MAX consts; warmed_relationship_min/@export on NPC
+  iii.Feedback: warmed_relationship_dialogue_variants produces distinct warm lines when score>=min;
+        achievement villager_friend unlocks title the Beloved on score>=3
+  iv. Eval: npc_relationship_score() + npc_any_relationship_above() public accessors;
+        _eval_predicate extended with npc_relationship_min kind
+  v.  2+ hooks: record_npc_gift triggers _check_achievements (Achievement hook);
+        warmed_relationship tier composable with all existing tiers in NPC chain
+Next run picks up: Faction state — bandit boldness scales with road defense (Backlog #9)
+
+## 2026-05-08 Auto: run 29 -- Faction State: Bandit Road Defense (Backlog #9)
+
+I'm building: Faction state — bandit boldness scales with road defense (Backlog #9)
+THEME §1 cited: road_defense_score decays slowly so defended roads soften back — consequence is lived-in, not permanent
+THEME §12 cited: road_defense_score decays 5%/s via _process — drifts, never hard-clears; patrol spawns at 90s interval bring the road alive
+THEME §13 cited: patrol bandit spawns at y=0 (GROUND CONTACT), south road corridor clamped to x∈[-8,8]
+Mood board panel: Zelda BotW emergent threat ecology — world responds to what you've done
+
+Files:
+  World.gd  +road_defense_score float  +_bandit_patrol_timer float
+            +BANDIT_PATROL_INTERVAL const  +BANDIT_PATROL_BOLDNESS_THRESHOLD const
+            +ROAD_DEFENSE_DECAY const  +ROAD_DEFENSE_CAP const
+            +record_road_kill(kind) mutator
+            +get_road_defense_score() eval accessor
+            +_tick_bandit_patrol() internal patrol spawner
+            update_bandit_pressure() — defense_damper term subtracts from boldness
+            _process — road_defense_score decay + _bandit_patrol_timer tick
+  Enemy.gd  _die() — bandit/bandit_captain kill → record_road_kill() on world
+  WorldBuilder.gd — Roan warmed_world_flag:"bandit_road_cleared" + 4 morning/midday/evening/night lines
+
+5-output check:
+  i.   Integration:  _tick_bandit_patrol() wired into World._process every BANDIT_PATROL_INTERVAL (90s)
+                     record_road_kill() called from Enemy._die() for bandit/bandit_captain kinds
+  ii.  Schema:       road_defense_score float[0..10], _bandit_patrol_timer, 4 consts in World.gd
+                     SYSTEM_REGISTRY.md updated with full contract
+  iii. Feedback:     "The road breathes easier." toast on bandit_road_cleared flag (score>=3)
+                     "A bandit patrol stirs on the south road." toast on patrol spawn
+                     Minimap ping at south road on cleared flag
+  iv.  Eval:         get_road_defense_score() public accessor
+                     faction_pressure("bandits") is the eval surface for boldness (pre-existing)
+  v.   2+ hooks:     Enemy._die() → record_road_kill() (hook 1, per-kill)
+                     _process → _bandit_patrol_timer → _tick_bandit_patrol() (hook 2, interval)
+                     Roan warmed_world_flag:"bandit_road_cleared" (hook 3, NPC dialogue)
+                     update_bandit_pressure() defense_damper (hook 4, boldness derivation)
+
+Next run picks up: NPC memory deepening (record_npc_gift / record_npc_insult / relation_score)
+  or Crystal Caves deepening (boss lore, new crystal_guardian patrol pattern)
+
+## Tech debt
 
 QA: 2026-05-08 — OPERATIONS.md §15 violation: `eldoria-godot/assets/models/Hero.glb` is 29 MiB, exceeding the 25 MiB hard cap (20 MiB soft cap) for Cloudflare Pages deploy target. Asset is actively referenced in `scripts/Player.gd`, `scripts/CharacterSelect.gd`, and `scenes/Main.tscn` — cannot be deleted. Action required: compress/LOD-bake Hero.glb below 20 MiB or split into streaming chunks before Cloudflare Pages migration.
 
@@ -29,7 +163,6 @@ Files: WorldBuilder.gd (bark_lines added to all 7 NPCS[] entries + _make_npc wir
 Next run picks up: NPC memory system deepening (record_npc_gift / record_npc_insult) or
   Faction state — bandit boldness scales with road defense (Backlog #9)
 
-- QA 2026-05-08T20:00Z: Build=None/in_progress, Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run.
 - QA 2026-05-08T15:08Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt in prior runs. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T15:27Z: Build=in_progress (Godot Web Export), Pages=building. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run.
 - QA 2026-05-08T14:58Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
@@ -142,11 +275,3 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:14Z: Build=success (pages-build-and-deployment), Pages=built. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-09T02:18Z: Build=success (run 25588908587, 02:17Z), Pages=built (02:17Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-
-- QA 2026-05-09T03:13Z: Build=success (run 25590059331, 03:10Z), Pages=built (03:09Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-
-- QA 2026-05-09T03:28Z: Build=success (pages-build-and-deployment run #1054, 03:26Z), Pages=built (03:26Z). Prior errored build (03:25Z) was a transient cancellation, immediately superseded by successful run. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-- QA 2026-05-09T03:31Z: Build=in_progress (Godot Web Export run started 03:29Z), Pages=built (03:29Z — prior errored build at 03:28Z immediately superseded by successful deploy). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-- QA 2026-05-09T03:34Z: Build=in_progress (pages build and deployment run #1059, 03:32Z — prior runs #1057/#1058 were auto-cancelled/superseded, normal pattern). Pages=building (in_progress). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ Deploy in flight, all systems nominal.
-- QA 2026-05-09T03:35Z: Build=success (pages build and deployment run #1059, 03:33Z — latest completed run is success). Pages=built (03:33Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
-- QA 2026-05-09T03:39Z: Build=success (Godot Web Export), Pages=built ✅. §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn, cannot delete; already logged as tech debt. No new action taken this run.
