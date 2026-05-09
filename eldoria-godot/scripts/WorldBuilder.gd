@@ -35,6 +35,7 @@ func _populate_npc_models() -> void:
 		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
 		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 	}
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {
@@ -47,6 +48,7 @@ const NPC_SCALES := {
 	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
 	"Village Guard":        Vector3(1.05, 1.05, 1.05),
 	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
+	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
 }
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
@@ -154,7 +156,7 @@ func MAT_GRASS(uv := 30.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/grass/grass_diff.jpg",
 		"res://assets/textures/grass/grass_norm.jpg",
 		"res://assets/textures/grass/grass_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.38, 0.55, 0.28))
+		Vector3(uv, uv, 1))
 
 func MAT_WOOD(uv := 1.5) -> StandardMaterial3D:
 	var m = _sub_mat("res://assets/textures/arch/wood_beam/wood_beam.tres", uv)
@@ -218,19 +220,19 @@ func MAT_BARK(uv := 2.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/bark/bark_diff.jpg",
 		"res://assets/textures/bark/bark_norm.jpg",
 		"",
-		Vector3(uv, uv, 1), Color(0.35, 0.22, 0.15))
+		Vector3(uv, uv, 1))
 
 func MAT_ROCK(uv := 1.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/rock/rock_diff.jpg",
 		"res://assets/textures/rock/rock_norm.jpg",
 		"",
-		Vector3(uv, uv, 1), Color(0.45, 0.42, 0.40))
+		Vector3(uv, uv, 1))
 
 func MAT_SNOW(uv := 1.0) -> StandardMaterial3D:
 	return _pbr_mat("res://assets/textures/snow/snow_diff.jpg",
 		"res://assets/textures/snow/snow_norm.jpg",
-		"res://assets/textures/snow/snow_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.82, 0.86, 0.90))
+		"",
+		Vector3(uv, uv, 1), Color(0.95, 0.96, 1.0))
 
 func MAT_LEAF(tint: Color) -> StandardMaterial3D:
 	# Stylized leaves — slight subsurface look
@@ -732,6 +734,51 @@ const NPCS = [
 		"Harvest comes whether you're ready or not. I'm always ready.",
 	 ],
 	 "bark_min":20.0, "bark_max":35.0},
+	# run-31 (Builder) — Wandering Herbalist uses maeve.glb (CC-BY, previously unused).
+	# THEME §12 MOTION & LIFE: she never stays in one spot — wide day-arc from
+	# the Whisperwood fringe at morning to the village well at midday and back.
+	# THEME §1: a wandering healer is a classic fantasy archetype — no modern gear.
+	# THEME §13 GROUND CONTACT: all schedule anchors at y=0.
+	# Compounds: NPC memory (memory_visits_min=2), relationship tier, ambient barks,
+	# and the cave_delver achievement (she's the one who tells you to go to the caves).
+	{"name":"Wandering Herbalist", "role":"alchemy", "pos":Vector3(-22, 0, -8),
+	 "tint":Color(0.55, 0.75, 0.45),
+	 "line":"The forest gives freely if you know how to listen. Most folk don't.",
+	 "lines":[
+		"The forest gives freely if you know how to listen. Most folk don't.",
+		"I've walked this edge since before the gate was built. It remembers me.",
+		"The Crystal Caves hum differently at dawn. Something is awake in there.",
+		"I trade in roots and restoratives. Not weapons. Never weapons.",
+	 ],
+	 "warm_flag":"first_quest_done",
+	 "warm_lines":[
+		"Word travels fast in a small forest. They say you've been busy.",
+		"The wolves are quieter east of the stone. You did that, didn't you.",
+		"Here — a tincture of ironleaf. For the road ahead.",
+		"I've seen a dozen young wanderers pass through. You feel different.",
+	 ],
+	 "use_json_dialogue":false,
+	 "memory_visits_min":2,
+	 "memory_lines":[
+		"You seek me out. The forest likes you for that.",
+		"Third time we've met on this path. Fate or habit — both are good signs.",
+		"You come often. Take this dried moonsprig — it won't keep past full moon.",
+		"I've started leaving a mark on the birch when I've spoken with you.",
+	 ],
+	 "schedule":[
+		 Vector3(-30.0, 0, -18.0),  # morning: deep Whisperwood fringe
+		 Vector3(-14.0, 0,  -4.0),  # midday: near village well
+		 Vector3(-22.0, 0,  -8.0),  # evening: forest edge camp
+		 Vector3(-18.0, 0, -12.0),  # night: dark path near cave approach
+	 ],
+	 "bark_lines":[
+		"Roots before bark. Always roots first.",
+		"The cave breathes differently today. Mind your step.",
+		"Moonsprig grows best where the light doesn't quite reach.",
+		"I count five wolf-paths through here. Down from twelve last month.",
+		"Speak quietly near the crystal formations. They carry sound.",
+	 ],
+	 "bark_min":18.0, "bark_max":32.0},
 ]
 
 const BUILDINGS = [
@@ -781,7 +828,7 @@ func _ready() -> void:
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
-	# _safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])  # removed — crystal caves disabled
+	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
