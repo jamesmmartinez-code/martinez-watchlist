@@ -124,6 +124,13 @@ func _ready() -> void:
 	call_deferred("_rebuild_weapon_visual")
 	# Load save on first frame (after inventory wires up)
 	call_deferred("load_game")
+	# Char-spec: normalize hero to 1.10m (kid Alden/Owen) — SIZE_STANDARDS.md §1.
+	# Three deferred retries absorb the Godot 4 deferred-AABB update lag on GLB import.
+	# LOCKED VALUE: 1.1 — change requires [CANON-APPROVED:] tag.
+	call_deferred("_normalize_player_model", 1.1)
+	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(1.1))
+	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(1.1))
+	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(1.3))
 
 func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
@@ -805,6 +812,67 @@ func set_title(t: String) -> void:
 		return
 	title_label.text = t
 	title_label.visible = (t != "")
+
+# ────────────────────────────────────────────────────────────────────────
+# Char-spec 2026-05-08: Player model height normalization — SIZE_STANDARDS.md §1
+# _normalize_player_model(target_height): measures the body-mesh AABB (excluding
+#   BoneAttachment3D gear subtrees) and corrects the root model's scale so the
+#   visible height ≈ target_height. LOCKED: target_height = 1.10m.
+# _force_hero_height_cap(cap): hard ceiling applied after all retries — clamps
+#   to cap (1.30m §1 hard cap) if bone-rest AABB underestimates live skin AABB.
+# NEVER CHANGE these values without [CANON-APPROVED: reason] in commit message.
+# ────────────────────────────────────────────────────────────────────────
+func _normalize_player_model(target_height: float) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		# Skip gear on BoneAttachment3D subtrees — measure body mesh only.
+		var par := v.get_parent()
+		if par is BoneAttachment3D: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	var correction: float = clamp(target_height / aabb.size.y, 0.001, 100.0)
+	for c in get_children():
+		if c is BoneAttachment3D: continue
+		if c.find_children("*", "VisualInstance3D", true, false).size() > 0:
+			c.scale = c.scale * Vector3(correction, correction, correction)
+			break
+
+func _force_hero_height_cap(cap: float) -> void:
+	# Hard ceiling: shrink if live-skin AABB still exceeds cap after normalization.
+	# cap = 1.30m = SIZE_STANDARDS.md §1 hard cap for kid Player.
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var par := v.get_parent()
+		if par is BoneAttachment3D: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	if aabb.size.y > cap:
+		var shrink: float = cap / aabb.size.y
+		for c in get_children():
+			if c is BoneAttachment3D: continue
+			if c.find_children("*", "VisualInstance3D", true, false).size() > 0:
+				c.scale = c.scale * Vector3(shrink, shrink, shrink)
+				break
 
 func reset_save() -> void:
 	# For "New Game" button later
