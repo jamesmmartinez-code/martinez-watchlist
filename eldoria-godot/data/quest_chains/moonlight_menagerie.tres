@@ -1,0 +1,37 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "quest_chain"
+metadata/_data = """
+{
+  "id": "moonlight_menagerie",
+  "title": "The Whispering Woods' Secret",
+  "region": "whisperwood",
+  "theme": "Ancient magic",
+  "quests": [
+    {
+      "id": "ancient_ruins_discovered",
+      "title": "Ruins in the Woods",
+      "hook": "Explore mysterious ruins",
+      "stages_count": 3
+    },
+    {
+      "id": "whispering_woods_spirit",
+      "title": "The Whispering Spirit",
+      "hook": "Help a lost spirit",
+      "stages_count": 2
+    },
+    {
+      "id": "moonlight_menagerie_unlocked",
+      "title": "Unlock the Menagerie",
+      "hook": "Unlock a magical zoo",
+      "stages_count": 3
+    }
+  ],
+  "final_reward": {
+    "xp": 250,
+    "gold": 150,
+    "item_id": "mythic_moonstone"
+  },
+  "flavor": "A mystical glow emanates from the Whispering Woods, beckoning brave adventurers to uncover its secrets."
+}
+"""
