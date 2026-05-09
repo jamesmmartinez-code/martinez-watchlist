@@ -1,0 +1,33 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "set"
+metadata/_data = """
+{
+  "id": "moonlit_guardian",
+  "name": "Lunar Sentinel",
+  "theme": "sky",
+  "piece_ids": [
+    "starlight_sword",
+    "lunar_helm",
+    "moonstone_chest",
+    "dawnbreaker_boots"
+  ],
+  "bonuses": [
+    {
+      "pieces": 2,
+      "effect": "Moonlit Strike",
+      "stat_mod": {
+        "atk": 3
+      }
+    },
+    {
+      "pieces": 4,
+      "effect": "Guardian's Blessing",
+      "stat_mod": {
+        "hp": 30
+      }
+    }
+  ],
+  "flavor": "Forged under the light of a full moon, this armor set is said to hold the power of the celestial guardians who watch over the land from the sky."
+}
+"""
