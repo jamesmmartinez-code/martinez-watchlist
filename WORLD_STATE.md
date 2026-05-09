@@ -1,3 +1,18 @@
+## Items catalog completeness — missing ITEMS dict entries filled (run 32)
+- CQ-S2-02 CLOSED: briar_shortbow (uncommon bow, quest-acquired, Whisperwood archery),
+  mossbound_buckler (common shield, craft-acquired, Whisperwood oak + moss), and
+  roan_woodbow (common bow, vendor-acquired, Roan's stable gift) added to ITEMS dict.
+  All three had .tres definitions but Items.get_item() returned {} — forge sell, loot
+  popup name, and shop display were showing blank or "?" for these ids.
+- CQ-S2-03 CLOSED: practice_cudgel authored. Hala's after_first_quest_complete dialogue
+  hands the player a hand-bound teaching weapon ("Mara stocks them; I make them.").
+  Common weapon, damage 4, value 8. World_flag cudgel_acknowledged fires on receipt.
+- CQ-S2-04 CLOSED: roan_steppe_halter authored. Roan's after_first_quest_complete gift
+  (Steppe-Patterned Halter for Pippin, kept by the player as a keepsake). Trinket slot,
+  uncommon, value 22. World_flag roan_halter_gifted fires on receipt (already in dialogue).
+- THEME §1 maintained: all 5 items are period-correct fantasy materials.
+
+
 ## Combat-feel polish — HP bar color progression + attack telegraph windup (run 32)
 - HP bar color progression (Enemy.gd _update_hp_bar): smooth three-band lerp:
   green (ratio > 0.60) → yellow (0.30–0.60) → warm-red (<0.30). Each band is a
