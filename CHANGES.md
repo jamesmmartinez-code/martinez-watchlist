@@ -1,3 +1,11 @@
+## Tech debt
+
+- **QA: OPERATIONS.md §15 violation — Hero.glb exceeds 25 MiB soft cap**
+  - File: `eldoria-godot/assets/models/Hero.glb` — 29 MB (soft cap: 20 MiB, hard cap: 25 MiB)
+  - Status: **REFERENCED** in `scenes/Main.tscn`, `scripts/Player.gd`, `scripts/CharacterSelect.gd` — cannot delete
+  - Action required: Replace with a compressed/LOD version of Hero.glb before Cloudflare Pages migration
+  - Logged by: Eldoria QA Watchdog — 2026-05-09T02:57:48Z
+
 ## 2026-05-08 Auto: run 29 — NPC Relationship Score (Backlog #8 compound)
 I'm building: NPC memory deepening — record_npc_gift / record_npc_insult + relationship tier
 THEME §12 cited: MOTION & LIFE — village NPCs now REACT to kindness, not just visits
