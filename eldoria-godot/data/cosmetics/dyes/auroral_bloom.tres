@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "dye"
+metadata/_data = """
+{
+  "id": "auroral_bloom",
+  "name": "Auroral",
+  "color_hex": "#A9C9F9",
+  "source": "flower:moonflower",
+  "rarity": "uncommon",
+  "flavor": "Petals of moonflowers shine bright"
+}
+"""
