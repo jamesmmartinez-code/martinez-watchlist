@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "sapling"
+metadata/_data = """
+{
+  "id": "lavender_bush",
+  "name": "Lavender Bush",
+  "grow_days": 7,
+  "yield_item": "lavender",
+  "yield_qty": 3,
+  "sun_required": "full",
+  "watering": "low",
+  "flavor": "a gentle purple hue"
+}
+"""
