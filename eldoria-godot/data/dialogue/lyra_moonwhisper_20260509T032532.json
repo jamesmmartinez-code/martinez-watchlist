@@ -1,0 +1,167 @@
+{
+  "npc_slug": "lyra_moonwhisper",
+  "npc_name": "Lyra",
+  "mood": "friendly",
+  "nodes": [
+    {
+      "id": "start",
+      "npc_text": "Welcome, young adventurer! I'm Lyra, the village's resident moonwatcher. What brings you to our little corner of the world?",
+      "options": [
+        {
+          "player_text": "I'm here to explore!",
+          "goto": "explore",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "I'm on a quest!",
+          "goto": "quest",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "explore",
+      "npc_text": "Oh, how wonderful! Our village is full of hidden wonders. Would you like to hear about the secret gardens or the ancient ruins?",
+      "options": [
+        {
+          "player_text": "Secret gardens, please!",
+          "goto": "gardens",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "Ancient ruins, I'm intrigued!",
+          "goto": "ruins",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quest",
+      "npc_text": "A quest, you say? That sounds like a grand adventure! What's the nature of your quest?",
+      "options": [
+        {
+          "player_text": "I'm searching for a rare herb.",
+          "goto": "herb",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'm on a mission to defeat a darkness.",
+          "goto": "darkness",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gardens",
+      "npc_text": "The secret gardens are a marvel! You'll find rare flowers and trees that bloom only under the light of the full moon. Would you like to visit them now?",
+      "options": [
+        {
+          "player_text": "Yes, take me there!",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        },
+        {
+          "player_text": "Maybe later, I have other things to do.",
+          "goto": "start",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ruins",
+      "npc_text": "The ancient ruins hold many secrets and mysteries. But be warned, the paths can be treacherous. Are you sure you're ready for this?",
+      "options": [
+        {
+          "player_text": "I'm ready for the challenge!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "Maybe I'll come back later with more friends.",
+          "goto": "start",
+          "tags": [
+            "polite"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "herb",
+      "npc_text": "A rare herb, you say? I might know of a place where it grows. But first, can you help me with a small task?",
+      "options": [
+        {
+          "player_text": "Of course, I'd be happy to help!",
+          "goto": "task",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "I'm in a hurry, can't you just tell me where it is?",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "darkness",
+      "npc_text": "A darkness, you say? That sounds like a grave concern. I'll do my best to help you, but first, let's speak with the village elder.",
+      "options": [
+        {
+          "player_text": "Let's go see the elder!",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        },
+        {
+          "player_text": "I'd rather face it alone.",
+          "goto": "END",
+          "tags": [
+            "brave"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "npc_text": "Wonderful! The task is to retrieve a few rare seeds from the nearby forest. They're needed for the village's upcoming harvest festival.",
+      "options": [
+        {
+          "player_text": "I'll get the seeds right away!",
+          "goto": "END",
+          "tags": [
+            "polite"
+          ]
+        },
+        {
+          "player_text": "That sounds like a lot of work.",
+          "goto": "END",
+          "tags": [
+            "curious"
+          ]
+        }
+      ]
+    }
+  ]
+}
