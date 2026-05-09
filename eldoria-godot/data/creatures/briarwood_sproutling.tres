@@ -10,18 +10,18 @@ metadata/_data = """
   "level": 5,
   "hp": 25,
   "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 4,
+  "dmg_min": 1,
+  "dmg_max": 3,
   "attack_speed": 1.2,
-  "move_speed": 3.8,
+  "move_speed": 4,
   "behavior_tags": [
-    "pack_hunter"
+    "timid"
   ],
   "tells": [
     {
-      "name": "leaf_flick",
+      "name": "photosynthesize",
       "wind_up_ms": 500,
-      "vfx_id": "leaf_glow"
+      "vfx_id": "glow"
     }
   ],
   "weaknesses": {
@@ -30,7 +30,7 @@ metadata/_data = """
   "resistances": {
     "nature": 0.8
   },
-  "xp_value": 10,
+  "xp_value": 5,
   "loot_table": [
     {
       "item_id": "acorn",
@@ -44,7 +44,6 @@ metadata/_data = """
       "item_id": "seed",
       "weight": 0.5
     }
-  ],
-  "flavor": "A tiny, mischievous fey creature that grows from the very roots of the Briarwood trees, with leaves for hair and skin like the tender bark of a sapling."
+  ]
 }
 """

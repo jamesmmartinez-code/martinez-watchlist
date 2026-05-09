@@ -6,41 +6,45 @@ metadata/_data = """
   "id": "briarwood_brambleback",
   "name": "Brambleback",
   "family": "beast",
-  "tier": "trash",
-  "level": 5,
-  "hp": 35,
-  "armor": 2,
-  "dmg_min": 2,
-  "dmg_max": 4,
-  "attack_speed": 1.2,
-  "move_speed": 4,
+  "tier": "elite",
+  "level": 25,
+  "hp": 250,
+  "armor": 8,
+  "dmg_min": 15,
+  "dmg_max": 30,
+  "attack_speed": 0.8,
+  "move_speed": 2.5,
   "behavior_tags": [
-    "pack_hunter"
+    "pack_hunter",
+    "defensive"
   ],
   "tells": [
     {
-      "name": "thorn_swipe",
-      "wind_up_ms": 500,
+      "name": "thorn_burst",
+      "wind_up_ms": 1000,
       "vfx_id": "thorns"
     }
   ],
   "weaknesses": {
-    "fire": 1.2
+    "ice": 1.1
   },
   "resistances": {
-    "poison": 0.8
+    "physical": 0.9
   },
-  "xp_value": 10,
+  "xp_value": 120,
   "loot_table": [
     {
       "item_id": "thorn",
+      "weight": 0.4
+    },
+    {
+      "item_id": "fur",
       "weight": 0.3
     },
     {
-      "item_id": "petal",
-      "weight": 0.2
+      "item_id": "bramble_root",
+      "weight": 0.3
     }
-  ],
-  "flavor": "A small, spiky creature with a coat of thorns and leaves, often found in dense thickets of briar"
+  ]
 }
 """
