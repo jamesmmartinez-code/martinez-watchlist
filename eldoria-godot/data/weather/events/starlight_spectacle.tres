@@ -4,14 +4,14 @@ metadata/_kind = "weather_event"
 metadata/_data = """
 {
   "id": "starlight_spectacle",
-  "name": "Twinkling Showers",
+  "name": "Stardust Shower",
   "kind": "meteor_shower",
-  "duration_min": 20,
+  "duration_min": 10,
   "region": "all",
   "effects": [
     "spawn:firefly_x",
     "buff:luck:300s"
   ],
-  "flavor": "Glittering stars fall from the sky, filling hearts with wonder"
+  "flavor": "Glittering stars fall from the sky, bringing magic and wonder"
 }
 """
