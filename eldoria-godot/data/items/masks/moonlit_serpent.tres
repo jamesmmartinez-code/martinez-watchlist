@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mask"
+metadata/_data = """
+{
+  "id": "moonlit_serpent",
+  "name": "Luminous Whisper",
+  "creature_or_motif": "Snake",
+  "festival_id": "lunar_night",
+  "colors": [
+    "#66CCCC",
+    "#FF99CC"
+  ],
+  "flavor": "Glowing scales shine under moonlight"
+}
+"""
