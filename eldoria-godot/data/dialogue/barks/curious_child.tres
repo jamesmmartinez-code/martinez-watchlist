@@ -6,7 +6,7 @@ metadata/_data = """
   "id": "curious_child",
   "barks": [
     {
-      "text": "I see a butterfly!",
+      "text": "Wow bubbles",
       "npc_role": "child",
       "tone": "wondering"
     }

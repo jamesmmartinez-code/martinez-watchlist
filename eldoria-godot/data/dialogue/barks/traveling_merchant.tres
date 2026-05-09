@@ -3,12 +3,12 @@
 metadata/_kind = "ambient_bark"
 metadata/_data = """
 {
-  "id": "village_elder",
+  "id": "traveling_merchant",
   "barks": [
     {
-      "text": "Good day",
-      "npc_role": "elder",
-      "tone": "contented"
+      "text": "New goods",
+      "npc_role": "merchant",
+      "tone": "grumbling"
     }
   ]
 }

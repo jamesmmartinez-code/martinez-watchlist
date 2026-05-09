@@ -3,12 +3,12 @@
 metadata/_kind = "ambient_bark"
 metadata/_data = """
 {
-  "id": "village_elder",
+  "id": "morning_farmer",
   "barks": [
     {
-      "text": "Good day",
-      "npc_role": "elder",
-      "tone": "contented"
+      "text": "Rise and shine",
+      "npc_role": "farmer",
+      "tone": "humming"
     }
   ]
 }
