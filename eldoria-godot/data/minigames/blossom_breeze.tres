@@ -6,13 +6,13 @@ metadata/_data = """
   "id": "blossom_breeze",
   "name": "Petal Catch",
   "kind": "catching",
-  "location": "festival:spring_floral",
+  "location": "festival:cherry_blossom",
   "rounds": 3,
   "reward_per_win": {
     "xp": 10,
     "gold": 5,
-    "item_id": "flower_crown"
+    "item_id": "sakura_petals"
   },
-  "flavor": "Gentle petals fall from above, catch them in your basket"
+  "flavor": "Soft pink petals gently fall"
 }
 """
