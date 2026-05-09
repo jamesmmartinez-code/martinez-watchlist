@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "mineral"
+metadata/_data = """
+{
+  "id": "starstone",
+  "name": "Starstone",
+  "kind": "gem",
+  "tier": "moonsilver",
+  "found_in": "whisperwood",
+  "smelt_into": "",
+  "cut_into": "starfacet",
+  "flavor": "Glittering with stardust"
+}
+"""
