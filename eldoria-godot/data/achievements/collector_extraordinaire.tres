@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "collector_extraordinaire",
+  "title": "Treasure Hunter",
+  "description": "Collected 20 rare items",
+  "trigger": "collect_n:item:20",
+  "reward_title": "Treasure Master",
+  "reward_xp": 400,
+  "reward_gold": 300,
+  "flavor": "Your collection is legendary!"
+}
+"""

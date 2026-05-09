@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "helping_hand",
+  "title": "Friend in Need",
+  "description": "Helped 10 players",
+  "trigger": "talk_to_n_npcs:10",
+  "reward_title": "Hero of the Realm",
+  "reward_xp": 200,
+  "reward_gold": 100,
+  "flavor": "You're a true friend!"
+}
+"""

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "explorers_delight",
+  "title": "Curious Mind",
+  "description": "Explored 5 new zones",
+  "trigger": "reach_zone:5",
+  "reward_title": "Mapmaker's Apprentice",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "The world is full of wonder!"
+}
+"""
