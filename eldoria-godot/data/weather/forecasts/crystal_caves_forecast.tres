@@ -1,0 +1,46 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weather_forecast"
+metadata/_data = """
+{
+  "id": "crystal_caves_forecast",
+  "region": "crystal_caves",
+  "days": [
+    {
+      "label": "Day 1",
+      "weather": "misty",
+      "high_c": 10,
+      "low_c": 5,
+      "omen": "Mists whisper secrets to the caves"
+    },
+    {
+      "label": "Day 2",
+      "weather": "sunny",
+      "high_c": 15,
+      "low_c": 10,
+      "omen": "Sunbeams dance upon crystal spires"
+    },
+    {
+      "label": "Day 3",
+      "weather": "rainy",
+      "high_c": 12,
+      "low_c": 8,
+      "omen": "Raindrops echo through caverns deep"
+    },
+    {
+      "label": "Day 4",
+      "weather": "cloudy",
+      "high_c": 10,
+      "low_c": 5,
+      "omen": "Shadows veil the crystal's gentle glow"
+    },
+    {
+      "label": "Day 5",
+      "weather": "petal_storm",
+      "high_c": 18,
+      "low_c": 12,
+      "omen": "Petal storms bring life to the caves"
+    }
+  ]
+}
+"""
