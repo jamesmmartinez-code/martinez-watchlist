@@ -543,6 +543,8 @@ func _die(source: Node) -> void:
 	if enemy_kind == "crystal_guardian":
 		get_tree().call_group("world", "set_world_flag", "crystal_guardian_slain", true)
 		get_tree().call_group("world", "_check_achievements")
+	# run-33: notify nearby NPCs — Backlog #8. THEME §1 §12.
+	get_tree().call_group("world", "record_npc_defense_witness", global_position)
 	# Schedule respawn
 	await get_tree().create_timer(respawn_delay).timeout
 	_respawn()
