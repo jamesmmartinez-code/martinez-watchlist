@@ -1,0 +1,13 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+region = "briarwood"
+rumor_0 = "Maeve's famous apple pies will be sold at the festival"
+truth_0 = "true"
+rumor_1 = "A new, mysterious shop will open in the Briarwood village during the festival"
+truth_1 = "partial"
+rumor_2 = "The festival will feature a magical fireworks display"
+truth_2 = "true"
+rumor_3 = "The festival is actually a secret meeting for a group of elves"
+truth_3 = "false"
+rumor_4 = "There will be a special 'harvest hunt' activity with exclusive rewards"
+truth_4 = "partial"
