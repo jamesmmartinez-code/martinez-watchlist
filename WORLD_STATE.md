@@ -1,3 +1,21 @@
+## Balance polish — level-up stat grants + stat-delta popup (run 31)
+- HP grant per level-up: 18 → 22 (+22%). Base 120 HP, +18 was thin for Alden
+  (9yo visual learner who reads the HP bar). +22 = +18%/level: each ding
+  visibly fills the bar further. TTK band intact: goblin (6 dmg) still takes
+  20+ hits at level 5 — kid-safe recovery window preserved.
+- MP grant per level-up: 10 → 14 (+40%). Base 30 MP left level-5 players at
+  70 MP — one or two spells per fight. +14 reaches 86 MP at L5: enough for
+  3–4 skill uses per fight. Encourages Owen (11yo mastery axis) to weave skills
+  rather than hoard mana.
+- Stat-delta popup: after "LEVEL UP!" floater, a second Label3D ("+22 HP  +14 MP",
+  font 28, mint-green Color(0.55, 0.95, 0.65)) spawns offset +0.6 on X so the
+  two floaters don't overlap. Reuses DAMAGE_NUMBER_SCRIPT billboard/fade — zero
+  new nodes, zero scene edits. THEME §12: the level-up beat already fired; now
+  it SPEAKS the gain rather than leaving kids guessing what changed.
+- THEME §12 MOTION & LIFE cited: existing popup system deepened.
+- Branch: auto/polisher
+
+
 ## Character polish — Enemy idle Y-bob breathing (run 30)
 - Enemy.gd: _breathe_phase + _breathe_phase2 vars added; randomised per-enemy in _ready() so nearby
   goblins never rise/fall in unison (same pattern as NPC.gd run 25 dual-harmonic).
