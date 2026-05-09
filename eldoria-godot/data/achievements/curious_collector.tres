@@ -5,11 +5,11 @@ metadata/_data = """
 {
   "id": "curious_collector",
   "title": "Treasure Hunter",
-  "description": "Collected 20 unique items",
-  "trigger": "collect_n:item:20",
-  "reward_title": "Collector's Trophy",
-  "reward_xp": 400,
-  "reward_gold": 300,
-  "flavor": "Your collection is growing - keep searching!"
+  "description": "Collected 50 rare items",
+  "trigger": "collect_n:item:50",
+  "reward_title": "Treasure Hunter Badge",
+  "reward_xp": 200,
+  "reward_gold": 100,
+  "flavor": "Keep exploring!"
 }
 """

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "achievement"
+metadata/_data = """
+{
+  "id": "zone_explorer",
+  "title": "Zone Ranger",
+  "description": "Reached 5 new zones",
+  "trigger": "reach_zone:5",
+  "reward_title": "Zone Ranger Badge",
+  "reward_xp": 300,
+  "reward_gold": 200,
+  "flavor": "What's over the horizon?"
+}
+"""
