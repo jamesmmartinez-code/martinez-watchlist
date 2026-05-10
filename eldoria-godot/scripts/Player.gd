@@ -40,6 +40,14 @@ const JUMP_BUFFER_TIME: float = 0.14  # press-before-landing forgiveness window
 var _coyote_timer:  float = 0.0
 var _jump_buffer:   float = 0.0
 
+# ── Attack input buffer ───────────────────────────────────────────────────────
+# Players press attack at the wrong time constantly. Buffer the press and replay
+# it automatically as soon as the current attack's recovery ends.
+# Works for both LMB (skill 0) and number keys — whichever fires last wins.
+const ATTACK_BUFFER_TIME: float = 0.20
+var _attack_buffered_idx: int   = -1   # -1 = nothing buffered
+var _attack_buffer_timer: float = 0.0
+
 # Stats
 var hp: int = 120
 var max_hp: int = 120
@@ -235,6 +243,17 @@ func _physics_process(delta: float) -> void:
 		if _skill_timers[i] > 0.0:
 			_skill_timers[i] = maxf(0.0, _skill_timers[i] - delta)
 
+	# Attack input buffer — if not currently attacking, flush any buffered press
+	if _attack_buffer_timer > 0.0:
+		_attack_buffer_timer = maxf(0.0, _attack_buffer_timer - delta)
+		if _attack_buffer_timer <= 0.0:
+			_attack_buffered_idx = -1
+	if _attack_buffered_idx >= 0 and not is_attacking and not is_dead:
+		var bid: int = _attack_buffered_idx
+		_attack_buffered_idx = -1
+		_attack_buffer_timer = 0.0
+		use_skill(bid)
+
 	# Combo window decay — reset chain if player waits too long between hits
 	if _combo_timer > 0.0:
 		_combo_timer = maxf(0.0, _combo_timer - delta)
@@ -398,14 +417,14 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		interact_pressed.emit()
 	if event.is_action_pressed("attack"):
-		use_skill(0)   # left-click / default attack = Slash
+		_buffer_attack(0)   # LMB / default = Slash
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: int = event.keycode
 		match k:
-			KEY_1: use_skill(0)   # Slash (combo chain)
-			KEY_2: use_skill(1)   # Heavy Strike
-			KEY_3: use_skill(2)   # Dash Attack
-			KEY_4: use_skill(3)   # Fireball
+			KEY_1: _buffer_attack(0)
+			KEY_2: _buffer_attack(1)
+			KEY_3: _buffer_attack(2)
+			KEY_4: _buffer_attack(3)
 		if k == KEY_I:
 			get_tree().call_group("world", "toggle_inventory")
 		elif k == KEY_Q:
@@ -420,6 +439,14 @@ func _input(event: InputEvent) -> void:
 # All timing, range, and damage is driven by the SKILLS table above so new
 # skills can be added by editing that array without touching this function.
 # ────────────────────────────────────────────────────────────────────────────
+func _buffer_attack(idx: int) -> void:
+	# Try to fire immediately; if locked (attacking), buffer for up to ATTACK_BUFFER_TIME.
+	if not is_attacking and not is_dead:
+		use_skill(idx)
+	else:
+		_attack_buffered_idx = idx
+		_attack_buffer_timer = ATTACK_BUFFER_TIME
+
 func _is_skill_unlocked(idx: int) -> bool:
 	return idx < SKILL_UNLOCK_LEVELS.size() and level >= SKILL_UNLOCK_LEVELS[idx]
 

@@ -110,7 +110,10 @@ var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
 # _base_label_color cached at _ready so resets are precise (not hardcoded).
 var _attack_charge_timer: float = 0.0  # seconds since last swing (counts up while in attack state)
 var _base_label_color: Color = Color(1.0, 0.55, 0.45)  # overwritten in _ready after label built
-var _knockback_vel: Vector3 = Vector3.ZERO  # applied in _physics_process, decays each frame
+var _knockback_vel:  Vector3 = Vector3.ZERO  # applied in _physics_process, decays each frame
+# Stagger — AI pauses for this many seconds after taking a hit.
+# Tier: light (<8 dmg)=0s, medium (<20)=0.25s, heavy (≥20)=0.55s
+var _stagger_timer: float = 0.0
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -393,6 +396,14 @@ func _physics_process(delta: float) -> void:
 		velocity.z += _knockback_vel.z
 		_knockback_vel = _knockback_vel.lerp(Vector3.ZERO, 14.0 * delta)
 
+	# Stagger — while timer is live, skip AI logic entirely (enemy stands stunned)
+	if _stagger_timer > 0.0:
+		_stagger_timer = maxf(0.0, _stagger_timer - delta)
+		velocity.x = move_toward(velocity.x, 0, 20.0 * delta)
+		velocity.z = move_toward(velocity.z, 0, 20.0 * delta)
+		move_and_slide()
+		return
+
 	# Find player
 	if not _player:
 		var players := get_tree().get_nodes_in_group("player")
@@ -475,25 +486,62 @@ func take_damage(amount: int, source: Node = null) -> void:
 	_update_hp_bar()
 	_spawn_damage_number(amount, false)
 
+	# ── Stagger tier (determines how long AI pauses) ───────────────────────
+	if amount >= 20:
+		_stagger_timer = 0.55   # heavy: full knockstun
+	elif amount >= 8:
+		_stagger_timer = 0.25   # medium: brief stagger
+	# else light (<8): no stagger, enemy keeps chasing
+
 	# ── Knockback — push away from the attacker ────────────────────────────
 	if source and is_instance_valid(source):
 		var kb: Vector3 = global_position - source.global_position
 		kb.y = 0
 		if kb.length() > 0.001:
-			_knockback_vel = kb.normalized() * 6.0
+			var kb_strength: float = 6.0 if amount < 20 else 9.0   # heavier hit = more fly
+			_knockback_vel = kb.normalized() * kb_strength
 
-	# ── Hit flash — squash-and-stretch pulse so the hit registers visually ─
-	# Scale X/Z out, Y in (squash on impact), then spring back. Works on
-	# any Node3D regardless of mesh or shader — no material edits needed.
+	# ── Hit flash — squash-and-stretch + red color tint ───────────────────
+	# Squash (scale) works on any Node3D; color flash finds MeshInstance3D
+	# children and briefly overrides their material.
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(1.18, 0.82, 1.18), 0.055).set_trans(Tween.TRANS_SINE)
 	tw.tween_property(self, "scale", Vector3(1.0,  1.0,  1.0),  0.12).set_trans(Tween.TRANS_ELASTIC)
+	_flash_hurt_color()
 
 	# Aggro the attacker if not already chasing
 	if source and not _player:
 		_player = source
 	if hp <= 0:
 		_die(source)
+
+func _flash_hurt_color() -> void:
+	# Temporarily set a red override on all MeshInstance3D children, then restore.
+	# Using material_override means no shader edits needed — StandardMaterial3D only.
+	var meshes: Array = _collect_mesh_instances(self)
+	if meshes.is_empty():
+		return
+	var flash := StandardMaterial3D.new()
+	flash.albedo_color            = Color(1.0, 0.15, 0.15)
+	flash.emission_enabled        = true
+	flash.emission                = Color(1.0, 0.0, 0.0)
+	flash.emission_energy_multiplier = 1.2
+	var originals: Array = []
+	for mi: MeshInstance3D in meshes:
+		originals.append(mi.material_override)
+		mi.material_override = flash
+	await get_tree().create_timer(0.10).timeout
+	for i: int in meshes.size():
+		if is_instance_valid(meshes[i]):
+			(meshes[i] as MeshInstance3D).material_override = originals[i]
+
+func _collect_mesh_instances(node: Node) -> Array:
+	var result: Array = []
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			result.append(child)
+		result.append_array(_collect_mesh_instances(child))
+	return result
 
 func _spawn_damage_number(amount: int, is_crit: bool) -> void:
 	var dn := Label3D.new()
