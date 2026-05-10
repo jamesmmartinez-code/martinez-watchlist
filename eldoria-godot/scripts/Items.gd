@@ -193,6 +193,27 @@ const ITEMS = {
 	"roan_steppe_halter": {"name":"Steppe-Patterned Halter", "type":"trinket", "slot":"trinket", "rarity":"uncommon",
 	                   "icon":"🐎", "icon_path":"res://assets/icons/roan_steppe_halter.png",
 	                   "color":Color(0.65, 0.45, 0.20), "value":22},
+	# ── Giftable items (Builder run 35 — NPC memory/gift mechanic) ─────────────
+	# Player can give these to NPCs via the "Give Gift" dialogue button.
+	# type="gift" flags them as giftable. stack=true for the cheap ones.
+	# THEME §1: period-correct foraged/crafted goods — no modern items.
+	"wildflower_bunch": {"name":"Wildflower Bunch",  "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"\U0001f490", "icon_path":"res://assets/icons/wildflower_bunch.png",
+	                    "color":Color(0.95,0.65,0.85), "stack":true, "value":5,
+	                    "gift_flavor":"A few bright blossoms from the meadow."},
+	"herb_bundle":      {"name":"Herb Bundle",        "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"\U0001f33f", "icon_path":"res://assets/icons/herb_bundle.png",
+	                    "color":Color(0.30,0.70,0.35), "stack":true, "value":8,
+	                    "gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
+	"sweet_roll":       {"name":"Sweet Roll",          "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"\U0001f950", "icon_path":"res://assets/icons/sweet_roll.png",
+	                    "color":Color(0.90,0.72,0.45), "stack":true, "value":6,
+	                    "gift_flavor":"Freshly baked, still warm."},
+	"painted_stone":    {"name":"Painted River Stone", "type":"gift", "slot":"", "rarity":"uncommon",
+	                    "icon":"\U0001faa8", "icon_path":"res://assets/icons/painted_stone.png",
+	                    "color":Color(0.55,0.72,0.90), "stack":false, "value":14,
+	                    "gift_flavor":"River-smoothed, painted with warding runes."},
+
 }
 
 # Drop tables — used by Enemy on death to roll loot
@@ -475,6 +496,26 @@ const AFFIX_PREFIXES = {
 	"Heroic":    {"weight":6,  "rarity":"rare", "affix_icon_path":"res://assets/icons/affix/prefix/heroic.png", "tint":Color(0.85,0.72,0.45),     "damage_pct":0.25, "armor_pct":0.25, "hp_bonus":25},
 	"Mythic":    {"weight":3,  "rarity":"epic", "affix_icon_path":"res://assets/icons/affix/prefix/mythic.png", "tint":Color(0.78,0.55,0.95),     "damage_pct":0.60, "crit_bonus":0.08, "hp_bonus":40},
 	"Ancient":   {"weight":2,  "rarity":"legendary", "affix_icon_path":"res://assets/icons/affix/prefix/ancient.png", "tint":Color(1.00,0.85,0.35),"damage_pct":0.80, "armor_pct":0.40, "hp_bonus":60, "crit_bonus":0.10},
+	# ── Giftable items (Builder run 35 — NPC memory/gift mechanic) ─────────────
+	# type="gift" flags them for the Give Gift dialogue button.
+	# THEME §1: period-correct foraged/crafted goods only.
+	"wildflower_bunch": {"name":"Wildflower Bunch",  "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"💐", "icon_path":"res://assets/icons/wildflower_bunch.png",
+	                    "color":Color(0.95,0.65,0.85), "stack":true, "value":5,
+	                    "gift_flavor":"A few bright blossoms from the meadow."},
+	"herb_bundle":      {"name":"Herb Bundle",        "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"🌿", "icon_path":"res://assets/icons/herb_bundle.png",
+	                    "color":Color(0.30,0.70,0.35), "stack":true, "value":8,
+	                    "gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
+	"sweet_roll":       {"name":"Sweet Roll",          "type":"gift", "slot":"", "rarity":"common",
+	                    "icon":"🥐", "icon_path":"res://assets/icons/sweet_roll.png",
+	                    "color":Color(0.90,0.72,0.45), "stack":true, "value":6,
+	                    "gift_flavor":"Freshly baked, still warm."},
+	"painted_stone":    {"name":"Painted River Stone", "type":"gift", "slot":"", "rarity":"uncommon",
+	                    "icon":"🪨", "icon_path":"res://assets/icons/painted_stone.png",
+	                    "color":Color(0.55,0.72,0.90), "stack":false, "value":14,
+	                    "gift_flavor":"River-smoothed, painted with warding runes."},
+
 }
 const AFFIX_SUFFIXES = {
 	"of Frost":       {"weight":10, "icon_overlay":"❄", "affix_icon_path":"res://assets/icons/affix/frost.png",     "tint":Color(0.55,0.85,1.00),"crit_bonus":0.05},

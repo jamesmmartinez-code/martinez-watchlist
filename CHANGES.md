@@ -1,3 +1,30 @@
+## 2026-05-09 Auto: run 35 — NPC Gift-Giving mechanic (Backlog #8 completion)
+
+I'm building: NPC memory system — gift-giving mechanic (Backlog #8)
+THEME §1 cited: gifts are period-correct foraged/crafted goods only (wildflower, herb, sweet roll, painted stone)
+THEME §12 cited: toast fades in/out per _show_toast — no hard snap; gift button text updates live
+THEME §13 cited: no world-space changes — pure UI/data layer addition
+
+Files changed:
+  eldoria-godot/scripts/Items.gd      — 4 gift-type items added (wildflower_bunch, herb_bundle, sweet_roll, painted_stone)
+  eldoria-godot/scripts/World.gd      — GiftBtn in dialogue Actions bar; _refresh_gift_button(); _find_gift_item();
+                                         _on_gift_btn_pressed(); npc_count_with_relationship_above() helper
+  eldoria-godot/scripts/WorldBuilder.gd — _make_npc wires warmed_relationship_min + warmed_relationship_dialogue_variants;
+                                           Maeve + Bram get relationship_min=2 + 4 gift-warmed lines each
+  eldoria-godot/scripts/Achievements.gd — gift_giver achievement (title "the Generous", priority 12);
+                                           beloved_of_briarwood achievement (title "Friend of Briarwood", priority 38);
+                                           beloved_of_briarwood eval branch in _eval_predicate
+
+5-output check:
+  i.  Integration  — GiftBtn wired into _setup_dialogue_actions; show_dialogue refreshes it each open
+  ii. Schema       — Items.gd type="gift" items with gift_flavor field; npc_memory gifts/insults counters (pre-existing)
+  iii.Feedback     — _show_toast with item name + NPC name + flavor text + reaction tier (nod/warm/fond)
+  iv. Eval         — npc_relationship_score() public accessor (pre-existing); gift_giver achievement fires at score >= 1
+  v.  2+ hooks     — "npcs" group gift button triggers _check_achievements(); npc_count_with_relationship_above()
+                     enables beloved_of_briarwood; Maeve + Bram warmed_relationship_dialogue_variants
+
+Next run picks up: Faction state — bandit boldness scales with road_defense_score (Backlog #9) or
+                   Crystal Caves dungeon entrance polishing (Backlog #1)
 ## Tech debt
 
 - **[2026-05-09] QA §15 violation — `eldoria-godot/assets/models/Hero.glb` is 29.55 MiB (exceeds 20 MiB soft cap, 25 MiB hard cap per OPERATIONS.md §15 / Cloudflare Pages budget)**
@@ -322,4 +349,3 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T04:29Z: Build=success (#1128, 04:27Z), Pages=built (04:26Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED, already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-09T04:33Z: Build=queued/in_progress (pages-build-and-deployment queued after 2 errored Pages builds), Pages=building (recovering from errored state at 04:32Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+CharacterSelect.gd+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ⚠️ Pages recovering.
-- QA 2026-05-10T04:35Z: Build=in_progress (run#1158, queued 04:34Z), Pages=building (04:34Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ⚠️ Build/Pages mid-cycle.

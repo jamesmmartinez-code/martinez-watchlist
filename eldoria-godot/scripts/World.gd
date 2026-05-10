@@ -919,6 +919,14 @@ func npc_relationship_score(npc_name: String) -> int:
 	var insults: int = int(entry.get("insults", 0))
 	return clamp(gifts - insults, NPC_RELATIONSHIP_SCORE_MIN, NPC_RELATIONSHIP_SCORE_MAX)
 
+func npc_count_with_relationship_above(min_score: int) -> int:
+	# Returns count of NPCs whose relationship_score >= min_score.
+	var count: int = 0
+	for key: String in npc_memory.keys():
+		if npc_relationship_score(key) >= min_score:
+			count += 1
+	return count
+
 func npc_any_relationship_above(min_score: int) -> bool:
 	# Returns true if ANY NPC has relationship_score >= min_score.
 	# Used by the villager_friend achievement predicate.
@@ -1252,6 +1260,13 @@ func _setup_dialogue_actions() -> void:
 		sb2.visible = false
 		sb2.pressed.connect(_on_shop_btn_pressed)
 		actions.add_child(sb2)
+		# run-35 (Builder): Gift button wires record_npc_gift into dialogue UX.
+		var gift_btn := Button.new()
+		gift_btn.name = "GiftBtn"
+		gift_btn.text = "🎁 Give Gift"
+		gift_btn.visible = false
+		gift_btn.pressed.connect(_on_gift_btn_pressed)
+		actions.add_child(gift_btn)
 		vbox.add_child(actions)
 		var close_btn := vbox.get_node_or_null("CloseBtn")
 		if close_btn:
@@ -1533,6 +1548,10 @@ func show_dialogue(speaker: String, text: String, role: String = "") -> void:
 	var shop_btn_n = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/ShopBtn")
 	if shop_btn_n:
 		shop_btn_n.visible = (role == "shop")
+	# run-35: refresh gift button visibility each time dialogue opens.
+	var gift_btn_n = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/GiftBtn")
+	if gift_btn_n:
+		_refresh_gift_button(gift_btn_n, role, player)
 	dialogue_panel.visible = true
 	# COMPOUND (run 20 — Builder): mark this NPC seen AFTER the panel is
 	# populated. show_dialogue is called from NPC.gd::_on_interact AFTER
@@ -1753,6 +1772,82 @@ func _on_shop_btn_pressed() -> void:
 	if _shop_panel != null and is_instance_valid(_shop_panel):
 		_shop_panel.queue_free(); _shop_panel = null; return
 	_build_shop_panel()
+
+
+# ── Gift-giving mechanic (run-35 Builder — NPC memory system) ──────────────
+# "Give Gift" button: visible when player has a gift-type item and NPC is
+# not a shop/smithy. Calls World.record_npc_gift -> NPC relationship tier.
+# THEME §1: only period-correct foraged/crafted goods qualify as gifts.
+# THEME §12: toast fades in/out — no hard snap.
+func _refresh_gift_button(btn: Button, role: String, player: Node) -> void:
+	if role == "shop" or role == "smithy":
+		btn.visible = false
+		return
+	var gift_id: String = _find_gift_item(player)
+	btn.visible = (gift_id != "")
+	if btn.visible:
+		var item_data: Dictionary = Items.get_item(gift_id)
+		btn.text = "🎁 Give %s" % String(item_data.get("name", "Gift"))
+
+func _find_gift_item(player: Node) -> String:
+	# Returns the cheapest gift item the player carries, or "" if none.
+	if player == null:
+		return ""
+	var inv: Dictionary = {}
+	if "inventory" in player:
+		inv = player.inventory
+	var best_id: String = ""
+	var best_val: int = 99999
+	for item_id: String in inv.keys():
+		var qty: int = int(inv[item_id])
+		if qty <= 0:
+			continue
+		var data: Dictionary = Items.get_item(item_id)
+		if String(data.get("type", "")) != "gift":
+			continue
+		var val: int = int(data.get("value", 999))
+		if val < best_val:
+			best_val = val
+			best_id = item_id
+	return best_id
+
+func _on_gift_btn_pressed() -> void:
+	var player := get_node_or_null("Player")
+	if player == null:
+		return
+	var gift_id: String = _find_gift_item(player)
+	if gift_id == "":
+		_show_toast("You have nothing to give.")
+		return
+	# Remove one gift from inventory
+	if "inventory" in player:
+		var cur: int = int((player.inventory as Dictionary).get(gift_id, 0))
+		if cur <= 1:
+			(player.inventory as Dictionary).erase(gift_id)
+		else:
+			(player.inventory as Dictionary)[gift_id] = cur - 1
+	# Record in World memory — this increments gifts counter and relationship score
+	record_npc_gift(_current_npc_name)
+	_check_achievements()
+	# Toast feedback
+	var item_data: Dictionary = Items.get_item(gift_id)
+	var flavor: String = String(item_data.get("gift_flavor", "A small token."))
+	var score: int = npc_relationship_score(_current_npc_name)
+	var reaction: String = ""
+	if score >= 5:
+		reaction = " They seem truly fond of you."
+	elif score >= 2:
+		reaction = " They smile warmly."
+	else:
+		reaction = " They accept with a nod."
+	_show_toast("🎁 Gave %s to %s. %s%s" % [
+		String(item_data.get("name", "gift")),
+		_current_npc_name, flavor, reaction
+	])
+	# Refresh button (may hide if last gift was just spent)
+	var gift_btn_n: Node = dialogue_panel.get_node_or_null("MarginContainer/VBox/Actions/GiftBtn")
+	if gift_btn_n:
+		_refresh_gift_button(gift_btn_n as Button, _current_npc_role, player)
 
 func _build_shop_panel() -> void:
 	var ui_root = get_node_or_null("UI")

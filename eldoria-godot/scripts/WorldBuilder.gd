@@ -320,6 +320,14 @@ const NPCS = [
 		"Mmm. Wolf-sage is blooming. Strange for this season.",
 	 ],
 	 "bark_min":28.0, "bark_max":42.0,
+	# run-35: relationship tier lines (score >= 2).
+	"relationship_min":2,
+	"relationship_lines":[
+   "You've a generous heart. The Whisperwood remembers kindness.",
+   "Gifts freely given — that's the oldest magic there is.",
+   "Come for the company, stay for the herbs. Always welcome.",
+   "I've watched folk give and take. You're the giving kind. Rare.",
+	],
 				"defense_lines": [
 					"Your blade rings true, child.",
 					"The spirits guided your arm.",
@@ -506,6 +514,14 @@ const NPCS = [
 		"Maeve ordered chamomile again. Worried woman drinks chamomile.",
 	 ],
 	 "bark_min":22.0, "bark_max":35.0,
+	# run-35: relationship tier lines (score >= 2).
+	"relationship_min":2,
+	"relationship_lines":[
+   "The generous one! Your coin spends well but gifts linger longer.",
+   "You bring gifts and drink both? I keep a chair warm for you.",
+   "Bram never forgets a kind gesture. Nor do his prices.",
+   "A kind hand opens more doors than a full purse. You've both.",
+	],
 	 # COMPOUND (run 16 — Builder): visit-memory tier. Bram is the village
 	 # rumor-exchange — by the third pull-up he's calling you a regular.
 	 # Threshold 3 mirrors Maeve so cross-NPC pacing matches; tune individual
@@ -2112,6 +2128,9 @@ func _make_npc(data: Dictionary) -> void:
 	# `memory_visits_min` + `memory_lines` to their NPCS dict entry.
 	npc.warmed_memory_visits_min = int(data.get("memory_visits_min", 0))
 	npc.warmed_memory_dialogue_variants = PackedStringArray(data.get("memory_lines", []))
+	# run-35: wire relationship score tier (gift/insult warmed dialogue).
+	npc.warmed_relationship_min = int(data.get("relationship_min", 0))
+	npc.warmed_relationship_dialogue_variants = PackedStringArray(data.get("relationship_lines", []))
 	# run-33: wire witnessed_defense_lines
 	if "witnessed_defense_lines" in npc and data.has("defense_lines"):
 		for _dl: String in data["defense_lines"]:

@@ -209,3 +209,12 @@
 - **Farm Worker** — worker_girl.glb, east fields Vector3(18,0,5), role=villager. Field→market→home schedule. Memory tier at 2 visits. Warm after first_quest_done. 5 barks 20-35s.
 - Both in group "npcs" — Minimap gold-dot plots. Both have 4-bucket schedule_anchors.
 - warmed_relationship_min wiring added to _make_npc (completes run 29 schema).
+
+## Gift Economy (run 35)
+- Players can give gift-type items to any NPC via the dialogue "Give Gift" button
+- Gift items: wildflower_bunch (5g), herb_bundle (8g), sweet_roll (6g), painted_stone (14g)
+- Gifts increment World.npc_memory[name].gifts → raises npc_relationship_score (clamped -10..10)
+- Relationship tiers: score >= 1 → "the Generous" title; score >= 2 → warmed relationship dialogue
+- Maeve and Bram have authored relationship_min=2 lines; other NPCs default to silent tier
+- Achievement: gift_giver (first gift, title "the Generous")
+- Achievement: beloved_of_briarwood (3+ NPCs at score >= 3, title "Friend of Briarwood")
