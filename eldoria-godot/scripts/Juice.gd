@@ -217,6 +217,25 @@ func clear_ambient_tint(fade: float = 0.5) -> void:
 	_tint_tween.tween_property(_tint_rect, "color:a", 0.0, fade).set_trans(Tween.TRANS_SINE)
 	_tint_tween.tween_callback(func() -> void: if is_instance_valid(_tint_rect): _tint_rect.visible = false)
 
+func screen_fade_in(duration: float = 1.0) -> void:
+	# Reveal the scene from a full black overlay — call at scene / level start.
+	# Equivalent to screen_tint(BLACK, hold=0, fade=duration).
+	screen_tint(Color(0.0, 0.0, 0.0, 1.0), 0.0, duration)
+
+func screen_fade_out(duration: float = 1.0) -> void:
+	# Fade to black — use just before a scene transition.
+	# Leaves the screen black; the next scene should call screen_fade_in().
+	if not juice_enabled:
+		return
+	_ensure_tint()
+	if _tint_tween and _tint_tween.is_valid():
+		_tint_tween.kill()
+	_tint_rect.color   = Color(0.0, 0.0, 0.0, 0.0)
+	_tint_rect.visible = true
+	_tint_tween = create_tween()
+	_tint_tween.tween_property(_tint_rect, "color:a", 1.0, duration).set_trans(Tween.TRANS_SINE)
+	# rect intentionally NOT hidden afterwards — screen stays black for transition
+
 func _ensure_tint() -> void:
 	if _tint_layer and is_instance_valid(_tint_layer):
 		return

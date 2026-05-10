@@ -63,7 +63,7 @@ func _ready() -> void:
 func start() -> void:
 	_section = -1
 	_alive_enemies.clear()
-	_advance_section()
+	_start_level_intro()
 
 func _process(delta: float) -> void:
 	if not _ticking:
@@ -81,6 +81,39 @@ func _process(delta: float) -> void:
 			_ticking   = false
 			emit_signal("section_complete", _section)
 			_advance_section()
+
+# ==========================================================================
+# Level intro — cinematic open + world seeding
+# ==========================================================================
+func _start_level_intro() -> void:
+	# Lock the player during the opening so they don't sprint off mid-cutscene.
+	if _player and _player.has_method("set_cinematic_lock"):
+		_player.set_cinematic_lock(true)
+
+	# Seed corruption at 0.25 — the ruins are already tainted when we arrive.
+	# This primes the fog, ambient tint, and season checks from the start.
+	if is_instance_valid(WorldState):
+		WorldState.add_corruption(0.25)
+
+	# Fade in from black — wakes Alden & Owen up in a new place.
+	if is_instance_valid(Juice):
+		Juice.screen_fade_in(1.5)
+
+	await get_tree().create_timer(1.0).timeout
+
+	_say_narrator("The Echoing Ruins… abandoned, but not empty.")
+
+	await get_tree().create_timer(1.8).timeout
+
+	# Subtle corruption tint — "something is wrong here".
+	if is_instance_valid(Juice):
+		Juice.screen_tint(Color(0.20, 0.05, 0.05, 0.12), 0.5, 2.0)
+
+	# Release player and begin the level proper.
+	if _player and _player.has_method("set_cinematic_lock"):
+		_player.set_cinematic_lock(false)
+
+	_advance_section()
 
 # ==========================================================================
 # Section sequencing
@@ -108,6 +141,11 @@ func _section_intro_combat() -> void:
 func _section_watcher_intro() -> void:
 	_say_narrator("Something watches from the shadows…")
 	var w := _spawn_enemy("watcher", "spawn_watcher_a", {"max_hp": 40, "damage": 7, "speed": 2.5})
+	# Guarantee a nemesis is born in Level 1 — this enemy ALWAYS becomes notable.
+	# The deferred registration means stats are fully resolved before NemesisSystem
+	# snapshots them, so the nemesis record is accurate.
+	if is_instance_valid(NemesisSystem):
+		NemesisSystem.register_enemy(w)
 	_register_wave([w])
 
 # ── Section 2 · First Adaptation Moment ────────────────────────────────────
@@ -168,7 +206,15 @@ func _section_pre_boss() -> void:
 
 # ── Section 6 · Echo Knight Boss ──────────────────────────────────────────
 func _section_echo_knight() -> void:
-	_say_narrator("The Echo Knight awakens. It knows everything you've done.")
+	# Personalise the intro if the player has a nemesis history — the boss
+	# references specific past encounters instead of a generic line.
+	var intro_line := "The Echo Knight awakens. It knows everything you've done."
+	if is_instance_valid(NemesisSystem):
+		for nd: NemesisData in NemesisSystem.nemeses.values():
+			if nd.killed_player or nd.times_defeated >= 1 or nd.escaped:
+				intro_line = NemesisSystem.get_nemesis_dialogue(nd)
+				break
+	_say_narrator(intro_line)
 	# Notify quest system that the player has reached the boss area.
 	if is_instance_valid(QuestSystem):
 		QuestSystem.on_area_entered("BossArea")
@@ -185,23 +231,60 @@ func _section_echo_knight() -> void:
 # Boss defeated — grant reward and emit level_complete
 # ==========================================================================
 func _on_boss_defeated() -> void:
-	_say_narrator("The Echo fades… silence reclaims the ruins.")
-	# Stop wave-management loop immediately so _process can't re-advance sections.
+	# Stop wave-management loop immediately.
 	_ticking = false
 	_alive_enemies.clear()
-	# Unlock air_dash via SkillTree (registered in Player._setup_skill_tree)
+
+	# ── Skill reward ───────────────────────────────────────────────────────
 	if is_instance_valid(SkillTree) and _player:
 		SkillTree.try_unlock("air_dash", _player)
-	# Fallback: if player exposes unlock_ability directly
 	if _player and _player.has_method("unlock_ability"):
 		_player.unlock_ability("air_dash")
-	# Visual celebration
+
+	# ── Visual celebration ─────────────────────────────────────────────────
 	if is_instance_valid(Juice):
 		Juice.screen_flash(Color(0.8, 0.9, 1.0, 0.6), 0.5)
-	# Short delay then level complete
-	get_tree().create_timer(3.0).timeout.connect(func() -> void:
-		emit_signal("level_complete")
-	)
+
+	# ── System consequences: the world reacts to this victory ──────────────
+	# NarrativeSystem records the event — this can trigger further quests and
+	# faction cascades through its consequence table.
+	if is_instance_valid(NarrativeSystem):
+		NarrativeSystem.record_event("boss_defeated", {"name": "EchoKnight", "level": "ruins"})
+
+	# GameBrain flag — other levels and systems check this before spawning
+	# Watcher-tier enemies in the ruins zone.
+	if is_instance_valid(GameBrain):
+		GameBrain.set_flag("ruins_cleared")
+
+	# Watchers lose half their faction strength permanently — their sentinel
+	# anchor is gone and their war-footing collapses.
+	if is_instance_valid(FactionSystem) and FactionSystem.faction_strength.has("watchers"):
+		FactionSystem.weaken_faction("watchers", 0.50)
+
+	# Force-complete the main story quest in case the player forgot to check
+	# the board — the narrative payoff always lands.
+	if is_instance_valid(QuestSystem) and QuestSystem.is_active("echoing_ruins_main"):
+		QuestSystem.complete_quest("echoing_ruins_main")
+
+	# Broadcast on EventBus so any future system (leaderboards, analytics, etc.)
+	# can hook in without modifying this script.
+	if is_instance_valid(EventBus):
+		EventBus.boss_defeated.emit(_boss)
+		EventBus.level_complete.emit("echoing_ruins")
+
+	# ── Narrator + transition ──────────────────────────────────────────────
+	_say_narrator("The Echo fades… silence reclaims the ruins.")
+	_level_complete_flow()
+
+func _level_complete_flow() -> void:
+	# Beat of silence so the player feels the victory.
+	await get_tree().create_timer(2.5).timeout
+	# Fade to black for the transition.
+	if is_instance_valid(Juice):
+		Juice.screen_fade_out(1.5)
+	# Wait for the fade, then signal the scene manager.
+	await get_tree().create_timer(1.6).timeout
+	emit_signal("level_complete")
 
 # ==========================================================================
 # Spawning helpers

@@ -265,6 +265,27 @@ func get_taunt(data: NemesisData) -> String:
 		return "I have grown beyond what you know!"
 	return "You are nothing."
 
+func get_nemesis_dialogue(data: NemesisData) -> String:
+	# Richer narrator-voice line for boss encounters — references specific history
+	# so the fight feels personal.  Used by EchoingRuins and WatcherCore intros.
+	if not data:
+		return "The Echo Knight awakens. It knows everything you've done."
+	var name := data.nemesis_name if not data.nemesis_name.is_empty() else "The Echo Knight"
+
+	if data.killed_player and data.times_defeated == 0:
+		return "%s laughs: 'You died here before. You WILL die again.'" % name
+	if data.killed_player and data.times_defeated >= 1:
+		return "You've fallen to %s — and clawed back. 'Impressive. Let us end this properly.'" % name
+	if data.times_defeated >= 2:
+		return "%s roars: 'How many times must I destroy you before you STAY down!'" % name
+	if data.has_trait("rage_mode"):
+		return "%s trembles with barely-contained fury: 'I have evolved beyond your reach!'" % name
+	if data.level >= 3:
+		return "%s speaks quietly: 'I have watched you grow, child. Now witness what I have become.'" % name
+	if data.escaped:
+		return "%s steps from the shadows: 'Did you think you'd seen the last of me?'" % name
+	return "The Echo Knight awakens. It knows everything you've done."
+
 # ==========================================================================
 # Visual evolution (tint + scale by level)
 # ==========================================================================

@@ -997,6 +997,9 @@ func _die() -> void:
 	_play_anim("die")
 	call_deferred("save_game")  # save just before respawn
 	get_tree().call_group("world", "play_sfx", "player_death")
+	# ── EventBus broadcast ────────────────────────────────────────────────────
+	if is_instance_valid(EventBus):
+		EventBus.player_died.emit(self)
 	# ── Nemesis + narrative hooks ─────────────────────────────────────────────
 	if is_instance_valid(NemesisSystem) and is_instance_valid(_last_attacker):
 		NemesisSystem.on_player_killed_by(_last_attacker)

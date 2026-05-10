@@ -970,6 +970,9 @@ func _die(source: Node) -> void:
 	xp_pop.position = global_position + Vector3(0, 2.0, 0)
 	get_tree().current_scene.add_child(xp_pop)
 	died.emit(self)
+	# ── EventBus broadcast (loose coupling) ──────────────────────────────────
+	if is_instance_valid(EventBus):
+		EventBus.enemy_killed.emit(self)
 	# ── Nemesis + narrative hooks ─────────────────────────────────────────────
 	if is_instance_valid(NemesisSystem):
 		NemesisSystem.on_enemy_defeated(self)
