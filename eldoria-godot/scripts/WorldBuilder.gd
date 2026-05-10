@@ -3770,7 +3770,7 @@ func _scatter_mushrooms(count: int) -> void:
 			add_child(holder)
 			holder.add_child(inst)
 			if inst is Node3D:
-				var s: float = rng.randf_range(0.08, 0.15)
+				var s: float = rng.randf_range(0.015, 0.03)
 				(inst as Node3D).scale = Vector3(s, s, s)
 				# Fallback materials so cap/stem render even if GLB textures fail
 				for mesh_inst in (inst as Node3D).find_children("*", "MeshInstance3D", true):
@@ -3790,8 +3790,8 @@ func _scatter_mushrooms(count: int) -> void:
 					else:
 						mat.albedo_color = Color(0.9, 0.85, 0.75)
 					for surf_idx in n_surfs:
-						if mesh_mi.get_surface_override_material(surf_idx) == null:
-							mesh_mi.set_surface_override_material(surf_idx, mat)
+						# Always override — GLB materials are often black/missing
+						mesh_mi.set_surface_override_material(surf_idx, mat)
 			call_deferred("_settle_to_ground", holder)
 
 func _build_village_barrels() -> void:
