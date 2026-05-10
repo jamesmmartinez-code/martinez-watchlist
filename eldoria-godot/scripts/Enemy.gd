@@ -110,6 +110,7 @@ var _breathe_phase2: float = 0.0  # secondary fast shoulder-shift harmonic
 # _base_label_color cached at _ready so resets are precise (not hardcoded).
 var _attack_charge_timer: float = 0.0  # seconds since last swing (counts up while in attack state)
 var _base_label_color: Color = Color(1.0, 0.55, 0.45)  # overwritten in _ready after label built
+var _knockback_vel: Vector3 = Vector3.ZERO  # applied in _physics_process, decays each frame
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -386,6 +387,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0
 
+	# Apply knockback — decays exponentially each frame so the slide is physical
+	if _knockback_vel.length() > 0.05:
+		velocity.x += _knockback_vel.x
+		velocity.z += _knockback_vel.z
+		_knockback_vel = _knockback_vel.lerp(Vector3.ZERO, 14.0 * delta)
+
 	# Find player
 	if not _player:
 		var players := get_tree().get_nodes_in_group("player")
@@ -467,6 +474,21 @@ func take_damage(amount: int, source: Node = null) -> void:
 	hp = max(0, hp - amount)
 	_update_hp_bar()
 	_spawn_damage_number(amount, false)
+
+	# ── Knockback — push away from the attacker ────────────────────────────
+	if source and is_instance_valid(source):
+		var kb: Vector3 = global_position - source.global_position
+		kb.y = 0
+		if kb.length() > 0.001:
+			_knockback_vel = kb.normalized() * 6.0
+
+	# ── Hit flash — squash-and-stretch pulse so the hit registers visually ─
+	# Scale X/Z out, Y in (squash on impact), then spring back. Works on
+	# any Node3D regardless of mesh or shader — no material edits needed.
+	var tw := create_tween()
+	tw.tween_property(self, "scale", Vector3(1.18, 0.82, 1.18), 0.055).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(self, "scale", Vector3(1.0,  1.0,  1.0),  0.12).set_trans(Tween.TRANS_ELASTIC)
+
 	# Aggro the attacker if not already chasing
 	if source and not _player:
 		_player = source

@@ -19,6 +19,9 @@ var is_dead: bool = false
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
 var _jam_timer: float = 0.0
+# Skill system
+var _skill_timers: Array[float] = [0.0, 0.0, 0.0]
+var _dash_vel:     Vector3      = Vector3.ZERO
 var last_position: Vector3 = Vector3.ZERO  # Physics: track for stuck-detection auto-recovery
 
 # Stats
@@ -36,6 +39,37 @@ var gold: int = 50
 @export var attack_damage_base: int = 14
 @export var crit_chance: float = 0.12
 @export var crit_multiplier: float = 2.0
+
+# ── Skill roster (keys 1 / 2 / 3 — also left-click fires skill 0) ──────────
+# damage_mult applies on top of _roll_damage(); arc_bonus in degrees.
+# dash_speed launches the player forward during windup so Dash Attack
+# actually covers ground before the hit frame fires.
+const SKILLS: Array = [
+	{
+		"name":       "Slash",
+		"damage_mult": 1.0,  "cooldown": 0.6,
+		"animation":  "attack",
+		"windup":     0.15,  "recovery": 0.25,
+		"mp_cost":    0,     "dash_speed": 0.0,
+		"range_bonus": 0.0,  "arc_bonus": 0.0,
+	},
+	{
+		"name":       "Heavy Strike",
+		"damage_mult": 2.4,  "cooldown": 2.8,
+		"animation":  "attack",
+		"windup":     0.40,  "recovery": 0.55,
+		"mp_cost":    5,     "dash_speed": 0.0,
+		"range_bonus": 0.5,  "arc_bonus": -30.0,   # narrower = more precise
+	},
+	{
+		"name":       "Dash Attack",
+		"damage_mult": 1.6,  "cooldown": 4.5,
+		"animation":  "run",
+		"windup":     0.08,  "recovery": 0.32,
+		"mp_cost":    8,     "dash_speed": 9.0,    # launches forward
+		"range_bonus": 1.2,  "arc_bonus": 40.0,    # wide sweep after dash
+	},
+]
 
 # Inventory + equipment (managed by Inventory child node)
 var inventory: Node = null
@@ -163,6 +197,11 @@ func _physics_process(delta: float) -> void:
 		_save_timer = 0.0
 		save_game()
 
+	# Skill cooldown countdown
+	for i: int in _skill_timers.size():
+		if _skill_timers[i] > 0.0:
+			_skill_timers[i] = maxf(0.0, _skill_timers[i] - delta)
+
 	# Stuck-recovery #3: if dead but somehow still in physics for >5s, auto-revive.
 	if is_dead:
 		_dead_timer += delta
@@ -223,6 +262,13 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, current_speed * 4 * delta)
 		if not is_attacking:
 			_play_anim("idle")
+
+	# Dash Attack: override horizontal velocity while _dash_vel is live,
+	# then decelerate so the slide feels physical rather than instant-stop.
+	if _dash_vel.length() > 0.1:
+		velocity.x = _dash_vel.x
+		velocity.z = _dash_vel.z
+		_dash_vel = _dash_vel.lerp(Vector3.ZERO, 14.0 * delta)
 
 	# Jump
 	if Input.is_action_just_pressed("jump") and is_on_floor():
@@ -291,9 +337,13 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		interact_pressed.emit()
 	if event.is_action_pressed("attack"):
-		_attack()
+		use_skill(0)   # left-click / default attack = Slash
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: int = event.keycode
+		match k:
+			KEY_1: use_skill(0)   # Slash
+			KEY_2: use_skill(1)   # Heavy Strike
+			KEY_3: use_skill(2)   # Dash Attack
 		if k == KEY_I:
 			get_tree().call_group("world", "toggle_inventory")
 		elif k == KEY_Q:
@@ -303,21 +353,58 @@ func _input(event: InputEvent) -> void:
 			# Mount/dismount toggle
 			get_tree().call_group("world", "toggle_mount")
 
-func _attack() -> void:
+# ────────────────────────────────────────────────────────────────────────────
+# Skill system — three abilities on 1/2/3 (also left-click fires skill 0)
+# All timing, range, and damage is driven by the SKILLS table above so new
+# skills can be added by editing that array without touching this function.
+# ────────────────────────────────────────────────────────────────────────────
+func use_skill(idx: int) -> void:
 	if is_attacking or is_dead:
 		return
+	if idx < 0 or idx >= SKILLS.size():
+		return
+	var sk: Dictionary = SKILLS[idx]
+
+	# Cooldown gate
+	if _skill_timers[idx] > 0.0:
+		# TODO: play UI "not ready" sound when SFX bank has one
+		return
+
+	# MP gate
+	if mp < int(sk["mp_cost"]):
+		# TODO: flash the MP bar when HUD is wired
+		return
+
+	# Pay cost + start cooldown + lock animation
+	mp = max(0, mp - int(sk["mp_cost"]))
+	_skill_timers[idx] = float(sk["cooldown"])
 	is_attacking = true
-	_play_anim("attack")
+	stats_changed.emit()
+
+	_play_anim(sk["animation"])
 	get_tree().call_group("world", "play_sfx", "sword_swing")
 
-	# Hit window — small delay to match the swing
-	await get_tree().create_timer(0.18).timeout
+	# Dash Attack: launch forward immediately so the player covers ground during windup
+	if float(sk["dash_speed"]) > 0.0:
+		var fwd_d := -global_transform.basis.z
+		fwd_d.y = 0
+		_dash_vel = fwd_d.normalized() * float(sk["dash_speed"])
 
-	# Find enemies in front of player within range + arc
-	var arc_rad := deg_to_rad(attack_arc_deg) * 0.5
+	# ── Wind-up (before hit frame) ──────────────────────────────────────────
+	await get_tree().create_timer(float(sk["windup"])).timeout
+	if is_dead:
+		is_attacking = false
+		_dash_vel = Vector3.ZERO
+		return
+
+	# ── Arc sweep — hit detection ───────────────────────────────────────────
+	var eff_range := attack_range + float(sk["range_bonus"])
+	var eff_arc   := attack_arc_deg + float(sk["arc_bonus"])
+	var arc_rad   := deg_to_rad(eff_arc) * 0.5
 	var fwd := -global_transform.basis.z
 	fwd.y = 0
 	fwd = fwd.normalized()
+
 	var hit_count := 0
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
@@ -325,28 +412,38 @@ func _attack() -> void:
 		var to_enemy: Vector3 = enemy.global_position - global_position
 		to_enemy.y = 0
 		var dist := to_enemy.length()
-		if dist > attack_range:
-			continue
-		if dist < 0.001:
+		if dist > eff_range or dist < 0.001:
 			continue
 		var ang := fwd.angle_to(to_enemy.normalized())
 		if ang > arc_rad:
 			continue
-		# Roll for crit
+		# Roll damage and apply skill multiplier
 		var dmg: Dictionary = _roll_damage()
-		var is_crit: bool = dmg.is_crit
+		var final_dmg: int = int(float(dmg.amount) * float(sk["damage_mult"]))
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(dmg.amount, self)
+			enemy.take_damage(final_dmg, self)
 			get_tree().call_group("world", "play_sfx", "sword_hit")
-			# Override the damage number color/style if crit
-			if is_crit:
+			if dmg.is_crit:
 				_spawn_crit_flash()
 			hit_count += 1
-	# Whiff feedback if nothing hit (nothing to do, just a flat swing)
 
-	# Lockout window for the rest of the swing
-	await get_tree().create_timer(0.32).timeout
+	# ── Hit-stop (makes every landed hit feel weighty) ──────────────────────
+	# Scale is tiny (0.05 = 5% speed) for a frame-precise freeze rather than
+	# a visible slow-mo. Restoring is synchronous so the rest of the timeout
+	# elapses in real time — recovery lockout is unaffected.
+	if hit_count > 0:
+		Engine.time_scale = 0.05
+		await get_tree().create_timer(0.06 * Engine.time_scale).timeout
+		Engine.time_scale = 1.0
+
+	# ── Recovery lockout ────────────────────────────────────────────────────
+	await get_tree().create_timer(float(sk["recovery"])).timeout
 	is_attacking = false
+	_dash_vel = Vector3.ZERO
+
+# Kept for any external callers that still reference _attack() directly.
+func _attack() -> void:
+	use_skill(0)
 
 func _roll_damage() -> Dictionary:
 	var base := attack_damage_base + int(level * 1.5)
