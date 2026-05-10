@@ -192,11 +192,20 @@ jobs:
           for f in eldoria/*; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
+            # SKIP index.html — R2 serves the real Godot game HTML.
+            # The redirect written by "Overwrite GH Pages" step is for
+            # GitHub Pages only. If it reaches R2, kids see a loop, not the game.
+            if [ "$name" = "index.html" ]; then
+              echo "  ⏭  index.html (skipped — R2 keeps Godot shell)"
+              continue
+            fi
             mime=$(mime_for "$f")
             CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
               -X PUT -H "Authorization: Bearer $CF_TOKEN" \
               -H "Content-Type: $mime" --data-binary "@$f" \
               "$API/$name")
+            # skip redirect HTML — R2 keeps the real Godot shell
+            if [ "$name" = "index.html" ]; then echo "  ⏭  index.html (skipped — R2 keeps Godot shell)"; continue; fi
             if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ $name"; else FAIL=$((FAIL+1)); echo "  ❌ $name → HTTP $CODE"; fi
           done
           echo "🚢 R2 sync: $OK ok, $FAIL failed"
