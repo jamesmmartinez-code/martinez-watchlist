@@ -226,3 +226,49 @@ LOCKED values: target_height = 1.1, cap = 1.3. Per SIZE_STANDARDS.md §1.
 ### Commits on auto/character
 - `c8f1a7126e` — Char: goblin/goblin_scout 1.55m→1.20m; explicit medium/small/boss normalize targets
 - `ef4e3ceaf8` — Char: add _normalize_player_model(1.1) + _force_hero_height_cap(1.3) per CANON
+
+## Char-Specialist Run — 2026-05-10 (character auto-run)
+
+### Changes made
+
+**castle_guard.fbx — missing .import sidecar created**
+
+`eldoria-godot/assets/models/heroes/castle_guard/castle_guard.fbx` existed without a
+companion `.import` file. Godot's import pipeline silently ignores any asset without a
+`.import` sidecar — the castle guard model was invisible to the project. Created `.import`
+with `root_scale=1.0` (baseline, matching `Hero.glb`, `Boss.glb`, `CesiumMan.glb`). The
+runtime `WorldBuilder._normalize_npc_scale` will correct to 1.65m (adult NPC target,
+SIZE_STANDARDS.md §1) on spawn, exactly as it does for `herbalist_lyra.glb` (native 1.000m)
+and `warrior.glb` (native 1.036m).
+
+| Asset | Native AABB Y | root_scale | First-frame target |
+|-------|---------------|------------|-------------------|
+| `heroes/castle_guard/castle_guard.fbx` | unknown (FBX, no editor session) | 1.0 | → 1.65m via `_normalize_npc_scale` |
+
+**Geode Tyrant boss — noted, no GLB sourced this run**
+
+`eldoria-godot/data/bosses/geode_tyrant.kit.tres` is authored and TTK-verified (1700 HP,
+all telegraph windows ≥ 800ms per kid-readable rule). No GLB model exists yet; sourcing
+from Sketchfab CC-BY or Meshy auto-rig requires a live Godot editor session to measure
+native AABB before an `.import` can be written with a correct `root_scale`. Logged here
+for the next sourcing run.
+
+### Canon compliance check (all scripts)
+| Check | Result |
+|-------|--------|
+| `Player.gd` `_normalize_player_model(1.1)` | ✓ LOCKED, not modified |
+| `Player.gd` `_force_hero_height_cap(1.3)` | ✓ present |
+| Hero scale in Main.tscn | ✓ not touched |
+| `Pet.gd` BARK_LINES — `Array[String]` | ✓ (no PackedStringArray) |
+| `Pet.gd` BARK_COLORS — `Array[Color]` | ✓ (no PackedStringArray) |
+| All 10 NPC `.import` files | ✓ present |
+| All 6 enemy `.import` files | ✓ present |
+| All 2 hero `.import` files | ✓ present (alden + owen) |
+| `castle_guard.fbx.import` | ✓ **newly created this run** |
+
+### Safety gates
+| Gate | Result |
+|------|--------|
+| Gate 1 — undefined func calls | PASS (0 .gd files modified) |
+| Gate 2 — mass-delete brake | PASS (0 files deleted) |
+| Gate 3 — writable-path whitelist | PASS (`heroes/castle_guard/` path + `CHARACTER_AUDIT.md`) |
