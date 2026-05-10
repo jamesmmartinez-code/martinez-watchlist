@@ -3583,7 +3583,8 @@ func _global_scale_sweep() -> void:
 		# Static bodies — clamp by group:
 		for body in root.find_children("*", "StaticBody3D", true):
 			if body.is_in_group("terrain"):
-				continue   # ground plane is allowed to be huge
+				_clamp_max_height(body, 80.0)  # scale-eng: terrain clamped at mountain cap, not skipped
+				continue
 			if body.is_in_group("mountain"):
 				_clamp_max_height(body, 80.0)
 				continue
