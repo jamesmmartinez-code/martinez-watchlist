@@ -88,14 +88,33 @@ right at eave level. Any small upward nudge left the player standing on that fla
 surface, looking like they were on the roof. Fix: extend to `height=7.0, centre
 y=3.5` so the top face is at Y=7 — unreachable by any normal jump.
 
+## Follow-on Bug: SAFE_SPAWN too close to windmill cylinder (current fix)
+`SAFE_SPAWN = Vector3(0, 1, 10)` placed the player only **0.2 m** from the windmill
+collision cylinder (center (0, 2.5, 12), radius 1.4 → south edge at Z=10.6).
+On scene load Godot's physics engine resolves the near-overlap by briefly applying
+a large separation impulse that launches the player upward. The player lands on
+the cylinder top (Y=5.0) and appears to be "standing on an elevated wooden structure."
+`_do_floor_snap_unstick()` then raycasts from that elevated position and settles the
+player at Y=5.5 instead of the ground — making it worse.
+
+Fix applied:
+- `SAFE_SPAWN = Vector3(0, 1, 3)` — open village plaza, 9 m from windmill, well clear.
+- Player scene transform changed to match.
+- Windmill GLB collision radius reduced from 1.4 → 1.1.
+- Procedural windmill path given its own collision body (was missing).
+- Added 0.05 s deferred `_do_floor_snap_unstick()` in `Player._ready()` so the
+  player always starts on actual ground regardless of scene Y value.
+
 ## Rule of Thumb for Future Code
 **Never adjust `global_position.y` upward as a stuck-recovery.**
 It feels like "give the player room to move" but it accumulates silently.
 Always raycast to the floor or teleport to a known safe position instead.
 
 **SAFE_SPAWN must be verified against the actual world layout.**
-Check it against the BUILDINGS array whenever buildings move. Y should be 0–1,
-not mid-air. Always follow a teleport with `_do_floor_snap_unstick()`.
+Check it against the BUILDINGS array AND all prop colliders whenever anything moves.
+Y should be 0–1, not mid-air. Always follow a teleport with `_do_floor_snap_unstick()`.
+**Leave at least 1.5 m clearance from any collision cylinder (player capsule radius +
+0.4 m buffer + 0.7 m physics-impulse margin).**
 
 **Building collision boxes must be taller than any reachable jump height.**
 If the box top is below the player's max jump apex, it becomes a walkable ledge.

@@ -149,7 +149,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 1, 10)  # Physics: open path between well (z=6) and home (z=14), no buildings within 6m
+const SAFE_SPAWN := Vector3(0, 1, 3)   # Physics: open village plaza — 9m from windmill (z=12), 1.35m clear of well (z=6), no buildings within 5m
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -242,6 +242,10 @@ func _ready() -> void:
 	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(1.1))
 	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(1.1))
 	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(1.15))
+	# Floor-snap on first physics frame so the player always starts on actual ground,
+	# not floating at the scene-file Y=1 (the 1m gap closes via gravity anyway, but
+	# this removes the first-frame "am I on the floor?" confusion from move_and_slide).
+	get_tree().create_timer(0.05).timeout.connect(func(): _do_floor_snap_unstick())
 
 func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the

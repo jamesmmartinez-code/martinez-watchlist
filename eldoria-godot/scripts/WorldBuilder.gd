@@ -1325,12 +1325,14 @@ func _build_windmill() -> void:
 				(mill_inst as Node3D).scale = Vector3(1.55, 1.55, 1.55)
 			mill_used_glb = true
 			# Coarse cylindrical collider so the player can lean on the
-			# tower but not walk through it. Sized for the procedural
-			# canon (radius ~1.1, height ~5).
+			# tower but not walk through it. Radius 1.1 matches the visual
+			# stone-tower base; previously 1.4 which extended to Z=10.6 and
+			# nearly touched SAFE_SPAWN (0,0,3) was the old (0,0,10) —
+			# physics engine was launching the player upward onto the cylinder top.
 			var mill_body: StaticBody3D = StaticBody3D.new()
 			var mill_col: CollisionShape3D = CollisionShape3D.new()
 			var mill_cyl: CylinderShape3D = CylinderShape3D.new()
-			mill_cyl.radius = 1.4
+			mill_cyl.radius = 1.1
 			mill_cyl.height = 5.0
 			mill_col.shape = mill_cyl
 			mill_col.position.y = 2.5
@@ -1377,6 +1379,18 @@ func _build_windmill() -> void:
 		roof.material_override = MAT_ROOF(1.5)
 		roof.position.y = 5.1
 		mill.add_child(roof)
+		# Collision for procedural path (matches visual base radius, local scale 1.55 applied)
+		# Using pre-scaled values: radius 0.85/1.55=0.548 → 0.9 at local (un-scaled) for a
+		# comfortable fit. The node scale 1.55 makes this 0.9*1.55=1.395 → ~1.4m world radius.
+		var proc_body := StaticBody3D.new()
+		var proc_col  := CollisionShape3D.new()
+		var proc_cyl  := CylinderShape3D.new()
+		proc_cyl.radius = 0.9    # * mill.scale 1.55 ≈ 1.4m world radius
+		proc_cyl.height = 3.0    # * mill.scale 1.55 ≈ 4.65m world height
+		proc_col.shape  = proc_cyl
+		proc_col.position.y = 1.5  # * 1.55 ≈ 2.3m world — centre of base+tower
+		proc_body.add_child(proc_col)
+		mill.add_child(proc_body)
 
 	# ── Blade hub (overlay on both paths so THEME §12 rotation is consistent)
 	# Procedural blades + sail cloth ride on a pivot Node3D rotated by
