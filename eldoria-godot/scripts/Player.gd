@@ -119,6 +119,24 @@ var inventory: Node = null
 var kills_by_kind: Dictionary = {}   # e.g. {"goblin": 3}
 var active_quest: Dictionary = {}    # {"target":"goblin", "needed":5, "killed":0, "giver":"Maeve"}
 
+# ── Adaptive Playstyle Tracker ─────────────────────────────────────────────
+# Counters accumulate every time the matching action fires in real gameplay.
+var playstyle: Dictionary = {
+	"aggressive": 0,   # attacks used
+	"defensive":  0,   # times taking damage
+	"airborne":   0,   # jumps executed
+	"dash_heavy": 0,   # Dash Attack / dash skill fires
+}
+# Per-skill usage counters (parallel to SKILLS array)
+var _skill_use_counts: Array[int] = [0, 0, 0, 0]
+# Ability mutations unlocked through play — never cleared (saved with game)
+var _mutations: Dictionary = {}
+# Early-unlock overrides — skills whose level gate has been bypassed via play
+var _early_unlocks: Array[int] = []
+# Adaptation tick — we check unlocks/mutations every ADAPT_INTERVAL seconds
+var _adapt_timer: float = 0.0
+const ADAPT_INTERVAL: float = 10.0
+
 # Mounted state
 var mounted: bool = false
 var mount_node: Node3D = null
