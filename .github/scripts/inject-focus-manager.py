@@ -13,10 +13,18 @@ def main(html_path):
     if 'focus-hint' in src:
         print('already injected, skipping')
         return
+    # 0. fix viewport — remove user-scalable=no so low-vision users can pinch-zoom
+    src = src.replace(
+        'user-scalable=no, initial-scale=1.0',
+        'initial-scale=1.0'
+    ).replace(
+        'user-scalable=no',
+        ''
+    )
     # 1. add tabindex to canvas
     src = src.replace(
         '<canvas id="canvas">',
-        '<canvas id="canvas" tabindex="1" style="outline:none;">'
+        '<canvas id="canvas" tabindex="0" style="outline:none;">'
     )
     # 2. add focus manager + hint right before <script src="index.js">
     inject = '''
