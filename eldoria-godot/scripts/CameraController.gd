@@ -1,68 +1,87 @@
 extends Node3D
 class_name CameraController
 
-# Third-person orbit camera. Right-mouse drag (or two-finger drag on track pad)
-# to rotate, scroll wheel to zoom in/out. Auto-wires to whatever node is in the
-# "player" group on _ready, so the scene file doesn't need a manual assignment.
+# ─────────────────────────────────────────────────────────────────────────────
+# Realm of Eldoria — MMORPG third-person camera
+#
+# Node setup (CameraController lives as a sibling of Player, or child):
+#   CameraController          ← this script   (handles Y / yaw)
+#     └── CameraPitch         ← Node3D child  (handles X / pitch)
+#           └── Camera3D      ← the actual camera
+#
+# Mouse behaviour:
+#   • Click anywhere in the window  → capture mouse, camera rotates freely
+#   • Escape / right-click release  → release mouse
+#   • Scroll wheel                  → zoom in / out
+#   • WASD moves player relative to the camera direction (set in Player.gd)
+# ─────────────────────────────────────────────────────────────────────────────
 
-@export var follow_target: Node3D
-@export var distance: float = 10.0
-@export var min_distance: float = 3.4
-@export var max_distance: float = 13.5
-@export var sensitivity: float = 0.0055
-@export var smooth_lerp: float = 0.22
+@export var follow_target:  Node3D
+@export var distance:       float = 10.0
+@export var min_distance:   float = 3.4
+@export var max_distance:   float = 13.5
+@export var sensitivity:    float = 0.003
+@export var smooth_follow:  float = 0.22
 
-var yaw: float = 0.0
-var pitch: float = 0.85
-var dragging: bool = false
+# Pivot child that handles pitch so yaw stays clean on this node
+@onready var _pitch_node: Node3D  = get_node_or_null("CameraPitch")
+@onready var _cam:        Camera3D = (
+	_pitch_node.get_node_or_null("Camera3D") if _pitch_node
+	else get_node_or_null("Camera3D")
+)
 
-@onready var _cam: Camera3D = $Camera3D
+var _yaw:   float = 0.0
+var _pitch: float = 0.85   # radians; 0 = horizon, π/2 = straight down
 
 func _ready() -> void:
-	# FIX 2026-05-09: Zero out any baked transform on Camera3D — the script owns
-	# placement entirely. The scene had transform (0,4,7) baked in; on frame 0
-	# before follow_target is found, _cam.position stays at that value but
-	# global_position is still origin, so look_at fires with cam==target ->
-	# degenerate projection matrix -> prepare_camera spam-errors in Web/WASM.
+	# Ensure Camera3D has no stale baked transform (script owns placement entirely).
 	if _cam:
 		_cam.position = Vector3.ZERO
-		_cam.near = 0.1
-		_cam.far = 4000.0
+		_cam.near     = 0.1
+		_cam.far      = 4000.0
 
-	# Auto-wire the follow target if not set in editor
+	# Auto-wire follow target if not set in the editor.
 	if not follow_target:
 		var players := get_tree().get_nodes_in_group("player")
-		if players.size() > 0:
-			follow_target = players[0]
-		else:
-			var root := get_tree().current_scene
-			if root:
-				follow_target = root.get_node_or_null("Player")
+		follow_target = players[0] if players.size() > 0 else \
+			get_tree().current_scene.get_node_or_null("Player") if get_tree().current_scene else null
 
-	# FIX: Pre-position camera on frame 0 so look_at never fires from zero distance
+	# Pre-position on frame 0 so look_at never fires at zero distance.
 	if follow_target:
 		global_position = follow_target.global_position + Vector3(0, 1.2, 0)
-		_update_camera_transform()
+		_apply_camera_transform()
 
-	# Tell Player about us so it can use camera-relative movement
-	var p = follow_target
-	if p and "camera_pivot" in p and p.camera_pivot == null:
-		p.camera_pivot = self
+	# Tell Player about us so it can use camera-relative movement.
+	if follow_target and "camera_pivot" in follow_target and follow_target.camera_pivot == null:
+		follow_target.camera_pivot = self
 
 func _unhandled_input(event: InputEvent) -> void:
+	# ── Mouse capture ──────────────────────────────────────────────────────
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			dragging = event.pressed
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if dragging else Input.MOUSE_MODE_VISIBLE
-		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			distance = clamp(distance - 1.5, min_distance, max_distance)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			distance = clamp(distance + 1.5, min_distance, max_distance)
-	elif event is InputEventMouseMotion and dragging:
-		yaw   -= event.relative.x * sensitivity
-		pitch  = clamp(pitch + event.relative.y * sensitivity, 0.50, 1.15)
+		match event.button_index:
+			MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT:
+				if event.pressed:
+					# Any click inside the window captures the mouse.
+					Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+				elif event.button_index == MOUSE_BUTTON_RIGHT and not event.pressed:
+					# Right-release releases (allows right-click menus when not dragging).
+					Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			MOUSE_BUTTON_WHEEL_UP:
+				distance = clamp(distance - 1.5, min_distance, max_distance)
+			MOUSE_BUTTON_WHEEL_DOWN:
+				distance = clamp(distance + 1.5, min_distance, max_distance)
+
+	# ── Escape releases mouse ──────────────────────────────────────────────
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+	# ── Mouse look (only when captured) ───────────────────────────────────
+	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		_yaw  -= event.relative.x * sensitivity
+		_pitch = clamp(_pitch + event.relative.y * sensitivity, 0.20, 1.35)
 
 func _process(_delta: float) -> void:
+	# Re-acquire follow target if it was swapped out.
 	if not follow_target or not is_instance_valid(follow_target):
 		var players := get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
@@ -70,24 +89,30 @@ func _process(_delta: float) -> void:
 		else:
 			return
 
-	var target_pos: Vector3 = follow_target.global_position + Vector3(0, 1.2, 0)
-	global_position = global_position.lerp(target_pos, smooth_lerp)
-	rotation = Vector3(0, yaw, 0)
-	_update_camera_transform()
+	# Smooth-follow the player's head position.
+	var head: Vector3 = follow_target.global_position + Vector3(0, 1.2, 0)
+	global_position = global_position.lerp(head, smooth_follow)
 
-# Positions and orients the Camera3D safely.
-# Split out so _ready() can call it on frame 0, preventing the
-# "camera at distance zero -> degenerate look_at -> prepare_camera !res" crash
-# that spams the Web/WASM console and leaves the screen black.
-func _update_camera_transform() -> void:
+	# Apply yaw to this node, pitch to the child node.
+	rotation.y = _yaw
+	if _pitch_node:
+		_pitch_node.rotation.x = _pitch
+
+	_apply_camera_transform()
+
+# ─── Places Camera3D along the orbit arc and points it at the pivot ───────────
+func _apply_camera_transform() -> void:
 	if not _cam:
 		return
-	var off: Vector3 = Vector3(0, sin(pitch) * distance, cos(pitch) * distance)
+
+	# Build offset in the pitch-node's local space (or this node's if no pitch child).
+	var ref: Node3D = _pitch_node if _pitch_node else self
+	var off := Vector3(0, sin(_pitch) * distance, cos(_pitch) * distance)
 	_cam.position = off
-	# GUARD: skip look_at if camera world pos == look target (zero-length direction
-	# vector -> invalid projection matrix -> WebGL renderer crashes every frame).
-	var look_target: Vector3 = global_position
-	var cam_world: Vector3 = _cam.global_position
+
+	# Guard: skip look_at when cam is at the same world-pos as pivot
+	# (zero-length direction → degenerate WebGL projection → black screen + spam).
+	var look_target := global_position
+	var cam_world   := _cam.global_position
 	if cam_world.distance_squared_to(look_target) > 0.0001:
 		_cam.look_at(look_target, Vector3.UP)
-

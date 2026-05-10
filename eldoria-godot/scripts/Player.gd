@@ -78,11 +78,17 @@ func _ready() -> void:
 	# max_angle 46° lets them climb gentle slopes without sliding off.
 	floor_snap_length = 0.3
 	floor_max_angle = deg_to_rad(46.0)
-	# Auto-wire camera_pivot if the editor didn't assign it
+	# Auto-wire camera_pivot if the editor didn't assign it.
+	# CameraController calls _ready later and wires itself via p.camera_pivot = self,
+	# so this fallback handles scenes where the node is named differently.
 	if not camera_pivot:
 		var root := get_tree().current_scene
 		if root:
-			camera_pivot = root.get_node_or_null("CameraPivot")
+			camera_pivot = (
+				root.get_node_or_null("CameraController") or
+				root.get_node_or_null("CameraPivot") or
+				root.get_node_or_null("Camera")
+			)
 	# Auto-wire animation_player — search any child for an AnimationPlayer.
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
@@ -170,11 +176,17 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
-	# Camera-relative input
+	# Camera-relative movement — MMORPG style:
+	# extract forward/right from the camera yaw (Y-rotation) so strafing and
+	# reversing always feel correct regardless of where the camera is pointing.
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var cam_basis := camera_pivot.global_transform.basis if camera_pivot else Basis.IDENTITY
-	var direction := (cam_basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	direction.y = 0
+	var direction := Vector3.ZERO
+	if camera_pivot and input_dir != Vector2.ZERO:
+		var forward := -camera_pivot.global_transform.basis.z
+		var right   :=  camera_pivot.global_transform.basis.x
+		forward.y = 0
+		right.y   = 0
+		direction = (forward * input_dir.y + right * input_dir.x).normalized()
 
 	# Run modifier (left shift)
 	current_speed = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
@@ -195,8 +207,13 @@ func _physics_process(delta: float) -> void:
 	if direction.length() > 0.01:
 		velocity.x = direction.x * current_speed
 		velocity.z = direction.z * current_speed
-		var target_basis := Basis.looking_at(direction, Vector3.UP)
-		global_transform.basis = global_transform.basis.slerp(target_basis, rotation_speed * delta)
+		# Rotate player to face movement direction (standard MMORPG behaviour).
+		# look_at guard: skip if direction is degenerate (shouldn't happen after
+		# .normalized() but keeps the WebGL renderer safe).
+		var look_pos := global_position + direction
+		if global_position.distance_squared_to(look_pos) > 0.0001:
+			var target_basis := Basis.looking_at(direction, Vector3.UP)
+			global_transform.basis = global_transform.basis.slerp(target_basis, rotation_speed * delta)
 		_play_anim("walk" if current_speed == walk_speed else "run")
 	else:
 		velocity.x = move_toward(velocity.x, 0, current_speed * 4 * delta)
