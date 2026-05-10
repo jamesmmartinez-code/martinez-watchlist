@@ -146,8 +146,14 @@ const WATCHER_SHOOT_CD:   float = 2.5   # seconds between bolt fires
 # ── Reactive Scout — aggressive detect/adapt interval ────────────────────
 var _reactive_mode:  bool  = false   # set true for enemy_kind=="reactive_scout"
 
-const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
-const WATCHER_BOLT_SCRIPT  = preload("res://scripts/WatcherBolt.gd")
+const DAMAGE_NUMBER_SCRIPT   = preload("res://scripts/DamageNumber.gd")
+const WATCHER_BOLT_SCRIPT    = preload("res://scripts/WatcherBolt.gd")
+const ENEMY_VARIANT_SHADER   = preload("res://shaders/EnemyVariant.gdshader")
+
+# Non-null when the fallback-capsule path is active: stores the ShaderMaterial
+# applied to every MeshInstance3D in the placeholder model so damage_flash can
+# be set as a uniform (smooth per-frame decay) rather than swapping materials.
+var _variant_shader_mat: ShaderMaterial = null
 
 signal died(enemy)
 
@@ -267,13 +273,69 @@ func _spawn_model() -> void:
 	add_child(_model)
 	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
 	call_deferred("_normalize_to_height", _model, _norm_target)
-	# Real fantasy models carry their own painted textures — applying the
-	# placeholder's green tint would muddy them. Tint only the fallback robot.
+	# Real fantasy models carry their own painted textures — applying a tint
+	# would muddy them.  For fallback placeholders, apply the EnemyVariant
+	# spatial shader so each instance gets a unique hue-brightness, emissive
+	# eye-glow, and a per-frame-decay damage_flash without material swapping.
 	if not uses_real_model:
-		_model.call_deferred("propagate_call", "set", ["modulate", tint])
+		_apply_variant_shader()
 	else:
 		# Auto-play idle animation if the model carries one (e.g. goblin_scout.glb has IdleAnimation).
 		call_deferred("_play_model_idle_anim")
+
+# ==========================================================================
+# EnemyVariant shader — applied to placeholder (non-GLB) models only.
+# Creates a single ShaderMaterial, sets per-instance randomised uniforms,
+# then defers propagating it to all MeshInstance3D children so the scene
+# tree is fully ready before we walk it.
+# ==========================================================================
+func _apply_variant_shader() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	# Per-instance brightness scatter so a camp of the same enemy kind never
+	# looks like clones — ±20 % brightness from their base tint.
+	var brightness := rng.randf_range(0.78, 1.18)
+	var mat := ShaderMaterial.new()
+	mat.shader = ENEMY_VARIANT_SHADER
+	# variant_color: tint scaled by brightness (clamped to valid colour range).
+	mat.set_shader_parameter("variant_color",
+		Color(clampf(tint.r * brightness, 0.0, 1.0),
+		      clampf(tint.g * brightness, 0.0, 1.0),
+		      clampf(tint.b * brightness, 0.0, 1.0), 1.0))
+	# emissive_color: per-kind lore glow (eye zone at UV.y ≈ 0.85).
+	mat.set_shader_parameter("emissive_color",    _get_kind_emissive())
+	mat.set_shader_parameter("emissive_strength", 0.35)
+	mat.set_shader_parameter("roughness",  rng.randf_range(0.62, 0.88))
+	mat.set_shader_parameter("time_offset", rng.randf() * TAU)
+	mat.set_shader_parameter("damage_flash", 0.0)
+	_variant_shader_mat = mat
+	# Defer so the instantiated GLB sub-tree is fully parented before we walk it.
+	call_deferred("_apply_shader_to_meshes", _model, mat)
+
+func _get_kind_emissive() -> Color:
+	# Each enemy kind's "eye glow" colour supports the lore read at a glance.
+	# Watchers: spectral blue (alien, watchful).  Drifters: amber rot (undead).
+	# Scouts: electric green (fast, dangerous).  Defaults mirror the orange
+	# used by the shader's built-in emissive_color default.
+	match enemy_kind:
+		"watcher":                       return Color(0.35, 0.70, 1.00)  # spectral blue
+		"drifter":                        return Color(1.00, 0.50, 0.10)  # amber rot
+		"reactive_scout":                 return Color(0.25, 1.00, 0.40)  # electric green
+		"goblin", "goblin_scout":         return Color(0.20, 0.90, 0.25)  # sickly goblin green
+		"skeleton":                       return Color(0.80, 0.80, 1.00)  # pale undead blue-white
+		"bandit", "bandit_captain":       return Color(1.00, 0.40, 0.20)  # fire-orange outlaw
+		"crystal_elemental", "crystal_guardian": return Color(0.30, 0.60, 1.00)  # crystal blue
+		_:                                return Color(1.00, 0.40, 0.10)  # warm orange fallback
+
+func _apply_shader_to_meshes(node: Node, mat: ShaderMaterial) -> void:
+	# Recursively set material_override on every MeshInstance3D so the shader
+	# covers multi-mesh GLB hierarchies (e.g. separate body / clothing meshes).
+	if not is_instance_valid(node):
+		return
+	if node is MeshInstance3D:
+		(node as MeshInstance3D).material_override = mat
+	for child in node.get_children():
+		_apply_shader_to_meshes(child, mat)
 
 func _play_model_idle_anim() -> void:
 	# 2026-05-08: retry up to 5 frames; added humanoid/* spellings; skip known
@@ -425,6 +487,16 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if _state == "dead":
 		return
+
+	# EnemyVariant shader: decay damage_flash back to 0 each frame (rate 6.0×).
+	# Runs even while chasing / attacking so the flash always clears regardless
+	# of AI state.  Guard on _variant_shader_mat so real-GLB enemies skip entirely.
+	if _variant_shader_mat:
+		var flash: float = float(_variant_shader_mat.get_shader_parameter("damage_flash"))
+		if flash > 0.0:
+			_variant_shader_mat.set_shader_parameter("damage_flash",
+				maxf(0.0, flash - delta * 6.0))
+
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
 	else:
@@ -623,13 +695,18 @@ func take_damage(amount: int, source: Node = null) -> void:
 			var kb_strength: float = 6.0 if amount < 20 else 9.0   # heavier hit = more fly
 			_knockback_vel = kb.normalized() * kb_strength
 
-	# ── Hit flash — squash-and-stretch + red color tint ───────────────────
-	# Squash (scale) works on any Node3D; color flash finds MeshInstance3D
-	# children and briefly overrides their material.
+	# ── Hit flash — squash-and-stretch + red colour feedback ─────────────
+	# Squash tween works on any Node3D.  Colour feedback uses one of two paths:
+	#   • EnemyVariant shader active → set damage_flash=1.0 uniform and let
+	#     _physics_process decay it at 6×/s — no material swap, no allocation.
+	#   • Real GLB model → _flash_hurt_color() temporarily overrides materials.
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(1.18, 0.82, 1.18), 0.055).set_trans(Tween.TRANS_SINE)
 	tw.tween_property(self, "scale", Vector3(1.0,  1.0,  1.0),  0.12).set_trans(Tween.TRANS_ELASTIC)
-	_flash_hurt_color()
+	if _variant_shader_mat:
+		_variant_shader_mat.set_shader_parameter("damage_flash", 1.0)
+	else:
+		_flash_hurt_color()
 
 	# Aggro the attacker if not already chasing
 	if source and not _player:
