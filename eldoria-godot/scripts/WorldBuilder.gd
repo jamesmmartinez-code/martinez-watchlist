@@ -2112,10 +2112,10 @@ func _make_npc(data: Dictionary) -> void:
 	# `memory_visits_min` + `memory_lines` to their NPCS dict entry.
 	npc.warmed_memory_visits_min = int(data.get("memory_visits_min", 0))
 	npc.warmed_memory_dialogue_variants = PackedStringArray(data.get("memory_lines", []))
-		# run-33: wire witnessed_defense_lines
-		if "witnessed_defense_lines" in npc and data.has("defense_lines"):
-			for _dl: String in data["defense_lines"]:
-				npc.witnessed_defense_lines.append(_dl)
+	# run-33: wire witnessed_defense_lines
+	if "witnessed_defense_lines" in npc and data.has("defense_lines"):
+		for _dl: String in data["defense_lines"]:
+			npc.witnessed_defense_lines.append(_dl)
 	# COMPOUND (run 9 — JSON dialogue tree): opt-in flag for JSON-tree
 	# resolution via DialogueDB. Defaults false so legacy NPCs are untouched.
 	npc.use_dialogue_json = bool(data.get("use_json_dialogue", false))
