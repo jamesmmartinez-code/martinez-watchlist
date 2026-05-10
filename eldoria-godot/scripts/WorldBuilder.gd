@@ -971,13 +971,15 @@ func _make_building(pos: Vector3) -> void:
 	wall.position.y = 1.3 + 0.5
 	house.add_child(wall)
 
-	# Wall collision so player can't walk through
+	# Wall collision so player can't walk through.
+	# Height 7m (centre y=3.5) so the top face sits at y=7 — unreachable by
+	# any normal jump — preventing the player from landing on the roof ledge.
 	var body := StaticBody3D.new()
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(3.6, 3.1, 3.6)
+	box.size = Vector3(3.6, 7.0, 3.6)
 	col.shape = box
-	col.position.y = 1.55
+	col.position.y = 3.5
 	body.add_child(col)
 	house.add_child(body)
 
