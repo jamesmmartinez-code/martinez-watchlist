@@ -737,26 +737,28 @@ func _check_line_of_sight() -> bool:
 	return space.intersect_ray(q).is_empty()
 
 func _adapt_to_player() -> void:
-	# Read the player's playstyle dict (set by Player.gd) and update blackboard
-	# flags that change how this enemy attacks. Called every ENEMY_ADAPT_INTERVAL
-	# seconds so it's cheap — one dict access per enemy per 6 s.
-	if not _player or not is_instance_valid(_player):
-		return
-	var style: Dictionary = _player.get("playstyle")
-	if not style:
-		return
-	# Dash-heavy player → enemy watches for dashes and zones with slow swing
-	if style.get("dash_heavy", 0) > 30:
+	# Read from the GameBrain singleton — no player reference needed here.
+	# Ratios are scale-invariant so a 5-min session and a 2-hour session
+	# react consistently to the same relative playstyle habits.
+	var dash_r  := GameBrain.get_playstyle_ratio("dash_heavy")
+	var air_r   := GameBrain.get_playstyle_ratio("airborne")
+	var def_r   := GameBrain.get_playstyle_ratio("defensive")
+	var agg_r   := GameBrain.get_playstyle_ratio("aggressive")
+
+	# Dash-heavy player (>30% of all actions) → zone-denial awareness
+	if dash_r > 0.30:
 		blackboard["counter_dash"] = true
 	else:
 		blackboard.erase("counter_dash")
-	# Airborne player → enemy times upward swing to punish landings
-	if style.get("airborne", 0) > 20:
+
+	# Airborne player (>25% of actions) → anti-air timing on swings
+	if air_r > 0.25:
 		blackboard["anti_air"] = true
 	else:
 		blackboard.erase("anti_air")
-	# Passive/defensive player → enemy becomes more patient, widens aggro
-	if style.get("defensive", 0) > 15 and style.get("aggressive", 0) < 10:
+
+	# Passive/defensive ratio → tighten cooldown to punish passivity
+	if def_r > 0.25 and agg_r < 0.15:
 		attack_cooldown = maxf(ATTACK_COOLDOWN_MIN, attack_cooldown - 0.10)
 
 func _utility_action(dist: float) -> String:

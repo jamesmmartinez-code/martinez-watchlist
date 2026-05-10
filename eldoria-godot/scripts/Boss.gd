@@ -201,6 +201,7 @@ func _physics_process(delta: float) -> void:
 		_state = "melee"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
+		_observe_player_dodge()   # accumulate memory while in melee range
 		if _next_pattern_t <= 0 and not _attack_pool.is_empty():
 			call(_attack_pool[randi() % _attack_pool.size()])
 	elif dist < aggro_range:
@@ -253,11 +254,21 @@ func _attack_slam() -> void:
 func _attack_charge() -> void:
 	_next_pattern_t = 4.2
 	_show_boss_msg("⚡ CHARGE!")
+	# Memory: aim charge toward the player's weaker dodge side.
+	# If they always dodge left relative to us, angle charge slightly right —
+	# they'll step into it. Subtle (±18°) so it doesn't feel impossible.
+	var dodge_l: int = blackboard.get("dodge_left",  0)
+	var dodge_r: int = blackboard.get("dodge_right", 0)
+	var angle_bias := 0.0
+	if dodge_l > dodge_r + 3:
+		angle_bias = deg_to_rad(-18.0)   # player dodges left → aim right
+	elif dodge_r > dodge_l + 3:
+		angle_bias = deg_to_rad(18.0)    # player dodges right → aim left
 	# Telegraph: flash red line forward
 	var start_pos := global_position
 	var dir := (_player.global_position - global_position)
 	dir.y = 0
-	dir = dir.normalized()
+	dir = dir.normalized().rotated(Vector3.UP, angle_bias)
 	# REFINE: combat — boss feel: charge telegraph dur 0.6→0.78 + matching await; charge speed (18.0) preserved so Owen still feels the punch.
 	_show_telegraph_line(start_pos, dir, charge_distance, 0.78)
 	await get_tree().create_timer(0.78).timeout
@@ -301,37 +312,53 @@ func enter_phase(p: int) -> void:
 			# Brief opening at the start of phase 2 as a cinematic beat
 			_open_vulnerability(1.5)
 
-func _adapt_attack_pool(current_dist: float) -> void:
-	# Read the player's live playstyle dict and bias the pool toward patterns
-	# that counter their habits. We only ADD entries (never remove the base
-	# pool) so the player still has a fighting chance — just a harder one.
-	var style: Dictionary = _player.get("playstyle") if _player else {}
-	if style.is_empty():
-		return
+func _adapt_attack_pool(_current_dist: float) -> void:
+	# Reads GameBrain ratios (scale-invariant) instead of raw counts so the
+	# boss reacts to *relative* habits — a slow player and a fast player with
+	# the same dash ratio get the same counter.
+	# We only ADD entries (never remove base pool) so the player always has a
+	# fighting chance; the pool is capped at 8 to maintain pattern variety.
+	if _phase < 1:
+		return   # only adapt after first phase gate — give player a grace window
 
-	# Aggressive attacker → Warlord learns to parry: heavy melee flood
-	# creates natural "gap" moments where the player's aggression costs them.
-	if style.get("aggressive", 0) > 80 and _phase >= 1:
-		if _attack_pool.count("_attack_melee") < 3:
-			_attack_pool.append("_attack_melee")
-			_show_boss_msg("PATHETIC AGGRESSION!")
+	var agg_r  := GameBrain.get_playstyle_ratio("aggressive")
+	var dash_r := GameBrain.get_playstyle_ratio("dash_heavy")
+	var air_r  := GameBrain.get_playstyle_ratio("airborne")
 
-	# Dash-heavy → Warlord counters with more charges: dashes are dangerous
-	# when the boss is already lunging, forcing choice over reflex.
-	if style.get("dash_heavy", 0) > 40 and _phase >= 1:
-		if _attack_pool.count("_attack_charge") < 3:
-			_attack_pool.append("_attack_charge")
-			_show_boss_msg("YOU CANNOT OUTRUN ME!")
+	# Aggressive attacker (>35%) → heavy melee flood creates riposte moments
+	if agg_r > 0.35 and _attack_pool.count("_attack_melee") < 3:
+		_attack_pool.append("_attack_melee")
+		_show_boss_msg("PATHETIC AGGRESSION!")
 
-	# Airborne player → Warlord throws slams: the AoE punishes repeated
-	# landing spots and forces the player to vary their aerial approach.
-	if style.get("airborne", 0) > 20 and _phase >= 1:
-		if _attack_pool.count("_attack_slam") < 3:
-			_attack_pool.append("_attack_slam")
+	# Dash-heavy (>25%) → more charges: dashes into a charge = disaster
+	if dash_r > 0.25 and _attack_pool.count("_attack_charge") < 3:
+		_attack_pool.append("_attack_charge")
+		_show_boss_msg("YOU CANNOT OUTRUN ME!")
 
-	# Keep pool from ballooning — cap at 8 entries to maintain variety
+	# Airborne (>20%) → slam AoE punishes predictable landing spots
+	if air_r > 0.20 and _attack_pool.count("_attack_slam") < 3:
+		_attack_pool.append("_attack_slam")
+
+	# Cap to prevent one-dimensional fights
 	while _attack_pool.size() > 8:
 		_attack_pool.remove_at(0)
+
+func _observe_player_dodge() -> void:
+	# Called each frame in melee state — records which horizontal direction the
+	# player is moving relative to the boss's facing axis so we can bias future
+	# attacks toward the weaker dodge side.  Stored in blackboard as raw counts.
+	if not _player or not is_instance_valid(_player):
+		return
+	var player_vel := Vector3(_player.velocity.x, 0, _player.velocity.z)
+	if player_vel.length() < 0.3:
+		return
+	# Project player velocity onto boss right-axis
+	var right := global_transform.basis.x
+	var dot   := player_vel.normalized().dot(right)
+	if dot > 0.35:
+		blackboard["dodge_right"] = blackboard.get("dodge_right", 0) + 1
+	elif dot < -0.35:
+		blackboard["dodge_left"] = blackboard.get("dodge_left", 0) + 1
 
 func _open_vulnerability(duration: float) -> void:
 	_vulnerability = true

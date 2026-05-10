@@ -370,6 +370,7 @@ func _physics_process(delta: float) -> void:
 		_jump_buffer = 0.0
 		_coyote_timer = 0.0   # prevent double-jump via coyote window
 		playstyle["airborne"] += 1
+		GameBrain.record_action("airborne")
 
 	# ── Variable height: short hop on tap, full arc on hold ─────────────────
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
@@ -514,8 +515,10 @@ func use_skill(idx: int) -> void:
 
 	# ── Playstyle tracking ───────────────────────────────────────────────────
 	playstyle["aggressive"] += 1
+	GameBrain.record_action("aggressive")
 	if idx == 2:   # Dash Attack
 		playstyle["dash_heavy"] += 1
+		GameBrain.record_action("dash_heavy")
 	_skill_use_counts[idx] += 1
 	_check_ability_mutations(idx)
 
@@ -545,8 +548,8 @@ func use_skill(idx: int) -> void:
 	# ── Damage dispatch ──────────────────────────────────────────────────────
 	var dmg: Dictionary = _roll_damage()
 	var final_dmg: int  = int(float(dmg.amount) * float(sk["damage_mult"]))
-	# Mutations that boost base damage
-	if idx == 1 and _mutations.get("heavy_armor_break", false):
+	# Mutations that boost base damage (read from GameBrain — persistent across sessions)
+	if idx == 1 and GameBrain.has_evolution("heavy_armor_break"):
 		final_dmg = int(final_dmg * 1.40)  # armor-break: +40% to Heavy Strike
 	var hit_count := 0
 
@@ -593,7 +596,7 @@ func use_skill(idx: int) -> void:
 	# Fires a second 50% arc sweep after the first hit. The brief delay makes
 	# it feel like an echo rather than double-damage, giving skilled players a
 	# reason to stay in close range (the second hit only reaches attack_range).
-	if idx == 0 and hit_count > 0 and _mutations.get("slash_multihit", false):
+	if idx == 0 and hit_count > 0 and GameBrain.has_evolution("slash_multihit"):
 		await get_tree().create_timer(0.14).timeout
 		if not is_dead:
 			var fwd2 := -global_transform.basis.z; fwd2.y = 0; fwd2 = fwd2.normalized()
@@ -608,7 +611,7 @@ func use_skill(idx: int) -> void:
 	# ── Mutation: Fireball secondary spread ──────────────────────────────────
 	# Spawns two flanking fireballs at ±22° after a short delay — makes the
 	# pyro build feel genuinely different from the base single-projectile form.
-	if idx == 3 and _mutations.get("fireball_pyro", false):
+	if idx == 3 and GameBrain.has_evolution("fireball_pyro"):
 		await get_tree().create_timer(0.18).timeout
 		if not is_dead:
 			var base_dir := -global_transform.basis.z; base_dir.y = 0; base_dir = base_dir.normalized()
@@ -703,22 +706,22 @@ func _check_adaptive_unlocks() -> void:
 		_show_mutation_popup("⚔️ Relentless — Heavy Strike unlocked early!")
 
 func _check_ability_mutations(idx: int) -> void:
-	# Called after every successful skill use. When a usage counter crosses a
-	# threshold for the first time, the ability permanently mutates.
+	# Called after every successful skill use. Routes through GameBrain so
+	# mutations persist across sessions and are readable by all systems.
 	match idx:
-		0:  # Slash → Multi-Hit at 50 uses
-			if _skill_use_counts[0] == 50 and not _mutations.get("slash_multihit", false):
-				_mutations["slash_multihit"] = true
+		0:  # Slash → Echo Strike at 50 uses
+			if _skill_use_counts[0] == 50 and not GameBrain.has_evolution("slash_multihit"):
+				GameBrain.set_evolution("slash_multihit")
 				_show_mutation_popup("⚡ Slash evolved: Echo Strike!")
-		1:  # Heavy Strike → Armor Break at 30 uses (+40% damage permanently)
-			if _skill_use_counts[1] == 30 and not _mutations.get("heavy_armor_break", false):
-				_mutations["heavy_armor_break"] = true
+		1:  # Heavy Strike → Armor Break at 30 uses (+40% damage)
+			if _skill_use_counts[1] == 30 and not GameBrain.has_evolution("heavy_armor_break"):
+				GameBrain.set_evolution("heavy_armor_break")
 				_show_mutation_popup("⚡ Heavy Strike evolved: Armor Break!")
-		2:  # Dash Attack → no current mutation (slot for future)
+		2:  # Dash Attack → (reserved for future mutation)
 			pass
-		3:  # Fireball → Inferno Spread at 25 uses (twin flanking balls)
-			if _skill_use_counts[3] == 25 and not _mutations.get("fireball_pyro", false):
-				_mutations["fireball_pyro"] = true
+		3:  # Fireball → Inferno Spread at 25 uses
+			if _skill_use_counts[3] == 25 and not GameBrain.has_evolution("fireball_pyro"):
+				GameBrain.set_evolution("fireball_pyro")
 				_show_mutation_popup("⚡ Fireball evolved: Inferno Spread!")
 
 func _show_mutation_popup(text: String) -> void:
@@ -794,6 +797,7 @@ func take_damage(amount: int) -> void:
 	if is_dead:
 		return
 	playstyle["defensive"] += 1
+	GameBrain.record_action("defensive")
 	# Armor reduction (formula: armor / (armor + 50))
 	var armor_value: int = 0
 	if inventory:
