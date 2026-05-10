@@ -38,6 +38,10 @@ const KIND_MODEL_PATHS: Dictionary = {
 	"bandit":            "res://assets/models/enemies/bandit.glb",
 	"skeleton":          "res://assets/models/enemies/skeleton.glb",
 	"crystal_elemental": "res://assets/models/enemies/crystal_elemental.glb",
+	# Echoing Ruins archetypes (reuse existing GLBs until dedicated models ship)
+	"drifter":           "res://assets/models/enemies/goblin.glb",
+	"watcher":           "res://assets/models/enemies/skeleton.glb",
+	"reactive_scout":    "res://assets/models/enemies/goblin_scout.glb",
 }
 
 func _get_kind_model(kind: String) -> PackedScene:
@@ -130,7 +134,20 @@ var blackboard: Dictionary = {}       # AI memory keyed by string
 var _adapt_timer: float    = 0.0     # ticks up to ENEMY_ADAPT_INTERVAL then resets
 const ENEMY_ADAPT_INTERVAL: float = 6.0
 
+# ── Watcher ranged mode ───────────────────────────────────────────────────
+# Populated at _ready() for enemy_kind=="watcher". Controls ranged-stance
+# distances and the bolt fire timer.
+var _ranged_mode:    bool  = false
+var _bolt_timer:     float = 0.0
+const WATCHER_IDEAL_DIST: float = 10.0  # preferred engagement range
+const WATCHER_FLEE_DIST:  float = 5.0   # closer than this → retreat
+const WATCHER_SHOOT_CD:   float = 2.5   # seconds between bolt fires
+
+# ── Reactive Scout — aggressive detect/adapt interval ────────────────────
+var _reactive_mode:  bool  = false   # set true for enemy_kind=="reactive_scout"
+
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
+const WATCHER_BOLT_SCRIPT  = preload("res://scripts/WatcherBolt.gd")
 
 signal died(enemy)
 
@@ -147,6 +164,14 @@ func _ready() -> void:
 	_breathe_phase = _rng_breathe.randf() * TAU
 	_breathe_phase2 = _rng_breathe.randf() * TAU
 	add_to_group("enemies")
+	# ── Kind-specific mode flags ─────────────────────────────────────────────
+	_ranged_mode   = (enemy_kind == "watcher")
+	_reactive_mode = (enemy_kind == "reactive_scout")
+	if _reactive_mode:
+		# Scouts detect the player much faster and adapt every 2s
+		const REACT_DETECT_RATE: float = 40.0  # will shadow the outer const locally
+		detection_level = 0.0  # still starts at 0
+		_adapt_timer = 4.0     # force first adapt soon after spawn
 	collision_layer = 4    # enemy layer
 	collision_mask = 1 | 4 # collide with world (1) and other enemies (4)
 
@@ -439,10 +464,15 @@ func _physics_process(delta: float) -> void:
 	_attack_timer = max(0.0, _attack_timer - delta)
 
 	# ── Adaptive behaviour tick ────────────────────────────────────────────
+	var adapt_interval: float = 2.0 if _reactive_mode else ENEMY_ADAPT_INTERVAL
 	_adapt_timer += delta
-	if _adapt_timer >= ENEMY_ADAPT_INTERVAL:
+	if _adapt_timer >= adapt_interval:
 		_adapt_timer = 0.0
 		_adapt_to_player()
+
+	# ── Watcher bolt cooldown ───────────────────────────────────────────────
+	if _ranged_mode and _bolt_timer > 0.0:
+		_bolt_timer = maxf(0.0, _bolt_timer - delta)
 
 	# ── Detection / Utility AI ─────────────────────────────────────────────
 	# Only run LoS check when player is close enough to matter (perf guard).
@@ -480,6 +510,24 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0; velocity.z = 0
 			if not _in_los:
 				blackboard.erase("last_seen_pos")
+	elif action == "watcher_range":
+		_state = "chase"
+		# Strafe to keep ideal distance — advance if too far, retreat if too close
+		var dist_now := to_player.length()
+		if dist_now > WATCHER_IDEAL_DIST + 1.5:
+			var dir := to_player.normalized()
+			velocity.x = dir.x * move_speed
+			velocity.z = dir.z * move_speed
+		elif dist_now < WATCHER_IDEAL_DIST - 1.5:
+			var dir := -to_player.normalized()
+			velocity.x = dir.x * chase_speed
+			velocity.z = dir.z * chase_speed
+		else:
+			velocity.x = 0; velocity.z = 0
+		_face_target(to_player, delta)
+		if _bolt_timer <= 0.0:
+			_bolt_timer = WATCHER_SHOOT_CD
+			_fire_watcher_bolt()
 	elif action == "retreat":
 		_state = "wander"
 		# Flee back toward spawn at full chase speed
@@ -524,6 +572,16 @@ func _pick_wander_target() -> void:
 	var dist := rng.randf_range(2.0, 7.0)
 	_wander_target = _spawn_pos + Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 	_wander_timer = rng.randf_range(2.0, 5.0)
+
+func _fire_watcher_bolt() -> void:
+	if not _player or not is_instance_valid(_player):
+		return
+	var bolt := Area3D.new()
+	bolt.set_script(WATCHER_BOLT_SCRIPT)
+	bolt.global_position = global_position + Vector3(0, 1.0, 0)
+	get_tree().current_scene.add_child(bolt)
+	var dir := (_player.global_position + Vector3(0, 0.9, 0)) - bolt.global_position
+	bolt.launch(dir.normalized(), damage, self)
 
 func _do_attack() -> void:
 	_attack_timer = attack_cooldown
@@ -766,6 +824,15 @@ func _utility_action(dist: float) -> String:
 	# Retreat: critically wounded AND player is nearby — flee to spawn
 	if float(hp) / float(max_hp) < 0.18 and dist < aggro_range * 1.5:
 		return "retreat"
+
+	# Watcher: ranged stance — stay at ideal distance, never melee
+	if _ranged_mode:
+		if dist < WATCHER_FLEE_DIST:
+			return "retreat"   # flee if player closes in
+		if dist < aggro_range and (detection_level >= DETECT_THRESHOLD or _in_los):
+			return "watcher_range"  # hold distance + fire bolts
+		return "wander"
+
 	# Attack: close enough to swing
 	if dist <= attack_range:
 		return "attack"
@@ -813,6 +880,10 @@ const _NORMALIZE_TARGET_BY_KIND := {
 	# ── Small enemies (1.20m) ─────────────────────────────────────────────────
 	"goblin":           1.20, # SIZE_STANDARDS §2 small enemy — char-spec 2026-05-08
 	"goblin_scout":     1.20, # SIZE_STANDARDS §2 small enemy — char-spec 2026-05-08
+	# ── Echoing Ruins archetypes ──────────────────────────────────────────────
+	"drifter":          1.10, # shambling melee; smaller than goblin — feels weak
+	"watcher":          1.40, # robed ranged; medium height for visual read
+	"reactive_scout":   1.20, # nimble and small — reads as fast/dangerous
 	# ── Quadrupeds ────────────────────────────────────────────────────────────
 	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped
 }

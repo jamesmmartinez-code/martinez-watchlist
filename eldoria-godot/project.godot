@@ -18,6 +18,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 Audio="*res://scripts/Audio.gd"
 GameBrain="*res://scripts/GameBrain.gd"
 SkillTree="*res://scripts/SkillTree.gd"
+Juice="*res://scripts/Juice.gd"
 
 [application]
 
