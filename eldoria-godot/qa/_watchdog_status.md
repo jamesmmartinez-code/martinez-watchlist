@@ -1,37 +1,49 @@
-# Watchdog 2026-05-10T07:38Z
+# Watchdog 2026-05-10T13:39Z
+
+## Active Agent Health
 
 | Agent | Status | Last Run | Interval |
 |-------|--------|----------|----------|
-| eldoria-nightly-builder | ✅ HEALTHY | 4m ago | 30min |
-| eldoria-polisher | ✅ HEALTHY | 33m ago | 45min |
-| eldoria-qa-triage | ✅ HEALTHY | 1m ago | 30min |
-| eldoria-integrator | ✅ HEALTHY | 4m ago | 30min |
-| eldoria-character-specialist | ✅ HEALTHY | 31m ago | 60min |
-| eldoria-physics-engineer | ✅ HEALTHY | 30m ago | 60min |
-| eldoria-scale-engineer | ✅ HEALTHY | 27m ago | 60min |
-| eldoria-agent-watchdog | ✅ HEALTHY | current | 30min |
-| eldoria-art-director | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-lore-keeper | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-environment-specialist | ⏸ PAUSED-INTENTIONAL | — | 10min |
-| eldoria-audio-engineer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-architect | ⏸ PAUSED-INTENTIONAL | — | 60min |
-| eldoria-quest-writer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-item-designer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-bestiary-designer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-recipe-designer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-event-designer | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-player-experience | ⏸ PAUSED-INTENTIONAL | — | 30min |
-| eldoria-canon-qa | ⏸ PAUSED-INTENTIONAL | — | 5min |
-| eldoria-equipment-visualizer | ⏸ PAUSED-INTENTIONAL | — | 15min |
-| eldoria-animation-sourcer | ⏸ PAUSED-INTENTIONAL | — | 20min |
-| eldoria-playtest | ⏸ PAUSED-INTENTIONAL | — | 25min |
-| eldoria-substance-materials | ⏸ PAUSED-INTENTIONAL | — | 30min |
+| eldoria-nightly-builder | ✅ HEALTHY (manual-exclude) | 5m ago | 30m |
+| eldoria-polisher | ✅ HEALTHY (manual-exclude) | 34m ago | 45m |
+| eldoria-qa-triage | ✅ HEALTHY | 2m ago | 30m |
+| eldoria-integrator | ✅ HEALTHY | 5m ago | 30m |
+| eldoria-character-specialist | ✅ HEALTHY | 33m ago | 60m |
+| eldoria-physics-engineer | ✅ HEALTHY | 33m ago | 60m |
+| eldoria-scale-engineer | ✅ HEALTHY | 32m ago | 60m |
+| eldoria-agent-watchdog | ✅ HEALTHY | 1m ago | 30m |
+
+## Paused Agents (Intentional)
+
+| Agent | Reason |
+|-------|--------|
+| eldoria-art-director | User disabled 2026-05-06; GHA covers content |
+| eldoria-lore-keeper | User disabled 2026-05-06; GHA covers lore |
+| eldoria-architect | User disabled 2026-05-06; stuck |
+| eldoria-quest-writer | Replaced by GHA eldoria-quest-designer.yml |
+| eldoria-item-designer | Moved to GHA |
+| eldoria-bestiary-designer | Moved to GHA |
+| eldoria-recipe-designer | Moved to GHA |
+| eldoria-event-designer | Moved to GHA |
+| eldoria-player-experience | User disabled 2026-05-06; stuck |
+| eldoria-canon-qa | User disabled 2026-05-06; stuck |
+| eldoria-equipment-visualizer | User disabled 2026-05-06; stuck |
+| eldoria-animation-sourcer | User disabled 2026-05-06; stuck |
+| eldoria-playtest | User disabled 2026-05-06; stuck |
+| eldoria-substance-materials | Disabled (no Substance exports) |
 
 ## Infrastructure
-- **PAT**: ✅ ok (HTTP 200)
-- **/dev/shm**: ⚠️ sandbox disk full (useradd: no space left on device)
-- **CI failures (last 5 runs)**: 0 (latest run queued/in-progress, no failures seen)
-- **Action taken**: None — all agents healthy, no re-arming needed
 
-## Summary
-8 healthy / 0 overdue / 0 stuck / 16 paused-intentional
+| Check | Result |
+|-------|--------|
+| PAT | ✅ ok |
+| /dev/shm | 0% used (512M free) |
+| CI failures (last 5) | 0 |
+
+## Actions Taken
+
+- /dev/shm cleaned (no stale locks found)
+- No STUCK agents detected — no re-arms needed
+
+---
+_All 8 active agents healthy. No action required._
