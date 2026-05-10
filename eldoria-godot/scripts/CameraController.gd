@@ -13,7 +13,7 @@ class_name CameraController
 @export var smooth_lerp: float = 0.22
 
 var yaw: float = 0.0
-var pitch: float = 0.42
+var pitch: float = 0.55
 var dragging: bool = false
 
 @onready var _cam: Camera3D = $Camera3D
@@ -41,7 +41,7 @@ func _ready() -> void:
 
 	# FIX: Pre-position camera on frame 0 so look_at never fires from zero distance
 	if follow_target:
-		global_position = follow_target.global_position + Vector3(0, 1.4, 0)
+		global_position = follow_target.global_position + Vector3(0, 1.6, 0)
 		_update_camera_transform()
 
 	# Tell Player about us so it can use camera-relative movement
@@ -60,7 +60,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			distance = clamp(distance + 1.5, min_distance, max_distance)
 	elif event is InputEventMouseMotion and dragging:
 		yaw   -= event.relative.x * sensitivity
-		pitch  = clamp(pitch + event.relative.y * sensitivity, 0.10, 1.15)
+		pitch  = clamp(pitch + event.relative.y * sensitivity, 0.25, 1.15)
 
 func _process(_delta: float) -> void:
 	if not follow_target or not is_instance_valid(follow_target):
@@ -70,7 +70,7 @@ func _process(_delta: float) -> void:
 		else:
 			return
 
-	var target_pos: Vector3 = follow_target.global_position + Vector3(0, 1.4, 0)
+	var target_pos: Vector3 = follow_target.global_position + Vector3(0, 1.6, 0)
 	global_position = global_position.lerp(target_pos, smooth_lerp)
 	rotation = Vector3(0, yaw, 0)
 	_update_camera_transform()
