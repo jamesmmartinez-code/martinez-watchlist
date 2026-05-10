@@ -9,7 +9,7 @@
 > If your intended change re-introduces any pattern listed below, your
 > commit will be rejected by Canon QA with a `[REGRESSION:]` flag.
 
-Last updated: **2026-05-06** by james-via-claude
+Last updated: **2026-05-10** by james-via-claude (§5 camera fix added)
 
 ---
 
@@ -106,7 +106,24 @@ In order of fix:
 
 ---
 
-## §5 — Open follow-ups (not blockers, just queued)
+## §5 — Post-2026-05-06 fixes (added as they land)
+
+16. **`rendering_light_culler.cpp:544` "Condition !res is true" spam + black screen on first frame (Web/WASM).**
+    **Root cause:** `CameraController.gd` had a baked-in Camera3D transform `(0, 4, 7)` in the scene file.
+    On frame 0, `_cam.position` still held that baked value but `global_position` was origin, so
+    `look_at(origin, UP)` fired with `cam_world == look_target` → zero-length direction vector →
+    invalid Camera3D projection matrix → Godot WebGL renderer spammed the error every frame
+    AND left the viewport black until the player moved.
+    **Fix (commit `8d3b307`, 2026-05-09):**
+    - Zero `_cam.position/near/far` in `_ready()` so the script fully owns camera state.
+    - Extract `_update_camera_transform()` and call it from both `_ready()` and `_process()`.
+    - Guard `look_at` with `distance_squared_to(look_target) > 0.0001` so degenerate configs are silently skipped.
+    **Rule:** Never bake a non-zero Camera3D transform in the scene file when a script controls it.
+    Pre-call `_update_camera_transform()` from `_ready()` so the camera is pre-positioned before the first `_process()` tick.
+
+---
+
+## §6 — Open follow-ups (not blockers, just queued)
 
 - White-particle re-enable: requires `_make_soft_particle_texture()` to be wired into ALL particle materials before the methods can run again
 - NPC interactivity: WorldBuilder doesn't add Label3D/InteractArea children to programmatic NPCs (so no name labels, no E-to-talk). Track in qa/_canon_flags.md
