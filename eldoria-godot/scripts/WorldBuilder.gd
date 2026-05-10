@@ -3757,7 +3757,7 @@ func _scatter_mushrooms(count: int) -> void:
 		var dist := rng.randf_range(16, 55)
 		var center := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 		var pod_size: int = rng.randi_range(2, 4)
-		for mi in pod_size:
+		for mushroom_idx in pod_size:
 			var inst: Node = packed.instantiate()
 			if inst == null:
 				continue
