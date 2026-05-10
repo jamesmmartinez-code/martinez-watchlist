@@ -214,6 +214,73 @@ func register_echoing_ruins_quests() -> void:
 	)
 
 # ==========================================================================
+# Procedural quest generation
+# ==========================================================================
+# Called by NarrativeSystem when notable world events happen.
+# Each generator uses a deterministic ID so duplicate quests are silently
+# skipped by the existing add_quest() guard.
+
+func generate_from_nemesis(nd: NemesisData) -> void:
+	# One active revenge quest per nemesis at a time.
+	var id := "revenge_" + nd.nemesis_id
+	if is_active(id) or is_completed(id):
+		return
+	var desc: String
+	if nd.killed_player:
+		desc = "Take revenge on %s — they have claimed your life." % nd.nemesis_name
+	elif nd.escaped:
+		desc = "%s escaped your blade. Finish what you started." % nd.nemesis_name
+	else:
+		desc = "Hunt down %s before they grow stronger." % nd.nemesis_name
+
+	var xp_reward := 80 + nd.level * 40
+	add_quest(
+		QuestData.make(id, "Nemesis: " + nd.nemesis_name, desc)
+			.add_kill_objective(nd.enemy_kind, 1)
+			.set_rewards({"xp": xp_reward})
+	)
+
+func generate_from_zone_capture(zone_id: String, capturing_faction: String, lost_faction: String) -> void:
+	var id := "retake_" + zone_id
+	if is_active(id) or is_completed(id):
+		return
+	# Only generate if the capturing faction is hostile to the player
+	if is_instance_valid(FactionSystem) and not FactionSystem.is_hostile("player", capturing_faction):
+		return
+	var faction_name := capturing_faction.capitalize()
+	add_quest(
+		QuestData.make(id, "Zone Under Siege",
+			"The %s have seized %s. Drive them back." % [faction_name, zone_id.replace("_", " ")])
+			.add_kill_objective(FactionSystem.get_faction_for_kind(capturing_faction) \
+				if FactionSystem.KIND_TO_FACTION_ID.values().has(capturing_faction) else "drifter", 4)
+			.set_rewards({"xp": 70, "rep": {"faction": lost_faction, "amount": 15}})
+	)
+
+func generate_from_faction_war(attacker_faction: String, defender_faction: String) -> void:
+	var id := "faction_war_" + attacker_faction + "_vs_" + defender_faction
+	if is_active(id) or is_completed(id):
+		return
+	var af := attacker_faction.capitalize()
+	var df := defender_faction.capitalize()
+	add_quest(
+		QuestData.make(id, "Open War",
+			"The %s are attacking the %s. Choose a side or seize the chaos." % [af, df])
+			.add_kill_objective("drifter", 6)
+			.set_rewards({"xp": 110})
+	)
+
+func generate_corruption_quest() -> void:
+	var id := "purge_corruption_%d" % (int(WorldState.day) if is_instance_valid(WorldState) else 0)
+	if is_active(id) or is_completed(id):
+		return
+	add_quest(
+		QuestData.make(id, "Cleanse the Dark",
+			"The corruption spreads. Defeat the undead corrupting these lands.")
+			.add_kill_objective("skeleton", 5)
+			.set_rewards({"xp": 100})
+	)
+
+# ==========================================================================
 # Save / load
 # ==========================================================================
 func get_save_data() -> Dictionary:

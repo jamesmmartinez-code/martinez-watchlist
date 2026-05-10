@@ -20,6 +20,8 @@ var gravity: float = 20.0
 var current_speed: float
 var is_attacking: bool = false
 var is_dead: bool = false
+# Last enemy to land a hit — used by NemesisSystem to mark the killer
+var _last_attacker: Node = null
 # Stuck-recovery timers (kids need this to never feel locked out)
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
@@ -898,7 +900,9 @@ func _play_anim(name: String) -> void:
 # ────────────────────────────────────────────────────────────────────────
 # Damage / death / respawn
 # ────────────────────────────────────────────────────────────────────────
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, source: Node = null) -> void:
+	if source != null:
+		_last_attacker = source
 	if is_dead:
 		return
 	# Armor reduction (formula: armor / (armor + 50))
@@ -954,6 +958,14 @@ func _die() -> void:
 	_play_anim("die")
 	call_deferred("save_game")  # save just before respawn
 	get_tree().call_group("world", "play_sfx", "player_death")
+	# ── Nemesis + narrative hooks ─────────────────────────────────────────────
+	if is_instance_valid(NemesisSystem) and is_instance_valid(_last_attacker):
+		NemesisSystem.on_player_killed_by(_last_attacker)
+	if is_instance_valid(NarrativeSystem):
+		var attacker_data := {}
+		if is_instance_valid(_last_attacker):
+			attacker_data["attacker"] = _last_attacker
+		NarrativeSystem.record_event("player_died", attacker_data)
 	# Death overlay
 	get_tree().call_group("world", "show_death_overlay")
 	await get_tree().create_timer(2.5).timeout

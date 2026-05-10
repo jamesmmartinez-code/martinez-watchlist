@@ -168,6 +168,10 @@ var faction_id: String = ""
 # adapt tick only if the player is far away / not in aggro range.
 var _faction_target: Enemy = null
 
+# ── Nemesis ───────────────────────────────────────────────────────────────
+# Set by NemesisSystem.register_enemy() — null for non-tracked enemies.
+var nemesis_data = null   # NemesisData resource (typed loosely to avoid circular load)
+
 signal died(enemy)
 
 func _ready() -> void:
@@ -195,6 +199,15 @@ func _ready() -> void:
 	# ── Faction allegiance ────────────────────────────────────────────────────
 	if is_instance_valid(FactionSystem):
 		faction_id = FactionSystem.get_faction_for_kind(enemy_kind)
+	# ── Nemesis registration ──────────────────────────────────────────────────
+	# Director-spawned enemies are registered AFTER _ready runs so stats are
+	# final.  Traits are applied on top of already-randomised stats.
+	if is_instance_valid(NemesisSystem) and nemesis_data == null:
+		call_deferred("_register_as_nemesis_candidate")
+	elif nemesis_data != null and is_instance_valid(NemesisSystem):
+		# Respawned nemesis — apply traits immediately (data already set)
+		NemesisSystem.apply_traits(self)
+		NemesisSystem.apply_visuals(self)
 	# ── Kind-specific mode flags ─────────────────────────────────────────────
 	_ranged_mode   = (enemy_kind == "watcher")
 	_reactive_mode = (enemy_kind == "reactive_scout")
@@ -783,7 +796,7 @@ func _do_attack() -> void:
 		# Adaptation: anti-air — bonus 40% damage when player is airborne
 		if blackboard.get("anti_air", false) and not _player.is_on_floor():
 			dmg = int(dmg * 1.40)
-		_player.take_damage(dmg)
+		_player.take_damage(dmg, self)   # pass self so Player tracks _last_attacker for NemesisSystem
 		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
 		var dir := (_player.global_position - global_position).normalized()
 		_player.velocity += dir * 4.5
@@ -929,6 +942,14 @@ func _die(source: Node) -> void:
 	xp_pop.position = global_position + Vector3(0, 2.0, 0)
 	get_tree().current_scene.add_child(xp_pop)
 	died.emit(self)
+	# ── Nemesis + narrative hooks ─────────────────────────────────────────────
+	if is_instance_valid(NemesisSystem):
+		NemesisSystem.on_enemy_defeated(self)
+	if is_instance_valid(NarrativeSystem):
+		var evt_data := {"faction": faction_id, "kind": enemy_kind}
+		if nemesis_data != null:
+			evt_data["nemesis"] = nemesis_data
+		NarrativeSystem.record_event("enemy_killed", evt_data)
 	# Notify quest system
 	get_tree().call_group("quest_listeners", "on_enemy_killed", enemy_kind)
 	# run-31 (Builder): set world flag when Crystal Guardian is slain so the
@@ -1085,6 +1106,15 @@ func _utility_action(dist: float) -> String:
 	if detection_level >= DETECT_THRESHOLD or blackboard.has("last_seen_pos"):
 		return "chase"
 	return "wander"
+
+func _register_as_nemesis_candidate() -> void:
+	# Called deferred from _ready() so stats are fully resolved first.
+	# Only director-spawned enemies (those in the "enemies" group and not
+	# named bosses) are eligible for nemesis tracking.
+	if not is_in_group("enemies"):
+		return
+	if is_instance_valid(NemesisSystem) and nemesis_data == null:
+		NemesisSystem.register_enemy(self)
 
 func _resolve_adaptive_cooldown() -> void:
 	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")

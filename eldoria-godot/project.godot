@@ -26,6 +26,8 @@ QuestSystem="*res://scripts/QuestSystem.gd"
 EnemyDirector="*res://scripts/EnemyDirector.gd"
 FactionSystem="*res://scripts/FactionSystem.gd"
 WorldState="*res://scripts/WorldState.gd"
+NemesisSystem="*res://scripts/NemesisSystem.gd"
+NarrativeSystem="*res://scripts/NarrativeSystem.gd"
 
 [application]
 
