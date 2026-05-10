@@ -356,3 +356,31 @@ Next: NPC memory or god-rays
 - QA 2026-05-09T02:21Z: Build=success (pages-build-and-deployment, 02:20Z), Pages=built (02:20Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+Player.gd+CharacterSelect.gd, cannot delete; already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-08T04:29Z: Build=success (#1128, 04:27Z), Pages=built (04:26Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED, already logged as tech debt. No new action taken this run. ✅ All systems green.
 - QA 2026-05-09T04:33Z: Build=queued/in_progress (pages-build-and-deployment queued after 2 errored Pages builds), Pages=building (recovering from errored state at 04:32Z). §15: Hero.glb 29MiB > 20MiB soft cap — REFERENCED in Main.tscn+CharacterSelect.gd+Player.gd, cannot delete; already logged as tech debt. No new action taken this run. ⚠️ Pages recovering.
+
+## 2026-05-10 Auto: run 36 — Dynamic Weather System
+
+I'm building: Dynamic Weather System (new system — feeds THEME §1 §3 §12 §13)
+THEME §1 cited: painterly rain streaks (soft alpha gradient texture), no opaque quads
+THEME §3 cited: overcast → stone-grey sky tint; rain → blue-slate ambient; heavy_rain → 40% sun damper
+THEME §12 cited: all transitions lerp never snap; rain emitter amount_ratio breathes; _process-driven
+THEME §13 cited: rain emitter at y=8m (canopy height), particles die at y=0 (ground)
+
+Files changed:
+  eldoria-godot/scripts/Weather.gd         — NEW: 258-line weather system
+  eldoria-godot/scripts/WorldBuilder.gd    — +_build_weather() function + _safe_call in _ready
+
+5-output check:
+  i.  Integration  — _safe_call("_build_weather") in WorldBuilder._ready (idempotent, after _build_player_home)
+  ii. Schema       — WEEKLY_CYCLE Array[String] (7-day pattern); STATE_PARAMS Dictionary (4 states × 4 params)
+  iii.Feedback     — _weather_toast() fires via _show_toast on state change each new world_day
+  iv. Eval         — is_raining() + get_current_state() public accessors; player_home group notified via set_meta
+  v.  2+ hooks     — "weather" group; player_home group set_meta("weather_raining"); god_ray shafts inherit sun_mul
+                     correction; PROBLEMS_LOG §1.3 compliant streak texture (_make_streak_texture)
+
+Canon checks:
+  PROBLEMS_LOG §1.1 — no PackedStringArray const; WEEKLY_CYCLE: Array[String]; no := Variant traps
+  PROBLEMS_LOG §1.3 — _make_streak_texture() prevents white-blob quads (albedo_texture mandatory)
+  SIZE_STANDARDS §1 — player height NOT touched (1.10m locked)
+  AGENT_CANON_PREAMBLE — Weather.gd not in "never blind-rewrite" list; WorldBuilder touch is additive only
+
+Next run picks up: NPC ambient bark rain reactions, or Crystal Caves dungeon polish

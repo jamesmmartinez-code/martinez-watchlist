@@ -168,3 +168,27 @@ Achievements.gd new entries:
   gift_giver           — predicate npc_relationship_min >= 1 → title "the Generous" (priority 12)
   beloved_of_briarwood — predicate beloved_of_briarwood (3+ NPCs at score >= 3) → title "Friend of Briarwood" (priority 38)
   New eval branch: "beloved_of_briarwood" → npc_count_with_relationship_above(3) >= 3
+
+## Weather System (run 36)
+Weather.gd: extends Node3D, class_name Weather
+  group "weather" — spawned by WorldBuilder._build_weather() as child of World root
+  Idempotent spawn: skips if parent.has_node("Weather")
+
+WEEKLY_CYCLE: Array[String] — index = world_day MOD 7
+  [0]=clear [1]=clear [2]=overcast [3]=clear [4]=rain [5]=rain [6]=heavy_rain
+
+STATE_PARAMS: Dictionary — 4 states × 4 visual params
+  fog_add: float   — additive fog density on top of World._process baseline (0.0020)
+  fog_em:  float   — multiplier on volumetric_fog_emission_energy
+  sun_mul: float   — multiplier on sun.light_energy (heavy_rain=0.35 = 65% dimmer)
+  rain_density: float — GPUParticles3D.amount_ratio for rain emitter (0.0=off, 1.0=full)
+
+Rain emitter: GPUParticles3D, 600 particles, lifetime=1.8s
+  Emission shape: box 70m × 1m × 70m at y=8m (canopy height)
+  Particle texture: _make_streak_texture() — 4×16 sin-alpha gradient (§1.3 compliant)
+  Color: Color(0.76, 0.88, 0.96, 0.50) — cool blue-white semi-transparent
+
+Transition: lerp alpha = 0.08 * delta * 60 per frame (smooth, never hard-snap — THEME §12)
+Toast messages: fires _show_toast() on state change (new world_day)
+player_home hook: set_meta("weather_raining", bool) on all nodes in group "player_home"
+Public accessors: get_current_state() -> String, is_raining() -> bool

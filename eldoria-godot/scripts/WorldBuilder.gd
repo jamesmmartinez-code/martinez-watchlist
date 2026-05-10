@@ -859,6 +859,7 @@ func _ready() -> void:
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
+	_safe_call("_build_weather")        # Builder run 36 — Weather System
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
@@ -4210,3 +4211,29 @@ func _check_and_normalize(body: Node, target_height: float) -> void:
 			var new_s: float = clamp(avg_cur * (target_height / aabb.size.y), 0.001, 5.0)  # scale-eng 2026-05-05: floor 0.05 → 0.001
 			c.scale = Vector3(new_s, new_s, new_s)
 			break
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Weather System — Builder run 36
+# ════════════════════════════════════════════════════════════════════════
+# Creates a Weather node as a child of the world root.
+# Weather.gd owns all rain particles, fog offsets, and state transitions.
+# Idempotent — if a Weather node already exists (e.g. hand-placed in scene)
+# this call is a no-op.
+func _build_weather() -> void:
+	var parent: Node = get_parent()
+	if parent == null:
+		return
+	# Idempotent: skip if already present
+	if parent.has_node("Weather"):
+		_dlog("Weather node already exists — skipping")
+		return
+	var weather_script: Script = load("res://scripts/Weather.gd")
+	if weather_script == null:
+		push_warning("[WorldBuilder] Weather.gd not found — weather system skipped")
+		return
+	var weather: Node3D = Node3D.new()
+	weather.set_script(weather_script)
+	weather.name = "Weather"
+	parent.add_child(weather)
+	_dlog("Weather system spawned (state: clear — transitions on new world_day)")
