@@ -1,4 +1,6 @@
 ## Tech debt
+- QA 2026-05-10T13:38Z: Build=None (no build-eldoria.yml runs found) | Oversized: eldoria-godot/assets/models/Hero.glb (>20MiB hard cap) — REFERENCED in Main.tscn (player model); cannot delete. Tech debt logged in multiple prior runs. No new action taken — awaiting manual LOD/compression fix.
+
 - QA 2026-05-10T06:08Z: Build=success | Oversized: eldoria-godot/assets/models/Hero.glb (>20MiB hard cap) — REFERENCED in Main.tscn (player model), Player.gd, CharacterSelect.gd; cannot delete. Requires LOD/compression fix (e.g. glTF draco compression or lower-poly mesh).
 
 - QA 2026-05-10T05:37Z: Build=None (no build-eldoria.yml runs found) | Oversized: eldoria-godot/assets/models/Hero.glb (>20MiB hard cap) — REFERENCED in Main.tscn, Player.gd, CharacterSelect.gd; cannot delete. Tech debt already logged in multiple prior runs. No new action taken — awaiting manual LOD/compression fix.
