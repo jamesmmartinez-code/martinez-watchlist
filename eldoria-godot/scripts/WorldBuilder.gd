@@ -3062,6 +3062,29 @@ func _process(delta: float) -> void:
 		if mush3d:
 			var mb: float = 1.0 + sin(_t * 1.1 + mush3d.position.x * 0.4 + mush3d.position.z * 0.7) * 0.03
 			mush3d.scale = Vector3(1.0, mb, 1.0)
+	# REFINE: motion & life — village barrel creak-rock (THEME §12).
+	# Village barrels joined group "village_barrels" since run N but that group was
+	# never read in _process — every barrel sat perfectly static while lanterns,
+	# banners, ferns, grass, and mushrooms all moved around them. A static cargo
+	# prop surrounded by animated neighbours reads as a frozen-game artefact.
+	# Real wooden barrels on cobblestone are never fully still: stone is uneven,
+	# hoops shrink and swell, and the same breeze that catches the banners brushes
+	# the courtyard. A slow Z-tilt (±1.8°, 0.032 rad) with a second micro-harmonic
+	# (±0.6°) at a non-harmonic ratio (1.0 / 2.47 ≈ 0.405) gives each barrel a
+	# different beat from its neighbour while staying well inside "cargo at rest"
+	# semantics (canvas-top barrels tipping at the dock do ±5°; these are settled
+	# village barrels so we stay at ⅓ of that). Frequency 0.41 rad/s ≈ 15.3s
+	# period — slower than the lantern rock (0.9 rad/s) because barrels are heavier.
+	# Per-barrel phase lifted from world position so two barrels standing side-by-side
+	# (pairs near houses/stable/market) never rock in unison.
+	for barrel in get_tree().get_nodes_in_group("village_barrels"):
+		var b3d: Node3D = barrel as Node3D
+		if b3d == null:
+			continue
+		var bphase: float = b3d.position.x * 0.43 + b3d.position.z * 0.61  # REFINE: per-barrel phase, spatially varied
+		var brock: float = sin(_t * 0.41 + bphase) * 0.032 + sin(_t * 1.01 + bphase * 1.7) * 0.010  # REFINE: dual-harmonic creak, incommensurable ratio
+		b3d.rotation.z = brock
+
 	# Campfire light flicker
 	for f in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
