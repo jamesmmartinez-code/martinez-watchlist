@@ -128,11 +128,11 @@ var playstyle: Dictionary = {
 	"dash_heavy": 0,   # Dash Attack / dash skill fires
 }
 # Per-skill usage counters (parallel to SKILLS array)
-var _skill_use_counts: Array[int] = [0, 0, 0, 0]
+var _skill_use_counts: Array = [0, 0, 0, 0]
 # Ability mutations unlocked through play — never cleared (saved with game)
 var _mutations: Dictionary = {}
 # Early-unlock overrides — skills whose level gate has been bypassed via play
-var _early_unlocks: Array[int] = []
+var _early_unlocks: Array = []
 # Adaptation tick — we check unlocks/mutations every ADAPT_INTERVAL seconds
 var _adapt_timer: float = 0.0
 const ADAPT_INTERVAL: float = 10.0
@@ -180,12 +180,12 @@ func _ready() -> void:
 	if not camera_pivot:
 		var root := get_tree().current_scene
 		if root:
-			var cp_a = root.get_node_or_null("CameraController")
-			if cp_a == null:
-				cp_a = root.get_node_or_null("CameraPivot")
-			if cp_a == null:
-				cp_a = root.get_node_or_null("Camera")
-			camera_pivot = cp_a
+			if root.get_node_or_null("CameraController") != null:
+				camera_pivot = root.get_node_or_null("CameraController")
+			elif root.get_node_or_null("CameraPivot") != null:
+				camera_pivot = root.get_node_or_null("CameraPivot")
+			elif root.get_node_or_null("Camera") != null:
+				camera_pivot = root.get_node_or_null("Camera")
 	# Auto-wire animation_player — search any child for an AnimationPlayer.
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
@@ -305,12 +305,12 @@ func _physics_process(delta: float) -> void:
 	if not camera_pivot or not is_instance_valid(camera_pivot):
 		var root := get_tree().current_scene
 		if root:
-			var cp_b = root.get_node_or_null("CameraController")
-			if cp_b == null:
-				cp_b = root.get_node_or_null("CameraPivot")
-			if cp_b == null:
-				cp_b = root.get_node_or_null("Camera")
-			camera_pivot = cp_b
+			if root.get_node_or_null("CameraController") != null:
+				camera_pivot = root.get_node_or_null("CameraController")
+			elif root.get_node_or_null("CameraPivot") != null:
+				camera_pivot = root.get_node_or_null("CameraPivot")
+			elif root.get_node_or_null("Camera") != null:
+				camera_pivot = root.get_node_or_null("Camera")
 	var direction := Vector3.ZERO
 	if input_dir != Vector2.ZERO:
 		if camera_pivot and is_instance_valid(camera_pivot):
