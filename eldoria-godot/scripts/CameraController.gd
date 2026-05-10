@@ -32,6 +32,9 @@ class_name CameraController
 
 var _yaw:   float = 0.0
 var _pitch: float = 0.85   # radians; 0 = horizon, π/2 = straight down
+# Camera shake — set via shake(); decays in _process
+var _shake_amt:   float = 0.0
+var _shake_timer: float = 0.0
 
 func _ready() -> void:
 	# Ensure Camera3D has no stale baked transform (script owns placement entirely).
@@ -80,6 +83,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		_yaw  -= event.relative.x * sensitivity
 		_pitch = clamp(_pitch + event.relative.y * sensitivity, 0.20, 1.35)
 
+func shake(amount: float = 0.02, duration: float = 0.18) -> void:
+	_shake_amt   = amount
+	_shake_timer = duration
+	_shake_dur   = duration
+
+var _shake_dur: float = 0.18   # full duration, used to scale t
+
 func _process(_delta: float) -> void:
 	# Re-acquire follow target if it was swapped out.
 	if not follow_target or not is_instance_valid(follow_target):
@@ -97,6 +107,15 @@ func _process(_delta: float) -> void:
 	rotation.y = _yaw
 	if _pitch_node:
 		_pitch_node.rotation.x = _pitch
+
+	# Camera shake — random jitter proportional to remaining time fraction
+	if _shake_timer > 0.0:
+		_shake_timer = maxf(0.0, _shake_timer - _delta)
+		var t: float   = _shake_timer / maxf(_shake_dur, 0.001)  # 1→0
+		var jitter: float = _shake_amt * t
+		rotation.y += randf_range(-jitter, jitter)
+		if _pitch_node:
+			_pitch_node.rotation.x += randf_range(-jitter * 0.5, jitter * 0.5)
 
 	_apply_camera_transform()
 

@@ -20,8 +20,12 @@ var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
 var _jam_timer: float = 0.0
 # Skill system
-var _skill_timers: Array[float] = [0.0, 0.0, 0.0]
+var _skill_timers: Array[float] = [0.0, 0.0, 0.0, 0.0]
 var _dash_vel:     Vector3      = Vector3.ZERO
+# Combo chain (Slash only — auto-resets after COMBO_WINDOW seconds)
+var _combo_step:  int   = 0
+var _combo_timer: float = 0.0
+const COMBO_WINDOW: float = 1.1   # seconds before chain resets
 var last_position: Vector3 = Vector3.ZERO  # Physics: track for stuck-detection auto-recovery
 
 # Stats
@@ -45,31 +49,47 @@ var gold: int = 50
 # dash_speed launches the player forward during windup so Dash Attack
 # actually covers ground before the hit frame fires.
 const SKILLS: Array = [
-	{
+	{   # ── 0: LMB / key 1 ───────────────────────────────────────────────
 		"name":       "Slash",
-		"damage_mult": 1.0,  "cooldown": 0.6,
-		"animation":  "attack",
-		"windup":     0.15,  "recovery": 0.25,
+		"damage_mult": 1.0,  "cooldown": 0.55,
+		"animation":  "attack",       # _play_anim upgrades to attack_1/2/3 for combo
+		"windup":     0.12,  "recovery": 0.22,
 		"mp_cost":    0,     "dash_speed": 0.0,
 		"range_bonus": 0.0,  "arc_bonus": 0.0,
+		"projectile": false, "combo": true,         # 3-hit chain on repeated press
 	},
-	{
+	{   # ── 1: key 2 ─────────────────────────────────────────────────────
 		"name":       "Heavy Strike",
-		"damage_mult": 2.4,  "cooldown": 2.8,
+		"damage_mult": 2.6,  "cooldown": 2.8,
 		"animation":  "attack",
-		"windup":     0.40,  "recovery": 0.55,
+		"windup":     0.42,  "recovery": 0.55,
 		"mp_cost":    5,     "dash_speed": 0.0,
-		"range_bonus": 0.5,  "arc_bonus": -30.0,   # narrower = more precise
+		"range_bonus": 0.5,  "arc_bonus": -35.0,   # precise narrow cone
+		"projectile": false, "combo": false,
 	},
-	{
+	{   # ── 2: key 3 ─────────────────────────────────────────────────────
 		"name":       "Dash Attack",
 		"damage_mult": 1.6,  "cooldown": 4.5,
 		"animation":  "run",
 		"windup":     0.08,  "recovery": 0.32,
-		"mp_cost":    8,     "dash_speed": 9.0,    # launches forward
+		"mp_cost":    8,     "dash_speed": 9.0,
 		"range_bonus": 1.2,  "arc_bonus": 40.0,    # wide sweep after dash
+		"projectile": false, "combo": false,
+	},
+	{   # ── 3: key 4 ─────────────────────────────────────────────────────
+		"name":       "Fireball",
+		"damage_mult": 1.8,  "cooldown": 5.0,
+		"animation":  "attack",
+		"windup":     0.28,  "recovery": 0.35,
+		"mp_cost":    12,    "dash_speed": 0.0,
+		"range_bonus": 0.0,  "arc_bonus": 0.0,
+		"projectile": true,  "combo": false,        # spawns Fireball.gd projectile
 	},
 ]
+
+# Skills unlock progressively — index matches SKILLS above.
+# Keeps early game simple: Alden only has Slash until level 3.
+const SKILL_UNLOCK_LEVELS: Array[int] = [1, 3, 5, 7]
 
 # Inventory + equipment (managed by Inventory child node)
 var inventory: Node = null
@@ -83,6 +103,7 @@ var mounted: bool = false
 var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
+const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
 const SAFE_SPAWN := Vector3(0, 5, 10)  # Physics: safe respawn — Y>=5 so player clears terrain
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
@@ -202,6 +223,12 @@ func _physics_process(delta: float) -> void:
 		if _skill_timers[i] > 0.0:
 			_skill_timers[i] = maxf(0.0, _skill_timers[i] - delta)
 
+	# Combo window decay — reset chain if player waits too long between hits
+	if _combo_timer > 0.0:
+		_combo_timer = maxf(0.0, _combo_timer - delta)
+	if _combo_timer <= 0.0 and not is_attacking:
+		_combo_step = 0
+
 	# Stuck-recovery #3: if dead but somehow still in physics for >5s, auto-revive.
 	if is_dead:
 		_dead_timer += delta
@@ -229,8 +256,10 @@ func _physics_process(delta: float) -> void:
 		right.y   = 0
 		direction = (forward * input_dir.y + right * input_dir.x).normalized()
 
-	# Run modifier (left shift)
+	# Run modifier (left shift); halved during attack so player can't kite freely
 	current_speed = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
+	if is_attacking:
+		current_speed *= 0.40
 
 	# Stuck-recovery #4: if input is being pressed but we haven't moved horizontally for >1s,
 	# something is jamming us (collision wedge, frozen state). Teleport up 1.5m and clear velocity.
@@ -341,9 +370,10 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: int = event.keycode
 		match k:
-			KEY_1: use_skill(0)   # Slash
+			KEY_1: use_skill(0)   # Slash (combo chain)
 			KEY_2: use_skill(1)   # Heavy Strike
 			KEY_3: use_skill(2)   # Dash Attack
+			KEY_4: use_skill(3)   # Fireball
 		if k == KEY_I:
 			get_tree().call_group("world", "toggle_inventory")
 		elif k == KEY_Q:
@@ -358,88 +388,133 @@ func _input(event: InputEvent) -> void:
 # All timing, range, and damage is driven by the SKILLS table above so new
 # skills can be added by editing that array without touching this function.
 # ────────────────────────────────────────────────────────────────────────────
+func _is_skill_unlocked(idx: int) -> bool:
+	return idx < SKILL_UNLOCK_LEVELS.size() and level >= SKILL_UNLOCK_LEVELS[idx]
+
 func use_skill(idx: int) -> void:
 	if is_attacking or is_dead:
 		return
 	if idx < 0 or idx >= SKILLS.size():
 		return
+
+	# Unlock gate — skills learned as you level up
+	if not _is_skill_unlocked(idx):
+		# Spawn a small "Lv.X required" hint above the player
+		var hint := Label3D.new()
+		hint.text = "Lv.%d required" % SKILL_UNLOCK_LEVELS[idx]
+		hint.font_size = 30
+		hint.modulate = Color(0.7, 0.7, 1.0)
+		hint.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		hint.no_depth_test = true
+		hint.position = global_position + Vector3(0, 2.2, 0)
+		get_tree().current_scene.add_child(hint)
+		get_tree().create_timer(1.5).timeout.connect(func(): if is_instance_valid(hint): hint.queue_free())
+		return
+
 	var sk: Dictionary = SKILLS[idx]
 
 	# Cooldown gate
 	if _skill_timers[idx] > 0.0:
-		# TODO: play UI "not ready" sound when SFX bank has one
 		return
 
 	# MP gate
 	if mp < int(sk["mp_cost"]):
-		# TODO: flash the MP bar when HUD is wired
 		return
 
-	# Pay cost + start cooldown + lock animation
+	# Pay cost + start cooldown + lock
 	mp = max(0, mp - int(sk["mp_cost"]))
 	_skill_timers[idx] = float(sk["cooldown"])
 	is_attacking = true
 	stats_changed.emit()
 
-	_play_anim(sk["animation"])
+	# ── Combo chain (Slash only) ─────────────────────────────────────────────
+	if sk.get("combo", false):
+		_combo_step = (_combo_step % 3) + 1
+		_combo_timer = COMBO_WINDOW
+		_play_anim("attack_" + str(_combo_step))   # _play_anim falls back to "attack"
+	else:
+		_play_anim(sk["animation"])
+
 	get_tree().call_group("world", "play_sfx", "sword_swing")
 
-	# Dash Attack: launch forward immediately so the player covers ground during windup
+	# Dash: launch forward immediately so the body covers ground during windup
 	if float(sk["dash_speed"]) > 0.0:
 		var fwd_d := -global_transform.basis.z
 		fwd_d.y = 0
 		_dash_vel = fwd_d.normalized() * float(sk["dash_speed"])
 
-	# ── Wind-up (before hit frame) ──────────────────────────────────────────
+	# ── Wind-up pause ────────────────────────────────────────────────────────
 	await get_tree().create_timer(float(sk["windup"])).timeout
 	if is_dead:
 		is_attacking = false
 		_dash_vel = Vector3.ZERO
 		return
 
-	# ── Arc sweep — hit detection ───────────────────────────────────────────
-	var eff_range := attack_range + float(sk["range_bonus"])
-	var eff_arc   := attack_arc_deg + float(sk["arc_bonus"])
-	var arc_rad   := deg_to_rad(eff_arc) * 0.5
-	var fwd := -global_transform.basis.z
-	fwd.y = 0
-	fwd = fwd.normalized()
-
+	# ── Damage dispatch ──────────────────────────────────────────────────────
+	var dmg: Dictionary = _roll_damage()
+	var final_dmg: int  = int(float(dmg.amount) * float(sk["damage_mult"]))
 	var hit_count := 0
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if not is_instance_valid(enemy):
-			continue
-		var to_enemy: Vector3 = enemy.global_position - global_position
-		to_enemy.y = 0
-		var dist := to_enemy.length()
-		if dist > eff_range or dist < 0.001:
-			continue
-		var ang := fwd.angle_to(to_enemy.normalized())
-		if ang > arc_rad:
-			continue
-		# Roll damage and apply skill multiplier
-		var dmg: Dictionary = _roll_damage()
-		var final_dmg: int = int(float(dmg.amount) * float(sk["damage_mult"]))
-		if enemy.has_method("take_damage"):
-			enemy.take_damage(final_dmg, self)
-			get_tree().call_group("world", "play_sfx", "sword_hit")
-			if dmg.is_crit:
-				_spawn_crit_flash()
-			hit_count += 1
 
-	# ── Hit-stop (makes every landed hit feel weighty) ──────────────────────
-	# Scale is tiny (0.05 = 5% speed) for a frame-precise freeze rather than
-	# a visible slow-mo. Restoring is synchronous so the rest of the timeout
-	# elapses in real time — recovery lockout is unaffected.
+	if sk.get("projectile", false):
+		# Spawn projectile — it handles its own hit detection async
+		_spawn_fireball(final_dmg)
+		if dmg.is_crit:
+			_spawn_crit_flash()
+		hit_count = 1   # optimistic — feedback fires immediately
+
+	else:
+		# Arc sweep
+		var eff_range := attack_range + float(sk["range_bonus"])
+		var eff_arc   := attack_arc_deg + float(sk["arc_bonus"])
+		var arc_rad   := deg_to_rad(eff_arc) * 0.5
+		var fwd := -global_transform.basis.z
+		fwd.y = 0
+		fwd = fwd.normalized()
+
+		for enemy in get_tree().get_nodes_in_group("enemies"):
+			if not is_instance_valid(enemy):
+				continue
+			var to_enemy: Vector3 = enemy.global_position - global_position
+			to_enemy.y = 0
+			var dist := to_enemy.length()
+			if dist > eff_range or dist < 0.001:
+				continue
+			if fwd.angle_to(to_enemy.normalized()) > arc_rad:
+				continue
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(final_dmg, self)
+				get_tree().call_group("world", "play_sfx", "sword_hit")
+				if dmg.is_crit:
+					_spawn_crit_flash()
+				hit_count += 1
+
+	# ── Hit-stop — frame-precise freeze on contact ───────────────────────────
 	if hit_count > 0:
 		Engine.time_scale = 0.05
 		await get_tree().create_timer(0.06 * Engine.time_scale).timeout
 		Engine.time_scale = 1.0
 
-	# ── Recovery lockout ────────────────────────────────────────────────────
+	# ── Camera shake on heavy-impact skills (index ≥ 1) ─────────────────────
+	if hit_count > 0 and idx >= 1:
+		var shake_amt: float = 0.015 + idx * 0.008   # scales with skill power
+		if camera_pivot and camera_pivot.has_method("shake"):
+			camera_pivot.shake(shake_amt, 0.18)
+
+	# ── Recovery lockout ─────────────────────────────────────────────────────
 	await get_tree().create_timer(float(sk["recovery"])).timeout
 	is_attacking = false
 	_dash_vel = Vector3.ZERO
+
+func _spawn_fireball(dmg: int) -> void:
+	var fb := Area3D.new()
+	fb.set_script(FIREBALL_SCRIPT)
+	fb.global_position = global_position + Vector3(0, 1.0, 0)
+	get_tree().current_scene.add_child(fb)
+	# Direction = player's facing (forward axis)
+	var fire_dir := -global_transform.basis.z
+	fire_dir.y = 0
+	fire_dir = fire_dir.normalized()
+	fb.launch(fire_dir, dmg, self)
 
 # Kept for any external callers that still reference _attack() directly.
 func _attack() -> void:
@@ -480,11 +555,14 @@ func _play_anim(name: String) -> void:
 	# 2026-05-08: added humanoid/* library spellings so Hero.glb (Mixamo-retarget)
 	# finds its animations without falling back to wave/yes gestures.
 	var candidates := {
-		"idle":   ["Idle", "idle", "ANIM_idle", "humanoid/Idle", "humanoid/idle"],
-		"walk":   ["Walk", "walk", "Walking", "ANIM_walk", "humanoid/Walk", "humanoid/walk"],
-		"run":    ["Run", "run", "Running", "ANIM_run", "humanoid/Run", "humanoid/run"],
-		"attack": ["Attack", "Punch", "Slash", "humanoid/Attack"],
-		"die":    ["Death", "Die", "ANIM_death", "humanoid/Death"],
+		"idle":     ["Idle", "idle", "ANIM_idle", "humanoid/Idle", "humanoid/idle"],
+		"walk":     ["Walk", "walk", "Walking", "ANIM_walk", "humanoid/Walk", "humanoid/walk"],
+		"run":      ["Run", "run", "Running", "ANIM_run", "humanoid/Run", "humanoid/run"],
+		"attack":   ["Attack", "Punch", "Slash", "humanoid/Attack"],
+		"attack_1": ["Attack1", "attack_1", "Slash1", "Attack", "attack", "humanoid/Attack"],
+		"attack_2": ["Attack2", "attack_2", "Slash2", "Punch", "Attack", "humanoid/Attack"],
+		"attack_3": ["Attack3", "attack_3", "Slash3", "Spin", "Attack", "humanoid/Attack"],
+		"die":      ["Death", "Die", "ANIM_death", "humanoid/Death"],
 	}
 	var possible = candidates.get(name, [name])
 	for c in possible:
