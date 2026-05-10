@@ -17,6 +17,8 @@ var _gravity: float = 20.0
 var _bark_t: float = 0.0
 var _model: Node3D
 var _label: Label3D
+# REFINE: character — spawn-Y cached at _ready so the idle bob knows where to oscillate around.
+var _spawn_y: float = 0.0
 
 # REFINE: character — five-bark catchphrase pool so Ember stops sounding like a tape loop.
 # Picked uniformly per bark; no schedule change. Same bark cadence the rest of the script
@@ -61,6 +63,8 @@ func _ready() -> void:
 	# "tucked above the ear" read (THEME §13 ground-contact framing).
 	_label.position = Vector3(0, 0.95, 0)
 	add_child(_label)
+	# REFINE: character — cache ground-Y so _process idle bob oscillates around the spawn floor, not a drifting world position.
+	_spawn_y = global_position.y
 
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
@@ -108,6 +112,35 @@ func _bark() -> void:
 	# REFINE: character — pick a bark line from the catchphrase pool (replaces the single "yip!").
 	# REFINE: character — alternating ember tones per bark for tiny visual rhythm.
 	UITheme.spawn_damage_popup(get_tree().current_scene, global_position + Vector3(0, 1.5, 0), BARK_LINES[randi() % BARK_LINES.size()], BARK_COLORS[randi() % BARK_COLORS.size()], 24, 4)
+
+func _process(_delta: float) -> void:
+	# REFINE: character — THEME §12 MOTION & LIFE. Ember idle dual-harmonic body-bob.
+	# Pet.gd previously had no _process at all — Ember was a perfectly still fox when
+	# not moving (the _physics_process only fires when velocity matters). THEME §12
+	# bans "static = dead" for any living thing; a companion pet at the player's side
+	# is the highest-visibility case. Two harmonics mirror the NPC/Enemy dual-bob
+	# pattern (primary 2.513 rad/s slow chest-rise, secondary 10.982 rad/s shoulder-shift)
+	# but at ¾ amplitude (±0.014 + ±0.004 m) because Ember is a fox curled below knee
+	# height — large motion would read as floating rather than breathing.
+	# The bob ONLY fires when Ember is at rest (velocity.length() < 0.4) so it never
+	# fights _physics_process during sprinting/following (which already animates the body
+	# through locomotion). A second oscillation on model rotation.z (±0.04 rad, slow
+	# 0.83 rad/s ≈ a lazy wag period of ~7.6 s) gives Ember a visible tail-weight-shift
+	# that reads as an idle tail-wag without requiring skeleton access. Both phases are
+	# seeded from global_position so Ember's wag never syncs with a second pet.
+	if _model == null:
+		return
+	var t: float = float(Time.get_ticks_msec()) / 1000.0
+	var phase1: float = global_position.x * 0.61 + global_position.z * 0.37
+	var phase2: float = global_position.x * 1.13 + global_position.z * 0.79  # REFINE: second harmonic phase, incommensurable with phase1
+	if velocity.length() < 0.4:
+		# REFINE: character — idle body-bob primary (slow chest-rise) + secondary (fast shoulder-shift).
+		var bob: float = sin(t * 2.513 + phase1) * 0.014 + sin(t * 10.982 + phase2) * 0.004
+		global_position.y = _spawn_y + bob  # REFINE: oscillate around cached ground-Y
+		# REFINE: character — idle tail-wag weight-shift via model Z-lean. ±0.04 rad at 0.83 rad/s.
+		# Frequencies 0.83 and 1.97 are incommensurable (ratio ≈ 2.374) so the lean never repeats.
+		var wag: float = sin(t * 0.83 + phase1) * 0.04 + sin(t * 1.97 + phase2) * 0.016
+		_model.rotation.z = wag
 
 # Normalize 3D model scale so it ends up ~target_height tall.
 # Prevents giants from Sketchfab GLBs with mixed units.
