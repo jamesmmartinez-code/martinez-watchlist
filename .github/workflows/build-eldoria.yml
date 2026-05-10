@@ -11,6 +11,7 @@ on:
     paths:
       - 'eldoria-godot/**'
       - '.github/workflows/build-eldoria.yml'
+      - '!eldoria-godot/**/*.md'   # doc-only changes don't need a game rebuild
   workflow_dispatch:   # also allow manual trigger from the Actions tab
 
 # Only ONE build runs at a time; newer pushes cancel older in-progress runs.
