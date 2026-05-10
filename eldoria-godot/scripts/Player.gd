@@ -180,11 +180,12 @@ func _ready() -> void:
 	if not camera_pivot:
 		var root := get_tree().current_scene
 		if root:
-			camera_pivot = (
-				root.get_node_or_null("CameraController") or
-				root.get_node_or_null("CameraPivot") or
-				root.get_node_or_null("Camera")
-			)
+			var cp_a = root.get_node_or_null("CameraController")
+			if cp_a == null:
+				cp_a = root.get_node_or_null("CameraPivot")
+			if cp_a == null:
+				cp_a = root.get_node_or_null("Camera")
+			camera_pivot = cp_a
 	# Auto-wire animation_player — search any child for an AnimationPlayer.
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
@@ -304,11 +305,12 @@ func _physics_process(delta: float) -> void:
 	if not camera_pivot or not is_instance_valid(camera_pivot):
 		var root := get_tree().current_scene
 		if root:
-			camera_pivot = (
-				root.get_node_or_null("CameraController") or
-				root.get_node_or_null("CameraPivot") or
-				root.get_node_or_null("Camera")
-			)
+			var cp_b = root.get_node_or_null("CameraController")
+			if cp_b == null:
+				cp_b = root.get_node_or_null("CameraPivot")
+			if cp_b == null:
+				cp_b = root.get_node_or_null("Camera")
+			camera_pivot = cp_b
 	var direction := Vector3.ZERO
 	if input_dir != Vector2.ZERO:
 		if camera_pivot and is_instance_valid(camera_pivot):
