@@ -273,6 +273,13 @@ func _spawn_model() -> void:
 	add_child(_model)
 	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
 	call_deferred("_normalize_to_height", _model, _norm_target)
+	# Kill any autoplay animation immediately after add_child so the mixer
+	# never fires bone-path tracks that can't resolve in this scene tree.
+	# (Mixamo / humanoid GLBs often have 'humanoid/yes' or 'humanoid/no' set
+	# as the autoplay clip; those tracks reference full paths like
+	# 'humanoid_canonical/Skeleton3D:mixamorig_*' which break when the GLB
+	# is instantiated as a child with a different root name.)
+	call_deferred("_stop_model_autoplay", _model)
 	# Real fantasy models carry their own painted textures — applying a tint
 	# would muddy them.  For fallback placeholders, apply the EnemyVariant
 	# spatial shader so each instance gets a unique hue-brightness, emissive
@@ -337,30 +344,57 @@ func _apply_shader_to_meshes(node: Node, mat: ShaderMaterial) -> void:
 	for child in node.get_children():
 		_apply_shader_to_meshes(child, mat)
 
+func _stop_model_autoplay(model: Node) -> void:
+	# Called one deferred frame after add_child so any autoplay the GLB
+	# has baked in is immediately stopped before its tracks are evaluated.
+	# Humanoid retarget GLBs (Mixamo) often have 'humanoid/yes' as autoplay;
+	# their tracks reference full scene-tree paths that break when the model
+	# is used as a child node rather than the scene root — producing the
+	# "couldn't resolve track: humanoid_canonical/Skeleton3D:mixamorig_*"
+	# spam in the HTML5 console.
+	if not is_instance_valid(model): return
+	var ap: AnimationPlayer = _find_animation_player(model)
+	if ap == null: return
+	ap.stop()   # silence whatever autoplay fired; _play_model_idle_anim replaces it
+
 func _play_model_idle_anim() -> void:
-	# 2026-05-08: retry up to 5 frames; added humanoid/* spellings; skip known
-	# non-idle gestures (wave/yes/no) to avoid AnimationMixer bone-path warnings.
+	# Retry up to 5 frames (model sub-tree may not be fully ready frame 0).
+	# Always calls ap.stop() first — belt-and-suspenders against autoplay
+	# animations that fire before this deferred call runs (the dedicated
+	# _stop_model_autoplay handles the first frame; this guards later retries).
+	#
+	# Bad-animation skip list (generates unresolvable bone-path warnings):
+	#   humanoid/yes, humanoid/no, humanoid/wave — Mixamo humanoid retarget clips
+	#   any name starting with "humanoid/" that isn't idle / walk / run
 	for _attempt in 5:
 		await get_tree().process_frame
 		if not is_instance_valid(_model): return
 		var ap: AnimationPlayer = _find_animation_player(_model)
 		if ap == null: continue
-		# Named candidates (broadened to include humanoid-library spellings)
+		ap.stop()   # ensure nothing bad is still playing from a previous frame
+		# ── Priority 1: exact known-good idle names ───────────────────────
 		for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle",
 				"humanoid/Idle", "humanoid/idle", "mixamo_com"]:
 			if ap.has_animation(n):
 				ap.play(n)
 				return
-		# Prefer any name containing "idle"
 		var names := ap.get_animation_list()
+		# ── Priority 2: any name containing "idle" ────────────────────────
 		for n in names:
 			if "idle" in n.to_lower():
 				ap.play(n)
 				return
-		# Last resort: skip wave / yes / no gestures
+		# ── Priority 3: anything that isn't a known-bad gesture ──────────
+		# Skip: humanoid/yes, humanoid/no, humanoid/wave and any variant.
+		# These retarget animations reference root-relative bone paths
+		# (humanoid_canonical/Skeleton3D:mixamorig_*) that can't resolve when
+		# the GLB is instantiated as a child node rather than the scene root.
 		for n in names:
 			var nl := n.to_lower()
 			if "wave" in nl or "/yes" in nl or "/no" in nl:
+				continue
+			# Also skip pure gesture/expression names even without a slash
+			if nl in ["yes", "no", "wave", "thumbsup", "dying", "dance"]:
 				continue
 			ap.play(n)
 			return
