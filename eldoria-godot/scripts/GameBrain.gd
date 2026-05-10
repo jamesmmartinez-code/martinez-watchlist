@@ -41,6 +41,15 @@ var evolution_flags: Dictionary = {}
 # Value: arbitrary Dictionary produced by the chunk/area on unload.
 var global_memory: Dictionary = {}
 
+# ── World flags ───────────────────────────────────────────────────────────
+# Lightweight key-value store for world-state events that other systems need
+# to query without coupling to a specific node.  Examples:
+#   GameBrain.set_flag("helped_crystal_order")
+#   GameBrain.has_flag("corrupted_zone_ruins")
+#   GameBrain.set_flag("boss_killed", true)
+# Values are booleans by default; pass a second argument for richer data.
+var world_flags: Dictionary = {}
+
 # Current area the player is in (set by WorldManager).
 var current_area: String = ""
 
@@ -118,6 +127,20 @@ func set_evolution(key: String, value: bool = true) -> void:
 func has_evolution(key: String) -> bool:
 	return evolution_flags.get(key, false)
 
+# ── World flags ───────────────────────────────────────────────────────────
+
+func set_flag(key: String, value: Variant = true) -> void:
+	world_flags[key] = value
+
+func has_flag(key: String) -> bool:
+	return world_flags.get(key, false) != false
+
+func get_flag(key: String, default: Variant = null) -> Variant:
+	return world_flags.get(key, default)
+
+func clear_flag(key: String) -> void:
+	world_flags.erase(key)
+
 # ── Save / load ───────────────────────────────────────────────────────────
 # Called by Player.gd's save_game() / load_game() so all data survives
 # sessions (no need for a separate save slot — piggybacks on player save).
@@ -127,6 +150,7 @@ func get_save_data() -> Dictionary:
 		"playstyle":       playstyle.duplicate(),
 		"evolution_flags": evolution_flags.duplicate(),
 		"current_area":    current_area,
+		"world_flags":     world_flags.duplicate(),
 		# global_memory keys may be Vector2i — serialise to string.
 		"global_memory":   _serialize_memory(),
 	}
@@ -140,6 +164,8 @@ func load_save_data(data: Dictionary) -> void:
 		evolution_flags = data["evolution_flags"].duplicate()
 	if data.has("current_area"):
 		current_area = str(data["current_area"])
+	if data.has("world_flags"):
+		world_flags = data["world_flags"].duplicate()
 	if data.has("global_memory"):
 		_deserialize_memory(data["global_memory"])
 

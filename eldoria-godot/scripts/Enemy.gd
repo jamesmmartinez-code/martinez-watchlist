@@ -160,6 +160,14 @@ var _variant_shader_mat: ShaderMaterial = null
 var _variant_brightness: float = 1.0
 var _behavior_type: String     = "balanced"   # "aggressive" | "balanced" | "defensive"
 
+# ── Faction ───────────────────────────────────────────────────────────────
+# Set in _ready() from FactionSystem.KIND_TO_FACTION_ID.  Read by FactionZone
+# for zone influence, and by other enemies for inter-faction combat targeting.
+var faction_id: String = ""
+# Secondary target: another enemy from a hostile faction.  Evaluated at each
+# adapt tick only if the player is far away / not in aggro range.
+var _faction_target: Enemy = null
+
 signal died(enemy)
 
 func _ready() -> void:
@@ -184,6 +192,9 @@ func _ready() -> void:
 	_breathe_phase = _rng_breathe.randf() * TAU
 	_breathe_phase2 = _rng_breathe.randf() * TAU
 	add_to_group("enemies")
+	# ── Faction allegiance ────────────────────────────────────────────────────
+	if is_instance_valid(FactionSystem):
+		faction_id = FactionSystem.get_faction_for_kind(enemy_kind)
 	# ── Kind-specific mode flags ─────────────────────────────────────────────
 	_ranged_mode   = (enemy_kind == "watcher")
 	_reactive_mode = (enemy_kind == "reactive_scout")
@@ -696,7 +707,34 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = 0; velocity.z = 0
 	else:
-		_idle_drift(delta)
+		# ── Inter-faction engagement ──────────────────────────────────────────
+		# If wandering AND a hostile faction enemy is nearby, engage them instead.
+		if is_instance_valid(_faction_target) and _state == "wander":
+			var to_ft := _faction_target.global_position - global_position
+			to_ft.y = 0
+			var ft_dist := to_ft.length()
+			if ft_dist <= attack_range:
+				# In range — attack the faction enemy
+				_state = "attack"
+				velocity.x = 0; velocity.z = 0
+				_face_target(to_ft, delta)
+				if _attack_timer <= 0:
+					# Reuse the attack logic — faction enemies take the same damage call.
+					if _faction_target.has_method("take_damage"):
+						_faction_target.take_damage(damage, self)
+					_attack_timer = attack_cooldown
+			elif ft_dist <= aggro_range * 1.2:
+				# Chase the faction enemy
+				_state = "chase"
+				var dir2 := to_ft.normalized()
+				velocity.x = dir2.x * move_speed
+				velocity.z = dir2.z * move_speed
+				_face_target(to_ft, delta)
+			else:
+				_faction_target = null   # lost them
+				_idle_drift(delta)
+		else:
+			_idle_drift(delta)
 
 	move_and_slide()
 
@@ -993,6 +1031,33 @@ func _adapt_to_player() -> void:
 	# the next tick fires sooner without permanently warpng the rhythm.
 	if _behavior_type == "aggressive":
 		_adapt_timer = maxf(0.0, _adapt_timer - 1.0)  # adapt fires ~1s sooner
+
+	# ── Inter-faction scan ────────────────────────────────────────────────────
+	# Only bother if we have a known faction and the player is not close.
+	if not faction_id.is_empty() and _state == "wander":
+		_scan_faction_targets()
+
+func _scan_faction_targets() -> void:
+	# Look for a nearby enemy from a hostile faction (secondary target).
+	# Runs at adapt-tick rate — not every frame — so it's cheap.
+	# Result is stored in _faction_target; the wander state uses it as an
+	# engagement target when the player is out of aggro range.
+	_faction_target = null
+	if not is_instance_valid(FactionSystem):
+		return
+	var closest_dist := aggro_range * 1.4   # slightly wider than normal aggro
+	for candidate in get_tree().get_nodes_in_group("enemies"):
+		if candidate == self or not is_instance_valid(candidate):
+			continue
+		var cand_faction: String = str(candidate.get("faction_id") if candidate.get("faction_id") != null else "")
+		if cand_faction.is_empty() or cand_faction == faction_id:
+			continue
+		if not FactionSystem.is_hostile(faction_id, cand_faction):
+			continue
+		var d := global_position.distance_to(candidate.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			_faction_target = candidate as Enemy
 
 func _utility_action(dist: float) -> String:
 	# Score-based decision each frame.  Returns the highest-value action name.

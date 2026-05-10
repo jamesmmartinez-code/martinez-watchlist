@@ -160,6 +160,11 @@ func _update_intensity(delta: float) -> void:
 		intensity += agg_r * INTENSITY_AGG_MULT * delta
 		intensity += def_r * INTENSITY_DEF_MULT * delta
 
+	# ── WorldState corruption boost ────────────────────────────────────────
+	# Corrupt world passively increases baseline threat.
+	if is_instance_valid(WorldState):
+		intensity += WorldState.get_corruption_intensity_bonus() * delta
+
 	intensity = clampf(intensity, 0.0, 1.0)
 	emit_signal("intensity_changed", intensity)
 
@@ -203,9 +208,14 @@ func _handle_spawning(delta: float) -> void:
 		_spawn_timer = 2.0
 		return
 
-	# Enemy caps — wait briefly then re-evaluate.
-	var total := get_tree().get_nodes_in_group("enemies").size()
-	if total >= MAX_TOTAL_ENEMIES or _dc_count >= MAX_DC_ENEMIES:
+	# Enemy caps — scale ceiling with WorldState season density multiplier.
+	var density_mult := 1.0
+	if is_instance_valid(WorldState):
+		density_mult = WorldState.get_enemy_density_multiplier()
+	var dc_cap   := int(float(MAX_DC_ENEMIES) * density_mult)
+	var tot_cap  := int(float(MAX_TOTAL_ENEMIES) * density_mult)
+	var total    := get_tree().get_nodes_in_group("enemies").size()
+	if total >= tot_cap or _dc_count >= dc_cap:
 		_spawn_timer = 1.5
 		return
 
@@ -225,6 +235,20 @@ func _decide_spawn() -> void:
 			_spawn_boss()
 			return
 
+	# ── Faction-aware spawn bias ───────────────────────────────────────────
+	# During war/apocalypse seasons, dominant factions spawn at higher rates.
+	# This makes the world feel like it's fighting itself, not just the player.
+	if is_instance_valid(FactionSystem) and is_instance_valid(WorldState):
+		var dominant := FactionSystem.get_dominant_faction()
+		var s := WorldState.season
+		if (s == "war" or s == "apocalypse") and not dominant.is_empty():
+			# 35% chance to reinforce the dominant faction's kind
+			if randf() < 0.35:
+				var kind := _faction_kind_for_director(dominant)
+				if not kind.is_empty():
+					_spawn_enemy(kind)
+					return
+
 	# Regular enemy by intensity tier.
 	if intensity < 0.30:
 		_spawn_enemy("drifter")
@@ -232,6 +256,18 @@ func _decide_spawn() -> void:
 		_spawn_enemy("drifter" if randf() < 0.30 else "reactive_scout")
 	else:
 		_spawn_enemy("watcher" if randf() < 0.45 else "reactive_scout")
+
+func _faction_kind_for_director(faction_id: String) -> String:
+	# Maps a faction to a director-spawnable kind (must exist in KIND_PACKAGES).
+	# Returns "" if the faction has no valid director archetype.
+	match faction_id:
+		"drifters":     return "drifter"
+		"watchers":     return "watcher"
+		"goblins":      return "reactive_scout"   # closest to goblin_scout energy
+		"bandits":      return "reactive_scout"   # reuse scout stats; tint differs
+		"undead":       return "drifter"           # skeleton → drifter archetype
+		"crystal_order": return "watcher"          # guardian → ranged archetype
+	return ""
 
 # ==========================================================================
 # Enemy spawn
@@ -350,6 +386,11 @@ func _on_enemy_died(_enemy: Node) -> void:
 	_dc_count = maxi(0, _dc_count - 1)
 	# Reward: killing reduces pressure — player feels the relief.
 	intensity = maxf(0.0, intensity - 0.06)
+	# Notify FactionSystem so faction strength degrades correctly.
+	if is_instance_valid(FactionSystem) and is_instance_valid(_enemy):
+		var fid: String = str(_enemy.get("faction_id") if _enemy.get("faction_id") != null else "")
+		if not fid.is_empty():
+			FactionSystem.on_faction_enemy_died(fid)
 
 func _on_boss_died(_boss: Node = null) -> void:
 	_boss_alive = false

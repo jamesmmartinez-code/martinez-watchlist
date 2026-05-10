@@ -24,6 +24,8 @@ Juice="*res://scripts/Juice.gd"
 MapSystem="*res://scripts/MapSystem.gd"
 QuestSystem="*res://scripts/QuestSystem.gd"
 EnemyDirector="*res://scripts/EnemyDirector.gd"
+FactionSystem="*res://scripts/FactionSystem.gd"
+WorldState="*res://scripts/WorldState.gd"
 
 [application]
 
