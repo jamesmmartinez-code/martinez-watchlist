@@ -33,17 +33,29 @@ OLD_BLOCK = """\t\tsetStatusMode('progress');
 NEW_BLOCK = """\t\tsetStatusMode('progress');
 \t\t(async function loadChunkedPck() {
 \t\t\tconst manifest = await (await fetch('pck-parts.json')).json();
-\t\t\tconst total = manifest.totalSize;
-\t\t\tconst merged = new Uint8Array(total);
-\t\t\tlet offset = 0;
+\t\t\t// Download all chunks first, measure actual sizes before allocating.
+\t\t\t// Prevents "offset out of bounds" if a chunk size differs from manifest
+\t\t\t// (e.g. during the mid-deploy race between new chunks and old manifest).
+\t\t\tconst buffers = [];
+\t\t\tlet actualTotal = 0;
+\t\t\tlet fetched = 0;
+\t\t\tconst manifestTotal = manifest.totalSize || 1;
 \t\t\tfor (const part of manifest.parts) {
 \t\t\t\tconst r = await fetch(part.name);
 \t\t\t\tif (!r.ok) throw new Error('Failed to fetch ' + part.name + ': ' + r.status);
 \t\t\t\tconst buf = new Uint8Array(await r.arrayBuffer());
+\t\t\t\tbuffers.push(buf);
+\t\t\t\tactualTotal += buf.byteLength;
+\t\t\t\tfetched += buf.byteLength;
+\t\t\t\tstatusProgress.value = fetched;
+\t\t\t\tstatusProgress.max = manifestTotal;
+\t\t\t}
+\t\t\t// Allocate using ACTUAL downloaded byte count, not manifest's totalSize.
+\t\t\tconst merged = new Uint8Array(actualTotal);
+\t\t\tlet offset = 0;
+\t\t\tfor (const buf of buffers) {
 \t\t\t\tmerged.set(buf, offset);
 \t\t\t\toffset += buf.byteLength;
-\t\t\t\tstatusProgress.value = offset;
-\t\t\t\tstatusProgress.max = total;
 \t\t\t}
 \t\t\t// Monkey-patch preloadFile so Engine.startGame uses our reassembled
 \t\t\t// buffer instead of fetching a (non-existent) index.pck from the server.
