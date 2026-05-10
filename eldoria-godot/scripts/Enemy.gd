@@ -127,6 +127,8 @@ const DETECT_THRESHOLD: float = 30.0  # cross this to start chasing
 const DETECT_MAX:       float = 100.0
 var _in_los:    bool       = false    # line-of-sight result this frame
 var blackboard: Dictionary = {}       # AI memory keyed by string
+var _adapt_timer: float    = 0.0     # ticks up to ENEMY_ADAPT_INTERVAL then resets
+const ENEMY_ADAPT_INTERVAL: float = 6.0
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
@@ -436,6 +438,12 @@ func _physics_process(delta: float) -> void:
 
 	_attack_timer = max(0.0, _attack_timer - delta)
 
+	# ── Adaptive behaviour tick ────────────────────────────────────────────
+	_adapt_timer += delta
+	if _adapt_timer >= ENEMY_ADAPT_INTERVAL:
+		_adapt_timer = 0.0
+		_adapt_to_player()
+
 	# ── Detection / Utility AI ─────────────────────────────────────────────
 	# Only run LoS check when player is close enough to matter (perf guard).
 	_in_los = dist < aggro_range and _check_line_of_sight()
@@ -520,7 +528,11 @@ func _pick_wander_target() -> void:
 func _do_attack() -> void:
 	_attack_timer = attack_cooldown
 	if _player and _player.has_method("take_damage"):
-		_player.take_damage(damage)
+		var dmg := damage
+		# Adaptation: anti-air — bonus 40% damage when player is airborne
+		if blackboard.get("anti_air", false) and not _player.is_on_floor():
+			dmg = int(dmg * 1.40)
+		_player.take_damage(dmg)
 		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
 		var dir := (_player.global_position - global_position).normalized()
 		_player.velocity += dir * 4.5
@@ -723,6 +735,29 @@ func _check_line_of_sight() -> bool:
 	q.collision_mask = 1   # world geometry only — ignores other enemies
 	q.exclude         = [get_rid()]
 	return space.intersect_ray(q).is_empty()
+
+func _adapt_to_player() -> void:
+	# Read the player's playstyle dict (set by Player.gd) and update blackboard
+	# flags that change how this enemy attacks. Called every ENEMY_ADAPT_INTERVAL
+	# seconds so it's cheap — one dict access per enemy per 6 s.
+	if not _player or not is_instance_valid(_player):
+		return
+	var style: Dictionary = _player.get("playstyle")
+	if not style:
+		return
+	# Dash-heavy player → enemy watches for dashes and zones with slow swing
+	if style.get("dash_heavy", 0) > 30:
+		blackboard["counter_dash"] = true
+	else:
+		blackboard.erase("counter_dash")
+	# Airborne player → enemy times upward swing to punish landings
+	if style.get("airborne", 0) > 20:
+		blackboard["anti_air"] = true
+	else:
+		blackboard.erase("anti_air")
+	# Passive/defensive player → enemy becomes more patient, widens aggro
+	if style.get("defensive", 0) > 15 and style.get("aggressive", 0) < 10:
+		attack_cooldown = maxf(ATTACK_COOLDOWN_MIN, attack_cooldown - 0.10)
 
 func _utility_action(dist: float) -> String:
 	# Score-based decision each frame.  Returns the highest-value action name.

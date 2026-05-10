@@ -50,6 +50,10 @@ var _vulnerability: bool  = false  # true → incoming hits deal ×VULN_MULT
 var _vuln_timer:    float = 0.0
 const VULN_MULT:   float = 1.5     # bonus damage multiplier during the window
 const VULN_WINDOW: float = 1.0     # seconds the window stays open after a slam
+# Mid-fight adaptation: every BOSS_ADAPT_INTERVAL seconds Boss re-reads the
+# player's playstyle and biases the attack pool toward countering their habits.
+var _boss_adapt_timer: float = 0.0
+const BOSS_ADAPT_INTERVAL: float = 5.0
 
 const ENEMY_SCRIPT = preload("res://scripts/Enemy.gd")
 
@@ -146,6 +150,12 @@ func _physics_process(delta: float) -> void:
 		_vuln_timer = maxf(0.0, _vuln_timer - delta)
 		if _vuln_timer <= 0.0:
 			_vulnerability = false
+
+	# Mid-fight adaptation
+	_boss_adapt_timer += delta
+	if _boss_adapt_timer >= BOSS_ADAPT_INTERVAL and _player and is_instance_valid(_player):
+		_boss_adapt_timer = 0.0
+		_adapt_attack_pool((_player.global_position - global_position).length())
 
 	if not _player:
 		var players := get_tree().get_nodes_in_group("player")
@@ -290,6 +300,38 @@ func enter_phase(p: int) -> void:
 			_show_boss_msg("⚡⚡ ENRAGE — YOU WILL FALL!")
 			# Brief opening at the start of phase 2 as a cinematic beat
 			_open_vulnerability(1.5)
+
+func _adapt_attack_pool(current_dist: float) -> void:
+	# Read the player's live playstyle dict and bias the pool toward patterns
+	# that counter their habits. We only ADD entries (never remove the base
+	# pool) so the player still has a fighting chance — just a harder one.
+	var style: Dictionary = _player.get("playstyle") if _player else {}
+	if style.is_empty():
+		return
+
+	# Aggressive attacker → Warlord learns to parry: heavy melee flood
+	# creates natural "gap" moments where the player's aggression costs them.
+	if style.get("aggressive", 0) > 80 and _phase >= 1:
+		if _attack_pool.count("_attack_melee") < 3:
+			_attack_pool.append("_attack_melee")
+			_show_boss_msg("PATHETIC AGGRESSION!")
+
+	# Dash-heavy → Warlord counters with more charges: dashes are dangerous
+	# when the boss is already lunging, forcing choice over reflex.
+	if style.get("dash_heavy", 0) > 40 and _phase >= 1:
+		if _attack_pool.count("_attack_charge") < 3:
+			_attack_pool.append("_attack_charge")
+			_show_boss_msg("YOU CANNOT OUTRUN ME!")
+
+	# Airborne player → Warlord throws slams: the AoE punishes repeated
+	# landing spots and forces the player to vary their aerial approach.
+	if style.get("airborne", 0) > 20 and _phase >= 1:
+		if _attack_pool.count("_attack_slam") < 3:
+			_attack_pool.append("_attack_slam")
+
+	# Keep pool from ballooning — cap at 8 entries to maintain variety
+	while _attack_pool.size() > 8:
+		_attack_pool.remove_at(0)
 
 func _open_vulnerability(duration: float) -> void:
 	_vulnerability = true
