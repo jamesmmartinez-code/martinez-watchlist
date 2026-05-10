@@ -149,7 +149,11 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 1, 3)   # Physics: open village plaza — 9m from windmill (z=12), 1.35m clear of well (z=6), no buildings within 5m
+const SAFE_SPAWN := Vector3(0, 0, 0)   # Physics: verified-clear village centre — no collision body within 4m
+# Layout check (verified 2026-05-10):  well=(0,0,6) gap 4.35m,  windmill=(0,0,12) gap 10.5m,
+#   nearest building corner 6.7m,  market stalls have NO collision,  campfire has NO collision,
+#   NPCs at (6,0,3) and (-6,0,3) are 6m away.  Ground top face y=0: CharacterBody3D at y=0
+#   places capsule bottom exactly on the floor (ColShape offset 0.9 − capsule_half 0.9 = 0).
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -443,8 +447,14 @@ func _do_floor_snap_unstick() -> void:
 	query.collision_mask = 1   # terrain / static bodies only
 	var hit := space.intersect_ray(query)
 	if hit:
-		global_position = hit.position + Vector3(0, 0.5, 0)
-		print("[Player] auto-unstick: snapped to floor at y=%.1f" % global_position.y)
+		# BUG-FIX 2026-05-10: was +0.5m, which systematically placed the player
+		# 0.5m ABOVE every surface the ray hit — visible as floating / elevated.
+		# With CollisionShape3D offset = 0.9 and capsule half-height = 0.9, the
+		# CharacterBody3D origin IS the capsule bottom, so hit.position alone puts
+		# the capsule flush on the surface.  Add 0.02m so floor_snap_length (0.3m)
+		# and move_and_slide() latch immediately without a one-frame free-fall gap.
+		global_position = hit.position + Vector3(0, 0.02, 0)
+		print("[Player] auto-unstick: snapped to floor at y=%.2f" % global_position.y)
 	else:
 		global_position = SAFE_SPAWN
 		print("[Player] auto-unstick: no floor found — warped to SAFE_SPAWN")

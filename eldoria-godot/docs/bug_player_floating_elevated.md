@@ -105,16 +105,38 @@ Fix applied:
 - Added 0.05 s deferred `_do_floor_snap_unstick()` in `Player._ready()` so the
   player always starts on actual ground regardless of scene Y value.
 
+## Follow-on Bug: floor-snap +0.5 m offset (commit `tbd`)
+`_do_floor_snap_unstick()` was using `hit.position + Vector3(0, 0.5, 0)` as the
+snap target.  With the CharacterBody3D capsule setup (CollisionShape3D at y=+0.9,
+capsule half-height 0.9 → bottom = body.y + 0.9 − 0.9 = body.y) the body origin IS
+the capsule bottom.  So the +0.5 m offset placed the capsule bottom 0.5 m ABOVE the
+hit surface on every snap — including spawn and the 2-second jam timer.
+
+Result: player visually floated 0.5 m above the ground after every snap.  Worse, if
+the ray hit a building roof (y=3.4) the player landed at y=3.9 and stayed there
+because the next jam-timer snap also hit the roof.
+
+Fix: changed offset to +0.02 m so the capsule is flush against the surface and
+`floor_snap_length` (0.3 m) latches immediately.
+
 ## Rule of Thumb for Future Code
 **Never adjust `global_position.y` upward as a stuck-recovery.**
 It feels like "give the player room to move" but it accumulates silently.
 Always raycast to the floor or teleport to a known safe position instead.
 
+**The floor-snap offset must be near-zero, not 0.5 m.**
+`_do_floor_snap_unstick()` places the CharacterBody3D origin AT `hit.position`.
+Because the capsule bottom equals the body origin (ColShape +0.9 - half-height 0.9 = 0),
+adding any large offset just elevates the player above the surface.
+Use `hit.position + Vector3(0, 0.02, 0)` — enough for `floor_snap_length` to latch.
+
 **SAFE_SPAWN must be verified against the actual world layout.**
 Check it against the BUILDINGS array AND all prop colliders whenever anything moves.
-Y should be 0–1, not mid-air. Always follow a teleport with `_do_floor_snap_unstick()`.
+Use Y=0 (capsule bottom on floor) or at most Y=0.5.
 **Leave at least 1.5 m clearance from any collision cylinder (player capsule radius +
 0.4 m buffer + 0.7 m physics-impulse margin).**
+**SAFE_SPAWN = Vector3(0, 0, 0)** is the verified-clear village centre: no collision
+body within 4 m (verified 2026-05-10).
 
 **Building collision boxes must be taller than any reachable jump height.**
 If the box top is below the player's max jump apex, it becomes a walkable ledge.
