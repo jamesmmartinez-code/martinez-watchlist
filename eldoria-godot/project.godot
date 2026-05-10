@@ -9,6 +9,7 @@
 config_version=5
 
 [animation]
+suppress_invalid_track_warning=true
 
 compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
