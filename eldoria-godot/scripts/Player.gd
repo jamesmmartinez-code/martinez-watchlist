@@ -56,6 +56,7 @@ var max_mp: int = 30
 var xp: int = 0
 var level: int = 1
 var gold: int = 50
+var skill_points: int = 0   # earned on level-up; spent via SkillTree.try_unlock()
 
 # Combat parameters
 @export var attack_range: float = 2.6
@@ -207,6 +208,8 @@ func _ready() -> void:
 	call_deferred("_rebuild_weapon_visual")
 	# Load save on first frame (after inventory wires up)
 	call_deferred("load_game")
+	# Register all skills in the SkillTree singleton
+	call_deferred("_setup_skill_tree")
 	# Char-spec: normalize hero to 1.10m (kid Alden/Owen) — SIZE_STANDARDS.md §1.
 	# Three deferred retries absorb the Godot 4 deferred-AABB update lag on GLB import.
 	# LOCKED VALUE: 1.1 — change requires [CANON-APPROVED:] tag.
@@ -634,6 +637,114 @@ func _update_player_state(delta: float) -> void:
 func _attack() -> void:
 	use_skill(0)
 
+# ── Adaptive system — tick + organic unlocks + ability mutations ──────────
+func _setup_skill_tree() -> void:
+	# Register all Eldoria skills with the SkillTree singleton.
+	# Static slots (level-gated) and dynamic (playstyle-driven) both live here
+	# so the full unlock picture is in one place instead of scattered across files.
+	SkillTree.register_batch({
+		# ── Combat ability slots (static, level-gated) ────────────────────────
+		"slash": {
+			"name": "Slash", "slot": 0, "level": 1,
+			"description": "Basic melee combo.",
+		},
+		"heavy_strike": {
+			"name": "Heavy Strike", "slot": 1, "level": 3,
+			"description": "Slow powerful blow.",
+		},
+		"dash_attack": {
+			"name": "Dash Attack", "slot": 2, "level": 5,
+			"description": "Dash forward and sweep.",
+		},
+		"fireball": {
+			"name": "Fireball", "slot": 3, "level": 7,
+			"description": "Lobbed fire projectile with AoE.",
+		},
+		# ── Dynamic unlocks (playstyle-driven, bypass level gate) ─────────────
+		"fireball_early": {
+			"name": "Aerial Intuition", "slot": 3, "dynamic": true,
+			"ratio_key": "airborne", "ratio_threshold": 0.22,
+			"description": "Aerial mastery unlocks Fireball before Lv.7.",
+			"effect": func(p: Node) -> void:
+				if p and not 3 in p._early_unlocks:
+					p._early_unlocks.append(3)
+					p._show_mutation_popup("🔥 Aerial mastery — Fireball unlocked early!"),
+		},
+		"heavy_early": {
+			"name": "Battle Hardening", "slot": 1, "dynamic": true,
+			"raw_key": "aggressive", "raw_threshold": 40,
+			"description": "Relentless aggression unlocks Heavy Strike before Lv.3.",
+			"effect": func(p: Node) -> void:
+				if p and not 1 in p._early_unlocks:
+					p._early_unlocks.append(1)
+					p._show_mutation_popup("⚔️ Relentless — Heavy Strike unlocked early!"),
+		},
+		# ── Passive perks (purchased with skill_points on level-up) ──────────
+		"hp_boost": {
+			"name": "+20 Max HP", "cost": 1, "level": 2,
+			"description": "Permanently raise max HP by 20.",
+			"effect": func(p: Node) -> void:
+				if p: p.max_hp += 20; p.hp = min(p.hp + 20, p.max_hp); p.stats_changed.emit(),
+		},
+		"crit_boost": {
+			"name": "+5% Crit Chance", "cost": 1, "level": 4,
+			"description": "More frequent critical strikes.",
+			"effect": func(p: Node) -> void:
+				if p: p.crit_chance += 0.05,
+		},
+		"mp_boost": {
+			"name": "+10 Max MP", "cost": 1, "level": 3,
+			"description": "Larger mana pool for skill spam.",
+			"effect": func(p: Node) -> void:
+				if p: p.max_mp += 10; p.mp = min(p.mp + 10, p.max_mp); p.stats_changed.emit(),
+		},
+	})
+	# Connect signal so the tree announces unlocks via world toast automatically
+	if not SkillTree.skill_unlocked.is_connected(_on_skill_unlocked):
+		SkillTree.skill_unlocked.connect(_on_skill_unlocked)
+
+func _on_skill_unlocked(id: String, sk: Dictionary) -> void:
+	if sk.get("dynamic", false):
+		return  # dynamic skills show their own popup inside the effect callable
+	get_tree().call_group("world", "_show_toast", "✦ %s unlocked!" % sk.get("name", id))
+
+func _tick_adapt(delta: float) -> void:
+	_adapt_timer += delta
+	if _adapt_timer >= ADAPT_INTERVAL:
+		_adapt_timer = 0.0
+		SkillTree.update_dynamic(self)   # check playstyle-driven unlocks
+
+func _check_ability_mutations(idx: int) -> void:
+	# Called after every successful skill use. Routes through GameBrain so
+	# mutations persist across sessions and are readable by all systems.
+	match idx:
+		0:  # Slash → Echo Strike at 50 uses
+			if _skill_use_counts[0] == 50 and not GameBrain.has_evolution("slash_multihit"):
+				GameBrain.set_evolution("slash_multihit")
+				_show_mutation_popup("⚡ Slash evolved: Echo Strike!")
+		1:  # Heavy Strike → Armor Break at 30 uses (+40% damage)
+			if _skill_use_counts[1] == 30 and not GameBrain.has_evolution("heavy_armor_break"):
+				GameBrain.set_evolution("heavy_armor_break")
+				_show_mutation_popup("⚡ Heavy Strike evolved: Armor Break!")
+		2:  # Dash Attack → (reserved for future mutation)
+			pass
+		3:  # Fireball → Inferno Spread at 25 uses
+			if _skill_use_counts[3] == 25 and not GameBrain.has_evolution("fireball_pyro"):
+				GameBrain.set_evolution("fireball_pyro")
+				_show_mutation_popup("⚡ Fireball evolved: Inferno Spread!")
+
+func _show_mutation_popup(text: String) -> void:
+	# Big centred popup — bigger than a toast, smaller than a death screen.
+	# Uses UITheme.spawn_damage_popup so it floats up and fades automatically.
+	UITheme.spawn_damage_popup(
+		get_tree().current_scene,
+		global_position + Vector3(0, 3.2, 0),
+		text,
+		Color(1.0, 0.85, 0.25),   # warm gold — feels like a level-up moment
+		44, 6
+	)
+	get_tree().call_group("world", "_show_toast", text)
+
 func _roll_damage() -> Dictionary:
 	var base := attack_damage_base + int(level * 1.5)
 	# Add weapon bonus damage
@@ -791,6 +902,7 @@ func gain_xp(amount: int) -> void:
 		# Owen (11yo mastery axis) to weave skills rather than hoarding mana.
 		max_mp += 14
 		mp = max_mp
+		skill_points += 1   # one point per level to spend in SkillTree
 		get_tree().call_group("world", "play_sfx", "level_up")
 		var pop := Label3D.new()
 		pop.set_script(DAMAGE_NUMBER_SCRIPT)

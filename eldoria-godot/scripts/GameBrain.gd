@@ -14,12 +14,22 @@ extends Node
 
 # ── Playstyle counters ────────────────────────────────────────────────────
 # Raw counts.  Use get_playstyle_ratio() for scale-invariant comparisons.
+# Stored as floats so decay math works without rounding errors.
+# Use get_raw(key) when you need an integer count.
 var playstyle: Dictionary = {
-	"aggressive": 0,   # attacks used
-	"defensive":  0,   # times hit
-	"airborne":   0,   # jumps
-	"dash_heavy": 0,   # Dash Attack fires
+	"aggressive": 0.0,   # attacks used
+	"defensive":  0.0,   # times hit
+	"airborne":   0.0,   # jumps
+	"dash_heavy": 0.0,   # Dash Attack fires
 }
+
+# ── Decay system ──────────────────────────────────────────────────────────
+# Prevents old playstyle data from permanently locking enemies into one
+# pattern.  Every DECAY_INTERVAL seconds, all counters are multiplied by
+# DECAY_FACTOR.  Half-life ≈ 10 minutes of play (0.97 every 30s × 20 ticks).
+const DECAY_INTERVAL: float = 30.0
+const DECAY_FACTOR:   float = 0.97
+var _decay_timer: float = 0.0
 
 # ── Evolution flags ───────────────────────────────────────────────────────
 # Permanent mutations earned through play.  Saved with the game.
@@ -37,13 +47,25 @@ signal evolution_unlocked(key: String)
 # Core API
 # ─────────────────────────────────────────────────────────────────────────
 
+func _process(delta: float) -> void:
+	_decay_timer += delta
+	if _decay_timer >= DECAY_INTERVAL:
+		_decay_timer = 0.0
+		_apply_decay()
+
+func _apply_decay() -> void:
+	# Soft exponential decay — old habits fade, recent play drives adaptation.
+	# Keeps floor at 0; never goes negative.
+	for k: String in playstyle.keys():
+		playstyle[k] = maxf(0.0, float(playstyle[k]) * DECAY_FACTOR)
+
 func record_action(action: String) -> void:
 	# Increment the matching playstyle counter and append to history.
 	# Silently ignores unknown keys so new playstyles can be tracked without
 	# risking a crash on old save files that lack the key.
 	if not playstyle.has(action):
 		return
-	playstyle[action] += 1
+	playstyle[action] = float(playstyle[action]) + 1.0
 	history.append({"action": action, "tick": Time.get_ticks_msec()})
 	if history.size() > HISTORY_MAX:
 		history.pop_front()
@@ -61,7 +83,18 @@ func get_playstyle_ratio(key: String) -> float:
 	return float(playstyle.get(key, 0)) / float(total)
 
 func get_raw(key: String) -> int:
-	return playstyle.get(key, 0)
+	return int(round(float(playstyle.get(key, 0.0))))
+
+# ── Debug ─────────────────────────────────────────────────────────────────
+
+func debug_print() -> void:
+	print("── GameBrain ─────────────────────")
+	for k: String in playstyle:
+		var ratio := get_playstyle_ratio(k)
+		print("  %-12s  raw=%-6.1f  ratio=%.2f" % [k, float(playstyle[k]), ratio])
+	print("  evolutions: %s" % str(evolution_flags.keys()))
+	print("  history:    %d entries" % history.size())
+	print("─────────────────────────────────")
 
 # ── Evolution flags ───────────────────────────────────────────────────────
 
@@ -89,7 +122,7 @@ func load_save_data(data: Dictionary) -> void:
 	if data.has("playstyle"):
 		for k: String in data["playstyle"]:
 			if playstyle.has(k):
-				playstyle[k] = int(data["playstyle"][k])
+				playstyle[k] = float(data["playstyle"][k])
 	if data.has("evolution_flags"):
 		evolution_flags = data["evolution_flags"].duplicate()
 
