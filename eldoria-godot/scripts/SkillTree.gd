@@ -57,7 +57,7 @@ func can_unlock(id: String, player: Node) -> bool:
 	if sk.is_empty():
 		return false
 	# Level gate
-	if sk.has("level") and player.get("level", 1) < int(sk["level"]):
+	if sk.has("level") and (player.get("level") if "level" in player else 1) < int(sk["level"]):
 		return false
 	# Dependency check
 	for dep: String in sk.get("deps", []):
@@ -69,7 +69,7 @@ func can_unlock(id: String, player: Node) -> bool:
 			return false
 	# Skill point cost
 	var cost: int = int(sk.get("cost", 0))
-	if cost > 0 and player.get("skill_points", 0) < cost:
+	if cost > 0 and (player.get("skill_points") if "skill_points" in player else 0) < cost:
 		return false
 	return true
 
