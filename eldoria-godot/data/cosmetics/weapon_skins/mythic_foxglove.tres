@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=1 format=3]
+[resource]
+metadata/_kind = "weapon_skin"
+metadata/_data = """
+{
+  "id": "mythic_foxglove",
+  "name": "Foxfire Bloom",
+  "applies_to": "sword|staff|dagger",
+  "palette": [
+    "#FFC67D",
+    "#8B9467"
+  ],
+  "motif": "whimsical flowers",
+  "unlock_condition": "complete_quest:botanical_garden",
+  "flavor": "Delicate, glowing foxgloves dance across the weapon's surface"
+}
+"""
