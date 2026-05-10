@@ -10,6 +10,7 @@ class_name World
 @onready var dialogue_name_label: Label = $UI/DialoguePanel/MarginContainer/VBox/NameLabel
 @onready var dialogue_text_label: RichTextLabel = $UI/DialoguePanel/MarginContainer/VBox/TextLabel
 @onready var dialogue_close_btn: Button = $UI/DialoguePanel/MarginContainer/VBox/CloseBtn
+@onready var _unstuck_btn: Button = $UI/HUD/UnstuckBtn
 @onready var sun: DirectionalLight3D = $WorldEnvironment/Sun
 # REFINE: visual — outdoor — grab the moon-fill light + WorldEnvironment so the
 # day/night cycle can breathe atmosphere (fog, glow, moon energy) — not just
@@ -1150,8 +1151,11 @@ func _ready() -> void:
 	if death_overlay: death_overlay.visible = false
 	if quest_panel: quest_panel.visible = false
 	if dialogue_close_btn: dialogue_close_btn.pressed.connect(close_dialogue)
-	# Hook up player stats + inventory listeners
+	# SOS Unstuck button — calls Player.do_unstuck() which floor-snaps via raycast
 	var player := get_node_or_null("Player")
+	if _unstuck_btn and player and player.has_method("do_unstuck"):
+		_unstuck_btn.pressed.connect(player.do_unstuck)
+	# Hook up player stats + inventory listeners
 	if player:
 		player.stats_changed.connect(_refresh_hud)
 		if player.inventory:

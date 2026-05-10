@@ -149,7 +149,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 5, 10)  # Physics: safe respawn — Y>=5 so player clears terrain
+const SAFE_SPAWN := Vector3(0, 1, 10)  # Physics: safe respawn — Y=1 clears thin geometry without floating
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -358,17 +358,17 @@ func _physics_process(delta: float) -> void:
 	if is_attacking:
 		current_speed *= 0.40
 
-	# Stuck-recovery #4: if input is being pressed but we haven't moved horizontally for >1s,
-	# something is jamming us (collision wedge, frozen state). Teleport up 1.5m and clear velocity.
+	# Stuck-recovery #4: if input is being pressed but we haven't moved horizontally for >2s,
+	# something is jamming us (collision wedge, frozen state).
+	# FIX: was doing y += 1.5 which accumulated and launched player into the sky.
+	# Now: raycast downward to find the actual floor and snap to it; fall back to SAFE_SPAWN.
 	var horiz_speed := Vector2(velocity.x, velocity.z).length()
 	last_position = global_position  # Physics: track position each frame for stuck-detection
 	if input_dir.length() > 0.1 and horiz_speed < 0.05:
 		_jam_timer += delta
-		if _jam_timer > 1.0:
-			global_position.y += 1.5
-			velocity = Vector3.ZERO
+		if _jam_timer > 2.0:
+			_do_floor_snap_unstick()
 			_jam_timer = 0.0
-			print("[Player] auto-unstick: teleported up 1.5m")
 	else:
 		_jam_timer = 0.0
 
@@ -424,6 +424,43 @@ func _physics_process(delta: float) -> void:
 	_update_player_state(delta)
 
 # ────────────────────────────────────────────────────────────────────────
+# Floor-snap unstick (internal) — raycast downward, land on actual floor.
+# Falls back to SAFE_SPAWN if nothing is below us.
+# ────────────────────────────────────────────────────────────────────────
+func _do_floor_snap_unstick() -> void:
+	velocity = Vector3.ZERO
+	var space := get_world_3d().direct_space_state
+	# Cast from 2m above to 8m below current position to find the floor.
+	var origin := global_position + Vector3(0, 2.0, 0)
+	var target := global_position + Vector3(0, -8.0, 0)
+	var query  := PhysicsRayQueryParameters3D.create(origin, target)
+	query.exclude   = [self]
+	query.collision_mask = 1   # terrain / static bodies only
+	var hit := space.intersect_ray(query)
+	if hit:
+		global_position = hit.position + Vector3(0, 0.5, 0)
+		print("[Player] auto-unstick: snapped to floor at y=%.1f" % global_position.y)
+	else:
+		global_position = SAFE_SPAWN
+		print("[Player] auto-unstick: no floor found — warped to SAFE_SPAWN")
+
+# ────────────────────────────────────────────────────────────────────────
+# Public unstuck — called by the SOS Unstuck button in the HUD.
+# Clears every transient lock, snaps to floor, notifies the player.
+# ────────────────────────────────────────────────────────────────────────
+func do_unstuck() -> void:
+	velocity        = Vector3.ZERO
+	cinematic_lock  = false
+	is_attacking    = false
+	is_dead         = false
+	_jam_timer      = 0.0
+	_attack_timeout = 0.0
+	get_tree().paused = false
+	_do_floor_snap_unstick()
+	if is_instance_valid(Juice):
+		Juice.show_notification("Teleported to safety!", Color(0.50, 1.0, 0.72))
+
+# ────────────────────────────────────────────────────────────────────────
 # Panic-key pipeline — runs BEFORE any is_dead guard so kids can always
 # escape a stuck/frozen/dead state. Called from BOTH _input AND
 # _unhandled_key_input so UI elements cannot swallow these keys.
@@ -439,7 +476,7 @@ func _panic_unstick(keycode: int) -> bool:
 			mounted = false
 			mount_node = null
 			velocity = Vector3.ZERO
-			global_position = Vector3(0, 2, 0)
+			global_position = SAFE_SPAWN
 			hp = max(1, hp)
 			_attack_timeout = 0.0
 			_dead_timer = 0.0
@@ -450,7 +487,7 @@ func _panic_unstick(keycode: int) -> bool:
 			print("[Player] F1 — teleport to spawn")
 			get_tree().paused = false
 			velocity = Vector3.ZERO
-			global_position = Vector3(0, 2, 0)
+			global_position = SAFE_SPAWN
 			return true
 		KEY_F2:
 			# Nuclear option: unpause, wipe save and reload scene.
@@ -464,7 +501,7 @@ func _panic_unstick(keycode: int) -> bool:
 			print("[Player] ] — teleport to spawn")
 			get_tree().paused = false
 			velocity = Vector3.ZERO
-			global_position = Vector3(0, 2, 0)
+			global_position = SAFE_SPAWN
 			return true
 	return false
 
