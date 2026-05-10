@@ -1,3 +1,7 @@
+## Tech debt
+
+- QA 2026-05-10T05:37Z: Build=None (no build-eldoria.yml runs found) | Oversized: eldoria-godot/assets/models/Hero.glb (>20MiB hard cap) — REFERENCED in Main.tscn, Player.gd, CharacterSelect.gd; cannot delete. Tech debt already logged in multiple prior runs. No new action taken — awaiting manual LOD/compression fix.
+
 ## 2026-05-09 Auto: run 35 — NPC Gift-Giving mechanic (Backlog #8 completion)
 
 I'm building: NPC memory system — gift-giving mechanic (Backlog #8)
