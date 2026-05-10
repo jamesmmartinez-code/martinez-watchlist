@@ -17,9 +17,9 @@ class_name CameraController
 # ─────────────────────────────────────────────────────────────────────────────
 
 @export var follow_target:  Node3D
-@export var distance:       float = 10.0
-@export var min_distance:   float = 3.4
-@export var max_distance:   float = 13.5
+@export var distance:       float = 12.0
+@export var min_distance:   float = 6.0
+@export var max_distance:   float = 20.0
 @export var sensitivity:    float = 0.003
 @export var smooth_follow:  float = 0.22
 
