@@ -4166,8 +4166,8 @@ func _build_god_rays() -> void:
 # The previous dict was constantly fighting Player.gd's _normalize_player_model(1.1)
 # lock — the global sweep would keep trying to stretch the kid back to 1.80m.
 const SIZE_STANDARDS := {
-	"player":  [1.10, 0.18],   # kid-sized; tol widened 0.10→0.18 so the body's
-	                           #   capsule doesn't oscillate against the panic-key cap.
+	"player":  [0.85, 0.18],   # kid-sized; [CANON-APPROVED: 2026-05-10] 1.10→0.85 (user: "still too big")
+	                           #   tol widened 0.10→0.18 so the body's capsule doesn't oscillate against the panic-key cap.
 	"npcs":    [1.65, 0.15],   # adult NPC; band [1.40, 1.90]
 	"pets":    [0.55, 0.25],   # fox/squirrel/owl; band [0.41, 0.69]
 	"enemies": [1.55, 0.25],   # medium default; small/elite per-kind below

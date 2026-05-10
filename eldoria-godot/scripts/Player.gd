@@ -235,13 +235,14 @@ func _ready() -> void:
 	call_deferred("load_game")
 	# Register all skills in the SkillTree singleton
 	call_deferred("_setup_skill_tree")
-	# Char-spec: normalize hero to 1.10m (kid Alden/Owen) — SIZE_STANDARDS.md §1.
+	# Char-spec: normalize hero to 0.85m (kid Alden/Owen) — SIZE_STANDARDS.md §1.
+	# [CANON-APPROVED: 2026-05-10] 1.10 → 0.85 — user feedback "still too big";
+	# 0.85m reads as a child character against 3m+ buildings.
 	# Three deferred retries absorb the Godot 4 deferred-AABB update lag on GLB import.
-	# LOCKED VALUE: 1.1 — change requires [CANON-APPROVED:] tag.
-	call_deferred("_normalize_player_model", 1.1)
-	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(1.1))
-	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(1.1))
-	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(1.15))
+	call_deferred("_normalize_player_model", 0.85)
+	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(0.85))
+	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(0.85))
+	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(0.90))
 	# Floor-snap on first physics frame so the player always starts on actual ground,
 	# not floating at the scene-file Y=1 (the 1m gap closes via gravity anyway, but
 	# this removes the first-frame "am I on the floor?" confusion from move_and_slide).

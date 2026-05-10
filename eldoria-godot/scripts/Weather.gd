@@ -114,7 +114,11 @@ func _build_rain_emitter() -> void:
 	curve.add_point(Vector2(0.15, 1.0))
 	curve.add_point(Vector2(0.85, 0.8))
 	curve.add_point(Vector2(1.0, 0.0))
-	pm.alpha_curve = curve
+	# Godot 4: ParticleProcessMaterial.alpha_curve expects a CurveTexture, not a raw Curve.
+	# Wrap it so the parse error ("Value of type Curve cannot be assigned to Texture2D") is gone.
+	var alpha_tex := CurveTexture.new()
+	alpha_tex.curve = curve
+	pm.alpha_curve = alpha_tex
 	pm.color = Color(0.72, 0.82, 0.92, 0.55)   # cool blue-white, semi-transparent
 
 	_rain_emitter.process_material = pm
