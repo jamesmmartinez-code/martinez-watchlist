@@ -629,7 +629,15 @@ func _play_voice_line(line_id: String) -> void:
 	call_deferred("_lift_npc_to_ground")
 
 func _lift_npc_to_ground() -> void:
-	# Walk children, find lowest VisualInstance3D y, lift everything up by that amount.
+	# Find the lowest visible point of the model and offset the MODEL child — not the root.
+	#
+	# BUG FIXED: the old code did `global_position.y += lift` which moved the ENTIRE
+	# StaticBody3D, collision capsule included.  After the lift the capsule was floating
+	# above the ground, and CharacterBody3D players walking near NPCs were deflected
+	# upward by the capsule's curved top — launching them into the air.
+	#
+	# Correct approach: keep the root (and its collision shape) at y=0; only push the
+	# visual model child upward so the mesh sits on the ground.
 	var lowest: float = INF
 	var found := false
 	for v in find_children("*", "VisualInstance3D", true):
@@ -640,10 +648,22 @@ func _lift_npc_to_ground() -> void:
 			lowest = a.position.y
 			found = true
 	if not found: return
-	# If lowest visible point is below current global Y, lift the NPC root.
+
 	var floor_y := global_position.y
-	if lowest < floor_y - 0.05:
-		var lift := floor_y - lowest
-		global_position.y += lift
+	if lowest >= floor_y - 0.05:
+		return   # already on the ground
+
+	var lift := floor_y - lowest
+
+	# Lift only the model Node3D child — skip CollisionShape3D, Label3D, Area3D,
+	# and AudioStreamPlayer3D so the physics and UI stay at their authored positions.
+	for child in get_children():
+		if child is CollisionShape3D: continue
+		if child is Label3D:          continue
+		if child is Area3D:           continue
+		if child is AudioStreamPlayer3D: continue
+		if child is Node3D:
+			child.position.y += lift
+			break   # only the first model child; don't double-lift split hierarchies
 
 
