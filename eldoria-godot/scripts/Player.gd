@@ -149,7 +149,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 1, 10)  # Physics: safe respawn — Y=1 clears thin geometry without floating
+const SAFE_SPAWN := Vector3(8, 3, 5)   # Physics: safe respawn — east of market stall, clear of all village geometry
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
