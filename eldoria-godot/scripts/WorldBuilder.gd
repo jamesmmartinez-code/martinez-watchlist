@@ -3775,11 +3775,11 @@ func _scatter_mushrooms(count: int) -> void:
 				for mesh_inst in (inst as Node3D).find_children("*", "MeshInstance3D", true):
 					if not (mesh_inst is MeshInstance3D):
 						continue
-					var mi := mesh_inst as MeshInstance3D
-					var n_surfs := mi.get_surface_override_material_count()
+					var mesh_mi := mesh_inst as MeshInstance3D
+					var n_surfs := mesh_mi.get_surface_override_material_count()
 					if n_surfs == 0:
 						continue
-					var mi_aabb := mi.get_aabb()
+					var mi_aabb := mesh_mi.get_aabb()
 					var mat := StandardMaterial3D.new()
 					mat.roughness = 0.85
 					mat.metallic = 0.0
@@ -3789,8 +3789,8 @@ func _scatter_mushrooms(count: int) -> void:
 					else:
 						mat.albedo_color = Color(0.9, 0.85, 0.75)
 					for surf_idx in n_surfs:
-						if mi.get_surface_override_material(surf_idx) == null:
-							mi.set_surface_override_material(surf_idx, mat)
+						if mesh_mi.get_surface_override_material(surf_idx) == null:
+							mesh_mi.set_surface_override_material(surf_idx, mat)
 			call_deferred("_settle_to_ground", holder)
 
 func _build_village_barrels() -> void:
