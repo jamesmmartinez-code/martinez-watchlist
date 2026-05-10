@@ -235,7 +235,7 @@ func _ready() -> void:
 	call_deferred("_normalize_player_model", 1.1)
 	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(1.1))
 	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(1.1))
-	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(1.3))
+	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(1.15))
 
 func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
@@ -1351,6 +1351,15 @@ func set_title(t: String) -> void:
 # ────────────────────────────────────────────────────────────────────────
 func _normalize_player_model(target_height: float) -> void:
 	await get_tree().process_frame
+	# Pre-reset: if model child is at a wildly large scale (GLB in cm units),
+	# bring it to (1,1,1) first so the AABB measurement reflects true unit size.
+	for c in get_children():
+		if c is BoneAttachment3D: continue
+		if c.find_children("*", "VisualInstance3D", true, false).size() > 0:
+			var cs := c.scale
+			if cs.x > 5.0 or cs.x < 0.01:
+				c.scale = Vector3.ONE
+			break
 	var aabb := AABB()
 	var has := false
 	for c in find_children("*", "VisualInstance3D", true):
