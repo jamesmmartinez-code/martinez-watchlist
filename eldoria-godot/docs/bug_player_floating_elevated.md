@@ -76,7 +76,27 @@ Changed to `SAFE_SPAWN` so every escape route lands in the same place.
 - **F1** — soft unstick: teleports to spawn
 - **`]`** — alias for F1 (for keyboards with locked function keys)
 
+## Follow-on Bug: SAFE_SPAWN inside a building roof (commit `2612242`)
+`SAFE_SPAWN` was briefly set to `Vector3(8, 3, 5)` — Y=3 places the player
+inside the roof mesh of the building at `(6,0,6)`. Physics ejected them upward
+on every spawn. Fix: move SAFE_SPAWN to `Vector3(0, 1, 10)`, an open area with
+no buildings within 6 m, and call `_do_floor_snap_unstick()` after every teleport.
+
+## Follow-on Bug: building wall collision top was a walkable ledge (commit `677a38f`)
+Building wall collision box was `height=3.1, centre y=1.55` → top face at Y=3.1,
+right at eave level. Any small upward nudge left the player standing on that flat
+surface, looking like they were on the roof. Fix: extend to `height=7.0, centre
+y=3.5` so the top face is at Y=7 — unreachable by any normal jump.
+
 ## Rule of Thumb for Future Code
 **Never adjust `global_position.y` upward as a stuck-recovery.**
 It feels like "give the player room to move" but it accumulates silently.
 Always raycast to the floor or teleport to a known safe position instead.
+
+**SAFE_SPAWN must be verified against the actual world layout.**
+Check it against the BUILDINGS array whenever buildings move. Y should be 0–1,
+not mid-air. Always follow a teleport with `_do_floor_snap_unstick()`.
+
+**Building collision boxes must be taller than any reachable jump height.**
+If the box top is below the player's max jump apex, it becomes a walkable ledge.
+Set height generously (7 m+) so there is no accessible flat surface on the roof.
