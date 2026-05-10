@@ -228,9 +228,10 @@ func _do_respawn(data: NemesisData, near_pos: Vector3) -> void:
 
 	emit_signal("nemesis_respawned", data)
 
-	# Flash the screen to announce their return (kids love this moment)
+	# Flash + notification to announce their return (kids love this moment)
 	if is_instance_valid(Juice):
 		Juice.screen_flash(Color(0.85, 0.20, 0.20, 0.40), 0.55)
+		Juice.show_notification("☠ " + data.nemesis_name + " has returned!", Color(1.0, 0.35, 0.25))
 
 # ==========================================================================
 # Name generator

@@ -163,6 +163,17 @@ func _boss_intro() -> void:
 	_say("intro")
 	get_tree().call_group("world", "play_sfx", "boss_intro")
 	get_tree().call_group("world", "update_boss_hp_bar", hp, max_hp, "Watcher Core")
+
+	# ── Cinematic freeze + dramatic entrance ────────────────────────────────
+	# Freeze player input for 1.8s so they watch the reveal, not mash buttons.
+	if is_instance_valid(Juice):
+		Juice.player_cinematic(1.80)
+		Juice.screen_flash(Color(0.40, 0.70, 1.0, 0.70), 0.65)
+		Juice.hit_stop(0.22)
+		Juice.screen_shake(0.30, 0.50)
+		Juice.camera_fov_punch(16.0, 0.50)
+		Juice.show_notification("✦ The Watcher Core awakens ✦", Color(0.40, 0.80, 1.0))
+
 	if UITheme and UITheme.has_method("spawn_damage_popup"):
 		UITheme.spawn_damage_popup(get_tree().current_scene,
 			global_position + Vector3(0, 3.5, 0),

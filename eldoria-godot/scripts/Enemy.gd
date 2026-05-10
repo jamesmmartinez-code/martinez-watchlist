@@ -377,7 +377,9 @@ func _apply_variant_shader() -> void:
 	# second RNG call is needed — slight algebraic scatter is enough.
 	mat.set_shader_parameter("roughness",   clampf(0.75 - (b - 1.0) * 0.2, 0.55, 0.90))
 	mat.set_shader_parameter("time_offset", b * TAU)   # unique per instance, no RNG
-	mat.set_shader_parameter("damage_flash", 0.0)
+	mat.set_shader_parameter("damage_flash",  0.0)
+	mat.set_shader_parameter("attack_flash",  0.0)
+	mat.set_shader_parameter("dissolve",      0.0)
 	_variant_shader_mat = mat
 	# Defer so the instantiated GLB sub-tree is fully parented before we walk it.
 	call_deferred("_apply_shader_to_meshes", _model, mat)
@@ -588,11 +590,16 @@ func _physics_process(delta: float) -> void:
 	# EnemyVariant shader: per-frame uniform updates.
 	# Guard on _variant_shader_mat so real-GLB enemies skip entirely.
 	if _variant_shader_mat:
-		# Damage flash decay (rate 6.0×/s)
+		# Damage flash decay (rate 6.0×/s — red flash on hit)
 		var flash: float = float(_variant_shader_mat.get_shader_parameter("damage_flash"))
 		if flash > 0.0:
 			_variant_shader_mat.set_shader_parameter("damage_flash",
 				maxf(0.0, flash - delta * 6.0))
+		# Attack flash decay (rate 5.0×/s — orange telegraph on swing)
+		var atk_flash: float = float(_variant_shader_mat.get_shader_parameter("attack_flash"))
+		if atk_flash > 0.0:
+			_variant_shader_mat.set_shader_parameter("attack_flash",
+				maxf(0.0, atk_flash - delta * 5.0))
 		# HP-ratio glow: emissive_strength rises from 0.35 at full HP to 1.5 near
 		# death — enemies literally glow more as they get desperate.  Both a visual
 		# threat cue ("this one is almost dead, press the advantage") AND a survival
@@ -791,14 +798,21 @@ func _fire_watcher_bolt() -> void:
 
 func _do_attack() -> void:
 	_attack_timer = attack_cooldown
+	# ── Attack telegraph flash — orange pulse just before damage ──────────────
+	if _variant_shader_mat:
+		_variant_shader_mat.set_shader_parameter("attack_flash", 1.0)
+		# attack_flash decays in _physics_process at the same rate as damage_flash
 	if _player and _player.has_method("take_damage"):
 		var dmg := damage
 		# Adaptation: anti-air — bonus 40% damage when player is airborne
 		if blackboard.get("anti_air", false) and not _player.is_on_floor():
 			dmg = int(dmg * 1.40)
 		_player.take_damage(dmg, self)   # pass self so Player tracks _last_attacker for NemesisSystem
-		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
+		# ── Directional camera shove toward impact ────────────────────────────
 		var dir := (_player.global_position - global_position).normalized()
+		if is_instance_valid(Juice):
+			Juice.directional_shake(dir, 0.10)
+		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
 		_player.velocity += dir * 4.5
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -898,10 +912,24 @@ func _spawn_damage_number(amount: int, is_crit: bool) -> void:
 func _die(source: Node) -> void:
 	_state = "dead"
 	get_tree().call_group("world", "play_sfx", "enemy_death")
-	# Hide model + bars
-	if _model: _model.visible = false
+	# ── Dissolve death animation ──────────────────────────────────────────────
+	# Shader-based crumble for fallback capsule enemies; instant hide for GLBs.
+	# Both paths hide bars and label immediately (they aren't part of the model).
 	if _hp_bar: _hp_bar.visible = false
-	if _label: _label.visible = false
+	if _label:  _label.visible  = false
+	if _variant_shader_mat and _model:
+		# Animate dissolve 0→1 over 0.45s then hide the model
+		var tw := create_tween()
+		tw.tween_method(
+			func(v: float) -> void:
+				if is_instance_valid(_variant_shader_mat):
+					_variant_shader_mat.set_shader_parameter("dissolve", v),
+			0.0, 1.0, 0.45
+		).set_trans(Tween.TRANS_SINE)
+		tw.tween_callback(func() -> void:
+			if is_instance_valid(_model): _model.visible = false)
+	elif _model:
+		_model.visible = false
 	# Drop loot — XP/gold to player
 	if source and source.has_method("gain_xp"):
 		source.gain_xp(xp_reward)

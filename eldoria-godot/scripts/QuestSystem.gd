@@ -44,6 +44,9 @@ func add_quest(quest: QuestData) -> void:
 		return
 	active_quests[quest.id] = quest
 	emit_signal("quest_added", quest)
+	# Notify the player via Juice toast — "Quest: ..." appears briefly on-screen
+	if is_instance_valid(Juice):
+		Juice.show_notification("Quest: " + quest.title, Color(0.90, 0.85, 0.45))
 
 func get_quest(id: String) -> QuestData:
 	return active_quests.get(id, completed_quests.get(id, null))
@@ -63,6 +66,11 @@ func complete_quest(id: String) -> void:
 	active_quests.erase(id)
 	_give_rewards(quest.rewards)
 	emit_signal("quest_completed", quest)
+	# Victory toast + camera punch
+	if is_instance_valid(Juice):
+		Juice.show_notification("✦ Quest complete: " + quest.title, Color(0.45, 1.0, 0.55))
+		Juice.camera_fov_punch(6.0, 0.20)
+		Juice.screen_flash(Color(0.60, 1.0, 0.60, 0.20), 0.25)
 	# Update map — clear associated objective markers.
 	if is_instance_valid(MapSystem):
 		MapSystem.clear_objective(id)

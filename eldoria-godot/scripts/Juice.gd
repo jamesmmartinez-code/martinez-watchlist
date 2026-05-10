@@ -136,5 +136,153 @@ func _run_shake() -> void:
 	_shaking        = false
 	_shake_intensity = 0.0
 
+# ── FOV punch ─────────────────────────────────────────────────────────────
+# Briefly compresses the camera's field-of-view inward then springs back.
+# Gives heavy hits and kills a "lens impact" that reads even on a small screen.
+# Default amount=8° — comfortable; crank to 14 for boss kills.
+func camera_fov_punch(amount: float = 8.0, spring_duration: float = 0.22) -> void:
+	if not juice_enabled:
+		return
+	var vp := get_viewport()
+	var cam: Camera3D = vp.get_camera_3d() if vp else null
+	if not cam or not is_instance_valid(cam):
+		return
+	var base_fov := cam.fov
+	var tw := create_tween()
+	tw.tween_property(cam, "fov", base_fov - amount, 0.04).set_trans(Tween.TRANS_EXPO)
+	tw.tween_property(cam, "fov", base_fov + amount * 0.30, 0.05)
+	tw.tween_property(cam, "fov", base_fov, spring_duration).set_trans(Tween.TRANS_SPRING)
+
+# ── Directional shake ─────────────────────────────────────────────────────
+# Shoves the camera OPPOSITE the hit direction (recoil), then springs back.
+# dir is world-space (typically: attacker→target normalized).
+# Composites with any running screen_shake — the spring tween restores to 0.
+func directional_shake(dir: Vector3, intensity: float = 0.18) -> void:
+	if not juice_enabled:
+		return
+	var vp := get_viewport()
+	var cam: Camera3D = vp.get_camera_3d() if vp else null
+	if not cam or not is_instance_valid(cam):
+		return
+	# Map world dir components to camera offsets (h=lateral, v=vertical)
+	var push_h: float =  dir.x * intensity
+	var push_v: float = -dir.z * intensity * 0.45
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(cam, "h_offset", push_h, 0.04).set_trans(Tween.TRANS_EXPO)
+	tw.tween_property(cam, "v_offset", push_v, 0.04).set_trans(Tween.TRANS_EXPO)
+	var tw2 := create_tween().set_parallel(true)
+	tw2.tween_interval(0.04)
+	tw2.tween_property(cam, "h_offset", 0.0, 0.18).set_trans(Tween.TRANS_SPRING)
+	tw2.tween_property(cam, "v_offset", 0.0, 0.18).set_trans(Tween.TRANS_SPRING)
+
+# ── Persistent tint ───────────────────────────────────────────────────────
+# Unlike screen_flash (one-shot), this sets a low-alpha overlay that holds
+# for `hold` seconds then fades out over `fade` seconds.
+# Used for: low-HP danger (red), high corruption (sickly green), boss aura.
+var _tint_rect: ColorRect   = null
+var _tint_layer: CanvasLayer = null
+var _tint_tween: Tween       = null
+
+func screen_tint(color: Color, hold: float = 0.0, fade: float = 0.6) -> void:
+	if not juice_enabled:
+		return
+	_ensure_tint()
+	_tint_rect.color = color
+	_tint_rect.visible = true
+	if _tint_tween and _tint_tween.is_valid():
+		_tint_tween.kill()
+	_tint_tween = create_tween()
+	if hold > 0.0:
+		_tint_tween.tween_interval(hold)
+	_tint_tween.tween_property(_tint_rect, "color:a", 0.0, fade).set_trans(Tween.TRANS_SINE)
+	_tint_tween.tween_callback(func() -> void: if is_instance_valid(_tint_rect): _tint_rect.visible = false)
+
+func set_ambient_tint(color: Color) -> void:
+	# Call every frame for persistent effects (low HP, corruption).
+	# Does NOT spawn a new tween — just updates the rect color.
+	if not juice_enabled:
+		return
+	_ensure_tint()
+	if _tint_tween and _tint_tween.is_valid():
+		_tint_tween.kill()   # cancel any active fade so tint stays visible
+	_tint_rect.color = color
+	_tint_rect.visible = color.a > 0.0
+
+func clear_ambient_tint(fade: float = 0.5) -> void:
+	if not _tint_rect or not is_instance_valid(_tint_rect):
+		return
+	if _tint_tween and _tint_tween.is_valid():
+		_tint_tween.kill()
+	_tint_tween = create_tween()
+	_tint_tween.tween_property(_tint_rect, "color:a", 0.0, fade).set_trans(Tween.TRANS_SINE)
+	_tint_tween.tween_callback(func() -> void: if is_instance_valid(_tint_rect): _tint_rect.visible = false)
+
+func _ensure_tint() -> void:
+	if _tint_layer and is_instance_valid(_tint_layer):
+		return
+	_tint_layer = CanvasLayer.new()
+	_tint_layer.layer = 120   # below flash (127) but above HUD (10)
+	_tint_layer.name  = "JuiceTintLayer"
+	get_tree().current_scene.call_deferred("add_child", _tint_layer)
+	_tint_rect = ColorRect.new()
+	_tint_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_tint_rect.color   = Color(1.0, 0.0, 0.0, 0.0)
+	_tint_rect.visible = false
+	_tint_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tint_layer.call_deferred("add_child", _tint_rect)
+
+# ── Notification toast ────────────────────────────────────────────────────
+# Stacks short-lived text banners on the right side of the screen.
+# Slide in, hold, fade out — Alden & Owen love when the game tells them
+# what happened ("Nemesis returns!" / "Quest unlocked!").
+var _notif_layer: CanvasLayer = null
+var _notif_box:   VBoxContainer = null
+
+func show_notification(text: String, color: Color = Color(1.0, 0.90, 0.50)) -> void:
+	_ensure_notif()
+	var lbl := Label.new()
+	lbl.text             = text
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	lbl.add_theme_font_size_override("font_size", 19)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	lbl.add_theme_constant_override("shadow_offset_x", 2)
+	lbl.add_theme_constant_override("shadow_offset_y", 2)
+	lbl.modulate.a = 0.0
+	_notif_box.add_child(lbl)
+	# Fade in → hold → fade out → free
+	var tw := create_tween()
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.20).set_trans(Tween.TRANS_EXPO)
+	tw.tween_interval(2.40)
+	tw.tween_property(lbl, "modulate:a", 0.0, 0.55).set_trans(Tween.TRANS_SINE)
+	tw.tween_callback(lbl.queue_free)
+
+func _ensure_notif() -> void:
+	if _notif_layer and is_instance_valid(_notif_layer):
+		return
+	_notif_layer = CanvasLayer.new()
+	_notif_layer.layer = 115
+	_notif_layer.name  = "JuiceNotifLayer"
+	get_tree().current_scene.call_deferred("add_child", _notif_layer)
+	_notif_box = VBoxContainer.new()
+	_notif_box.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_notif_box.position = Vector2(-300, 12)
+	_notif_box.size     = Vector2(290, 500)
+	_notif_box.alignment = BoxContainer.ALIGNMENT_END
+	_notif_layer.call_deferred("add_child", _notif_box)
+
+# ── Cinematic lock ────────────────────────────────────────────────────────
+# Temporarily disables player input/movement for scripted moments
+# (boss intros, cutscene beats, dramatic pauses).
+# Broadcasts through the "player" group so no direct node reference needed.
+func player_cinematic(duration: float) -> void:
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("set_cinematic_lock"):
+			p.set_cinematic_lock(true)
+	await get_tree().create_timer(duration).timeout
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("set_cinematic_lock"):
+			p.set_cinematic_lock(false)
+
 # ── Debug toggle ──────────────────────────────────────────────────────────
 var juice_enabled: bool = true

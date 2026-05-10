@@ -22,6 +22,10 @@ var is_attacking: bool = false
 var is_dead: bool = false
 # Last enemy to land a hit — used by NemesisSystem to mark the killer
 var _last_attacker: Node = null
+# Set by Juice.player_cinematic() for boss intros / cutscene moments
+var cinematic_lock: bool = false
+# World-feel tick: low-HP tint + corruption shake throttled to not spam every frame
+var _world_feel_timer: float = 0.0
 # Stuck-recovery timers (kids need this to never feel locked out)
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
@@ -298,6 +302,22 @@ func _physics_process(delta: float) -> void:
 	else:
 		_dead_timer = 0.0
 
+	# ── World-feel ticks (low HP tint + corruption shake) ────────────────────
+	_world_feel_timer -= delta
+	if _world_feel_timer <= 0.0:
+		_world_feel_timer = 0.5   # update twice per second (not every frame)
+		_apply_world_feel()
+
+	# Cinematic lock: block movement but allow physics (gravity, move_and_slide)
+	# so the player doesn't float during boss intros.
+	if cinematic_lock:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		if not is_on_floor():
+			velocity.y -= gravity * delta
+		move_and_slide()
+		return
+
 	# Gravity
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -563,6 +583,12 @@ func use_skill(idx: int) -> void:
 		fwd_d.y = 0
 		_dash_vel = fwd_d.normalized() * float(sk["dash_speed"])
 
+	# ── Attack anticipation squash (windup body language) ─────────────────────
+	# Stretch vertically — body "coils" before releasing force.
+	# Juice.stretch is already guard-checked for null node.
+	if is_instance_valid(Juice):
+		Juice.stretch(self, 0.10)
+
 	# ── Wind-up pause ────────────────────────────────────────────────────────
 	await get_tree().create_timer(float(sk["windup"])).timeout
 	if is_dead:
@@ -627,12 +653,25 @@ func use_skill(idx: int) -> void:
 	# queue in Juice and causes overlapping freezes to fight each other.
 	if hit_count > 0:
 		Juice.hit_stop_tier(final_dmg)
+		# ── Impact squash — body compresses on contact (force transfer read)
+		if is_instance_valid(Juice):
+			Juice.squash(self, 0.16 + float(idx) * 0.04)
+		# ── Combo finisher (step 3) — extra punch for the finishing blow ─────────
+		if _combo_step == 3 and is_instance_valid(Juice):
+			Juice.camera_fov_punch(10.0, 0.25)
+			Juice.screen_shake(0.20, 0.25)
+			Juice.screen_flash(Color(1.0, 0.90, 0.50, 0.18), 0.18)
+		# ── FOV punch on every heavy skill (idx ≥ 1) ─────────────────────────
+		elif idx >= 1 and is_instance_valid(Juice):
+			Juice.camera_fov_punch(5.0 + float(idx) * 2.0, 0.18)
 
 	# ── Camera shake on heavy-impact skills (index ≥ 1) ─────────────────────
 	if hit_count > 0 and idx >= 1:
 		var shake_amt: float = 0.015 + idx * 0.008   # scales with skill power
 		if camera_pivot and camera_pivot.has_method("shake"):
 			camera_pivot.shake(shake_amt, 0.18)
+		elif is_instance_valid(Juice):
+			Juice.screen_shake(shake_amt, 0.18)   # fallback: use Juice shake directly
 
 	# ── Recovery lockout ─────────────────────────────────────────────────────
 	await get_tree().create_timer(float(sk["recovery"])).timeout
@@ -979,6 +1018,37 @@ func _respawn_at_well() -> void:
 	is_dead = false
 	stats_changed.emit()
 	get_tree().call_group("world", "hide_death_overlay")
+	# Clear any lingering danger tint on respawn
+	if is_instance_valid(Juice):
+		Juice.clear_ambient_tint()
+
+# ── World-feel environmental feedback ─────────────────────────────────────
+
+func _apply_world_feel() -> void:
+	if not is_instance_valid(Juice):
+		return
+	var hp_ratio: float = float(hp) / float(max_hp)
+	var corruption: float = WorldState.corruption_level if is_instance_valid(WorldState) else 0.0
+
+	# Low HP → red danger tint (fades in below 35%)
+	if hp_ratio < 0.35:
+		var danger := clampf((0.35 - hp_ratio) / 0.35, 0.0, 1.0)
+		Juice.set_ambient_tint(Color(1.0, 0.05, 0.05, danger * 0.22))
+	elif hp_ratio >= 0.50:
+		# Back to safe — clear tint
+		Juice.clear_ambient_tint(0.8)
+
+	# High corruption → passive micro-shake (world itself trembles)
+	if corruption > 0.65:
+		var shake_amt := (corruption - 0.65) / 0.35 * 0.04   # 0 → 0.04 max
+		Juice.screen_shake(shake_amt, 0.6)
+
+	# Critical corruption (>0.85) → sickly green tint overrides danger red
+	if corruption > 0.85:
+		Juice.set_ambient_tint(Color(0.20, 0.50, 0.10, 0.18))
+
+func set_cinematic_lock(locked: bool) -> void:
+	cinematic_lock = locked
 
 # ────────────────────────────────────────────────────────────────────────
 # Quest hooks (called by Enemy via group)
