@@ -189,6 +189,9 @@ jobs:
             esac
           }
           OK=0; FAIL=0
+          # Upload all files EXCEPT pck-parts.json and index.html first.
+          # pck-parts.json is uploaded last so clients never see the new manifest
+          # paired with old/incomplete chunks (race condition fix — empty world bug).
           for f in eldoria/*; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
@@ -199,15 +202,27 @@ jobs:
               echo "  ⏭  index.html (skipped — R2 keeps Godot shell)"
               continue
             fi
+            # DEFER pck-parts.json — uploaded last after all chunks are live.
+            if [ "$name" = "pck-parts.json" ]; then
+              echo "  ⏳  pck-parts.json (deferred — uploading last)"
+              continue
+            fi
             mime=$(mime_for "$f")
             CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
               -X PUT -H "Authorization: Bearer $CF_TOKEN" \
               -H "Content-Type: $mime" --data-binary "@$f" \
               "$API/$name")
-            # skip redirect HTML — R2 keeps the real Godot shell
-            if [ "$name" = "index.html" ]; then echo "  ⏭  index.html (skipped — R2 keeps Godot shell)"; continue; fi
             if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ $name"; else FAIL=$((FAIL+1)); echo "  ❌ $name → HTTP $CODE"; fi
           done
+          # Upload manifest LAST — atomic swap so clients always see a consistent state.
+          if [ -f "eldoria/pck-parts.json" ]; then
+            mime=$(mime_for "eldoria/pck-parts.json")
+            CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
+              -X PUT -H "Authorization: Bearer $CF_TOKEN" \
+              -H "Content-Type: $mime" --data-binary "@eldoria/pck-parts.json" \
+              "$API/pck-parts.json")
+            if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ pck-parts.json (manifest — uploaded last)"; else FAIL=$((FAIL+1)); echo "  ❌ pck-parts.json → HTTP $CODE"; fi
+          fi
           echo "🚢 R2 sync: $OK ok, $FAIL failed"
 
       - name: Overwrite GH Pages /eldoria/index.html with redirect → Cloudflare
