@@ -477,8 +477,11 @@ func _physics_process(delta: float) -> void:
 	# ── Detection / Utility AI ─────────────────────────────────────────────
 	# Only run LoS check when player is close enough to matter (perf guard).
 	_in_los = dist < aggro_range and _check_line_of_sight()
+	# Reactive scouts detect the player more than twice as fast — they're
+	# designed to read and respond, so they can't be "snuck up on" as easily.
+	var effective_detect_rate := 40.0 if _reactive_mode else DETECT_RATE
 	if _in_los:
-		detection_level = minf(detection_level + DETECT_RATE * delta, DETECT_MAX)
+		detection_level = minf(detection_level + effective_detect_rate * delta, DETECT_MAX)
 		blackboard["last_seen_pos"] = _player.global_position
 	else:
 		detection_level = maxf(detection_level - DETECT_DECAY * delta, 0.0)

@@ -169,6 +169,11 @@ func _section_pre_boss() -> void:
 # ── Section 6 · Echo Knight Boss ──────────────────────────────────────────
 func _section_echo_knight() -> void:
 	_say_narrator("The Echo Knight awakens. It knows everything you've done.")
+	# Notify quest system that the player has reached the boss area.
+	if is_instance_valid(QuestSystem):
+		QuestSystem.on_area_entered("BossArea")
+	if is_instance_valid(MapSystem):
+		MapSystem.on_area_entered("BossArea")
 	_boss = _spawn_echo_knight()
 	if _boss:
 		if _boss.has_signal("died"):
@@ -181,6 +186,9 @@ func _section_echo_knight() -> void:
 # ==========================================================================
 func _on_boss_defeated() -> void:
 	_say_narrator("The Echo fades… silence reclaims the ruins.")
+	# Stop wave-management loop immediately so _process can't re-advance sections.
+	_ticking = false
+	_alive_enemies.clear()
 	# Unlock air_dash via SkillTree (registered in Player._setup_skill_tree)
 	if is_instance_valid(SkillTree) and _player:
 		SkillTree.try_unlock("air_dash", _player)
@@ -203,9 +211,12 @@ func _spawn_enemy(kind: String, spawn_key: String, overrides: Dictionary = {}) -
 	var body := CharacterBody3D.new()
 	body.set_script(ENEMY_SCRIPT)
 	# Apply overrides BEFORE _ready so the enemy sees them.
-	if overrides.has("max_hp"):     body.set("max_hp",  overrides["max_hp"])
-	if overrides.has("damage"):     body.set("damage",  overrides["damage"])
-	if overrides.has("speed"):      body.set("speed",   overrides["speed"])
+	if overrides.has("max_hp"):     body.set("max_hp",       overrides["max_hp"])
+	if overrides.has("damage"):     body.set("damage",       overrides["damage"])
+	# Enemy.gd exports "move_speed" not "speed" — using the wrong key is a
+	# silent no-op that leaves all enemies at their default walk rate.
+	if overrides.has("speed"):      body.set("move_speed",   overrides["speed"])
+	if overrides.has("chase_speed"): body.set("chase_speed", overrides["chase_speed"])
 	body.set("enemy_kind", kind)
 	var spawn_node := get_node_or_null(spawn_root)
 	var parent: Node = spawn_node if spawn_node else get_tree().current_scene

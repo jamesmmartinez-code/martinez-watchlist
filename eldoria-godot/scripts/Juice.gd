@@ -15,23 +15,30 @@ var _hitstop_remaining: float = 0.0
 var _hitstop_active: bool = false
 
 func hit_stop(duration: float = 0.06) -> void:
-	# Don't allow a lighter stop to cut short a heavier one already running.
-	var scaled := duration * 0.05   # actual real-time at time_scale 0.05
-	if scaled <= _hitstop_remaining:
+	# duration = desired pause in real-world seconds.
+	# Re-entrant: a heavier call mid-freeze extends the remaining window.
+	# Lighter calls are ignored so a quick melee can't cut short a heavy-slam freeze.
+	if not juice_enabled:
 		return
-	_hitstop_remaining = scaled
+	if duration <= _hitstop_remaining:
+		return
+	_hitstop_remaining = duration
 	if not _hitstop_active:
 		_hitstop_active = true
 		Engine.time_scale = 0.05
 		_run_hitstop()
 
 func _run_hitstop() -> void:
-	# Uses unscaled time so it ends even while the game is frozen.
-	while _hitstop_remaining > 0.0:
+	# Uses Time.get_ticks_msec() (wall-clock, unaffected by Engine.time_scale)
+	# so the freeze always ends after exactly the requested real-time seconds.
+	# Calling get_process_delta_time() here would return 0.0 because Juice has
+	# no _process — that would produce an infinite freeze loop.
+	var start_ms := Time.get_ticks_msec()
+	while (Time.get_ticks_msec() - start_ms) < int(_hitstop_remaining * 1000.0):
 		await get_tree().process_frame
-		_hitstop_remaining -= get_process_delta_time()
 	Engine.time_scale = 1.0
-	_hitstop_active = false
+	_hitstop_active   = false
+	_hitstop_remaining = 0.0
 
 func hit_stop_tier(damage: int) -> void:
 	if damage >= 20:

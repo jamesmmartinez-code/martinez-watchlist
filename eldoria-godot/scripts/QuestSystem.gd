@@ -28,6 +28,11 @@ var failed_quests:    Dictionary = {}   # id → QuestData
 # ── Player reference (set externally or on_player_ready) ──────────────────
 var _player: Node = null
 
+func _ready() -> void:
+	# Join the same group Enemy._die() broadcasts to so kill objectives advance
+	# automatically whenever any enemy dies — no extra callsites needed.
+	add_to_group("quest_listeners")
+
 func set_player(p: Node) -> void:
 	_player = p
 

@@ -260,6 +260,9 @@ func _physics_process(delta: float) -> void:
 		_save_timer = 0.0
 		save_game()
 
+	# Dynamic skill-tree adaptation tick — checks playstyle-gated unlocks
+	_tick_adapt(delta)
+
 	# Skill cooldown countdown
 	for i: int in _skill_timers.size():
 		if _skill_timers[i] > 0.0:
@@ -387,6 +390,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y   = jump_velocity
 		_jump_buffer = 0.0
 		_coyote_timer = 0.0   # prevent double-jump via coyote window
+		GameBrain.record_action("airborne")
 
 	# ── Variable height: short hop on tap, full arc on hold ─────────────────
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
@@ -489,6 +493,10 @@ func _buffer_attack(idx: int) -> void:
 		_attack_buffer_timer = ATTACK_BUFFER_TIME
 
 func _is_skill_unlocked(idx: int) -> bool:
+	# Early-unlock overrides come first — playstyle-driven dynamic skills
+	# bypass the level gate, so always check _early_unlocks before level.
+	if idx in _early_unlocks:
+		return true
 	return idx < SKILL_UNLOCK_LEVELS.size() and level >= SKILL_UNLOCK_LEVELS[idx]
 
 func use_skill(idx: int) -> void:
@@ -527,6 +535,16 @@ func use_skill(idx: int) -> void:
 	is_attacking = true
 	stats_changed.emit()
 
+	# ── Playstyle tracking ───────────────────────────────────────────────────
+	# Record every skill use as "aggressive" so GameBrain adapts enemies and
+	# bosses to the player's combat habits.  Dash Attack additionally records
+	# "dash_heavy" because it's the canonical mobile/evasive playstyle marker.
+	GameBrain.record_action("aggressive")
+	if idx == 2:  # Dash Attack
+		GameBrain.record_action("dash_heavy")
+	_skill_use_counts[idx] += 1
+	_check_ability_mutations(idx)
+
 	# ── Combo chain (Slash only) ─────────────────────────────────────────────
 	if sk.get("combo", false):
 		_combo_step = (_combo_step % 3) + 1
@@ -553,6 +571,9 @@ func use_skill(idx: int) -> void:
 	# ── Damage dispatch ──────────────────────────────────────────────────────
 	var dmg: Dictionary = _roll_damage()
 	var final_dmg: int  = int(float(dmg.amount) * float(sk["damage_mult"]))
+	# Armor Break mutation: Heavy Strike (idx 1) deals +40% once unlocked.
+	if idx == 1 and GameBrain.has_evolution("heavy_armor_break"):
+		final_dmg = int(float(final_dmg) * 1.40)
 	var hit_count := 0
 
 	if sk.get("projectile", false):
@@ -588,11 +609,22 @@ func use_skill(idx: int) -> void:
 					_spawn_crit_flash()
 				hit_count += 1
 
+	# ── Mutation secondary effects ───────────────────────────────────────────
+	# Echo Strike: Slash (idx 0) resonates — a second arc fires 0.14s later
+	# at 50% damage.  Triggered only when hits landed this swing.
+	if idx == 0 and hit_count > 0 and GameBrain.has_evolution("slash_multihit"):
+		_echo_strike_secondary(final_dmg)
+	# Inferno Spread: Fireball (idx 3) splits into two flanking projectiles
+	# at ±22° — launched 0.18s after the main ball clears windup.
+	if idx == 3 and hit_count > 0 and GameBrain.has_evolution("fireball_pyro"):
+		_inferno_spread_extra(final_dmg)
+
 	# ── Hit-stop — frame-precise freeze on contact ───────────────────────────
+	# Delegates to Juice (Engine.time_scale, re-entrant, wall-clock safe).
+	# DO NOT manual-set Engine.time_scale here — that bypasses the priority
+	# queue in Juice and causes overlapping freezes to fight each other.
 	if hit_count > 0:
-		Engine.time_scale = 0.05
-		await get_tree().create_timer(0.06 * Engine.time_scale).timeout
-		Engine.time_scale = 1.0
+		Juice.hit_stop_tier(final_dmg)
 
 	# ── Camera shake on heavy-impact skills (index ≥ 1) ─────────────────────
 	if hit_count > 0 and idx >= 1:
@@ -765,6 +797,50 @@ func _show_mutation_popup(text: String) -> void:
 	)
 	get_tree().call_group("world", "_show_toast", text)
 
+func _echo_strike_secondary(base_dmg: int) -> void:
+	# Echo Strike mutation: second arc fires 0.14s after the primary slash.
+	# Uses the same range/arc as Slash (idx 0) at 50% damage so it hits
+	# whatever was already in the swing cone — no aiming required.
+	await get_tree().create_timer(0.14).timeout
+	if is_dead:
+		return
+	var echo_dmg   := int(float(base_dmg) * 0.50)
+	var eff_range  := attack_range + float(SKILLS[0]["range_bonus"])
+	var eff_arc    := attack_arc_deg + float(SKILLS[0]["arc_bonus"])
+	var arc_rad    := deg_to_rad(eff_arc) * 0.5
+	var fwd        := -global_transform.basis.z
+	fwd.y = 0; fwd = fwd.normalized()
+	var secondary_hits := 0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy):
+			continue
+		var to_e: Vector3 = enemy.global_position - global_position
+		to_e.y = 0
+		if to_e.length() <= eff_range and fwd.angle_to(to_e.normalized()) <= arc_rad:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(echo_dmg, self)
+				secondary_hits += 1
+	if secondary_hits > 0 and is_instance_valid(Juice):
+		Juice.hit_stop(0.03)   # light echo-stop so the resonance is felt
+
+func _inferno_spread_extra(base_dmg: int) -> void:
+	# Inferno Spread mutation: two flanking fireballs branch off ±22°
+	# from the main fireball's path at 75% damage each, fired 0.18s later
+	# so they visually chase the primary ball.
+	await get_tree().create_timer(0.18).timeout
+	if is_dead:
+		return
+	var spread_dmg := int(float(base_dmg) * 0.75)
+	var base_dir   := -global_transform.basis.z
+	base_dir.y = 0; base_dir = base_dir.normalized()
+	for angle_deg: float in [-22.0, 22.0]:
+		var spread_dir := base_dir.rotated(Vector3.UP, deg_to_rad(angle_deg))
+		var fb := Area3D.new()
+		fb.set_script(FIREBALL_SCRIPT)
+		fb.global_position = global_position + Vector3(0, 1.0, 0)
+		get_tree().current_scene.add_child(fb)
+		fb.launch(spread_dir, spread_dmg, self)
+
 func _roll_damage() -> Dictionary:
 	var base := attack_damage_base + int(level * 1.5)
 	# Add weapon bonus damage
@@ -834,6 +910,13 @@ func take_damage(amount: int) -> void:
 	hp = max(0, hp - actual)
 	stats_changed.emit()
 	get_tree().call_group("world", "play_sfx", "damage_taken")
+	# Track defensive playstyle — enemies and bosses use this to detect passive
+	# or tanky players and tighten their pressure accordingly.
+	GameBrain.record_action("defensive")
+	# Juice feedback — screen reddens proportionally to hit weight
+	if is_instance_valid(Juice):
+		var red_alpha: float = clampf(float(actual) / 40.0, 0.05, 0.30)
+		Juice.screen_flash(Color(1.0, 0.10, 0.10, red_alpha), 0.18)
 	# Damage number above player
 	var dn := Label3D.new()
 	dn.set_script(DAMAGE_NUMBER_SCRIPT)

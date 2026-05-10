@@ -32,6 +32,9 @@ var _minimap_dot:    ColorRect   = null
 var _player: Node = null
 
 func _ready() -> void:
+	# Must process even while the game is paused (we pause on open and need
+	# input to close again; without ALWAYS we'd be locked out of our own menu).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_player = get_tree().current_scene.get_node_or_null("Player")
 	_build_ui()
 	visible = false

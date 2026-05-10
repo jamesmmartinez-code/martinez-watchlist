@@ -54,6 +54,10 @@ const VULN_WINDOW: float = 1.0     # seconds the window stays open after a slam
 # player's playstyle and biases the attack pool toward countering their habits.
 var _boss_adapt_timer: float = 0.0
 const BOSS_ADAPT_INTERVAL: float = 5.0
+# Per-boss AI memory — dodge-side counts, phase flags.
+# Matches the structure used by Enemy.gd so _observe_player_dodge / _attack_charge
+# work identically.  Declared here so the crash on first charge is impossible.
+var blackboard: Dictionary = {}
 
 const ENEMY_SCRIPT = preload("res://scripts/Enemy.gd")
 
