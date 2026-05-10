@@ -118,26 +118,6 @@ var inventory: Node = null
 var kills_by_kind: Dictionary = {}   # e.g. {"goblin": 3}
 var active_quest: Dictionary = {}    # {"target":"goblin", "needed":5, "killed":0, "giver":"Maeve"}
 
-# ── Adaptive Playstyle Tracker ─────────────────────────────────────────────
-# Counters accumulate every time the matching action fires in real gameplay.
-# Enemies and the boss read `playstyle` to evolve their behaviour against you.
-# Thresholds drive organic skill unlocks + ability mutations below.
-var playstyle: Dictionary = {
-	"aggressive": 0,   # attacks used
-	"defensive":  0,   # times taking damage
-	"airborne":   0,   # jumps executed
-	"dash_heavy": 0,   # Dash Attack / dash skill fires
-}
-# Per-skill usage counters (parallel to SKILLS array)
-var _skill_use_counts: Array[int] = [0, 0, 0, 0]
-# Ability mutations unlocked through play — never cleared (saved with game)
-var _mutations: Dictionary = {}
-# Early-unlock overrides — skills whose level gate has been bypassed via play
-var _early_unlocks: Array[int] = []
-# Adaptation tick — we check unlocks/mutations every ADAPT_INTERVAL seconds
-var _adapt_timer: float = 0.0
-const ADAPT_INTERVAL: float = 10.0
-
 # Mounted state
 var mounted: bool = false
 var mount_node: Node3D = null
@@ -258,9 +238,6 @@ func _physics_process(delta: float) -> void:
 		_save_timer = 0.0
 		save_game()
 
-	# Adaptive playstyle — check organic unlocks + mutations every ADAPT_INTERVAL
-	_tick_adapt(delta)
-
 	# Skill cooldown countdown
 	for i: int in _skill_timers.size():
 		if _skill_timers[i] > 0.0:
@@ -302,13 +279,31 @@ func _physics_process(delta: float) -> void:
 	# extract forward/right from the camera yaw (Y-rotation) so strafing and
 	# reversing always feel correct regardless of where the camera is pointing.
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	# Re-acquire camera_pivot if it was lost (e.g. scene reload, camera swap)
+	if not camera_pivot or not is_instance_valid(camera_pivot):
+		var root := get_tree().current_scene
+		if root:
+			camera_pivot = (
+				root.get_node_or_null("CameraController") or
+				root.get_node_or_null("CameraPivot") or
+				root.get_node_or_null("Camera")
+			)
 	var direction := Vector3.ZERO
-	if camera_pivot and input_dir != Vector2.ZERO:
-		var forward := -camera_pivot.global_transform.basis.z
-		var right   :=  camera_pivot.global_transform.basis.x
-		forward.y = 0
-		right.y   = 0
-		direction = (forward * input_dir.y + right * input_dir.x).normalized()
+	if input_dir != Vector2.ZERO:
+		if camera_pivot and is_instance_valid(camera_pivot):
+			var forward := -camera_pivot.global_transform.basis.z
+			var right   :=  camera_pivot.global_transform.basis.x
+			forward.y = 0
+			right.y   = 0
+			var cam_dir := (forward * input_dir.y + right * input_dir.x)
+			if cam_dir.length_squared() > 0.0001:
+				direction = cam_dir.normalized()
+			else:
+				# Camera basis degenerate — fall back to world-space movement
+				direction = Vector3(-input_dir.x, 0, -input_dir.y).normalized()
+		else:
+			# No camera pivot — world-space fallback so WASD always works
+			direction = Vector3(-input_dir.x, 0, -input_dir.y).normalized()
 
 	# Run modifier (left shift); halved during attack so player can't kite freely
 	current_speed = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
@@ -369,8 +364,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y   = jump_velocity
 		_jump_buffer = 0.0
 		_coyote_timer = 0.0   # prevent double-jump via coyote window
-		playstyle["airborne"] += 1
-		GameBrain.record_action("airborne")
 
 	# ── Variable height: short hop on tap, full arc on hold ─────────────────
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
@@ -473,8 +466,6 @@ func _buffer_attack(idx: int) -> void:
 		_attack_buffer_timer = ATTACK_BUFFER_TIME
 
 func _is_skill_unlocked(idx: int) -> bool:
-	if idx in _early_unlocks:
-		return true   # playstyle unlocked this slot early
 	return idx < SKILL_UNLOCK_LEVELS.size() and level >= SKILL_UNLOCK_LEVELS[idx]
 
 func use_skill(idx: int) -> void:
@@ -513,15 +504,6 @@ func use_skill(idx: int) -> void:
 	is_attacking = true
 	stats_changed.emit()
 
-	# ── Playstyle tracking ───────────────────────────────────────────────────
-	playstyle["aggressive"] += 1
-	GameBrain.record_action("aggressive")
-	if idx == 2:   # Dash Attack
-		playstyle["dash_heavy"] += 1
-		GameBrain.record_action("dash_heavy")
-	_skill_use_counts[idx] += 1
-	_check_ability_mutations(idx)
-
 	# ── Combo chain (Slash only) ─────────────────────────────────────────────
 	if sk.get("combo", false):
 		_combo_step = (_combo_step % 3) + 1
@@ -548,9 +530,6 @@ func use_skill(idx: int) -> void:
 	# ── Damage dispatch ──────────────────────────────────────────────────────
 	var dmg: Dictionary = _roll_damage()
 	var final_dmg: int  = int(float(dmg.amount) * float(sk["damage_mult"]))
-	# Mutations that boost base damage (read from GameBrain — persistent across sessions)
-	if idx == 1 and GameBrain.has_evolution("heavy_armor_break"):
-		final_dmg = int(final_dmg * 1.40)  # armor-break: +40% to Heavy Strike
 	var hit_count := 0
 
 	if sk.get("projectile", false):
@@ -591,37 +570,6 @@ func use_skill(idx: int) -> void:
 		Engine.time_scale = 0.05
 		await get_tree().create_timer(0.06 * Engine.time_scale).timeout
 		Engine.time_scale = 1.0
-
-	# ── Mutation: Slash multi-hit ────────────────────────────────────────────
-	# Fires a second 50% arc sweep after the first hit. The brief delay makes
-	# it feel like an echo rather than double-damage, giving skilled players a
-	# reason to stay in close range (the second hit only reaches attack_range).
-	if idx == 0 and hit_count > 0 and GameBrain.has_evolution("slash_multihit"):
-		await get_tree().create_timer(0.14).timeout
-		if not is_dead:
-			var fwd2 := -global_transform.basis.z; fwd2.y = 0; fwd2 = fwd2.normalized()
-			for enemy2 in get_tree().get_nodes_in_group("enemies"):
-				if not is_instance_valid(enemy2): continue
-				var te2 := enemy2.global_position - global_position; te2.y = 0
-				if te2.length() > attack_range or te2.length() < 0.001: continue
-				if fwd2.angle_to(te2.normalized()) > deg_to_rad(attack_arc_deg * 0.5): continue
-				if enemy2.has_method("take_damage"):
-					enemy2.take_damage(int(final_dmg * 0.5), self)
-
-	# ── Mutation: Fireball secondary spread ──────────────────────────────────
-	# Spawns two flanking fireballs at ±22° after a short delay — makes the
-	# pyro build feel genuinely different from the base single-projectile form.
-	if idx == 3 and GameBrain.has_evolution("fireball_pyro"):
-		await get_tree().create_timer(0.18).timeout
-		if not is_dead:
-			var base_dir := -global_transform.basis.z; base_dir.y = 0; base_dir = base_dir.normalized()
-			for side_deg in [-22.0, 22.0]:
-				var spread_dir := base_dir.rotated(Vector3.UP, deg_to_rad(side_deg))
-				var fb2 := Area3D.new()
-				fb2.set_script(FIREBALL_SCRIPT)
-				fb2.global_position = global_position + Vector3(0, 1.0, 0)
-				get_tree().current_scene.add_child(fb2)
-				fb2.launch(spread_dir, int(final_dmg * 0.4), self)
 
 	# ── Camera shake on heavy-impact skills (index ≥ 1) ─────────────────────
 	if hit_count > 0 and idx >= 1:
@@ -686,56 +634,6 @@ func _update_player_state(delta: float) -> void:
 func _attack() -> void:
 	use_skill(0)
 
-# ── Adaptive system — tick + organic unlocks + ability mutations ──────────
-func _tick_adapt(delta: float) -> void:
-	_adapt_timer += delta
-	if _adapt_timer >= ADAPT_INTERVAL:
-		_adapt_timer = 0.0
-		_check_adaptive_unlocks()
-
-func _check_adaptive_unlocks() -> void:
-	# Organic skill unlocks: bypass the level gate when the player has
-	# demonstrated that playstyle enough to have earned the tool early.
-	# Airborne playstyle → Fireball (slot 3) unlocks via aerial mastery
-	if playstyle["airborne"] >= 25 and not (3 in _early_unlocks) and not _is_skill_unlocked(3):
-		_early_unlocks.append(3)
-		_show_mutation_popup("🔥 Aerial mastery — Fireball unlocked early!")
-	# Aggressive playstyle → Heavy Strike (slot 1) unlocks via combat hardening
-	if playstyle["aggressive"] >= 40 and not (1 in _early_unlocks) and not _is_skill_unlocked(1):
-		_early_unlocks.append(1)
-		_show_mutation_popup("⚔️ Relentless — Heavy Strike unlocked early!")
-
-func _check_ability_mutations(idx: int) -> void:
-	# Called after every successful skill use. Routes through GameBrain so
-	# mutations persist across sessions and are readable by all systems.
-	match idx:
-		0:  # Slash → Echo Strike at 50 uses
-			if _skill_use_counts[0] == 50 and not GameBrain.has_evolution("slash_multihit"):
-				GameBrain.set_evolution("slash_multihit")
-				_show_mutation_popup("⚡ Slash evolved: Echo Strike!")
-		1:  # Heavy Strike → Armor Break at 30 uses (+40% damage)
-			if _skill_use_counts[1] == 30 and not GameBrain.has_evolution("heavy_armor_break"):
-				GameBrain.set_evolution("heavy_armor_break")
-				_show_mutation_popup("⚡ Heavy Strike evolved: Armor Break!")
-		2:  # Dash Attack → (reserved for future mutation)
-			pass
-		3:  # Fireball → Inferno Spread at 25 uses
-			if _skill_use_counts[3] == 25 and not GameBrain.has_evolution("fireball_pyro"):
-				GameBrain.set_evolution("fireball_pyro")
-				_show_mutation_popup("⚡ Fireball evolved: Inferno Spread!")
-
-func _show_mutation_popup(text: String) -> void:
-	# Big centred popup — bigger than a toast, smaller than a death screen.
-	# Uses UITheme.spawn_damage_popup so it floats up and fades automatically.
-	UITheme.spawn_damage_popup(
-		get_tree().current_scene,
-		global_position + Vector3(0, 3.2, 0),
-		text,
-		Color(1.0, 0.85, 0.25),   # warm gold — feels like a level-up moment
-		44, 6
-	)
-	get_tree().call_group("world", "_show_toast", text)
-
 func _roll_damage() -> Dictionary:
 	var base := attack_damage_base + int(level * 1.5)
 	# Add weapon bonus damage
@@ -796,8 +694,6 @@ func _play_anim(name: String) -> void:
 func take_damage(amount: int) -> void:
 	if is_dead:
 		return
-	playstyle["defensive"] += 1
-	GameBrain.record_action("defensive")
 	# Armor reduction (formula: armor / (armor + 50))
 	var armor_value: int = 0
 	if inventory:
