@@ -19,6 +19,7 @@ var is_dead: bool = false
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
 var _jam_timer: float = 0.0
+var last_position: Vector3 = Vector3.ZERO  # Physics: track for stuck-detection auto-recovery
 
 # Stats
 var hp: int = 120
@@ -48,6 +49,7 @@ var mounted: bool = false
 var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
+const SAFE_SPAWN := Vector3(0, 5, 10)  # Physics: safe respawn — Y>=5 so player clears terrain
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -142,7 +144,7 @@ func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = Vector3(0, 2, 0)
+		global_position = SAFE_SPAWN  # Physics: snap to SAFE_SPAWN (Y>=5)
 		velocity = Vector3.ZERO
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
@@ -192,8 +194,9 @@ func _physics_process(delta: float) -> void:
 	current_speed = run_speed if Input.is_key_pressed(KEY_SHIFT) else walk_speed
 
 	# Stuck-recovery #4: if input is being pressed but we haven't moved horizontally for >1s,
-	# something is jamming us (collision wedge, frozen state). Teleport up 1m and clear velocity.
+	# something is jamming us (collision wedge, frozen state). Teleport up 1.5m and clear velocity.
 	var horiz_speed := Vector2(velocity.x, velocity.z).length()
+	last_position = global_position  # Physics: track position each frame for stuck-detection
 	if input_dir.length() > 0.1 and horiz_speed < 0.05:
 		_jam_timer += delta
 		if _jam_timer > 1.0:
@@ -451,8 +454,8 @@ func _die() -> void:
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
-	# Well is at (0, 0, 6) per WorldBuilder
-	global_position = Vector3(0, 1.0, 6.5)
+	# Well is at (0, 0, 6) per WorldBuilder — use SAFE_SPAWN (Y>=5) to clear terrain
+	global_position = SAFE_SPAWN
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
