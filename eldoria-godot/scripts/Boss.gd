@@ -42,11 +42,21 @@ var _adds_spawned: Array = []
 var _intro_watch: bool = false
 var _intro_played: bool = false
 
+# ── Phase-driven attack pool + vulnerability windows ──────────────────────
+# _attack_pool holds method names; enter_phase() swaps it each transition.
+# Phase 0 = base patterns; Phase 1 = speed boost; Phase 2 = enrage.
+var _attack_pool: Array = []       # populated in _ready() and enter_phase()
+var _vulnerability: bool  = false  # true → incoming hits deal ×VULN_MULT
+var _vuln_timer:    float = 0.0
+const VULN_MULT:   float = 1.5     # bonus damage multiplier during the window
+const VULN_WINDOW: float = 1.0     # seconds the window stays open after a slam
+
 const ENEMY_SCRIPT = preload("res://scripts/Enemy.gd")
 
 func _ready() -> void:
 	hp = max_hp
 	_spawn_pos = global_position
+	_attack_pool = ["_attack_melee", "_attack_slam", "_attack_charge"]
 	add_to_group("enemies")
 	add_to_group("bosses")
 	collision_layer = 4
@@ -131,6 +141,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0
 
+	# Vulnerability window countdown
+	if _vuln_timer > 0.0:
+		_vuln_timer = maxf(0.0, _vuln_timer - delta)
+		if _vuln_timer <= 0.0:
+			_vulnerability = false
+
 	if not _player:
 		var players := get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
@@ -158,16 +174,12 @@ func _physics_process(delta: float) -> void:
 			if w_intro and w_intro.has_method("set_world_flag"):
 				w_intro.set_world_flag("seen_warlord", true)
 
-	# Phase transitions
+	# Phase transitions — delegate to enter_phase() so pool + stats update together
 	var hp_ratio := float(hp) / float(max_hp)
 	if _phase == 0 and hp_ratio < 0.5:
-		_phase = 1
-		_summon_adds(2)
-		_show_boss_msg("RAAAGH! To me, my kin!")
+		enter_phase(1)
 	elif _phase == 1 and hp_ratio < 0.25:
-		_phase = 2
-		_summon_adds(2)
-		_show_boss_msg("YOU WILL FALL!")
+		enter_phase(2)
 
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0
@@ -179,15 +191,8 @@ func _physics_process(delta: float) -> void:
 		_state = "melee"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
-		if _next_pattern_t <= 0:
-			# Pick a random pattern
-			var pick = randi() % 3
-			if pick == 0:
-				_attack_melee()
-			elif pick == 1:
-				_attack_slam()
-			else:
-				_attack_charge()
+		if _next_pattern_t <= 0 and not _attack_pool.is_empty():
+			call(_attack_pool[randi() % _attack_pool.size()])
 	elif dist < aggro_range:
 		_state = "chase"
 		var dir := to_player.normalized()
@@ -195,7 +200,11 @@ func _physics_process(delta: float) -> void:
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
 		if _next_pattern_t <= 0 and dist < charge_distance:
-			_attack_charge()
+			# Prefer charge in pool; fall back to enrage in phase 2
+			if "_attack_charge" in _attack_pool:
+				_attack_charge()
+			elif "_attack_enrage" in _attack_pool:
+				_attack_enrage()
 
 	move_and_slide()
 
@@ -228,6 +237,8 @@ func _attack_slam() -> void:
 				p.take_damage(int(damage * 1.4))
 				var d = (p.global_position - global_position).normalized()
 				p.velocity += d * 8.0 + Vector3.UP * 4.0
+	# Post-slam: boss is briefly winded — skilled players can punish this window
+	_open_vulnerability(VULN_WINDOW)
 
 func _attack_charge() -> void:
 	_next_pattern_t = 4.2
@@ -257,6 +268,57 @@ func _attack_charge() -> void:
 					p.velocity += pd * 10.0 + Vector3.UP * 3.5
 		await get_tree().create_timer(0.05).timeout
 		t += 0.05
+
+# ── Phase system ──────────────────────────────────────────────────────────
+func enter_phase(p: int) -> void:
+	_phase = p
+	match p:
+		1:
+			# 50% HP — kin arrive, boss gets a speed bump
+			_attack_pool = ["_attack_melee", "_attack_slam", "_attack_charge"]
+			chase_speed  = minf(chase_speed + 1.0, 10.0)
+			_summon_adds(2)
+			_show_boss_msg("RAAAGH! To me, my kin!")
+		2:
+			# 25% HP — full enrage: faster, hits harder, enrage attack enters pool
+			# Slam's aftermath opens a vulnerability window to reward aggressive play.
+			_attack_pool = ["_attack_slam", "_attack_charge", "_attack_enrage",
+							"_attack_melee", "_attack_enrage"]
+			chase_speed  = minf(chase_speed + 1.5, 12.0)
+			damage       = int(damage * 1.2)
+			_summon_adds(2)
+			_show_boss_msg("⚡⚡ ENRAGE — YOU WILL FALL!")
+			# Brief opening at the start of phase 2 as a cinematic beat
+			_open_vulnerability(1.5)
+
+func _open_vulnerability(duration: float) -> void:
+	_vulnerability = true
+	_vuln_timer    = duration
+	# Visual cue — crown pulses white so a sharp player notices the window
+	var crown := get_node_or_null("CrownMesh")
+	if crown and crown is MeshInstance3D:
+		var tw := create_tween()
+		tw.tween_property(crown, "scale", Vector3(1.5, 1.5, 1.5), 0.08).set_trans(Tween.TRANS_EXPO)
+		tw.tween_property(crown, "scale", Vector3(1.0, 1.0, 1.0), duration - 0.08).set_trans(Tween.TRANS_ELASTIC)
+
+func _attack_enrage() -> void:
+	# Phase-2 only: rapid three-hit flurry — no telegraph, pure aggression.
+	# After the third hit the boss is briefly winded (vulnerability window).
+	_next_pattern_t = 2.6
+	_show_boss_msg("⚡ FLURRY!")
+	for _h in 3:
+		await get_tree().create_timer(0.20).timeout
+		if _state == "dead":
+			return
+		if not _player:
+			return
+		if _player.global_position.distance_to(global_position) < attack_range + 1.0:
+			if _player.has_method("take_damage"):
+				_player.take_damage(int(damage * 0.6))
+				var d := (_player.global_position - global_position).normalized()
+				_player.velocity += d * 3.5 + Vector3.UP * 1.2
+	# Short stagger after the burst — the window skilled players exploit
+	_open_vulnerability(VULN_WINDOW)
 
 func _summon_adds(count: int) -> void:
 	for i in count:
@@ -328,6 +390,9 @@ func _show_boss_msg(text: String) -> void:
 # ── Damage / death ─────────────────────────────────────────────────────────
 func take_damage(amount: int, source: Node = null) -> void:
 	if _state == "dead": return
+	# Vulnerability window — player is rewarded for landing hits after a slam
+	if _vulnerability:
+		amount = int(float(amount) * VULN_MULT)
 	hp = max(0, hp - amount)
 	get_tree().call_group("world", "update_boss_hp_bar", hp, max_hp, enemy_name)
 	_spawn_damage_number(amount)

@@ -115,6 +115,19 @@ var _knockback_vel:  Vector3 = Vector3.ZERO  # applied in _physics_process, deca
 # Tier: light (<8 dmg)=0s, medium (<20)=0.25s, heavy (≥20)=0.55s
 var _stagger_timer: float = 0.0
 
+# ── Utility AI / Detection ─────────────────────────────────────────────────
+# detection_level builds while the player is in line-of-sight, decays when
+# hidden. Once above DETECT_THRESHOLD the enemy chases. When LoS is fully
+# lost (level reaches 0) the enemy gives up and resumes wandering.
+# blackboard stores persistent per-enemy AI memory (last known player pos).
+var detection_level: float  = 0.0     # 0 = unaware, 100 = fully alerted
+const DETECT_RATE:      float = 18.0  # gain/s while player is in LoS
+const DETECT_DECAY:     float = 6.0   # lose/s when LoS breaks
+const DETECT_THRESHOLD: float = 30.0  # cross this to start chasing
+const DETECT_MAX:       float = 100.0
+var _in_los:    bool       = false    # line-of-sight result this frame
+var blackboard: Dictionary = {}       # AI memory keyed by string
+
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 
 signal died(enemy)
@@ -423,18 +436,54 @@ func _physics_process(delta: float) -> void:
 
 	_attack_timer = max(0.0, _attack_timer - delta)
 
-	if dist < attack_range:
+	# ── Detection / Utility AI ─────────────────────────────────────────────
+	# Only run LoS check when player is close enough to matter (perf guard).
+	_in_los = dist < aggro_range and _check_line_of_sight()
+	if _in_los:
+		detection_level = minf(detection_level + DETECT_RATE * delta, DETECT_MAX)
+		blackboard["last_seen_pos"] = _player.global_position
+	else:
+		detection_level = maxf(detection_level - DETECT_DECAY * delta, 0.0)
+		if detection_level <= 0.0:
+			blackboard.erase("last_seen_pos")  # fully lost — give up the hunt
+
+	var action := _utility_action(dist)
+
+	if action == "attack":
 		_state = "attack"
 		velocity.x = 0; velocity.z = 0
 		_face_target(to_player, delta)
 		if _attack_timer <= 0:
 			_do_attack()
-	elif dist < aggro_range:
+	elif action == "chase":
 		_state = "chase"
-		var dir := to_player.normalized()
-		velocity.x = dir.x * chase_speed
-		velocity.z = dir.z * chase_speed
-		_face_target(to_player, delta)
+		# If we have LoS chase the real position; otherwise hunt the last known pos
+		var chase_pos: Vector3 = _player.global_position if _in_los \
+			else blackboard.get("last_seen_pos", _player.global_position)
+		var to_target := chase_pos - global_position
+		to_target.y = 0
+		if to_target.length() > 0.5:
+			var dir := to_target.normalized()
+			velocity.x = dir.x * chase_speed
+			velocity.z = dir.z * chase_speed
+			_face_target(to_target, delta)
+		else:
+			# Reached last-known position but player not visible — abandon
+			velocity.x = 0; velocity.z = 0
+			if not _in_los:
+				blackboard.erase("last_seen_pos")
+	elif action == "retreat":
+		_state = "wander"
+		# Flee back toward spawn at full chase speed
+		var to_spawn := _spawn_pos - global_position
+		to_spawn.y = 0
+		if to_spawn.length() > 1.0:
+			var dir := to_spawn.normalized()
+			velocity.x = dir.x * chase_speed
+			velocity.z = dir.z * chase_speed
+			_face_target(to_spawn, delta)
+		else:
+			velocity.x = 0; velocity.z = 0
 	else:
 		_idle_drift(delta)
 
@@ -629,6 +678,10 @@ func _respawn() -> void:
 	_attack_charge_timer = 0.0
 	_state = "idle"
 	_player = null
+	# Reset Utility AI state so the enemy starts fresh
+	detection_level = 0.0
+	_in_los         = false
+	blackboard.clear()
 	_update_hp_bar()
 
 func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
@@ -657,6 +710,33 @@ func _spawn_loot_popup(item: Dictionary, qty: int) -> void:
 # fail-soft contract as WorldBuilder spawn density: missing world node,
 # missing accessor, or unmapped kind ALL fall through to baseline — never
 # crash. See SYSTEM_REGISTRY.md "Enemy Cooldown Schema" for the contract.
+# ── Line-of-sight + Utility AI ────────────────────────────────────────────
+func _check_line_of_sight() -> bool:
+	if not _player or not is_instance_valid(_player):
+		return false
+	var space := get_world_3d().direct_space_state
+	if not space:
+		return false
+	var from := global_position + Vector3(0, 0.9, 0)
+	var to   := _player.global_position + Vector3(0, 0.9, 0)
+	var q    := PhysicsRayQueryParameters3D.create(from, to)
+	q.collision_mask = 1   # world geometry only — ignores other enemies
+	q.exclude         = [get_rid()]
+	return space.intersect_ray(q).is_empty()
+
+func _utility_action(dist: float) -> String:
+	# Score-based decision each frame.  Returns the highest-value action name.
+	# Retreat: critically wounded AND player is nearby — flee to spawn
+	if float(hp) / float(max_hp) < 0.18 and dist < aggro_range * 1.5:
+		return "retreat"
+	# Attack: close enough to swing
+	if dist <= attack_range:
+		return "attack"
+	# Chase: we have detection momentum OR we remember where the player was
+	if detection_level >= DETECT_THRESHOLD or blackboard.has("last_seen_pos"):
+		return "chase"
+	return "wander"
+
 func _resolve_adaptive_cooldown() -> void:
 	var faction_id: String = KIND_TO_FACTION.get(enemy_kind, "")
 	if faction_id == "":
