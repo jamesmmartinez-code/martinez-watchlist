@@ -19,6 +19,8 @@ Audio="*res://scripts/Audio.gd"
 GameBrain="*res://scripts/GameBrain.gd"
 SkillTree="*res://scripts/SkillTree.gd"
 Juice="*res://scripts/Juice.gd"
+MapSystem="*res://scripts/MapSystem.gd"
+QuestSystem="*res://scripts/QuestSystem.gd"
 
 [application]
 

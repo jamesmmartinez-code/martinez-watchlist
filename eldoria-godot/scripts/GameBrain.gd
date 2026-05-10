@@ -35,6 +35,15 @@ var _decay_timer: float = 0.0
 # Permanent mutations earned through play.  Saved with the game.
 var evolution_flags: Dictionary = {}
 
+# ── World / streaming memory ──────────────────────────────────────────────
+# Chunk + area state persisted while chunks are unloaded.
+# Key: Vector2i grid pos (WorldStreamer) or String area name (WorldManager)
+# Value: arbitrary Dictionary produced by the chunk/area on unload.
+var global_memory: Dictionary = {}
+
+# Current area the player is in (set by WorldManager).
+var current_area: String = ""
+
 # ── Rolling action history (last HISTORY_MAX entries) ─────────────────────
 var history: Array = []
 const HISTORY_MAX: int = 60   # ~1 min of active play at normal pace
@@ -42,6 +51,7 @@ const HISTORY_MAX: int = 60   # ~1 min of active play at normal pace
 # ── Signals ───────────────────────────────────────────────────────────────
 signal playstyle_changed(key: String, new_value: int)
 signal evolution_unlocked(key: String)
+signal area_changed(area_name: String)
 
 # ─────────────────────────────────────────────────────────────────────────
 # Core API
@@ -116,6 +126,9 @@ func get_save_data() -> Dictionary:
 	return {
 		"playstyle":       playstyle.duplicate(),
 		"evolution_flags": evolution_flags.duplicate(),
+		"current_area":    current_area,
+		# global_memory keys may be Vector2i — serialise to string.
+		"global_memory":   _serialize_memory(),
 	}
 
 func load_save_data(data: Dictionary) -> void:
@@ -125,10 +138,39 @@ func load_save_data(data: Dictionary) -> void:
 				playstyle[k] = float(data["playstyle"][k])
 	if data.has("evolution_flags"):
 		evolution_flags = data["evolution_flags"].duplicate()
+	if data.has("current_area"):
+		current_area = str(data["current_area"])
+	if data.has("global_memory"):
+		_deserialize_memory(data["global_memory"])
+
+func _serialize_memory() -> Dictionary:
+	var out: Dictionary = {}
+	for k in global_memory.keys():
+		var key_str: String = str(k) if k is Vector2i else str(k)
+		out[key_str] = global_memory[k]
+	return out
+
+func _deserialize_memory(saved: Dictionary) -> void:
+	# Area-name keys come back as plain strings; chunk keys are "x,y" pairs.
+	for key_str: String in saved.keys():
+		var parts := key_str.split(",")
+		if parts.size() == 2 and parts[0].is_valid_int() and parts[1].is_valid_int():
+			global_memory[Vector2i(int(parts[0]), int(parts[1]))] = saved[key_str]
+		else:
+			global_memory[key_str] = saved[key_str]
 
 # ── World adaptation helpers ──────────────────────────────────────────────
 # Called by WorldBuilder.gd on zone transitions to adjust global spawn density
 # and patrol frequency based on the player's established playstyle.
+
+func on_area_changed(area_name: String) -> void:
+	# Called by WorldManager whenever the player enters a new area.
+	# Notifies subscribers and records the transition so singletons
+	# (QuestSystem, MapSystem) can react.
+	current_area = area_name
+	emit_signal("area_changed", area_name)
+	if is_instance_valid(QuestSystem):
+		QuestSystem.on_area_entered(area_name)
 
 func get_world_pressure() -> float:
 	# Returns 0.0 (passive) – 1.0 (aggressive) for WorldBuilder spawn scaling.
