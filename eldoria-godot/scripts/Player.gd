@@ -179,7 +179,7 @@ func _ready() -> void:
 	# CHECK 10 — floor physics: snap keeps character glued to ramps;
 	# max_angle 46° lets them climb gentle slopes without sliding off.
 	floor_snap_length = 0.3
-	floor_max_angle = deg_to_rad(46.0)
+	floor_max_angle = deg_to_rad(65.0)  # allow walking on roof slopes (~40°) and steep ramps
 	# Auto-wire camera_pivot if the editor didn't assign it.
 	# CameraController calls _ready later and wires itself via p.camera_pivot = self,
 	# so this fallback handles scenes where the node is named differently.

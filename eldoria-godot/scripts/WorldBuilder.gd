@@ -971,15 +971,13 @@ func _make_building(pos: Vector3) -> void:
 	wall.position.y = 1.3 + 0.5
 	house.add_child(wall)
 
-	# Wall collision so player can't walk through.
-	# Height 7m (centre y=3.5) so the top face sits at y=7 — unreachable by
-	# any normal jump — preventing the player from landing on the roof ledge.
+	# Wall collision — covers foundation + walls up to eave.
 	var body := StaticBody3D.new()
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(3.6, 7.0, 3.6)
+	box.size = Vector3(3.6, 3.4, 3.6)
 	col.shape = box
-	col.position.y = 3.5
+	col.position.y = 1.7
 	body.add_child(col)
 	house.add_child(body)
 
@@ -1023,6 +1021,14 @@ func _make_building(pos: Vector3) -> void:
 	roof.material_override = MAT_ROOF(2.0)
 	roof.position.y = 4.13
 	house.add_child(roof)
+	# Walkable roof collision — trimesh from the actual mesh so the slope is
+	# a proper surface. Player can land here and walk around; floor_max_angle
+	# is 65° so the ~41° pitch is fully walkable without sliding off.
+	var roof_body := StaticBody3D.new()
+	var roof_col  := CollisionShape3D.new()
+	roof_col.shape = pyr.create_trimesh_shape()
+	roof_body.add_child(roof_col)
+	roof.add_child(roof_body)
 
 	# Window with warm light
 	var win_mat := StandardMaterial3D.new()
