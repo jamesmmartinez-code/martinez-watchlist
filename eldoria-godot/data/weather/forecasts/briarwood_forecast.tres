@@ -7,11 +7,11 @@ metadata/_data = """
   "region": "briarwood",
   "days": [
     {
-      "label": "Day 1",
-      "weather": "sunny",
+      "label": "Day 5",
+      "weather": "stormy_warm",
       "high_c": 25,
       "low_c": 15,
-      "omen": "Golden sunsets paint the sky"
+      "omen": "Thunderous heartbeat in the sky"
     }
   ]
 }
