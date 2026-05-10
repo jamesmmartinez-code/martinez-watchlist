@@ -28,6 +28,7 @@ FactionSystem="*res://scripts/FactionSystem.gd"
 WorldState="*res://scripts/WorldState.gd"
 NemesisSystem="*res://scripts/NemesisSystem.gd"
 NarrativeSystem="*res://scripts/NarrativeSystem.gd"
+WorldAmbience="*res://scripts/WorldAmbience.gd"
 
 [application]
 

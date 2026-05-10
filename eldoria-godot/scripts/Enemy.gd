@@ -390,7 +390,7 @@ func _get_kind_emissive() -> Color:
 	# Scouts: electric green (fast, dangerous).  Defaults mirror the orange
 	# used by the shader's built-in emissive_color default.
 	match enemy_kind:
-		"watcher":                       return Color(0.35, 0.70, 1.00)  # spectral blue
+		"watcher":                       return Color(0.50, 0.15, 1.00)  # void purple — arcane / corrupted
 		"drifter":                        return Color(1.00, 0.50, 0.10)  # amber rot
 		"reactive_scout":                 return Color(0.25, 1.00, 0.40)  # electric green
 		"goblin", "goblin_scout":         return Color(0.20, 0.90, 0.25)  # sickly goblin green

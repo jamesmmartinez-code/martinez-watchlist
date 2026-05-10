@@ -64,6 +64,17 @@ void fragment() {
     // Attack flash also boosts eye glow briefly for extra threat readability.
     emissive += emissive_color.rgb * attack_flash * 1.2 * eye_zone;
 
+    // ── Rim lighting — thin arcane halo, colour-matches emissive ──────────────
+    // Keeps enemy silhouettes readable against dark environments and fog.
+    float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.5);
+    emissive += emissive_color.rgb * rim * 0.35;
+
+    // ── Silhouette darkening — subsurface occlusion on back-faces ─────────────
+    // Slightly darken the base colour where the surface faces away from camera
+    // so the mesh reads as a solid shape rather than a flat billboard.
+    float silhouette_fade = clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+    col *= mix(0.72, 1.0, silhouette_fade);
+
     ALBEDO    = col;
     EMISSION  = emissive;
     ROUGHNESS = roughness;
