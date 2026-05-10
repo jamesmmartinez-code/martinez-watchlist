@@ -11,6 +11,11 @@ class_name Player
 @export var camera_pivot: Node3D
 @export var animation_player: AnimationPlayer
 
+# ── State machine ────────────────────────────────────────────────────────────
+# One authoritative state drives animations — no scattered if/else chains.
+enum PlayerState { IDLE, RUN, JUMP, FALL, ATTACK, HURT, DEAD }
+var _player_state: PlayerState = PlayerState.IDLE
+
 var gravity: float = 20.0
 var current_speed: float
 var is_attacking: bool = false
@@ -27,6 +32,13 @@ var _combo_step:  int   = 0
 var _combo_timer: float = 0.0
 const COMBO_WINDOW: float = 1.1   # seconds before chain resets
 var last_position: Vector3 = Vector3.ZERO  # Physics: track for stuck-detection auto-recovery
+
+# ── Jump feel constants (tuned for 9-11yo: forgiving but not floaty) ─────────
+const JUMP_CUT:        float = 0.42   # tap jump → short hop; hold → full arc
+const COYOTE_TIME:     float = 0.12   # seconds after leaving ledge to still jump
+const JUMP_BUFFER_TIME: float = 0.14  # press-before-landing forgiveness window
+var _coyote_timer:  float = 0.0
+var _jump_buffer:   float = 0.0
 
 # Stats
 var hp: int = 120
@@ -279,18 +291,14 @@ func _physics_process(delta: float) -> void:
 		velocity.x = direction.x * current_speed
 		velocity.z = direction.z * current_speed
 		# Rotate player to face movement direction (standard MMORPG behaviour).
-		# look_at guard: skip if direction is degenerate (shouldn't happen after
-		# .normalized() but keeps the WebGL renderer safe).
+		# look_at guard: skip if direction is degenerate
 		var look_pos := global_position + direction
 		if global_position.distance_squared_to(look_pos) > 0.0001:
 			var target_basis := Basis.looking_at(direction, Vector3.UP)
 			global_transform.basis = global_transform.basis.slerp(target_basis, rotation_speed * delta)
-		_play_anim("walk" if current_speed == walk_speed else "run")
 	else:
 		velocity.x = move_toward(velocity.x, 0, current_speed * 4 * delta)
 		velocity.z = move_toward(velocity.z, 0, current_speed * 4 * delta)
-		if not is_attacking:
-			_play_anim("idle")
 
 	# Dash Attack: override horizontal velocity while _dash_vel is live,
 	# then decelerate so the slide feels physical rather than instant-stop.
@@ -299,11 +307,35 @@ func _physics_process(delta: float) -> void:
 		velocity.z = _dash_vel.z
 		_dash_vel = _dash_vel.lerp(Vector3.ZERO, 14.0 * delta)
 
-	# Jump
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+	# ── Coyote time ─────────────────────────────────────────────────────────
+	# Reset timer while grounded; tick down while airborne so the player has a
+	# COYOTE_TIME-second window to jump after stepping off a ledge.
+	if is_on_floor():
+		_coyote_timer = COYOTE_TIME
+	else:
+		_coyote_timer = maxf(0.0, _coyote_timer - delta)
+
+	# ── Jump buffer ──────────────────────────────────────────────────────────
+	# Remember the press even if it arrives slightly before landing.
+	if Input.is_action_just_pressed("jump"):
+		_jump_buffer = JUMP_BUFFER_TIME
+	else:
+		_jump_buffer = maxf(0.0, _jump_buffer - delta)
+
+	# ── Commit the jump ──────────────────────────────────────────────────────
+	if _jump_buffer > 0.0 and _coyote_timer > 0.0 and not is_attacking:
+		velocity.y   = jump_velocity
+		_jump_buffer = 0.0
+		_coyote_timer = 0.0   # prevent double-jump via coyote window
+
+	# ── Variable height: short hop on tap, full arc on hold ─────────────────
+	if Input.is_action_just_released("jump") and velocity.y > 0.0:
+		velocity.y *= JUMP_CUT
 
 	move_and_slide()
+
+	# ── State machine update → drives all animation ──────────────────────────
+	_update_player_state(delta)
 
 # ────────────────────────────────────────────────────────────────────────
 # Panic-key pipeline — runs BEFORE any is_dead guard so kids can always
@@ -516,6 +548,43 @@ func _spawn_fireball(dmg: int) -> void:
 	fire_dir = fire_dir.normalized()
 	fb.launch(fire_dir, dmg, self)
 
+# ────────────────────────────────────────────────────────────────────────────
+# State machine — ONE function decides what animation plays each frame.
+# Physics drives state; state drives animation — never the other way around.
+# ────────────────────────────────────────────────────────────────────────────
+func _update_player_state(delta: float) -> void:
+	# Determine target state from physics truth
+	var next: PlayerState
+	if is_dead:
+		next = PlayerState.DEAD
+	elif is_attacking:
+		next = PlayerState.ATTACK
+	elif not is_on_floor():
+		next = PlayerState.JUMP if velocity.y > 0.0 else PlayerState.FALL
+	elif Vector2(velocity.x, velocity.z).length() > 0.3:
+		next = PlayerState.RUN
+	else:
+		next = PlayerState.IDLE
+
+	if next == _player_state:
+		# Same state — scale run animation speed to actual movement speed
+		if _player_state == PlayerState.RUN and animation_player:
+			var horiz: float = Vector2(velocity.x, velocity.z).length()
+			animation_player.speed_scale = clamp(horiz / run_speed, 0.4, 2.0)
+		return
+
+	_player_state = next
+	if animation_player:
+		animation_player.speed_scale = 1.0   # reset on every state change
+
+	match _player_state:
+		PlayerState.IDLE:   _play_anim("idle")
+		PlayerState.RUN:    _play_anim("walk" if current_speed == walk_speed else "run")
+		PlayerState.JUMP:   _play_anim("jump")
+		PlayerState.FALL:   _play_anim("fall")
+		PlayerState.ATTACK: pass   # use_skill() drives attack animation
+		PlayerState.DEAD:   _play_anim("die")
+
 # Kept for any external callers that still reference _attack() directly.
 func _attack() -> void:
 	use_skill(0)
@@ -558,6 +627,9 @@ func _play_anim(name: String) -> void:
 		"idle":     ["Idle", "idle", "ANIM_idle", "humanoid/Idle", "humanoid/idle"],
 		"walk":     ["Walk", "walk", "Walking", "ANIM_walk", "humanoid/Walk", "humanoid/walk"],
 		"run":      ["Run", "run", "Running", "ANIM_run", "humanoid/Run", "humanoid/run"],
+		"jump":     ["Jump", "jump", "JumpUp", "humanoid/Jump", "run", "Run"],   # fallback to run if no jump anim
+		"fall":     ["Fall", "fall", "Falling", "humanoid/Fall", "idle", "Idle"],
+		"land":     ["Land", "land", "Landing", "humanoid/Land", "idle", "Idle"],
 		"attack":   ["Attack", "Punch", "Slash", "humanoid/Attack"],
 		"attack_1": ["Attack1", "attack_1", "Slash1", "Attack", "attack", "humanoid/Attack"],
 		"attack_2": ["Attack2", "attack_2", "Slash2", "Punch", "Attack", "humanoid/Attack"],
