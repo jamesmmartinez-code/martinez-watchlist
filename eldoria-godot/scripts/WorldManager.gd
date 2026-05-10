@@ -105,6 +105,11 @@ func _load_area(area_name: String) -> void:
 	if is_instance_valid(MapSystem):
 		MapSystem.on_area_entered(area_name)
 
+	# Notify EnemyDirector — combat active in non-safe areas.
+	if is_instance_valid(EnemyDirector):
+		var is_safe := area_name in EnemyDirector.SAFE_AREAS
+		EnemyDirector.set_combat_active(not is_safe)
+
 	# Let the area itself know it was entered (optional hook).
 	if next.has_method("on_area_entered"):
 		next.on_area_entered(_player)

@@ -23,6 +23,7 @@ SkillTree="*res://scripts/SkillTree.gd"
 Juice="*res://scripts/Juice.gd"
 MapSystem="*res://scripts/MapSystem.gd"
 QuestSystem="*res://scripts/QuestSystem.gd"
+EnemyDirector="*res://scripts/EnemyDirector.gd"
 
 [application]
 
