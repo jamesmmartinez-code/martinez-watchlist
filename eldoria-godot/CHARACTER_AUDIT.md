@@ -31,14 +31,14 @@ to do.
 | Asset | Native AABB Y | root_scale | First-frame ≈ |
 |-------|---------------|------------|----------------|
 | `npcs/elder_maeve.glb` | 1.463 m | 1.0 | 1.46m (within tolerance) |
-| `npcs/herbalist_lyra.glb` | 1.000 m | 1.0 | 1.00m → 1.65m by `_normalize_npc_scale` |
+| `npcs/herbalist_lyra.glb` | 1.000 m | 1.65000 | 1.65m (at import) |
 | `npcs/innkeeper_bram.glb` | 1.585 m | 1.0 | 1.59m (within tolerance) |
 | `npcs/maeve.glb` | 1.898 m | 1.0 | 1.90m (within tolerance) |
 | `npcs/mushroom_merchant.glb` | 7.335 m | 0.22479 | 1.65 m |
 | `npcs/smith_edda.glb` | 154.508 m | 0.01068 | 1.65 m |
 | `npcs/stablemaster_roan.glb` | 107.536 m | 0.01535 | 1.65 m |
 | `npcs/trainer_hala.glb` | 433.321 m | 0.00381 | 1.65 m |
-| `npcs/warrior.glb` | 1.036 m | 1.0 | 1.04m → 1.55m enemy default if loaded as bandit; or 1.65m as NPC |
+| `npcs/warrior.glb` | 1.036 m | 1.59266 | 1.65m (at import); geode_tyrant fallback — Boss.gd re-normalizes to 3.0m |
 | `npcs/worker_girl.glb` | 118.509 m | 0.01392 | 1.65 m |
 
 ## Enemies (per-kind targets in `Enemy.gd::_NORMALIZE_TARGET_BY_KIND`)
@@ -272,3 +272,39 @@ for the next sourcing run.
 | Gate 1 — undefined func calls | PASS (0 .gd files modified) |
 | Gate 2 — mass-delete brake | PASS (0 files deleted) |
 | Gate 3 — writable-path whitelist | PASS (`heroes/castle_guard/` path + `CHARACTER_AUDIT.md`) |
+
+## Char-Specialist Run — 2026-05-10 #2 (character auto-run)
+
+### Bug fixed — `_force_hero_height_cap` called with wrong cap value (REGRESSION)
+
+`Player.gd` was calling `_force_hero_height_cap(1.15)` — below the SIZE_STANDARDS §1
+hard cap of **1.30m**. PROBLEMS_LOG §4 2026-05-08 documents the canonical fix as 1.30m,
+but the call site drifted to 1.15 (silent numeric edit). At 1.15 the hard ceiling fires
+only 50mm above the 1.10m target, leaving effectively zero tolerance for AABB variance
+from skinning, equipment attachments, or GLB pivot placement.
+
+**Fix:** `_force_hero_height_cap(1.15)` → `_force_hero_height_cap(1.30)`.
+Tag: `[REGRESSION: player-height-cap-below-canon]`
+
+### Geode Tyrant — mesh still pending (no change this run)
+
+`data/bosses/geode_tyrant.kit.tres` has a `NEEDS:mesh` flag for a
+`geode_tyrant_humanoid_2.5m_crystal_glow_shoulders` GLB (Quaternius RPG monster pack,
+rock-golem, fey-cyan tint). No Sketchfab/Meshy session available in this headless run.
+Boss continues to fall back to `warrior.glb`. Flagged for next interactive sourcing run.
+
+### Canon compliance check
+| Check | Result |
+|-------|--------|
+| `Player.gd` `_normalize_player_model(1.1)` | ✓ LOCKED, not modified |
+| `Player.gd` `_force_hero_height_cap(1.30)` | ✓ **fixed this run** (was 1.15) |
+| `Pet.gd` BARK_LINES/BARK_COLORS — `Array[String/Color]` | ✓ |
+| `Enemy.gd` `_NORMALIZE_TARGET_BY_KIND` | ✓ all entries present |
+| All `.import` files | ✓ no drift detected |
+
+### Safety gates
+| Gate | Result |
+|------|--------|
+| Gate 1 — undefined func calls | PASS (0 new calls introduced) |
+| Gate 2 — mass-delete brake | PASS (0 files deleted) |
+| Gate 3 — writable-path whitelist | PASS (`scripts/Player.gd` whitelisted) |
