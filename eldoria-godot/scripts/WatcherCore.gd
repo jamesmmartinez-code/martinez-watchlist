@@ -176,6 +176,13 @@ func _physics_process(delta: float) -> void:
 	if _state == "dead":
 		return
 
+	# ── Phase-2 ambient tension — persistent subtle shake ──────────────────
+	# Called every frame; Juice.screen_shake re-entry guard ensures only one
+	# coroutine runs at a time.  Refreshes the shake timer so it persists as
+	# long as we're in phase 2.  Stops naturally when calls cease (boss dies).
+	if _phase >= 2 and is_instance_valid(Juice):
+		Juice.screen_shake(0.12)
+
 	# ── Animate rings (always spinning) ────────────────────────────────────
 	var ring_speed_mult := 1.0 + float(_phase) * 0.6
 	for i: int in _ring_nodes.size():
@@ -284,6 +291,8 @@ func _enter_phase(p: int) -> void:
 			_open_vulnerability(1.0)
 			if is_instance_valid(Juice):
 				Juice.screen_flash(Color(1.0, 0.55, 0.15, 0.4), 0.28)
+				# Hit-stop punctuates the transition — player FEELS the power surge.
+				Juice.hit_stop(0.10)
 			get_tree().call_group("world", "play_sfx", "boss_phase")
 		2:
 			_say("phase_2")
@@ -296,6 +305,8 @@ func _enter_phase(p: int) -> void:
 			_open_vulnerability(1.5)
 			if is_instance_valid(Juice):
 				Juice.screen_flash(Color(1.0, 0.10, 0.10, 0.55), 0.35)
+				# Heavier pause for the rage transition — enrage is the biggest moment.
+				Juice.hit_stop(0.16)
 			get_tree().call_group("world", "play_sfx", "boss_phase")
 
 func _adapt_to_player() -> void:
@@ -315,6 +326,17 @@ func _adapt_to_player() -> void:
 	# Cap pool size
 	while _attack_pool.size() > 10:
 		_attack_pool.remove_at(0)
+
+	# ── Rage escalation ────────────────────────────────────────────────────
+	# Aggressive players make the boss attack sooner on the CURRENT countdown —
+	# the effect is felt immediately, not "next attack".  Clamp at 0.8s so the
+	# smallest legal gap between attacks never drops below human reaction time
+	# for Alden (9yo).  Each adapt tick (every 5s) can apply multiple steps if
+	# agg_r crosses both thresholds.
+	if agg_r > 0.40:
+		_attack_t = maxf(0.8, _attack_t * 0.90)   # 10% sooner
+	if agg_r > 0.60:
+		_attack_t = maxf(0.8, _attack_t * 0.85)   # another 15% sooner (×0.765 total)
 
 func _open_vulnerability(dur: float) -> void:
 	_vulnerability = true

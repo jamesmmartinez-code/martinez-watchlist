@@ -68,6 +68,10 @@ void fragment() {
         float aberr = step(0.75, sin(UV.y * 24.0 + t * 30.0)) * 0.10;
         col.r += aberr;
         col.b -= aberr * 0.5;
+        // Instability flicker — binary on/off at 20 Hz, ±30% brightness.
+        // Reads as "core about to explode": not smooth, not safe, not stable.
+        float flicker = step(0.5, sin(t * 20.0));
+        col *= mix(0.70, 1.30, flicker);
     }
 
     // ── Energy pulse on emissive ───────────────────────────────────────────

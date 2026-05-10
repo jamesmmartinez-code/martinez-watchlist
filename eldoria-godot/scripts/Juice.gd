@@ -96,5 +96,45 @@ func stretch(node: Node3D, power: float = 0.18) -> void:
 	tw.tween_property(node, "scale", Vector3(1.0 - power * 0.5, 1.0 + power, 1.0 - power * 0.5), 0.06).set_trans(Tween.TRANS_EXPO)
 	tw.tween_property(node, "scale", Vector3.ONE, 0.18).set_trans(Tween.TRANS_ELASTIC)
 
+# ── Screen shake ──────────────────────────────────────────────────────────
+# Shakes the active Camera3D via h_offset / v_offset so it doesn't fight
+# whatever positional logic CameraController already runs.
+# Call once for a single burst, or every physics frame for sustained tension
+# (subsequent calls just refresh the timer; no new coroutine is spawned).
+var _shaking: bool = false
+var _shake_timer: float = 0.0
+var _shake_intensity: float = 0.0
+
+func screen_shake(intensity: float = 0.15, duration: float = 0.30) -> void:
+	if not juice_enabled:
+		return
+	# Accumulate: keep the stronger intensity and longest remaining time.
+	_shake_intensity = maxf(_shake_intensity, intensity)
+	_shake_timer     = maxf(_shake_timer, duration)
+	if not _shaking:
+		_shaking = true
+		_run_shake()
+
+func _run_shake() -> void:
+	var vp := get_viewport()
+	var cam: Camera3D = vp.get_camera_3d() if vp else null
+	if not cam or not is_instance_valid(cam):
+		_shaking = false
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	while _shake_timer > 0.0:
+		cam.h_offset = rng.randf_range(-_shake_intensity, _shake_intensity)
+		cam.v_offset = rng.randf_range(-_shake_intensity * 0.4, _shake_intensity * 0.4)
+		_shake_timer     -= 0.025       # ≈ 40 ticks per second of shake budget
+		_shake_intensity *= 0.94        # natural decay — stops on its own when not refreshed
+		await get_tree().process_frame
+	# Restore clean camera offsets
+	if is_instance_valid(cam):
+		cam.h_offset = 0.0
+		cam.v_offset = 0.0
+	_shaking        = false
+	_shake_intensity = 0.0
+
 # ── Debug toggle ──────────────────────────────────────────────────────────
 var juice_enabled: bool = true

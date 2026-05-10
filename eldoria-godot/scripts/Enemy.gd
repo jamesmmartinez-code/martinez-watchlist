@@ -154,6 +154,11 @@ const ENEMY_VARIANT_SHADER   = preload("res://shaders/EnemyVariant.gdshader")
 # applied to every MeshInstance3D in the placeholder model so damage_flash can
 # be set as a uniform (smooth per-frame decay) rather than swapping materials.
 var _variant_shader_mat: ShaderMaterial = null
+# Per-instance brightness seed (0.78–1.18).  Generated once in _ready so BOTH
+# the shader tint and randomize_stats_from_visuals() draw from the same value.
+# Bright (>1.09) = aggressive/fast/squishier.  Dark (<0.89) = defensive/tanky/slow.
+var _variant_brightness: float = 1.0
+var _behavior_type: String     = "balanced"   # "aggressive" | "balanced" | "defensive"
 
 signal died(enemy)
 
@@ -165,6 +170,15 @@ func _ready() -> void:
 	_resolve_adaptive_cooldown()
 	_spawn_pos = global_position
 	_spawn_y = global_position.y
+
+	# Generate per-instance brightness BEFORE calling randomize_stats_from_visuals
+	# so both the shader and the stat system share the same value.
+	# Range 0.78–1.18 is wide enough to be visible on screen but not so extreme
+	# that stats become unbalanced for Alden (9yo) / Owen (11yo).
+	var _rng := RandomNumberGenerator.new(); _rng.randomize()
+	_variant_brightness = _rng.randf_range(0.78, 1.18)
+	randomize_stats_from_visuals()
+
 	# REFINE: character — randomise breathe phases so nearby enemies never sync.
 	var _rng_breathe := RandomNumberGenerator.new(); _rng_breathe.randomize()
 	_breathe_phase = _rng_breathe.randf() * TAU
@@ -296,24 +310,49 @@ func _spawn_model() -> void:
 # then defers propagating it to all MeshInstance3D children so the scene
 # tree is fully ready before we walk it.
 # ==========================================================================
+# ==========================================================================
+# Procedural stats — tie visual brightness to combat feel
+# ==========================================================================
+func randomize_stats_from_visuals() -> void:
+	# Visual brightness drives combat stats so the visual read IS the tactical
+	# read — kids spot a threat before they analyse its numbers:
+	#   Bright (>1.09): vivid tint → faster, more aggressive, slightly squishier.
+	#   Dark  (<0.89):  muted tint → slower, more cautious, tankier.
+	# Stat changes are applied to the @export values so faction-pressure cooldown
+	# (already resolved above in _resolve_adaptive_cooldown) is untouched.
+	var b := _variant_brightness
+	move_speed  = maxf(1.4, move_speed  * b)
+	chase_speed = maxf(2.2, chase_speed * b)
+	# Inverse HP scaling: bright = squishier (fast but fragile); dark = tanky.
+	max_hp = maxi(6, int(float(max_hp) * (2.0 - b)))
+	hp     = max_hp   # keep current HP in sync (called before combat starts)
+	# Set behavior archetype — used by utility AI to tune retreat threshold
+	# and adaptation speed without touching the core decision scoring.
+	if b > 1.09:
+		_behavior_type = "aggressive"
+	elif b < 0.89:
+		_behavior_type = "defensive"
+	else:
+		_behavior_type = "balanced"
+
 func _apply_variant_shader() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	# Per-instance brightness scatter so a camp of the same enemy kind never
-	# looks like clones — ±20 % brightness from their base tint.
-	var brightness := rng.randf_range(0.78, 1.18)
+	# Uses _variant_brightness generated in _ready() rather than its own RNG
+	# so the shader colour and combat stats always match the same seed.
+	var b := _variant_brightness
 	var mat := ShaderMaterial.new()
 	mat.shader = ENEMY_VARIANT_SHADER
 	# variant_color: tint scaled by brightness (clamped to valid colour range).
 	mat.set_shader_parameter("variant_color",
-		Color(clampf(tint.r * brightness, 0.0, 1.0),
-		      clampf(tint.g * brightness, 0.0, 1.0),
-		      clampf(tint.b * brightness, 0.0, 1.0), 1.0))
+		Color(clampf(tint.r * b, 0.0, 1.0),
+		      clampf(tint.g * b, 0.0, 1.0),
+		      clampf(tint.b * b, 0.0, 1.0), 1.0))
 	# emissive_color: per-kind lore glow (eye zone at UV.y ≈ 0.85).
 	mat.set_shader_parameter("emissive_color",    _get_kind_emissive())
 	mat.set_shader_parameter("emissive_strength", 0.35)
-	mat.set_shader_parameter("roughness",  rng.randf_range(0.62, 0.88))
-	mat.set_shader_parameter("time_offset", rng.randf() * TAU)
+	# Derive roughness and time_offset from the same brightness seed so no
+	# second RNG call is needed — slight algebraic scatter is enough.
+	mat.set_shader_parameter("roughness",   clampf(0.75 - (b - 1.0) * 0.2, 0.55, 0.90))
+	mat.set_shader_parameter("time_offset", b * TAU)   # unique per instance, no RNG
 	mat.set_shader_parameter("damage_flash", 0.0)
 	_variant_shader_mat = mat
 	# Defer so the instantiated GLB sub-tree is fully parented before we walk it.
@@ -522,14 +561,21 @@ func _physics_process(delta: float) -> void:
 	if _state == "dead":
 		return
 
-	# EnemyVariant shader: decay damage_flash back to 0 each frame (rate 6.0×).
-	# Runs even while chasing / attacking so the flash always clears regardless
-	# of AI state.  Guard on _variant_shader_mat so real-GLB enemies skip entirely.
+	# EnemyVariant shader: per-frame uniform updates.
+	# Guard on _variant_shader_mat so real-GLB enemies skip entirely.
 	if _variant_shader_mat:
+		# Damage flash decay (rate 6.0×/s)
 		var flash: float = float(_variant_shader_mat.get_shader_parameter("damage_flash"))
 		if flash > 0.0:
 			_variant_shader_mat.set_shader_parameter("damage_flash",
 				maxf(0.0, flash - delta * 6.0))
+		# HP-ratio glow: emissive_strength rises from 0.35 at full HP to 1.5 near
+		# death — enemies literally glow more as they get desperate.  Both a visual
+		# threat cue ("this one is almost dead, press the advantage") AND a survival
+		# signal ("this one is fading — feel that").
+		var hp_ratio := float(hp) / float(max_hp)
+		_variant_shader_mat.set_shader_parameter("emissive_strength",
+			clampf(0.35 + (1.0 - hp_ratio) * 1.15, 0.35, 1.5))
 
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -742,6 +788,14 @@ func take_damage(amount: int, source: Node = null) -> void:
 	else:
 		_flash_hurt_color()
 
+	# ── Juice feedback — scale with hit weight ────────────────────────────
+	# hit_stop_tier re-entry logic handles duplicates (Player.gd may call it too).
+	# Screen flash only on heavy hits so small pokes don't fatigue the player.
+	if is_instance_valid(Juice):
+		Juice.hit_stop_tier(amount)
+		if amount >= 25:
+			Juice.screen_flash(Color(1.0, 0.30, 0.20, 0.18), 0.15)
+
 	# Aggro the attacker if not already chasing
 	if source and not _player:
 		_player = source
@@ -933,10 +987,22 @@ func _adapt_to_player() -> void:
 	if def_r > 0.25 and agg_r < 0.15:
 		attack_cooldown = maxf(ATTACK_COOLDOWN_MIN, attack_cooldown - 0.10)
 
+	# Behavior-type modifier: aggressive enemies adapt faster (shorter interval
+	# until next adapt tick); defensive types are content to wait and react less.
+	# We shorten the remaining adapt timer rather than the interval constant so
+	# the next tick fires sooner without permanently warpng the rhythm.
+	if _behavior_type == "aggressive":
+		_adapt_timer = maxf(0.0, _adapt_timer - 1.0)  # adapt fires ~1s sooner
+
 func _utility_action(dist: float) -> String:
 	# Score-based decision each frame.  Returns the highest-value action name.
-	# Retreat: critically wounded AND player is nearby — flee to spawn
-	if float(hp) / float(max_hp) < 0.18 and dist < aggro_range * 1.5:
+	# Retreat threshold varies by behavior archetype (set from visual brightness):
+	#   aggressive = fights until almost dead (0.10) — bright enemies press hard.
+	#   defensive  = flees early            (0.30) — dark enemies value survival.
+	#   balanced   = standard               (0.18)
+	var retreat_hp: float = 0.10 if _behavior_type == "aggressive" else \
+	                        0.30 if _behavior_type == "defensive"  else 0.18
+	if float(hp) / float(max_hp) < retreat_hp and dist < aggro_range * 1.5:
 		return "retreat"
 
 	# Watcher: ranged stance — stay at ideal distance, never melee
