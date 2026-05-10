@@ -31,14 +31,14 @@ to do.
 | Asset | Native AABB Y | root_scale | First-frame ≈ |
 |-------|---------------|------------|----------------|
 | `npcs/elder_maeve.glb` | 1.463 m | 1.0 | 1.46m (within tolerance) |
-| `npcs/herbalist_lyra.glb` | 1.000 m | 1.0 | 1.00m → 1.65m by `_normalize_npc_scale` |
+| `npcs/herbalist_lyra.glb` | 1.000 m | 1.65000 | 1.65m (at import) |
 | `npcs/innkeeper_bram.glb` | 1.585 m | 1.0 | 1.59m (within tolerance) |
 | `npcs/maeve.glb` | 1.898 m | 1.0 | 1.90m (within tolerance) |
 | `npcs/mushroom_merchant.glb` | 7.335 m | 0.22479 | 1.65 m |
 | `npcs/smith_edda.glb` | 154.508 m | 0.01068 | 1.65 m |
 | `npcs/stablemaster_roan.glb` | 107.536 m | 0.01535 | 1.65 m |
 | `npcs/trainer_hala.glb` | 433.321 m | 0.00381 | 1.65 m |
-| `npcs/warrior.glb` | 1.036 m | 1.0 | 1.04m → 1.55m enemy default if loaded as bandit; or 1.65m as NPC |
+| `npcs/warrior.glb` | 1.036 m | 1.59266 | 1.65m (at import); geode_tyrant fallback — Boss.gd re-normalizes to 3.0m |
 | `npcs/worker_girl.glb` | 118.509 m | 0.01392 | 1.65 m |
 
 ## Enemies (per-kind targets in `Enemy.gd::_NORMALIZE_TARGET_BY_KIND`)
