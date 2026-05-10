@@ -3589,7 +3589,7 @@ func _global_scale_sweep() -> void:
 				_clamp_max_height(body, 80.0)
 				continue
 			if body.is_in_group("trees"):
-				_clamp_max_height(body, 14.0)
+				_clamp_max_height(body, 4.5)
 				continue
 			if body.is_in_group("buildings"):
 				_clamp_max_height(body, 7.0)
@@ -3612,7 +3612,7 @@ func _global_scale_sweep() -> void:
 		for body in root.find_children("*", "Node3D", true):
 			if not body.is_in_group("trees"):
 				continue
-			_clamp_max_height(body, 14.0)
+			_clamp_max_height(body, 4.5)
 		# Building group sweep — same idea for stuff in group "buildings".
 		for body in root.find_children("*", "Node3D", true):
 			if not body.is_in_group("buildings"):
