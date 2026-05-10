@@ -149,7 +149,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(8, 3, 5)   # Physics: safe respawn — east of market stall, clear of all village geometry
+const SAFE_SPAWN := Vector3(0, 1, 10)  # Physics: open path between well (z=6) and home (z=14), no buildings within 6m
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -247,8 +247,8 @@ func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = SAFE_SPAWN  # Physics: snap to SAFE_SPAWN (Y>=5)
-		velocity = Vector3.ZERO
+		global_position = SAFE_SPAWN
+		_do_floor_snap_unstick()
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
 	# If it does, the attack callback was lost — force-clear it.
@@ -1051,8 +1051,9 @@ func _die() -> void:
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
-	# Well is at (0, 0, 6) per WorldBuilder — use SAFE_SPAWN (Y>=5) to clear terrain
+	# Teleport to the open path then floor-snap so we always land on actual ground.
 	global_position = SAFE_SPAWN
+	_do_floor_snap_unstick()
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
