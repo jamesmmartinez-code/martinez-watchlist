@@ -474,14 +474,10 @@ func _do_floor_snap_unstick() -> void:
 		# CharacterBody3D origin IS the capsule bottom, so hit.position alone puts
 		# the capsule flush on the surface.  Add 0.02m so floor_snap_length (0.3m)
 		# and move_and_slide() latch immediately without a one-frame free-fall gap.
-		# [CANON-APPROVED: 2026-05-11 auditor] place origin so capsule bottom sits on floor
-		var _cap := find_child("", "CollisionShape3D", true, false) as CollisionShape3D
-		var _center_y := 0.425
-		if _cap and _cap.shape is CapsuleShape3D:
-			var _cs := _cap.shape as CapsuleShape3D
-			_center_y = (_cs.height + 2.0 * _cs.radius) * 0.5
-		global_position = hit.position + Vector3(0, _center_y + 0.02, 0)
-		print("[Player] auto-unstick: snapped to floor at y=%.2f (center_y=%.3f)" % [global_position.y, _center_y])
+		# [CANON-APPROVED: 2026-05-11 auditor] single source via _get_capsule_center_y()
+		var _cy := _get_capsule_center_y()
+		global_position = hit.position + Vector3(0, _cy + 0.02, 0)
+		print("[Player] auto-unstick: snapped to floor at y=%.2f" % global_position.y)
 	else:
 		global_position = _find_free_spawn(SAFE_SPAWN)
 		print("[Player] auto-unstick: no floor found — using safe spawn")
@@ -495,11 +491,19 @@ func _do_floor_snap_unstick() -> void:
 # Always call via teleport_to_safe_spawn() so floor_snap_length is
 # disabled for a few frames and physics can resolve overlaps first.
 # ────────────────────────────────────────────────────────────────────────
+# Single source of truth for capsule centre height above floor.
+# [CANON-APPROVED: 2026-05-11 auditor] — use this everywhere we place the player on ground.
+# If capsule radius/height ever changes, this auto-derives the right value.
+func _get_capsule_center_y() -> float:
+	var col := find_child("", "CollisionShape3D", true, false) as CollisionShape3D
+	if col and col.shape is CapsuleShape3D:
+		var cap := col.shape as CapsuleShape3D
+		return (cap.height + 2.0 * cap.radius) * 0.5
+	return 0.425  # safe fallback: half of 0.85m canon player height
+
 func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float = 0.75) -> Vector3:
-	# [CANON-APPROVED: 2026-05-11 auditor] Fixes:
-	#   1. find_child() search instead of direct get_node (works even if tree structure changes)
-	#   2. Fallback capsule matches real 0.85m capsule (was 2.6m — caused silent bad spawns)
-	#   3. center_y computed from actual shape (was hardcoded 0.9 from old giant capsule)
+	# [CANON-APPROVED: 2026-05-11 auditor] Single-source center_y via _get_capsule_center_y().
+	# collision_mask = 1 (world/static only) — enemies on layer 4 must NOT block spawn recovery.
 	var shape: Shape3D
 	var col_node := find_child("", "CollisionShape3D", true, false) as CollisionShape3D
 	if col_node and col_node.shape != null:
@@ -510,18 +514,11 @@ func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float 
 		cap.height = 0.41
 		shape = cap
 
-	# Compute capsule centre offset from actual shape dimensions
-	var center_y := 0.425  # default: half of 0.85m player
-	if shape is CapsuleShape3D:
-		var cap := shape as CapsuleShape3D
-		center_y = (cap.height + 2.0 * cap.radius) * 0.5
-	elif shape is BoxShape3D:
-		center_y = (shape as BoxShape3D).size.y * 0.5
-
+	var center_y := _get_capsule_center_y()
 	var space := get_world_3d().direct_space_state
 	var params := PhysicsShapeQueryParameters3D.new()
 	params.shape = shape
-	params.collision_mask = collision_mask
+	params.collision_mask = 1  # world geometry only — don't let enemies block recovery
 	params.exclude = [get_rid()]
 	var lift := Vector3(0, 0.5, 0)
 
@@ -531,10 +528,9 @@ func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float 
 		var candidate := desired + Vector3(cos(ang) * dist, 0.0, sin(ang) * dist)
 		params.transform = Transform3D(Basis.IDENTITY, candidate + Vector3(0, center_y, 0) + lift)
 		if space.intersect_shape(params, 1).is_empty():
-			print("[Player] _find_free_spawn: try %d → clear at %s (lift +%.2fm)" % [
-				attempt, candidate, center_y + lift.y])
+			print("[Player] _find_free_spawn: try %d → clear at %s" % [attempt, candidate])
 			return candidate
-	push_warning("[Player] _find_free_spawn: no clear spot after %d tries — using %s+0.5" % [max_tries, desired])
+	push_warning("[Player] _find_free_spawn: no clear spot after %d tries — using %s+lift" % [max_tries, desired])
 	return desired + lift
 
 func teleport_to_safe_spawn() -> void:
