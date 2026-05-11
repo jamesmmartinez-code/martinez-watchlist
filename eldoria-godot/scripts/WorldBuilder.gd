@@ -5088,7 +5088,7 @@ func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void
 
 # ── MultiMesh batching helpers (Builder run 26 — perf pass) ─────────────────
 func _mm_key(mesh: Mesh, mat: Material) -> String:
-	return "%s|%s" % [str(mesh.get_rid()), mat != null ? str(mat.get_rid()) : "null"]
+	return "%s|%s" % [str(mesh.get_rid()), str(mat.get_rid()) if mat != null else "null"]
 
 func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserve: int = 64) -> void:
 	var key := _mm_key(mesh, mat)
