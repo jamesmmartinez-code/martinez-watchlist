@@ -56,7 +56,7 @@ func _inspect_under_mouse(mouse_pos: Vector2) -> void:
 	var named: Node = node
 	while named != null and (named.name == "" or named.name.begins_with("@")):
 		named = named.get_parent()
-	var name_str := named.name if named != null else "?"
+	var name_str: String = str(named.name) if named != null else "?"
 	var class_str := node.get_class()
 	# Compute world AABB by walking VisualInstance3D children of the collider's parent
 	var aabb_str := "?"
@@ -79,7 +79,7 @@ func _inspect_under_mouse(mouse_pos: Vector2) -> void:
 		if gs.size() > 0:
 			groups_str = " [%s]" % ", ".join(gs.map(func(g): return str(g)))
 	# Path from root for navigation
-	var path_str := named.get_path() if named != null else ""
+	var path_str: String = str(named.get_path()) if named != null else ""
 	_label.text = "%s%s\n  class: %s\n  AABB:  %s\n  path:  %s\n  hit:   %s" % [
 		name_str, groups_str, class_str, aabb_str, path_str, hit.position
 	]
