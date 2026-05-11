@@ -120,7 +120,7 @@ jobs:
         run: |
           cd eldoria-godot
           mkdir -p web-export
-          ~/godot/godot --headless --path . --export-release "Web" web-export/index.html 2>&1 | tail -50
+          ~/godot/godot --headless --path . --export-release "Web" web-export/index.html 2>&1 | grep -v "^$" || true
 
       - name: Verify export produced index.html
         run: |
