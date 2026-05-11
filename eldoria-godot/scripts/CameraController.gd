@@ -45,7 +45,7 @@ func _ready() -> void:
 
 	# Auto-wire follow target if not set in the editor.
 	if not follow_target:
-		var players: Array[Node3D] = get_tree().get_nodes_in_group("player")
+		var players: Array = get_tree().get_nodes_in_group("player")
 		follow_target = players[0] if players.size() > 0 else \
 			get_tree().current_scene.get_node_or_null("Player") if get_tree().current_scene else null
 
@@ -93,7 +93,7 @@ var _shake_dur: float = 0.18   # full duration, used to scale t
 func _process(_delta: float) -> void:
 	# Re-acquire follow target if it was swapped out.
 	if not follow_target or not is_instance_valid(follow_target):
-		var players: Array[Node3D] = get_tree().get_nodes_in_group("player")
+		var players: Array = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			follow_target = players[0]
 		else:
