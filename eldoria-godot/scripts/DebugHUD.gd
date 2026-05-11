@@ -60,7 +60,7 @@ func _build_text() -> String:
 		lines.append("DIRECTOR")
 		lines.append("  intensity : %.2f  [%s]" % [EnemyDirector.intensity, wave])
 		lines.append("  dc enemies: %d / %d" % [EnemyDirector._dc_count, 6])
-		var total := get_tree().get_nodes_in_group("enemies").size()
+		var total: int = get_tree().get_nodes_in_group("enemies").size()
 		lines.append("  total ene : %d" % total)
 
 	# WorldState
