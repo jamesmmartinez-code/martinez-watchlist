@@ -150,7 +150,7 @@ func bonus_damage() -> int:
 	return int(w.get("damage", 0)) + Items.forge_damage_bonus(weapon_forge_tier(weapon_id))
 
 func bonus_armor() -> int:
-	var a := Items.get_item(equipped.get("armor", ""))
+	var a: Dictionary = Items.get_item(equipped.get("armor", ""))
 	return a.get("armor", 0)
 
 func bonus_hp() -> int:
