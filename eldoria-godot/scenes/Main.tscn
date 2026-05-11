@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/CameraController.gd" id="3_camera"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="4_npc"]
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
-[ext_resource type="PackedScene" uid="uid://b0j4kdyg3stf2" path="res://assets/models/Hero.glb" id="8_hero"]
+[ext_resource type="PackedScene" path="res://assets/models/Hero.glb" id="8_hero"]
 [ext_resource type="PackedScene" path="res://assets/models/heroes/castle_guard/castle_guard.fbx" id="22_castle_guard"]
 ; [ext_resource ... eldoria_sunset_sky_2k.jpg id="23_sunset_sky"] — disabled 2026-05-07 (panorama clouds removed)
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
