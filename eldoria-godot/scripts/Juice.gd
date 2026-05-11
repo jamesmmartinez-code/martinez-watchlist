@@ -295,11 +295,11 @@ func _ensure_notif() -> void:
 # (boss intros, cutscene beats, dramatic pauses).
 # Broadcasts through the "player" group so no direct node reference needed.
 func player_cinematic(duration: float) -> void:
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.has_method("set_cinematic_lock"):
 			p.set_cinematic_lock(true)
 	await get_tree().create_timer(duration).timeout
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.has_method("set_cinematic_lock"):
 			p.set_cinematic_lock(false)
 
