@@ -142,8 +142,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("PlayerShape")
 
 [node name="Hero" parent="Player" instance=ExtResource("8_hero")]
-; 2026-05-11: swap Hero.glb (31MB Meshy, unreliable scale) -> alden_pathfinder.glb (2MB, clean unit scale).
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+; 2026-05-11: alden_pathfinder.glb — scale=1 (Player.gd normalizes), 180Y rotation so model faces -Z (game forward).
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 ; [CANON-APPROVED: 2026-05-11 auditor] removed negative X/Z mirror — was causing inverted normals
 ; and confusing basis math. Visual flip (if any) should be fixed in Blender import, not here.
 visible = true
