@@ -1,34 +1,143 @@
-[gd_resource type="Resource" script_class="BossKit" load_steps=2 format=3 uid="uid://eldoria_boss_geode_tyrant"]
-
-[ext_resource type="Script" path="res://data/bosses/_boss_kit.gd" id="1_boss_kit"]
-
+[gd_resource type="Resource" load_steps=1 format=3]
 [resource]
-script = ExtResource("1_boss_kit")
-id = &"geode_tyrant"
-display_name = "Geodelich, the Sundered Heart"
-family = &"elemental"
-tier = 3
-level = 8
-hp = 1700
-armor = 0.25
-dmg_min = 14
-dmg_max = 22
-attack_speed = 0.55
-attack_cooldown = 1.80
-move_speed = 1.6
-chase_speed = 2.4
-aggro_range = 14.0
-attack_range = 2.4
-behavior_tags = PackedStringArray(["crystal_cave_resident", "boss_phase_driver", "fearless", "low_hp_no_flee", "telegraph_then_strike", "prefers_arena_center"])
-tells_json = "[{\"id\":\"sundering_chime\",\"vfx_id\":\"fey_cyan_ring_charge\",\"audio_id\":\"crystal_chime_rising_long\",\"wind_up_ms\":1100,\"damage_mult\":1.5,\"radius_m\":5.0,\"first_encounter\":true},{\"id\":\"crystal_quake\",\"vfx_id\":\"fey_cyan_floor_cracks\",\"audio_id\":\"stone_groan_low\",\"wind_up_ms\":900,\"damage_mult\":1.4,\"radius_m\":4.5},{\"id\":\"prismatic_echo\",\"vfx_id\":\"cyan_floor_lattice_delay\",\"audio_id\":\"crystal_pulse_double\",\"wind_up_ms\":1200,\"damage_mult\":1.6,\"delayed_ms\":600,\"radius_m\":3.5},{\"id\":\"shard_storm\",\"vfx_id\":\"fey_cyan_lance_volley\",\"audio_id\":\"crystal_chime_shatter\",\"wind_up_ms\":800,\"damage_mult\":1.9,\"projectile_count\":5,\"range_m\":11.0}]"
-phases_json = "[{\"id\":\"p1_warden\",\"hp_threshold\":1.0,\"behavior_tags\":[\"stationary_caster\",\"prefers_ranged_attack\",\"summons_minor_shards_on_enter\"],\"mechanics\":[{\"tell_id\":\"sundering_chime\",\"cadence_s\":12.0,\"first_at_s\":2.5},{\"tell_id\":\"crystal_quake\",\"cadence_s\":8.0,\"first_at_s\":6.0},{\"kind\":\"summon\",\"creature_id\":\"crystal_elemental\",\"count\":2,\"at_event\":\"phase_enter\",\"spawn_pattern\":\"flank_pillars\"}]},{\"id\":\"p2_awakened\",\"hp_threshold\":0.7,\"behavior_tags\":[\"slow_walker\",\"interruptible_chase\",\"alternates_melee_and_ranged\"],\"mechanics\":[{\"tell_id\":\"crystal_quake\",\"cadence_s\":7.0,\"first_at_s\":1.5},{\"tell_id\":\"prismatic_echo\",\"cadence_s\":9.0,\"first_at_s\":4.0},{\"kind\":\"summon\",\"creature_id\":\"skeleton\",\"count\":2,\"at_event\":\"phase_enter\",\"spawn_pattern\":\"rear_arena\"}]},{\"id\":\"p3_remembered\",\"hp_threshold\":0.35,\"behavior_tags\":[\"steady_walker\",\"shorter_windups_when_alone\",\"reads_player_position\",\"no_self_summon\"],\"mechanics\":[{\"tell_id\":\"shard_storm\",\"cadence_s\":6.0,\"first_at_s\":1.0},{\"tell_id\":\"prismatic_echo\",\"cadence_s\":5.0,\"first_at_s\":3.0},{\"tell_id\":\"sundering_chime\",\"cadence_s\":14.0,\"first_at_s\":7.0}]}]"
-resistances_json = "{\"physical\":0.2,\"frost\":0.5,\"shadow\":0.3,\"poison\":1.0}"
-weaknesses_json = "{\"blunt\":1.4,\"fire\":1.25,\"holy\":1.3}"
-arena_requirements_json = "{\"region\":\"crystal_caves\",\"min_radius_m\":14.0,\"ceiling_m\":9.0,\"has_pillars\":true,\"pillar_count_min\":6,\"hazard_floor\":false}"
-xp_value = 750
-gold_min = 90
-gold_max = 160
-loot_table_id = &"geode_tyrant"
-mesh_path = "res://assets/models/npcs/warrior.glb"
-nominal_height_m = 2.50
-regions = PackedStringArray(["crystal_caves"])
+metadata/_kind = "bestiary"
+metadata/_data = """
+{
+  "id": "geode_tyrant",
+  "name": "Geodelich, the Sundered Heart",
+  "family": "elemental",
+  "tier": 3,
+  "level": 8,
+  "hp": 1700,
+  "armor": 0.25,
+  "dmg_min": 14,
+  "dmg_max": 22,
+  "attack_speed": 0.55,
+  "attack_cooldown": 1.8,
+  "move_speed": 1.6,
+  "chase_speed": 2.4,
+  "aggro_range": 14.0,
+  "attack_range": 2.4,
+  "behavior_tags": [
+    "crystal_cave_resident",
+    "boss_phase_driver",
+    "fearless",
+    "low_hp_no_flee",
+    "telegraph_then_strike",
+    "prefers_arena_center"
+  ],
+  "tells": [
+    {
+      "id": "sundering_chime",
+      "vfx_id": "fey_cyan_ring_charge",
+      "audio_id": "crystal_chime_rising_long",
+      "wind_up_ms": 1100,
+      "damage_mult": 1.5,
+      "radius_m": 5.0,
+      "first_encounter": true
+    },
+    {
+      "id": "crystal_quake",
+      "vfx_id": "fey_cyan_floor_cracks",
+      "audio_id": "stone_groan_low",
+      "wind_up_ms": 900,
+      "damage_mult": 1.4,
+      "radius_m": 4.5
+    },
+    {
+      "id": "prismatic_echo",
+      "vfx_id": "cyan_floor_lattice_delay",
+      "audio_id": "crystal_pulse_double",
+      "wind_up_ms": 1200,
+      "damage_mult": 1.6,
+      "delayed_ms": 600,
+      "radius_m": 3.5
+    },
+    {
+      "id": "shard_storm",
+      "vfx_id": "fey_cyan_lance_volley",
+      "audio_id": "crystal_chime_shatter",
+      "wind_up_ms": 800,
+      "damage_mult": 1.9,
+      "projectile_count": 5,
+      "range_m": 11.0
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1_warden",
+      "hp_threshold": 1.0,
+      "behavior_tags": [
+        "stationary_caster",
+        "prefers_ranged_attack"
+      ],
+      "mechanics": [
+        {
+          "tell_id": "sundering_chime",
+          "cadence_s": 12.0
+        },
+        {
+          "tell_id": "crystal_quake",
+          "cadence_s": 8.0
+        }
+      ]
+    },
+    {
+      "id": "p2_awakened",
+      "hp_threshold": 0.7,
+      "behavior_tags": [
+        "slow_walker",
+        "interruptible_chase"
+      ],
+      "mechanics": [
+        {
+          "tell_id": "crystal_quake",
+          "cadence_s": 7.0
+        },
+        {
+          "tell_id": "prismatic_echo",
+          "cadence_s": 9.0
+        }
+      ]
+    },
+    {
+      "id": "p3_remembered",
+      "hp_threshold": 0.35,
+      "behavior_tags": [
+        "steady_walker",
+        "no_self_summon"
+      ],
+      "mechanics": [
+        {
+          "tell_id": "shard_storm",
+          "cadence_s": 6.0
+        },
+        {
+          "tell_id": "prismatic_echo",
+          "cadence_s": 5.0
+        }
+      ]
+    }
+  ],
+  "resistances": {
+    "physical": 0.2,
+    "frost": 0.5,
+    "shadow": 0.3,
+    "poison": 1.0
+  },
+  "weaknesses": {
+    "blunt": 1.4,
+    "fire": 1.25,
+    "holy": 1.3
+  },
+  "xp_value": 750,
+  "gold_min": 90,
+  "gold_max": 160,
+  "loot_table_id": "geode_tyrant",
+  "mesh_path": "res://assets/models/npcs/warrior.glb",
+  "nominal_height_m": 2.5,
+  "regions": [
+    "crystal_caves"
+  ]
+}
+"""
