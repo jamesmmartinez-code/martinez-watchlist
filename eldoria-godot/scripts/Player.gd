@@ -1553,6 +1553,14 @@ func set_title(t: String) -> void:
 	title_label.text = t
 	title_label.visible = (t != "")
 
+func _is_under_bone_attachment(n: Node) -> bool:
+	var p := n.get_parent()
+	while p and p != self:
+		if p is BoneAttachment3D:
+			return true
+		p = p.get_parent()
+	return false
+
 # ────────────────────────────────────────────────────────────────────────
 # Char-spec 2026-05-08: Player model height normalization — SIZE_STANDARDS.md §1
 # _normalize_player_model(target_height): measures the body-mesh AABB (excluding
