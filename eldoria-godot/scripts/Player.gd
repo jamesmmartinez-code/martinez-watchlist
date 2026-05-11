@@ -253,16 +253,19 @@ func _ready() -> void:
 	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(0.85))
 	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(0.85))
 	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(0.90))
-	# Floor-snap on first physics frame so the player always starts on actual ground,
-	# not floating at the scene-file Y=1 (the 1m gap closes via gravity anyway, but
-	# this removes the first-frame "am I on the floor?" confusion from move_and_slide).
-	get_tree().create_timer(0.05).timeout.connect(func(): _do_floor_snap_unstick())
+	# SPAWN-FIX 2026-05-11: first validate a collision-free position near SAFE_SPAWN,
+	# then ray-snap to actual ground.  Dynamic shape-query replaces the hand-picked
+	# coordinates that kept landing inside walls whenever a building or NPC shifted.
+	get_tree().create_timer(0.05).timeout.connect(func():
+		global_position = _find_free_spawn(SAFE_SPAWN)
+		_do_floor_snap_unstick()
+	)
 
 func _physics_process(delta: float) -> void:
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = SAFE_SPAWN
+		global_position = _find_free_spawn(SAFE_SPAWN)
 		_do_floor_snap_unstick()
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
@@ -462,8 +465,51 @@ func _do_floor_snap_unstick() -> void:
 		global_position = hit.position + Vector3(0, 0.02, 0)
 		print("[Player] auto-unstick: snapped to floor at y=%.2f" % global_position.y)
 	else:
-		global_position = SAFE_SPAWN
-		print("[Player] auto-unstick: no floor found — warped to SAFE_SPAWN")
+		global_position = _find_free_spawn(SAFE_SPAWN)
+		print("[Player] auto-unstick: no floor found — using safe spawn")
+
+# ────────────────────────────────────────────────────────────────────────
+# Dynamic spawn validator — spirals outward from `desired` until it finds
+# a position where the player capsule does not overlap any world geometry.
+# Replaces brittle hard-coded coordinates: no matter where buildings/NPCs
+# are placed, the player always spawns in free space.
+#
+# Spiral layout (step = 1.5 m):
+#   try 0  — desired itself (fastest path: usually works)
+#   tries 1–8  — ring 1, 8 compass directions at radius 1.5 m
+#   tries 9–16 — ring 2, same directions at radius 3.0 m
+#   tries 17–24 — ring 3, radius 4.5 m
+# ────────────────────────────────────────────────────────────────────────
+func _find_free_spawn(desired: Vector3, max_tries: int = 25, step: float = 1.5) -> Vector3:
+	var space := get_world_3d().direct_space_state
+	var check_shape := CapsuleShape3D.new()
+	check_shape.radius = 0.45   # 0.05 wider than actual capsule (0.4) — safety margin
+	check_shape.height = 1.8
+	var params := PhysicsShapeQueryParameters3D.new()
+	params.shape = check_shape
+	params.collision_mask = 1   # terrain / static world bodies only
+	params.exclude = [self]
+	for i in range(max_tries):
+		var candidate: Vector3
+		if i == 0:
+			candidate = desired
+		else:
+			# Spiral: 8 directions per ring, radius grows one step per ring.
+			var ring_idx  := (i - 1) / 8
+			var angle_idx := (i - 1) % 8
+			var angle := float(angle_idx) / 8.0 * TAU
+			var r := step * float(ring_idx + 1)
+			candidate = Vector3(desired.x + cos(angle) * r, desired.y, desired.z + sin(angle) * r)
+		# CharacterBody3D origin = capsule bottom (CollisionShape3D offset +0.9, half-height 0.9)
+		# → capsule centre sits 0.9 m above candidate.
+		params.transform = Transform3D.IDENTITY.translated(candidate + Vector3(0, 0.9, 0))
+		if space.intersect_shape(params, 1).is_empty():
+			if i > 0:
+				print("[Player] _find_free_spawn: ring %d dir %d° → clear at %s" % [
+					(i - 1) / 8 + 1, int(float((i - 1) % 8) / 8.0 * 360.0), candidate])
+			return candidate
+	push_warning("[Player] _find_free_spawn: no clear spot after %d tries from %s" % [max_tries, desired])
+	return desired
 
 # ────────────────────────────────────────────────────────────────────────
 # Public unstuck — called by the SOS Unstuck button in the HUD.
@@ -497,7 +543,7 @@ func _panic_unstick(keycode: int) -> bool:
 			mounted = false
 			mount_node = null
 			velocity = Vector3.ZERO
-			global_position = SAFE_SPAWN
+			global_position = _find_free_spawn(SAFE_SPAWN)
 			hp = max(1, hp)
 			_attack_timeout = 0.0
 			_dead_timer = 0.0
@@ -508,7 +554,7 @@ func _panic_unstick(keycode: int) -> bool:
 			print("[Player] F1 — teleport to spawn")
 			get_tree().paused = false
 			velocity = Vector3.ZERO
-			global_position = SAFE_SPAWN
+			global_position = _find_free_spawn(SAFE_SPAWN)
 			return true
 		KEY_F2:
 			# Nuclear option: unpause, wipe save and reload scene.
@@ -522,7 +568,7 @@ func _panic_unstick(keycode: int) -> bool:
 			print("[Player] ] — teleport to spawn")
 			get_tree().paused = false
 			velocity = Vector3.ZERO
-			global_position = SAFE_SPAWN
+			global_position = _find_free_spawn(SAFE_SPAWN)
 			return true
 	return false
 
@@ -1072,8 +1118,8 @@ func _die() -> void:
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
-	# Teleport to the open path then floor-snap so we always land on actual ground.
-	global_position = SAFE_SPAWN
+	# Validate spawn is collision-free before floor-snapping to actual ground.
+	global_position = _find_free_spawn(SAFE_SPAWN)
 	_do_floor_snap_unstick()
 	hp = max_hp
 	mp = max_mp
