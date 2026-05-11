@@ -75,7 +75,7 @@ func _on_body_entered(body: Node) -> void:
 		body.take_damage(damage, attacker)
 
 	# AoE splash — all enemies within AOE_RADIUS take reduced damage
-	for enemy in get_tree().get_nodes_in_group("enemies"):
+	for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
 		if enemy == body:
