@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/CameraController.gd" id="3_camera"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="4_npc"]
 [ext_resource type="PackedScene" path="res://assets/models/CesiumMan.glb" id="6_cesium"]
-[ext_resource type="PackedScene" path="res://assets/models/Hero.glb" id="8_hero"]
+[ext_resource type="PackedScene" path="res://assets/models/heroes/alden_pathfinder.glb" id="8_hero"]
 [ext_resource type="PackedScene" path="res://assets/models/heroes/castle_guard/castle_guard.fbx" id="22_castle_guard"]
 ; [ext_resource ... eldoria_sunset_sky_2k.jpg id="23_sunset_sky"] — disabled 2026-05-07 (panorama clouds removed)
 [ext_resource type="Script" path="res://scripts/WorldBuilder.gd" id="7_builder"]
@@ -142,14 +142,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("PlayerShape")
 
 [node name="Hero" parent="Player" instance=ExtResource("8_hero")]
-; 2026-05-07: swap castle_guard.fbx -> Hero.glb. FBX was rendering untextured-white at giant scale (Web export missed the .fbm material folder). Hero.glb is the proven Meshy biped baseline.
+; 2026-05-11: swap Hero.glb (31MB Meshy, unreliable scale) -> alden_pathfinder.glb (2MB, clean unit scale).
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
 ; [CANON-APPROVED: 2026-05-11 auditor] removed negative X/Z mirror — was causing inverted normals
 ; and confusing basis math. Visual flip (if any) should be fixed in Blender import, not here.
 visible = true
-; Scale Engineer 2026-05-05 — Meshy biped Hero.glb exports at ~2.4-2.6m default.
-; Visually the player towered over 4m houses. Pre-shrink to 0.7 so first frame
-; reads at ~1.7m, then Player.gd::_normalize_player_model dials in to 1.8 exact
+; Scale Engineer 2026-05-11 — alden_pathfinder.glb is ~1.7m, normalization target 0.85m for kid scale.
 ; on its 0.5/1.5/3.0s retries.
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Player"]
 
