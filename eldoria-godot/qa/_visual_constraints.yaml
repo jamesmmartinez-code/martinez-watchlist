@@ -6,7 +6,7 @@
 
 hero:
   scale_min: 0.05         # uniform scale floor — anything tighter is invisible
-  scale_max: 0.50         # uniform scale ceiling — anything bigger is "giant boot bug"
+  scale_max: 1.50         # 2026-05-11: raised from 0.50 — alden_pathfinder.glb uses scale=1 (proper meter units)
   target_world_height_m: 1.10
   target_height_tolerance: 0.20   # ±20%
 
