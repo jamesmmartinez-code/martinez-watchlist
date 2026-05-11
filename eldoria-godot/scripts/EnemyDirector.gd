@@ -100,7 +100,7 @@ var allow_boss_spawn: bool = false
 # Director spawning is only active inside registered combat zones.
 var _combat_active: bool = false
 
-var _player: Node = null
+var _player: Node3D = null  # typed Node3D so global_position/transform infer correctly
 
 # ==========================================================================
 # Signals
@@ -354,28 +354,28 @@ func _spawn_boss() -> void:
 func _get_spawn_position() -> Vector3:
 	if not _player:
 		return Vector3.ZERO
-	var player_pos := _player.global_position
+	var player_pos: Vector3 = _player.global_position
 
 	# Derive look direction (Y-flattened forward vector)
-	var look := -_player.global_transform.basis.z
+	var look: Vector3 = -_player.global_transform.basis.z
 	look.y = 0.0
 	look = look.normalized() if look.length_squared() > 0.01 else Vector3.FORWARD
 
 	# Angle bias — never spawn in the player's forward ±45° cone.
 	# 55 % behind (120–240° off forward), 45 % side arcs (60–120° either side).
-	var angle_off: float
+	var angle_off: float = 0.0
 	if randf() < 0.55:
 		# Behind player: 2/3π – 4/3π radians
 		angle_off = randf_range(PI * 0.67, PI * 1.33)
 	else:
 		# Lateral: 1/3π – 2/3π left OR right
-		var side := 1.0 if randf() < 0.5 else -1.0
+		var side: float = 1.0 if randf() < 0.5 else -1.0
 		angle_off = randf_range(PI * 0.33, PI * 0.67) * side
 
-	var dist := randf_range(SPAWN_DIST_MIN, SPAWN_DIST_MAX)
-	var dir  := look.rotated(Vector3.UP, angle_off)
-	var pos  := player_pos + dir * dist
-	pos.y    = player_pos.y   # keep spawn at player's height level
+	var dist: float = randf_range(SPAWN_DIST_MIN, SPAWN_DIST_MAX)
+	var dir: Vector3 = look.rotated(Vector3.UP, angle_off)
+	var pos: Vector3 = player_pos + dir * dist
+	pos.y = player_pos.y   # keep spawn at player's height level
 
 	return pos
 
