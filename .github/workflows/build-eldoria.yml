@@ -64,8 +64,8 @@ jobs:
       - name: Hash asset folder (cache key for .godot/)
         id: asset-hash
         run: |
-          # Hash all source assets so cache invalidates only when assets actually change.
-          HASH=$(find eldoria-godot/assets eldoria-godot/scenes eldoria-godot/scripts -type f \
+          # Hash all source assets + data files so cache invalidates on any change.
+          HASH=$(find eldoria-godot/assets eldoria-godot/scenes eldoria-godot/scripts eldoria-godot/data -type f \
             \( -name "*.glb" -o -name "*.gltf" -o -name "*.png" -o -name "*.jpg" \
                -o -name "*.tres" -o -name "*.tscn" -o -name "*.gd" -o -name "*.import" \) \
             -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -c1-16)
@@ -78,8 +78,7 @@ jobs:
         with:
           path: eldoria-godot/.godot
           key: godot-import-${{ steps.asset-hash.outputs.hash }}
-          restore-keys: |
-            godot-import-
+          # No restore-keys: a hash miss must do a full reimport, not reuse stale .gdc bytecode
 
       - name: Import all assets (generates .import files)
         run: |
