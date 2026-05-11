@@ -52,7 +52,88 @@ const NPC_SCALES := {
 }
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
+# Phase 26 — Chunked async world build (web-perf: stops 86s main-thread block)
+signal build_progress(phase: String, pct: float)
+signal build_complete()
+@export var chunk_build_enabled: bool = true
+
 var _buildings_built: bool = false
+var _briarwood_root: Node3D = null
+var _qb_layer: CanvasLayer = null
+var _qb_panel: Panel = null
+var _qb_player: Node3D = null
+var _qb_list_root: VBoxContainer = null
+var _qb_detail: RichTextLabel = null
+var _qb_selected_id: String = ""
+
+var _quest_marker_timer: Timer = null
+var _quest_markers: Dictionary = {}
+
+var _qh_layer: CanvasLayer = null
+var _qh_panel: Panel = null
+var _qh_label: RichTextLabel = null
+
+var _bw_life_root: Node3D = null
+var _bw_life_timer: Timer = null
+var _bw_life_npcs: Array[Node3D] = []
+
+var _shop_layer: CanvasLayer = null
+var _shop_panel: Panel = null
+var _shop_player: Node3D = null
+var _shop_kind: String = ""
+var _shop_gold_label: Label = null
+var _shop_shop_list: VBoxContainer = null
+var _shop_inv_list: VBoxContainer = null
+var _shop_detail: RichTextLabel = null
+
+var _craft_layer: CanvasLayer = null
+var _craft_panel: Panel = null
+var _craft_player: Node3D = null
+var _craft_list: VBoxContainer = null
+var _craft_detail: RichTextLabel = null
+
+var _interior_root: Node3D = null
+var _interior_kind: String = ""
+var _exterior_return_pos: Vector3 = Vector3.ZERO
+
+var _schedule_timer: Timer = null
+var _last_night_state: bool = false
+var _town_time: float = 0.35
+
+var _dlg_layer: CanvasLayer = null
+var _dlg_panel: Panel = null
+var _dlg_player: Node3D = null
+var _dlg_title: Label = null
+var _dlg_text: RichTextLabel = null
+var _dlg_choices: VBoxContainer = null
+
+var _fade_layer: CanvasLayer = null
+var _fade_rect: ColorRect = null
+var _fade_tween: Tween = null
+
+var _music_player: AudioStreamPlayer = null
+var _current_music_id: String = ""
+
+var _tutorial_step: int = 0
+var _tutorial_done: bool = false
+var _mayor_intro_ran: bool = false   # Phase 21 — mayor intro fires exactly once
+
+# Phase 22 — tutorial polish
+var _tutorial_last_progress_time: float = 0.0
+var _tutorial_tick_timer: Timer = null
+var _arrow_root: Node3D = null
+var _arrow_label: Label3D = null
+var _arrow_mesh: MeshInstance3D = null
+var _arrow_target: Node3D = null
+var _bark_cd: Dictionary = {}   # "bark|<key>" -> next_allowed_time (secs)
+# Phase 24 — cached MultiMesh-ready meshes (lazy-init via getters)
+var _bw_fence_post_mesh: CylinderMesh = null
+var _bw_bench_mesh: BoxMesh = null
+var _bw_crate_mesh: BoxMesh = null
+var _bw_barrel_mesh: CylinderMesh = null
+var _bw_woodpile_mesh: BoxMesh = null
+var _trail_root: Node3D = null
+var _trail_last_update: float = 0.0
 
 # ─── THEME §1, §11, §12 — Whisperwood asset wire-up ──────────────────────────
 # Sketchfab CC-BY tree GLBs (oak / pine / bush / dead) replacing the procedural
@@ -82,7 +163,9 @@ const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
 const FERN_GLB_PATH: String     = "res://assets/models/props/fern.glb"
 const MUSHROOM_GLB_PATH: String = "res://assets/models/props/mushroom_red.glb"
 const BARREL_GLB_PATH: String   = "res://assets/models/props/wooden_barrel.glb"
-const LANTERN_GLB_PATH: String  = "res://assets/models/props/lantern.glb"
+# Phase 26 fix: lantern.glb was a mis-placed witch-hat model — disabled until
+# a real lantern GLB is imported. Empty string → procedural fallback always fires.
+const LANTERN_GLB_PATH: String  = ""  # was "res://assets/models/props/lantern.glb"
 # Env: 2026-05-06 — wire up two more CC-BY GLBs that were sitting unused on
 # disk. Same fallback contract: if the asset isn't loadable the legacy
 # procedural primitive path runs, so the village never spawns without a
@@ -812,6 +895,157 @@ const NPCS = [
 	 "bark_min":18.0, "bark_max":32.0},
 ]
 
+# ── Briarwood Hub exports (Briarwood Hub Builder v1) ─────────────────────────
+@export var briarwood_hub_enabled: bool = true
+@export var briarwood_origin: Vector3 = Vector3(0, 0, 0)
+
+@export var bw_plaza_offset: Vector3     = Vector3(0,   0, 14)
+@export var bw_gate_offset: Vector3      = Vector3(0,   0, -6)
+@export var bw_market_offset: Vector3    = Vector3(8,   0, 18)
+@export var bw_craft_offset: Vector3     = Vector3(-12, 0, 18)
+@export var bw_shrine_offset: Vector3    = Vector3(-6,  0, 10)
+@export var bw_townhall_offset: Vector3  = Vector3(0,   0, 22)
+
+@export var bw_house_count: int = 28
+@export var bw_market_stall_count: int = 14
+@export var bw_npc_count: int = 16
+@export var bw_prop_density: float = 1.0
+
+@export var briarwood_npc_scene: PackedScene       # optional; null = no crowd spawns
+@export var briarwood_questboard_enabled: bool = true
+@export var briarwood_quest_refresh_sec: float = 0.0  # 0 = static list
+@export var quest_marker_enabled: bool = true
+@export var quest_marker_tick: float = 0.5
+@export var quest_hud_enabled: bool = true
+@export var quest_hud_corner: Vector2 = Vector2(18, 18)
+@export var briarwood_life_enabled: bool = true
+@export var briarwood_life_tick: float = 1.8
+@export var briarwood_atmosphere_enabled: bool = true
+@export var sfx_bw_birds_loop: AudioStream
+@export var sfx_bw_wind_loop: AudioStream
+@export var sfx_bw_tavern_loop: AudioStream
+@export var sfx_bw_hammer_loop: AudioStream
+@export var sfx_bw_forge_loop: AudioStream
+@export var bw_smoke_enabled: bool = true
+@export var bw_flag_enabled: bool = true
+@export var bw_lantern_sway_enabled: bool = true
+# Phase 23 — Briarwood visual style pass
+@export var bw_style_enabled: bool = true
+@export var bw_window_energy_day: float = 0.35
+@export var bw_window_energy_night: float = 1.7
+@export var bw_roof_pitch_min: float = 22.0
+@export var bw_roof_pitch_max: float = 34.0
+@export var bw_roof_overhang: float = 0.45
+@export var bw_chimney_enabled: bool = true
+@export var bw_porch_enabled: bool = true
+# Phase 24 — Street dressing
+@export var bw_dressing_enabled: bool = true
+@export var bw_dressing_density: float = 1.0
+@export var bw_multimesh_enabled: bool = true
+@export var bw_mm_fences: bool = true
+@export var bw_mm_benches: bool = true
+@export var bw_mm_clutter: bool = true
+# Phase 24 — Real village layout
+@export var bw_real_village_enabled: bool = true
+@export var bw_palisade_radius_x: float = 52.0
+@export var bw_palisade_radius_z: float = 44.0
+@export var bw_gate_width: float = 9.0
+@export var bw_inner_loop_scale: float = 0.70
+@export var bw_house_setback: float = 6.5
+@export var bw_yard_depth: float = 6.0
+@export var bw_farm_enabled: bool = true
+# Phase 24 — House type weights
+@export var bw_house_small_weight: float = 0.55
+@export var bw_house_medium_weight: float = 0.30
+@export var bw_house_large_weight: float = 0.10
+@export var bw_house_corner_weight: float = 0.05
+@export var bw_shopfront_weight_market: float = 0.35
+# Phase 25 — Street alignment + auto yards
+@export var bw_align_enabled: bool = true
+@export var bw_setback_small: float = 6.0
+@export var bw_setback_medium: float = 7.0
+@export var bw_setback_large: float = 8.5
+@export var bw_setback_shop: float = 5.2
+@export var bw_setback_corner: float = 6.8
+@export var bw_yard_fence_enabled: bool = true
+@export var bw_yard_width_min: float = 6.0
+@export var bw_yard_width_max: float = 10.0
+@export var bw_shops_enabled: bool = true
+@export var shop_stock_rotation_enabled: bool = true
+@export var shop_day_length_real_seconds: float = 0.0
+@export var shop_global_seed: int = 7331
+@export var town_schedule_enabled: bool = true
+@export var day_length_seconds: float = 420.0
+@export var night_start: float = 0.72
+@export var night_end: float = 0.20
+@export var briarwood_inn_interior: PackedScene
+@export var briarwood_shop_interior: PackedScene
+@export var briarwood_smith_interior: PackedScene
+@export var festival_enabled: bool = true
+@export var festival_day_mod: int = 7
+@export var interior_fallback_builders_enabled: bool = true
+@export var transitions_enabled: bool = true
+@export var transition_fade_time: float = 0.25
+@export var interior_audio_enabled: bool = true
+@export var music_inn: AudioStream
+@export var music_shop: AudioStream
+@export var music_smith: AudioStream
+@export var music_outside: AudioStream
+@export var minimap_markers_enabled: bool = true
+@export var tutorial_enabled: bool = true
+@export var tutorial_gating_enabled: bool = true   # Phase 21 — lock boat/upgrade behind tutorial steps
+@export var mayor_intro_enabled: bool = true       # Phase 21 — Mayor greeting on first load
+@export var mayor_intro_delay: float = 0.8         # Phase 21 — seconds after spawn before intro fires
+@export var tutorial_arrow_enabled: bool = true    # Phase 22 — floating objective arrow
+@export var tutorial_barks_enabled: bool = true    # Phase 22 — NPC proximity one-liners
+@export var tutorial_failsafe_enabled: bool = true # Phase 22 — hint + auto-help if stuck
+@export var tutorial_hint_after_sec: float = 120.0 # Phase 22 — seconds idle before hint
+@export var tutorial_autofix_after_sec: float = 300.0 # Phase 22 — seconds idle before auto-help
+@export var tutorial_trail_enabled: bool = true      # Phase 22B — sparkle breadcrumb trail
+@export var tutorial_trail_step: float = 1.6         # metres between sparkle pips
+@export var tutorial_trail_count: int = 9            # pips placed ahead of player
+@export var tutorial_trail_update_sec: float = 0.6   # seconds between trail rebuilds
+@export var tutorial_trail_height: float = 0.06      # metres above ground
+
+const BRIARWOOD_QUESTS := [
+	{
+		"id": "bw_kill_goblins",
+		"title": "Goblin Trouble",
+		"desc": "Clear goblins near the treeline.",
+		"quest": {"kind":"kill","target":"goblin","needed":6,"giver":"Briarwood Board","gold_reward":45,"xp_reward":80},
+	},
+	{
+		"id": "bw_kill_wolves",
+		"title": "Wolves at the Fence",
+		"desc": "Drive off wolves prowling the palisade.",
+		"quest": {"kind":"kill","target":"wolf","needed":4,"giver":"Briarwood Board","gold_reward":55,"xp_reward":95},
+	},
+	{
+		"id": "bw_fetch_herbs",
+		"title": "Herbal Remedy",
+		"desc": "Bring herbs to the healer.",
+		"quest": {"kind":"fetch","item":"herb","needed":3,"giver":"Healer","gold_reward":35,"xp_reward":70},
+	},
+	{
+		"id": "bw_fetch_wood",
+		"title": "Wood for Repairs",
+		"desc": "Deliver wood to the carpenter.",
+		"quest": {"kind":"fetch","item":"wood","needed":5,"giver":"Carpenter","gold_reward":40,"xp_reward":75},
+	},
+	{
+		"id": "bw_training_combo",
+		"title": "Training: 3-hit Combo",
+		"desc": "Practice your Slash combo at the training dummy.",
+		"quest": {"kind":"kill","target":"training_dummy","needed":3,"giver":"Guard Captain","gold_reward":20,"xp_reward":50},
+	},
+	{
+		"id": "bw_deliver_crate_nordic",
+		"title": "Crate Delivery",
+		"desc": "Bring a supply crate to the Harbor Master at the Nordic docks.",
+		"quest": {"kind":"fetch","item":"supply_crate","needed":1,"giver":"Mayor","gold_reward":80,"xp_reward":120,"turn_in":"harbor_master"},
+	},
+]
+
 const BUILDINGS = [
 	Vector3( 6, 0,  6), Vector3(-6, 0,  6),
 	Vector3(10, 0,  0), Vector3(-10, 0,  0),
@@ -822,16 +1056,85 @@ const BUILDINGS = [
 const HOME_POS: Vector3 = Vector3(0.0, 0.0, 14.0)
 const HOME_SCRIPT: Script = preload("res://scripts/PlayerHome.gd")
 
+# ── Phase 14: Shop catalogs ───────────────────────────────────────────────────
+const SHOP_ITEMS := {
+	"merchant": [
+		{"id":"hp_potion_s","name":"Health Potion (S)","price":18,"sell":9},
+		{"id":"hp_potion_l","name":"Health Potion (L)","price":45,"sell":22},
+		{"id":"mp_potion_s","name":"Mana Potion (S)",  "price":22,"sell":11},
+		{"id":"herb",       "name":"Herb Bundle",      "price":10,"sell":5},
+		{"id":"wood",       "name":"Wood Bundle",      "price":8, "sell":4},
+		{"id":"rope",       "name":"Rope Coil",        "price":12,"sell":6},
+		{"id":"torch",      "name":"Torch",            "price":6, "sell":3},
+	],
+	"smith": [
+		{"id":"iron_ingot","name":"Iron Ingot",      "price":25, "sell":12},
+		{"id":"leather",   "name":"Leather Roll",    "price":18, "sell":9},
+		{"id":"sword_1",   "name":"Iron Sword",      "price":120,"sell":60},
+		{"id":"axe_1",     "name":"Iron Axe",        "price":110,"sell":55},
+		{"id":"helm_1",    "name":"Iron Helm",       "price":90, "sell":45},
+		{"id":"chest_1",   "name":"Iron Chestpiece", "price":160,"sell":80},
+	],
+}
+
+# ── Phase 15: Display database (icons + names + slots) ───────────────────────
+const ITEM_DB := {
+	"hp_potion_s": {"icon":"🧪","name":"Health Potion (S)","type":"consumable"},
+	"hp_potion_l": {"icon":"🧪","name":"Health Potion (L)","type":"consumable"},
+	"mp_potion_s": {"icon":"✨","name":"Mana Potion (S)",  "type":"consumable"},
+	"herb":        {"icon":"🌿","name":"Herb Bundle",      "type":"material"},
+	"wood":        {"icon":"🪵","name":"Wood Bundle",      "type":"material"},
+	"rope":        {"icon":"🪢","name":"Rope Coil",        "type":"material"},
+	"torch":       {"icon":"🔥","name":"Torch",            "type":"tool"},
+	"iron_ingot":  {"icon":"⛓️","name":"Iron Ingot",       "type":"material"},
+	"leather":     {"icon":"🟤","name":"Leather Roll",     "type":"material"},
+	"sword_1":     {"icon":"🗡️","name":"Iron Sword",       "type":"weapon","slot":"weapon"},
+	"axe_1":       {"icon":"🪓","name":"Iron Axe",         "type":"weapon","slot":"weapon"},
+	"helm_1":      {"icon":"🪖","name":"Iron Helm",        "type":"armor", "slot":"helm"},
+	"chest_1":     {"icon":"🛡️","name":"Iron Chestpiece",  "type":"armor", "slot":"chest"},
+	"supply_crate":{"icon":"📦","name":"Supply Crate",     "type":"quest"},
+}
+
+# ── Phase 16: Stock pools + craft recipes ────────────────────────────────────
+const SHOP_POOLS := {
+	"merchant": ["hp_potion_s","mp_potion_s","torch","rope","herb","wood","hp_potion_l"],
+	"smith":    ["iron_ingot","leather","sword_1","axe_1","helm_1","chest_1"],
+}
+
+const CRAFT_RECIPES := [
+	{"id":"craft_hp_potion_s","name":"Brew Health Potion (S)",
+	 "inputs":[{"id":"herb","qty":2}],"outputs":[{"id":"hp_potion_s","qty":1}]},
+	{"id":"craft_mp_potion_s","name":"Brew Mana Potion (S)",
+	 "inputs":[{"id":"herb","qty":1},{"id":"rope","qty":1}],"outputs":[{"id":"mp_potion_s","qty":1}]},
+	{"id":"craft_iron_bundle","name":"Forge Iron Ingot",
+	 "inputs":[{"id":"wood","qty":2}],"outputs":[{"id":"iron_ingot","qty":1}]},
+]
+
 func _ready() -> void:
 	if _buildings_built: return
 	_buildings_built = true
 	_dlog("_ready START")
 	_populate_npc_models()
 	_dlog("NPC_MODELS=%d" % NPC_MODELS.size())
-	# Bisect: each step prints before/after so DevTools console reveals which call halts.
+	# Phase 26: chunked async path lets the browser breathe between heavy phases,
+	# eliminating the single 86 s "Script Evaluation" block on the main thread.
+	# Set chunk_build_enabled = false in the inspector to revert to sync (editor use).
+	if chunk_build_enabled:
+		_build_world_async.call_deferred()
+	else:
+		_build_world_sync()
+
+
+# ── Sync build (editor / non-web fallback) ───────────────────────────────────
+# Original _ready body. Each _safe_call defers to next frame but they all
+# flush in one batch — fine for desktop, brutal on the web main thread.
+func _build_world_sync() -> void:
 	_safe_call("_build_ground_overlay")
 	_safe_call("_build_path_network")
-	_safe_call("_build_village")
+	if briarwood_hub_enabled:
+		_safe_call("_build_briarwood_hub")  # Briarwood Hub Builder v1
+	else:
+		_safe_call("_build_village")        # legacy 6-house fallback
 	_safe_call("_scatter_trees", [140])
 	_safe_call("_scatter_rocks", [36])
 	_safe_call("_scatter_ferns", [48])
@@ -848,9 +1151,9 @@ func _ready() -> void:
 	_safe_call("_build_pond")
 	_safe_call("_build_firefly_particles")
 	_safe_call("_build_falling_leaves")
-	_safe_call("_build_butterflies")  # Env 2026-05-06: daytime ambient life — THEME §12
-	_safe_call("_build_bird_flocks")  # Env 2026-05-06: ambient life — V-formation birds, THEME §12
-	_safe_call("_build_god_rays")  # Builder run 23: god-rays through canopy — THEME §1 §12 §13
+	_safe_call("_build_butterflies")
+	_safe_call("_build_bird_flocks")
+	_safe_call("_build_god_rays")
 	_safe_call("_build_smoke_chimneys")
 	_safe_call("_build_campfire")
 	_safe_call("_build_enemies")
@@ -858,13 +1161,142 @@ func _ready() -> void:
 	_safe_call("_build_stable_horse")
 	_safe_call("_build_loot_chests")
 	call_deferred("_global_scale_sweep")
-	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
-	_safe_call("_build_weather")        # Builder run 36 — Weather System
+	_safe_call("_build_player_home")
+	_safe_call("_build_weather")
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
-	_safe_call("_build_nordic_fishing_village")  # Builder run 25 — Nordic dock district, THEME §1 §11
-	_safe_call("_build_nordic_road")             # Builder run 25 — cobble road Briarwood→Nordic (isolated)
-	_safe_call("_build_nordic_ambient_audio")    # Builder run 25 — harbor audio zones (waves/creak/gulls)
-	_dlog("_ready DONE — children=%d" % get_child_count())
+	_safe_call("_build_nordic_fishing_village")
+	_safe_call("_build_nordic_road")
+	_safe_call("_build_nordic_ambient_audio")
+	if nordic_dock_life_enabled:
+		_safe_call("_build_nordic_dock_life")
+	if district_streaming_enabled:
+		_safe_call("_init_district_streaming")
+	if quest_marker_enabled:
+		_safe_call("_init_quest_markers")
+	if town_schedule_enabled:
+		_safe_call("_init_town_schedule")
+	if tutorial_enabled:
+		_safe_call("_tutorial_start_if_needed")
+	if mayor_intro_enabled:
+		get_tree().create_timer(mayor_intro_delay).timeout.connect(
+			func(): _run_mayor_intro(), CONNECT_ONE_SHOT
+		)
+	if tutorial_enabled:
+		_safe_call("_init_tutorial_polish")
+	build_progress.emit("Done", 1.0)
+	build_complete.emit()
+	_dlog("sync build DONE — children=%d" % get_child_count())
+
+
+# ── Async chunked build (web / production) ───────────────────────────────────
+# Each await gives the engine one full rendered frame + lets the browser event
+# loop breathe. Phases are grouped so each chunk runs in ~2–8 ms, keeping the
+# tab responsive. Progress signal drives the LoadingScene overlay.
+func _build_world_async() -> void:
+	_dlog("async build START")
+
+	# ── Ground ────────────────────────────────────────────────────────────────
+	build_progress.emit("Ground", 0.00)
+	await get_tree().process_frame
+	_safe_call_now("_build_ground_overlay", [])
+	_safe_call_now("_build_path_network",   [])
+
+	# ── Briarwood hub (heaviest single chunk) ─────────────────────────────────
+	build_progress.emit("Briarwood", 0.05)
+	await get_tree().process_frame
+	if briarwood_hub_enabled:
+		_safe_call_now("_build_briarwood_hub", [])
+	else:
+		_safe_call_now("_build_village",       [])
+
+	# ── Trees + rocks ─────────────────────────────────────────────────────────
+	build_progress.emit("Trees & Rocks", 0.22)
+	await get_tree().process_frame
+	_safe_call_now("_scatter_trees", [140])
+	_safe_call_now("_scatter_rocks", [36])
+
+	# ── Ground cover ──────────────────────────────────────────────────────────
+	build_progress.emit("Ground Cover", 0.30)
+	await get_tree().process_frame
+	_safe_call_now("_scatter_ferns",     [48])
+	_safe_call_now("_scatter_mushrooms", [24])
+
+	# ── Village props ─────────────────────────────────────────────────────────
+	build_progress.emit("Village Props", 0.36)
+	await get_tree().process_frame
+	_safe_call_now("_build_village_barrels", [])
+	_safe_call_now("_build_mountain_ring",   [])
+	_safe_call_now("_build_market_stalls",   [])
+	_safe_call_now("_build_windmill",        [])
+	_safe_call_now("_build_lanterns",        [])
+	_safe_call_now("_build_banners",         [])
+
+	# ── NPCs + grass ──────────────────────────────────────────────────────────
+	build_progress.emit("Characters", 0.46)
+	await get_tree().process_frame
+	_safe_call_now("_build_npcs",        [])
+	_safe_call_now("_build_grass_tufts", [220])
+
+	# ── Water, particles, atmosphere ──────────────────────────────────────────
+	build_progress.emit("Water & FX", 0.54)
+	await get_tree().process_frame
+	_safe_call_now("_build_well",              [])
+	_safe_call_now("_build_pond",              [])
+	_safe_call_now("_build_firefly_particles", [])
+	_safe_call_now("_build_falling_leaves",    [])
+	_safe_call_now("_build_butterflies",       [])
+	_safe_call_now("_build_bird_flocks",       [])
+	_safe_call_now("_build_god_rays",          [])
+	_safe_call_now("_build_smoke_chimneys",    [])
+	_safe_call_now("_build_campfire",          [])
+
+	# ── Creatures, loot, scale pass ───────────────────────────────────────────
+	build_progress.emit("Creatures & Loot", 0.64)
+	await get_tree().process_frame
+	_safe_call_now("_build_enemies",      [])
+	_safe_call_now("_build_pet",          [])
+	_safe_call_now("_build_stable_horse", [])
+	_safe_call_now("_build_loot_chests",  [])
+	call_deferred("_global_scale_sweep")
+
+	# ── Home, weather, caves ──────────────────────────────────────────────────
+	build_progress.emit("Home & Weather", 0.72)
+	await get_tree().process_frame
+	_safe_call_now("_build_player_home",    [])
+	_safe_call_now("_build_weather",        [])
+	_safe_call_now("_build_crystal_caves",  [Vector3(-50, 0, -40)])
+
+	# ── Nordic district (second-heaviest chunk) ───────────────────────────────
+	build_progress.emit("Nordic District", 0.80)
+	await get_tree().process_frame
+	_safe_call_now("_build_nordic_fishing_village", [])
+	_safe_call_now("_build_nordic_road",            [])
+	_safe_call_now("_build_nordic_ambient_audio",   [])
+	if nordic_dock_life_enabled:
+		_safe_call_now("_build_nordic_dock_life", [])
+
+	# ── Game systems ──────────────────────────────────────────────────────────
+	build_progress.emit("Systems", 0.90)
+	await get_tree().process_frame
+	if district_streaming_enabled:
+		_safe_call_now("_init_district_streaming", [])
+	if quest_marker_enabled:
+		_safe_call_now("_init_quest_markers", [])
+	if town_schedule_enabled:
+		_safe_call_now("_init_town_schedule", [])
+	if tutorial_enabled:
+		_safe_call_now("_tutorial_start_if_needed", [])
+	if mayor_intro_enabled:
+		get_tree().create_timer(mayor_intro_delay).timeout.connect(
+			func(): _run_mayor_intro(), CONNECT_ONE_SHOT
+		)
+	if tutorial_enabled:
+		_safe_call_now("_init_tutorial_polish", [])
+
+	# ── Done ──────────────────────────────────────────────────────────────────
+	build_progress.emit("Done", 1.0)
+	build_complete.emit()
+	_dlog("async build DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
 # the script (runtime error), we'll see [WB] -> X without a matching [WB] OK X.
@@ -2079,7 +2511,7 @@ func _build_bird_flocks() -> void:
 
 func _build_smoke_chimneys() -> void:
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
-	for b: Node3D in get_tree().get_nodes_in_group("buildings"):
+	for b in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
 		if not chim: continue
 		var smoke := GPUParticles3D.new()
@@ -3050,9 +3482,9 @@ func _make_fire_gradient() -> GradientTexture1D:
 var _t: float = 0.0
 func _process(delta: float) -> void:
 	_t += delta
-	for b: Node3D in get_tree().get_nodes_in_group("windmill_blades"):
+	for b in get_tree().get_nodes_in_group("windmill_blades"):
 		b.rotate_object_local(Vector3.FORWARD, 0.5 * delta)
-	for lan: Node3D in get_tree().get_nodes_in_group("lanterns"):
+	for lan in get_tree().get_nodes_in_group("lanterns"):
 		var light: OmniLight3D = lan.get_node_or_null("OmniLight3D")
 		if light:
 			light.light_energy = 1.4 + sin(_t * 5.0 + lan.position.x) * 0.35
@@ -3072,12 +3504,12 @@ func _process(delta: float) -> void:
 			var lrock: float = sin(_t * 0.9 + lphase) * 0.045 + sin(_t * 1.7 + lphase * 1.3) * 0.020
 			lan3d.rotation.z = lrock
 	# Subtle tree sway
-	for tree: Node3D in get_tree().get_nodes_in_group("trees"):
+	for tree in get_tree().get_nodes_in_group("trees"):
 		var s = sin(_t * 0.8 + tree.position.x * 0.3) * 0.015
 		tree.rotation.z = s
 	# THEME §12 — fern frond sway. Slightly faster + smaller amplitude than
 	# trees so the undergrowth reads as "lighter" than the canopy.
-	for frond: Node3D in get_tree().get_nodes_in_group("ferns"):
+	for frond in get_tree().get_nodes_in_group("ferns"):
 		var fs = sin(_t * 1.6 + frond.position.x * 0.7 + frond.position.z * 0.4) * 0.04
 		frond.rotation.z = fs
 	# Env: 2026-05-06 — grass tufts join group "grass" (see _build_grass_tufts)
@@ -3085,7 +3517,7 @@ func _process(delta: float) -> void:
 	# 220 tufts ringing the village absolutely qualify. Tilt amplitude is the
 	# smallest of the foliage trio (canopy 0.015 / fern 0.04 / grass 0.07) but
 	# also the most spatially varied, so the meadow ripples like wind.
-	for tuft: Node3D in get_tree().get_nodes_in_group("grass"):
+	for tuft in get_tree().get_nodes_in_group("grass"):
 		var gs = sin(_t * 2.1 + tuft.position.x * 0.9 + tuft.position.z * 0.6) * 0.07
 		tuft.rotation.z = gs
 	# Env: 2026-05-06 — pond reeds (THEME §12). Reeds bend more than grass —
@@ -3093,7 +3525,7 @@ func _process(delta: float) -> void:
 	# amplitude is the largest of the foliage family (canopy 0.015 / fern
 	# 0.04 / grass 0.07 / reeds 0.12). Per-reed phase lifted from set_meta so
 	# the cluster around the pond rim doesn't ripple in unison.
-	for reed: Node3D in get_tree().get_nodes_in_group("reeds"):
+	for reed in get_tree().get_nodes_in_group("reeds"):
 		var rphase: float = float(reed.get_meta("phase", 0.0))
 		var rs: float = sin(_t * 1.9 + rphase) * 0.12
 		var reed3d: Node3D = reed as Node3D
@@ -3102,7 +3534,7 @@ func _process(delta: float) -> void:
 	# Env: 2026-05-06 — mushroom breathe (THEME §12). Mushrooms shouldn't
 	# sway like leaves, but "static = dead". Slow Y-scale breathe (±3%) so
 	# the cap reads as alive without wobbling like a tree.
-	for mush: Node3D in get_tree().get_nodes_in_group("mushrooms"):
+	for mush in get_tree().get_nodes_in_group("mushrooms"):
 		var mush3d: Node3D = mush as Node3D
 		if mush3d:
 			var mb: float = 1.0 + sin(_t * 1.1 + mush3d.position.x * 0.4 + mush3d.position.z * 0.7) * 0.03
@@ -3122,7 +3554,7 @@ func _process(delta: float) -> void:
 	# period — slower than the lantern rock (0.9 rad/s) because barrels are heavier.
 	# Per-barrel phase lifted from world position so two barrels standing side-by-side
 	# (pairs near houses/stable/market) never rock in unison.
-	for barrel: Node3D in get_tree().get_nodes_in_group("village_barrels"):
+	for barrel in get_tree().get_nodes_in_group("village_barrels"):
 		var b3d: Node3D = barrel as Node3D
 		if b3d == null:
 			continue
@@ -3131,7 +3563,7 @@ func _process(delta: float) -> void:
 		b3d.rotation.z = brock
 
 	# Campfire light flicker
-	for f: Node3D in get_tree().get_nodes_in_group("campfires"):
+	for f in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
 		if fl:
 			fl.light_energy = 2.4 + sin(_t * 17.0) * 0.4 + sin(_t * 31.0) * 0.25
@@ -3140,7 +3572,7 @@ func _process(delta: float) -> void:
 	# so the visible mesh and the cast light tell the same story. Per-camp
 	# phase (lifted from pit world position) keeps a cluster of camps from
 	# flickering in lockstep.
-	for gf: Node3D in get_tree().get_nodes_in_group("goblin_fires"):
+	for gf in get_tree().get_nodes_in_group("goblin_fires"):
 		var gf3d: Node3D = gf as Node3D
 		if gf3d == null:
 			continue
@@ -3160,7 +3592,7 @@ func _process(delta: float) -> void:
 	# THEME §12 — banner flap. Each banner pivot sways around Y (wind passing
 	# through) plus a small Z-roll for "billow". Per-banner phase keeps every
 	# banner from moving in unison.
-	for pivot: Node3D in get_tree().get_nodes_in_group("banner_cloths"):
+	for pivot in get_tree().get_nodes_in_group("banner_cloths"):
 		var phase: float = float(pivot.get_meta("phase", 0.0))
 		var wind: float = sin(_t * 1.6 + phase) * 0.25 + sin(_t * 0.7 + phase * 1.7) * 0.10
 		var billow: float = sin(_t * 2.3 + phase) * 0.08
@@ -3172,7 +3604,7 @@ func _process(delta: float) -> void:
 	# the slope shape stays readable, and a slow Z-sway adds side-to-side
 	# motion without making the canopy feel unmoored. Per-stall phase keeps
 	# adjacent stalls out of lockstep.
-	for awn_pivot: Node3D in get_tree().get_nodes_in_group("stall_awnings"):
+	for awn_pivot in get_tree().get_nodes_in_group("stall_awnings"):
 		var ap3d: Node3D = awn_pivot as Node3D
 		if ap3d == null:
 			continue
@@ -3184,7 +3616,7 @@ func _process(delta: float) -> void:
 		ap3d.rotation.z = sway
 	# THEME §12 — water ripple. Subtle Y-bob on each water plane plus a slow
 	# emission breathe so the surface reads as catching changing light.
-	for wp: Node3D in get_tree().get_nodes_in_group("water_planes"):
+	for wp in get_tree().get_nodes_in_group("water_planes"):
 		var mi: MeshInstance3D = wp as MeshInstance3D
 		if mi == null:
 			continue
@@ -3201,7 +3633,7 @@ func _process(delta: float) -> void:
 	# left/right WingL / WingR meshes around their hinge axis on the bird's
 	# own phase. The lead bird (index 0) bobs slightly less than the
 	# trailing birds so the V reads as following the leader.
-	for flock: Node3D in get_tree().get_nodes_in_group("bird_flocks"):
+	for flock in get_tree().get_nodes_in_group("bird_flocks"):
 		var f3d: Node3D = flock as Node3D
 		if f3d == null:
 			continue
@@ -3217,7 +3649,7 @@ func _process(delta: float) -> void:
 		f3d.rotation.z = sin(_t * 0.4 + fphase) * 0.04
 	# Per-bird wing flap. Wing meshes named "WingL" / "WingR" hinge around X
 	# in the bird's local frame, so a positive rotation lifts the wing tip.
-	for bird: Node3D in get_tree().get_nodes_in_group("bird_wings"):
+	for bird in get_tree().get_nodes_in_group("bird_wings"):
 		var b3d: Node3D = bird as Node3D
 		if b3d == null:
 			continue
@@ -3246,7 +3678,7 @@ func _process(delta: float) -> void:
 	# pulse never settles into a metronome. Amplitudes are conservative
 	# (±25% on light, ±20% on emission) so the cave stays readable —
 	# no flicker, no strobe, just a steady breath.
-	for cluster: Node3D in get_tree().get_nodes_in_group("crystals"):
+	for cluster in get_tree().get_nodes_in_group("crystals"):
 		var c3d: Node3D = cluster as Node3D
 		if c3d == null:
 			continue
@@ -3271,6 +3703,13 @@ func _process(delta: float) -> void:
 			var sn: float = sin(_t * 1.1 + sphase) * 0.6 + sin(_t * 0.7 + sphase * 1.7) * 0.25
 			smat.emission_energy_multiplier = bem + sn * 0.6
 			sidx += 1
+
+	# Phase 6 — harbor interactions (proximity + input check)
+	if nordic_interactions_enabled:
+		_tick_nordic_interactions()
+	# Phase 12 — quest HUD tracker
+	if quest_hud_enabled:
+		_tick_quest_hud()
 
 
 
@@ -3379,185 +3818,176 @@ func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: b
 	parent.add_child(sm)
 
 func _build_crystal_caves(entrance: Vector3) -> void:
+	# Phase 26: all geometry scaled by S=0.25 (4× reduction from original design).
+	# Original was a 48m-diameter dome with 40m-deep cave — engulfed the village.
+	# Now: 12m dome, 10m-deep cave, arch at 5.5m — fits its placement at (-50,0,-40).
+	const S: float = 0.25
+
 	var caves := Node3D.new()
 	caves.name = "CrystalCaves"
 	caves.position = entrance
 	add_child(caves)
 	var rng := RandomNumberGenerator.new(); rng.randomize()
-	var crystal_blue: Color = Color(0.45, 0.80, 1.00)
+	var crystal_blue:   Color = Color(0.45, 0.80, 1.00)
 	var crystal_violet: Color = Color(0.70, 0.55, 1.00)
-	var crystal_teal: Color = Color(0.45, 1.00, 0.85)
+	var crystal_teal:   Color = Color(0.45, 1.00, 0.85)
 
-	# ── Cavern dome (inverted) — the dark interior shell ──
-	# Done as a downward-scaled half-sphere shell offset upward so it caps the
-	# play area without blocking the camera too aggressively.
+	# ── Cavern dome (inverted interior shell) ──
 	var dome := MeshInstance3D.new()
-	var dm := SphereMesh.new()
-	dm.radius = 24.0; dm.height = 22.0
+	var dm   := SphereMesh.new()
+	dm.radius = 24.0 * S   # → 6.0 m radius, 12 m diameter
+	dm.height = 22.0 * S   # → 5.5 m
 	dome.mesh = dm
 	var dome_mat := StandardMaterial3D.new()
-	# REFINE: visual — Crystal Caves — push interior shell darker and more matte
-	# so the cave feels oppressively dim and the crystal emissives carry the look.
 	dome_mat.albedo_color = Color(0.04, 0.05, 0.10)
-	dome_mat.roughness = 0.98
-	dome_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render the inside
+	dome_mat.roughness    = 0.98
+	dome_mat.cull_mode    = BaseMaterial3D.CULL_FRONT
 	dome.material_override = dome_mat
-	dome.position = Vector3(0, 4.0, 0)
+	dome.position = Vector3(0, 4.0 * S, 0)   # → y=1.0
 	caves.add_child(dome)
 
-	# ── Entrance arch (two stone columns + capstone) ──
-	for sx in [-3.2, 3.2]:
+	# ── Entrance arch ──
+	for sx in [-3.2 * S, 3.2 * S]:    # → ±0.8
 		var col := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = 5.5
+		var cm  := CylinderMesh.new()
+		cm.top_radius    = 0.7  * S   # → 0.175
+		cm.bottom_radius = 0.95 * S   # → 0.24
+		cm.height        = 5.5  * S   # → 1.4
 		col.mesh = cm
 		col.material_override = MAT_ROCK(1.5)
-		col.position = Vector3(sx, 2.75, 22.0)
+		col.position = Vector3(sx, 2.75 * S, 22.0 * S)   # → (±0.8, 0.7, 5.5)
 		caves.add_child(col)
-	var cap := MeshInstance3D.new()
+	var cap  := MeshInstance3D.new()
 	var capm := BoxMesh.new()
-	capm.size = Vector3(8.4, 1.2, 1.6)
+	capm.size = Vector3(8.4 * S, 1.2 * S, 1.6 * S)   # → 2.1 × 0.3 × 0.4
 	cap.mesh = capm
 	cap.material_override = MAT_ROCK(1.5)
-	cap.position = Vector3(0, 6.1, 22.0)
+	cap.position = Vector3(0, 6.1 * S, 22.0 * S)     # → (0, 1.5, 5.5)
 	caves.add_child(cap)
-	# Glowing entrance crystal above the arch — a beacon from the village
-	var beacon := MeshInstance3D.new()
-	var bm := PrismMesh.new()
-	bm.size = Vector3(1.0, 2.4, 1.0)
+
+	# ── Entrance beacon crystal ──
+	var beacon     := MeshInstance3D.new()
+	var bm         := PrismMesh.new()
+	bm.size = Vector3(1.0 * S, 2.4 * S, 1.0 * S)    # → 0.25 × 0.6 × 0.25
 	beacon.mesh = bm
 	var beacon_mat := StandardMaterial3D.new()
-	beacon_mat.albedo_color = crystal_blue
-	beacon_mat.emission_enabled = true
-	beacon_mat.emission = crystal_blue
-	# REFINE: visual — Crystal Caves — beacon throws further so the cave reads
-	# as a destination from the village edge (helps Alden spot the entrance).
-	beacon_mat.emission_energy_multiplier = 4.0
+	beacon_mat.albedo_color            = crystal_blue
+	beacon_mat.emission_enabled        = true
+	beacon_mat.emission                = crystal_blue
+	beacon_mat.emission_energy_multiplier = 1.2
 	beacon.material_override = beacon_mat
-	beacon.position = Vector3(0, 8.0, 22.0)
+	beacon.position = Vector3(0, 8.0 * S, 22.0 * S)  # → (0, 2.0, 5.5)
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
-	beacon_light.light_color = crystal_blue
-	# REFINE: visual — Crystal Caves — beacon light reaches the village treeline
-	beacon_light.light_energy = 3.2
-	beacon_light.omni_range = 18.0
-	beacon_light.position = Vector3(0, 8.0, 22.0)
+	beacon_light.light_color  = crystal_blue
+	beacon_light.light_energy = 1.4
+	beacon_light.omni_range   = 10.0 * S              # → 2.5 m
+	beacon_light.position     = Vector3(0, 8.0 * S, 22.0 * S)
 	caves.add_child(beacon_light)
 
-	# ── Ambient blue cave light ──
+	# ── Ambient cave lights ──
 	var amb := OmniLight3D.new()
-	amb.light_color = crystal_blue
-	# REFINE: visual — Crystal Caves — dimmer chamber ambient (was 0.85) so the
-	# crystal clusters do the heavy lifting; cave reads as cave, not as lit room.
+	amb.light_color  = crystal_blue
 	amb.light_energy = 0.62
-	amb.omni_range = 28.0
-	amb.position = Vector3(0, 9.0, 0)
+	amb.omni_range   = 28.0 * S                       # → 7.0 m
+	amb.position     = Vector3(0, 9.0 * S, 0)         # → y=2.25
 	caves.add_child(amb)
-	# Secondary deep-violet light at the boss room end
 	var boss_amb := OmniLight3D.new()
-	boss_amb.light_color = crystal_violet
-	# REFINE: visual — Crystal Caves — stronger violet pool around the Guardian;
-	# helps the boss room read as cinematic without changing combat numbers.
+	boss_amb.light_color  = crystal_violet
 	boss_amb.light_energy = 2.4
-	boss_amb.omni_range = 24.0
-	boss_amb.position = Vector3(0, 4.0, -16.0)
+	boss_amb.omni_range   = 24.0 * S                  # → 6.0 m
+	boss_amb.position     = Vector3(0, 4.0 * S, -16.0 * S)  # → (0, 1.0, -4.0)
 	caves.add_child(boss_amb)
 
-	# ── Stone floor disc — a darker rocky ground inside the cave ──
+	# ── Stone floor disc ──
 	var floor_mesh := MeshInstance3D.new()
-	var pm_floor := CylinderMesh.new()
-	pm_floor.top_radius = 22.0; pm_floor.bottom_radius = 22.0; pm_floor.height = 0.4
+	var pm_floor   := CylinderMesh.new()
+	pm_floor.top_radius    = 22.0 * S    # → 5.5 m
+	pm_floor.bottom_radius = 22.0 * S
+	pm_floor.height        = 0.4
 	floor_mesh.mesh = pm_floor
 	var floor_mat := StandardMaterial3D.new()
-	# REFINE: visual — Crystal Caves — cooler, wetter-looking stone floor.
-	# Lower roughness so the crystal glow catches a faint sheen on the rock.
 	floor_mat.albedo_color = Color(0.12, 0.14, 0.20)
-	floor_mat.roughness = 0.78
+	floor_mat.roughness    = 0.78
 	floor_mesh.material_override = floor_mat
 	floor_mesh.position = Vector3(0, 0.05, 0)
 	caves.add_child(floor_mesh)
 
-	# ── Glowing crystal formations scattered through the cave ──
+	# ── Crystal formations (positions and base_scale × S) ──
 	var crystal_spots: Array = [
-		{"p": Vector3(-8, 0, 14), "s": 1.4, "c": crystal_blue},
-		{"p": Vector3( 9, 0, 11), "s": 1.2, "c": crystal_blue},
-		{"p": Vector3(14, 0,  4), "s": 1.6, "c": crystal_teal},
-		{"p": Vector3(-12,0,  2), "s": 1.5, "c": crystal_blue},
-		{"p": Vector3(  4,0, -4), "s": 1.0, "c": crystal_teal},
-		{"p": Vector3(-6, 0, -8), "s": 1.3, "c": crystal_violet},
-		{"p": Vector3( 12,0, -10),"s": 1.4, "c": crystal_violet},
-		{"p": Vector3(-14,0,-12), "s": 1.1, "c": crystal_blue},
-		{"p": Vector3(  0,0, -18),"s": 2.2, "c": crystal_violet},  # giant central crystal in boss room
+		{"p": Vector3(-8,0, 14)*S, "s": 1.4*S, "c": crystal_blue},
+		{"p": Vector3( 9,0, 11)*S, "s": 1.2*S, "c": crystal_blue},
+		{"p": Vector3(14,0,  4)*S, "s": 1.6*S, "c": crystal_teal},
+		{"p": Vector3(-12,0, 2)*S, "s": 1.5*S, "c": crystal_blue},
+		{"p": Vector3(  4,0, -4)*S,"s": 1.0*S, "c": crystal_teal},
+		{"p": Vector3( -6,0, -8)*S,"s": 1.3*S, "c": crystal_violet},
+		{"p": Vector3( 12,0,-10)*S,"s": 1.4*S, "c": crystal_violet},
+		{"p": Vector3(-14,0,-12)*S,"s": 1.1*S, "c": crystal_blue},
+		{"p": Vector3(  0,0,-18)*S,"s": 2.2*S, "c": crystal_violet},  # boss crystal
 	]
 	for spot in crystal_spots:
-		var p: Vector3 = spot["p"]
-		var s: float = spot["s"]
-		var c: Color = spot["c"]
-		_make_crystal_cluster(p, s, c, caves, rng)
+		_make_crystal_cluster(spot["p"], spot["s"], spot["c"], caves, rng)
 
-	# ── Stalagmites (floor) and stalactites (ceiling) ──
+	# ── Stalagmites and stalactites ──
 	for i in 18:
 		var ang: float = rng.randf() * TAU
-		var r: float = rng.randf_range(6.0, 19.0)
+		var r:   float = rng.randf_range(6.0, 19.0) * S
 		var pos: Vector3 = Vector3(cos(ang) * r, 0.0, sin(ang) * r)
-		var h: float = rng.randf_range(1.2, 3.0)
-		_make_stalagmite(pos, h, caves, false)
+		_make_stalagmite(pos, rng.randf_range(0.4, 1.0), caves, false)
 	for i in 12:
 		var ang2: float = rng.randf() * TAU
-		var r2: float = rng.randf_range(4.0, 18.0)
-		var pos2: Vector3 = Vector3(cos(ang2) * r2, 11.5, sin(ang2) * r2)
-		var h2: float = rng.randf_range(1.5, 3.5)
-		_make_stalagmite(pos2, h2, caves, true)
+		var r2:   float = rng.randf_range(4.0, 18.0) * S
+		var pos2: Vector3 = Vector3(cos(ang2) * r2, 11.5 * S, sin(ang2) * r2)
+		_make_stalagmite(pos2, rng.randf_range(0.4, 1.0), caves, true)
 
-	# ── Boss room divider — a stone arch separating the entry chamber from the boss room ──
-	for sx2 in [-6.0, 6.0]:
+	# ── Boss room divider pillars ──
+	for sx2 in [-6.0 * S, 6.0 * S]:    # → ±1.5
 		var pillar := MeshInstance3D.new()
-		var pillm := CylinderMesh.new()
-		pillm.top_radius = 0.6; pillm.bottom_radius = 0.9; pillm.height = 7.0
+		var pillm  := CylinderMesh.new()
+		pillm.top_radius    = 0.6 * S   # → 0.15
+		pillm.bottom_radius = 0.9 * S   # → 0.225
+		pillm.height        = 7.0 * S   # → 1.75
 		pillar.mesh = pillm
 		pillar.material_override = MAT_ROCK(1.5)
-		pillar.position = Vector3(sx2, 3.5, -10.0)
+		pillar.position = Vector3(sx2, 3.5 * S, -10.0 * S)  # → (±1.5, 0.9, -2.5)
 		caves.add_child(pillar)
 
-	# ── Skull pile in front of the boss crystal — ominous ──
+	# ── Skull pile ──
 	for i in 6:
 		var skull := MeshInstance3D.new()
-		var sm2 := SphereMesh.new()
-		sm2.radius = 0.20; sm2.height = 0.32
+		var sm2   := SphereMesh.new()
+		sm2.radius = 0.12; sm2.height = 0.18
 		skull.mesh = sm2
 		var sklm := StandardMaterial3D.new()
-		# REFINE: visual — Crystal Caves — older / chalkier bone tint reads
-		# clearer under the cool blue ambient than the warmer arena-skull color.
 		sklm.albedo_color = Color(0.92, 0.86, 0.74)
-		sklm.roughness = 0.92
+		sklm.roughness    = 0.92
 		skull.material_override = sklm
-		skull.position = Vector3(rng.randf_range(-1.4, 1.4), 0.18, -16.0 + rng.randf_range(-1.4, 1.4))
+		skull.position = Vector3(
+			rng.randf_range(-1.4, 1.4) * S,
+			0.08,
+			-16.0 * S + rng.randf_range(-1.4, 1.4) * S)
 		caves.add_child(skull)
 
-	# ── ENEMY SPAWNS ──
-	# Skeletons (use enemy_kind="skeleton", bone-white tint)
+	# ── Enemy spawns (all offsets × S) ──
 	var skel_color: Color = Color(0.95, 0.95, 0.92)
 	var skel_spots: Array = [
-		Vector3(-6, 0, 12), Vector3( 7, 0, 8), Vector3(11, 0, -2),
-		Vector3(-10, 0, -4), Vector3( 4, 0, -8),
+		Vector3(-6,0,12)*S, Vector3(7,0,8)*S, Vector3(11,0,-2)*S,
+		Vector3(-10,0,-4)*S, Vector3(4,0,-8)*S,
 	]
 	for sp in skel_spots:
-		var pos3: Vector3 = caves.position + sp
-		_spawn_enemy("skeleton", pos3, "Restless Skeleton", 36, 8, 24, 7, skel_color, 2.4, 4.4)
+		_spawn_enemy("skeleton", caves.position + sp,
+			"Restless Skeleton", 36, 8, 24, 7, skel_color, 2.4, 4.4)
 
-	# Crystal Elementals — slower, hard-hitting, glowing
 	var elem_color: Color = Color(0.55, 0.85, 1.00)
 	var elem_spots: Array = [
-		Vector3(-12, 0, 0), Vector3(13, 0, -6), Vector3(-4, 0, -12),
+		Vector3(-12,0, 0)*S, Vector3(13,0,-6)*S, Vector3(-4,0,-12)*S,
 	]
 	for ep in elem_spots:
-		var pos4: Vector3 = caves.position + ep
-		_spawn_enemy("crystal_elemental", pos4, "Crystal Elemental", 70, 14, 55, 14, elem_color, 1.8, 3.2)
+		_spawn_enemy("crystal_elemental", caves.position + ep,
+			"Crystal Elemental", 70, 14, 55, 14, elem_color, 1.8, 3.2)
 
-	# Boss: Crystal Guardian — beefy crystal_guardian with massive HP and big drops
-	var guardian_pos: Vector3 = caves.position + Vector3(0, 0, -16.0)
-	_spawn_enemy("crystal_guardian", guardian_pos, "Crystal Guardian",
-		420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)
+	_spawn_enemy("crystal_guardian", caves.position + Vector3(0, 0, -16.0 * S),
+		"Crystal Guardian", 420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)
 
 
 # Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.
@@ -4152,7 +4582,7 @@ func _build_god_rays() -> void:
 
 		# Hook v: join group for World.gd time-of-day modulation.
 		# World.gd can dim god_ray_shafts at dusk/night with:
-		#   for shaft: Node3D in get_tree().get_nodes_in_group("god_ray_shafts"):
+		#   for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
 		#       shaft.amount_ratio = clamp(daylight, 0.0, 1.0)
 		p.add_to_group("god_ray_shafts")
 		add_child(p)
@@ -4279,9 +4709,53 @@ const NORDIC_PIER_W   : float = 2.6
 
 var _nrng: RandomNumberGenerator
 
+var _mm_batches: Dictionary = {}
+var _pier_post_mesh: CylinderMesh = null
+var _pier_rail_mesh: BoxMesh = null
+
+# Phase 8 — discovery state (pre-seed known locations as discovered)
+var _discovered_places: Dictionary = {
+	"briarwood": true,
+	"nordic": true,
+}
+
+# Phase 9 — district streaming state
+var _district_timer: Timer = null
+var _district_roots: Dictionary = {}    # id -> Node3D root
+var _district_building: Dictionary = {} # id -> bool (prevents double-build)
+var _build_root_override: Node = null   # redirects add_child in streamed builds
+
 # Branch offsets defined as a const so dock dressing and boat placement
 # can reference them by index (fixes review item: boat offset mismatch).
 const NORDIC_BRANCH_T := [0.22, 0.42, 0.62, 0.80]
+
+# ── Boat travel destinations table ───────────────────────────────────────────
+# Add more entries here as you add districts. id must be unique.
+# requires_discovery: false = always visible; true = hidden until discover_place() called.
+const BOAT_DESTS := [
+	{
+		"id": "briarwood",
+		"name": "Briarwood (Village)",
+		"pos": Vector3(0, 0, 12),
+		"cost": 0,
+		"requires_discovery": false,
+	},
+	{
+		"id": "nordic",
+		"name": "Nordic Harbor",
+		"pos": Vector3(0, 0, 120),
+		"cost": 0,
+		"requires_discovery": false,
+	},
+	# Uncomment when district is built:
+	# {
+	# 	"id": "crystal_caves",
+	# 	"name": "Crystal Caves",
+	# 	"pos": Vector3(-50, 0, -40),
+	# 	"cost": 25,
+	# 	"requires_discovery": true,
+	# },
+]
 
 # ── Nordic inspector knobs (all optional — consts above are the runtime defaults)
 # Set these in the Godot Inspector to tweak the district without touching code.
@@ -4311,6 +4785,33 @@ const NORDIC_BRANCH_T := [0.22, 0.42, 0.62, 0.80]
 @export var sfx_creak_volume_db: float  = -10.0
 @export var sfx_gulls_interval_min: float = 5.0   # seconds between gull cries
 @export var sfx_gulls_interval_max: float = 18.0
+
+# ── Phase 5: Dock NPC Life Loop ──────────────────────────────────────────────
+@export var nordic_dock_life_enabled: bool = true
+@export var nordic_dock_npc_scene: PackedScene   # drag any NPC scene here; null = disabled
+@export var nordic_dock_npc_height: float = 1.65
+@export var nordic_dock_life_tick: float = 1.6
+@export var nordic_fisherman_offset: Vector3 = Vector3(1.0, 0.0, 18.0)
+@export var nordic_netmender_offset: Vector3 = Vector3(-6.0, 0.0, 10.0)
+@export var nordic_harbormaster_offset: Vector3 = Vector3(3.0, 0.0, 6.0)
+
+# ── Phase 6: Harbor Interactions ────────────────────────────────────────────
+@export var nordic_interactions_enabled: bool = true
+@export var nordic_fish_gold_reward: int = 6
+@export var nordic_fish_cooldown_sec: float = 20.0
+@export var nordic_fish_item_id: String = "fish"
+@export var nordic_fish_item_qty: int = 1
+
+# ── Phase 7: Boat Travel UI ──────────────────────────────────────────────────
+@export var boat_ui_enabled: bool = true
+@export var boat_dest_briarwood: Vector3 = Vector3(0, 0, 12)   # fallback when UI disabled
+@export var boat_dest_nordic: Vector3 = Vector3(0, 0, 120)
+
+# ── Phase 9: District Streaming ──────────────────────────────────────────────
+@export var district_streaming_enabled: bool = true
+@export var nordic_stream_load_dist: float = 180.0    # build when player within this range
+@export var nordic_stream_unload_dist: float = 240.0  # free when player beyond this range
+@export var nordic_stream_tick: float = 0.8           # seconds between proximity checks
 
 func MAT_WATER() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -4342,6 +4843,14 @@ func _build_nordic_fishing_village() -> void:
 	_nrng = RandomNumberGenerator.new()
 	_nrng.seed = NORDIC_SEED
 
+	# Init shared pier meshes for MultiMesh batching (Builder run 26 perf pass)
+	_pier_post_mesh = CylinderMesh.new()
+	_pier_post_mesh.top_radius    = 0.11
+	_pier_post_mesh.bottom_radius = 0.14
+	_pier_post_mesh.height        = 3.0
+	_pier_rail_mesh = BoxMesh.new()
+	_pier_rail_mesh.size = Vector3(0.10, 0.08, 3.0)  # seg_len is always 3.0
+
 	var origin := NORDIC_ORIGIN
 
 	# Water plane — pushed 28 m seaward so near edge is at z≈92, clear of
@@ -4368,8 +4877,8 @@ func _build_nordic_fishing_village() -> void:
 	var branch_dirs  : Array[Vector3] = []
 	var branch_bases : Array[Vector3] = []
 	for i in range(NORDIC_BRANCH_T.size()):
-		var t   : float = NORDIC_BRANCH_T[i]
-		var bp  : Vector3 = pier_start + pier_dir * (NORDIC_PIER_LEN * t)
+		var t   := NORDIC_BRANCH_T[i]
+		var bp  := pier_start + pier_dir * (NORDIC_PIER_LEN * t)
 		bp.y    = NORDIC_WATER_Y + 0.15
 		var side := (1.0 if i % 2 == 0 else -1.0)
 		var bd  : Vector3 = pier_dir.rotated(Vector3.UP, side * PI * 0.5)
@@ -4409,6 +4918,9 @@ func _build_nordic_fishing_village() -> void:
 
 	# Dock NPCs
 	_nordic_dock_npcs(origin, pier_start, pier_dir, shore_dir)
+
+	# Shrink all MultiMesh instance counts to actual usage, then clear batch dict
+	_mm_finalize()
 
 	_dlog("Nordic fishing village built (rev2) at " + str(origin))
 
@@ -4574,6 +5086,37 @@ func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void
 	col.shape = box
 	body.add_child(col)
 
+# ── MultiMesh batching helpers (Builder run 26 — perf pass) ─────────────────
+func _mm_key(mesh: Mesh, mat: Material) -> String:
+	return "%s|%s" % [str(mesh.get_rid()), mat != null ? str(mat.get_rid()) : "null"]
+
+func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserve: int = 64) -> void:
+	var key := _mm_key(mesh, mat)
+	if not _mm_batches.has(key) or not is_instance_valid(_mm_batches[key].mmi):
+		var mmi := MultiMeshInstance3D.new()
+		var mm  := MultiMesh.new()
+		mm.mesh = mesh
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.instance_count = reserve
+		mmi.multimesh = mm
+		if mat != null:
+			mmi.material_override = mat
+		parent.add_child(mmi)
+		_mm_batches[key] = {"mmi": mmi, "mm": mm, "next": 0}
+	var d := _mm_batches[key]
+	if d.next >= d.mm.instance_count:
+		d.mm.instance_count += reserve
+	d.mm.set_instance_transform(d.next, xform)
+	d.next += 1
+	_mm_batches[key] = d
+
+func _mm_finalize() -> void:
+	for key in _mm_batches:
+		var d := _mm_batches[key]
+		if d.mm and d.next > 0:
+			d.mm.instance_count = d.next
+	_mm_batches.clear()
+
 # ── Single pier segment: visuals only (collision handled by _nordic_pier_collision)
 func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> Node3D:
 	var seg := Node3D.new()
@@ -4590,26 +5133,45 @@ func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> N
 	deck.position = Vector3(0, 0.0, seg_len * 0.5)
 	seg.add_child(deck)
 
-	for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
-		var post := MeshInstance3D.new()
-		var cm   := CylinderMesh.new()
-		cm.top_radius    = 0.11
-		cm.bottom_radius = 0.14
-		cm.height        = 3.0
-		post.mesh        = cm
-		post.material_override = MAT_DARKPOST()
-		post.position    = Vector3(sx, -1.5, seg_len * 0.18)
-		seg.add_child(post)
+	var y_rot     := atan2(dir.x, dir.z)
+	var seg_basis := Basis(Vector3.UP, y_rot)
 
+	# Posts — MultiMesh batch path; else branch preserved for per-node debugging
+	if _pier_post_mesh != null:
+		for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
+			var post_local := Vector3(sx, -1.5, seg_len * 0.18)
+			var post_world := world_pos + seg_basis * post_local
+			_mm_add(seg.get_parent(), _pier_post_mesh, MAT_DARKPOST(),
+					Transform3D(Basis.IDENTITY, post_world))
+	else:
+		for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
+			var post := MeshInstance3D.new()
+			var cm   := CylinderMesh.new()
+			cm.top_radius    = 0.11
+			cm.bottom_radius = 0.14
+			cm.height        = 3.0
+			post.mesh        = cm
+			post.material_override = MAT_DARKPOST()
+			post.position    = Vector3(sx, -1.5, seg_len * 0.18)
+			seg.add_child(post)
+
+	# Rails — MultiMesh batch path; else branch preserved for per-node debugging
 	if _nrng.randf() < 0.70:
-		for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
-			var rail := MeshInstance3D.new()
-			var rm   := BoxMesh.new()
-			rm.size  = Vector3(0.10, 0.08, seg_len)
-			rail.mesh = rm
-			rail.material_override = MAT_PLANK(1.0)
-			rail.position = Vector3(sx, 1.0, seg_len * 0.5)
-			seg.add_child(rail)
+		if _pier_rail_mesh != null:
+			for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
+				var rail_local := Vector3(sx, 1.0, seg_len * 0.5)
+				var rail_world := world_pos + seg_basis * rail_local
+				_mm_add(seg.get_parent(), _pier_rail_mesh, MAT_PLANK(1.0),
+						Transform3D(seg_basis, rail_world))
+		else:
+			for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
+				var rail := MeshInstance3D.new()
+				var rm   := BoxMesh.new()
+				rm.size  = Vector3(0.10, 0.08, seg_len)
+				rail.mesh = rm
+				rail.material_override = MAT_PLANK(1.0)
+				rail.position = Vector3(sx, 1.0, seg_len * 0.5)
+				seg.add_child(rail)
 
 	return seg
 
@@ -4622,7 +5184,7 @@ func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2
 	house.rotation.y = atan2(facing.x, facing.z)
 
 	var w      := footprint.x
-	var d: float = footprint.y
+	var d      := footprint.y
 	var wall_h := 3.0
 	var rpeak  := _nrng.randf_range(2.2, 3.0)
 	var deck_y := _nrng.randf_range(0.5, 1.6)
@@ -4782,6 +5344,8 @@ func _nordic_longhouse(world_pos: Vector3, facing: Vector3) -> void:
 	body.add_child(col)
 	b.add_child(body)
 
+	_register_interactable(b, "inn")
+
 # ── Smokehouse ────────────────────────────────────────────────────────────────
 func _nordic_smokehouse(world_pos: Vector3, facing: Vector3) -> void:
 	var b     := Node3D.new()
@@ -4924,6 +5488,8 @@ func _nordic_fish_rack(world_pos: Vector3, facing: Vector3) -> void:
 	bar.position.y = 1.42
 	n.add_child(bar)
 
+	_register_interactable(n, "fish_rack")
+
 # ── Clutter (barrel / crate) ──────────────────────────────────────────────────
 func _nordic_clutter(world_pos: Vector3) -> void:
 	var n := Node3D.new()
@@ -4985,6 +5551,8 @@ func _nordic_boat(world_pos: Vector3, facing: Vector3) -> void:
 		mast.position = Vector3(0, 0.65 + cm.height * 0.5, -bm.size.z * 0.12)
 		n.add_child(mast)
 
+	_register_interactable(n, "boat_travel")
+
 # ── Woodpile ─────────────────────────────────────────────────────────────────
 func _nordic_woodpile(world_pos: Vector3) -> void:
 	var n  := Node3D.new()
@@ -5008,7 +5576,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Fish racks
 	for i in range(10):
 		var z := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x := (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
+		var x := (_nrng.randf() < 0.5 ? -1.0 : 1.0) * _nrng.randf_range(3.0, 7.0)
 		var p := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_fish_rack(p, -pier_dir)
@@ -5031,7 +5599,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Two boats alongside main pier
 	for i in range(2):
 		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
-		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
+		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((_nrng.randf() < 0.5 ? -1.0 : 1.0) * 4.5)
 		bp.y  = NORDIC_WATER_Y - 0.06
 		_nordic_boat(bp, -pier_dir)
 
@@ -5134,7 +5702,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 		# Gentle meander that fades to straight near both ends
 		var wobble := sin(t * PI * 3.0) * 1.1 + rng.randf_range(-0.3, 0.3)
 		# Widen near the Nordic plaza
-		var width: float = lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
+		var width  := lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
 
 		var seg    := MeshInstance3D.new()
 		var bm     := BoxMesh.new()
@@ -5403,3 +5971,5145 @@ func _visual_aabb(n: Node3D) -> AABB:
 	if not has:
 		return AABB()
 	return out
+
+# ============================================================================
+# PHASE 5 — Dock NPC Life Loop
+# ============================================================================
+
+var _nordic_life_root: Node3D = null
+var _nordic_life_dock_npcs: Array[Node3D] = []
+var _nordic_life_timer: Timer = null
+
+func _build_nordic_dock_life() -> void:
+	if not nordic_dock_life_enabled:
+		return
+	if nordic_dock_npc_scene == null:
+		return
+
+	if _nordic_life_root and is_instance_valid(_nordic_life_root):
+		_nordic_life_root.queue_free()
+
+	_nordic_life_root = Node3D.new()
+	_nordic_life_root.name = "NordicDockLife"
+	add_child(_nordic_life_root)
+
+	_nordic_life_dock_npcs.clear()
+
+	var anchor := NORDIC_ORIGIN
+
+	var fisher := _spawn_dock_npc(_nordic_life_root, "Fisherman",    anchor + nordic_fisherman_offset)
+	var mend   := _spawn_dock_npc(_nordic_life_root, "NetMender",    anchor + nordic_netmender_offset)
+	var master := _spawn_dock_npc(_nordic_life_root, "HarborMaster", anchor + nordic_harbormaster_offset)
+
+	if fisher: _nordic_life_dock_npcs.append(fisher)
+	if mend:   _nordic_life_dock_npcs.append(mend)
+	if master: _nordic_life_dock_npcs.append(master)
+
+	if _nordic_life_dock_npcs.is_empty():
+		return
+
+	_configure_dock_route(fisher, [
+		anchor + nordic_fisherman_offset,
+		anchor + nordic_fisherman_offset + Vector3(0, 0, 14),
+		anchor + nordic_fisherman_offset + Vector3(-3, 0, 8),
+		anchor + nordic_fisherman_offset + Vector3(2, 0, 4),
+	], true)
+
+	_configure_dock_route(mend, [
+		anchor + nordic_netmender_offset + Vector3(-0.8, 0, -0.8),
+		anchor + nordic_netmender_offset + Vector3(0.8, 0, -0.6),
+		anchor + nordic_netmender_offset + Vector3(0.6, 0, 0.9),
+		anchor + nordic_netmender_offset + Vector3(-0.7, 0, 0.7),
+	], false)
+
+	_configure_dock_route(master, [
+		anchor + nordic_harbormaster_offset + Vector3(-2.2, 0, 0.4),
+		anchor + nordic_harbormaster_offset + Vector3(2.0, 0, 0.2),
+		anchor + nordic_harbormaster_offset + Vector3(1.0, 0, -1.2),
+		anchor + nordic_harbormaster_offset + Vector3(-1.4, 0, -1.0),
+	], true)
+
+	_nordic_life_timer = Timer.new()
+	_nordic_life_timer.name = "NordicLifeTick"
+	_nordic_life_timer.wait_time = max(0.4, nordic_dock_life_tick)
+	_nordic_life_timer.one_shot = false
+	_nordic_life_timer.autostart = true
+	_nordic_life_timer.timeout.connect(_tick_nordic_dock_life)
+	_nordic_life_root.add_child(_nordic_life_timer)
+
+	_tick_nordic_dock_life()
+
+
+func _spawn_dock_npc(parent: Node3D, role: String, pos: Vector3) -> Node3D:
+	var npc := nordic_dock_npc_scene.instantiate() as Node3D
+	if npc == null:
+		return null
+
+	parent.add_child(npc)
+	npc.name = "DockNPC_%s" % role
+	npc.global_position = pos
+	npc.set_meta("dock_role", role)
+
+	if has_method("_scale_node_to_height"):
+		_scale_node_to_height(npc, nordic_dock_npc_height)
+
+	_try_play_anim(npc, "idle")
+
+	npc.set_meta("dock_route", [])
+	npc.set_meta("dock_idx", 0)
+	npc.set_meta("dock_idle_until", 0.0)
+	npc.set_meta("dock_is_patroller", true)
+
+	# Register harbor master as an interactable (Phase 6)
+	if role == "HarborMaster":
+		_register_interactable(npc, "harbor_master")
+
+	return npc
+
+
+func _configure_dock_route(npc: Node3D, points: Array, patroller: bool) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	npc.set_meta("dock_route", points)
+	npc.set_meta("dock_idx", 0)
+	npc.set_meta("dock_is_patroller", patroller)
+	npc.set_meta("dock_idle_until", 0.0)
+
+
+func _tick_nordic_dock_life() -> void:
+	if _nordic_life_dock_npcs.is_empty():
+		return
+
+	var now := Time.get_ticks_msec() / 1000.0
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	for npc in _nordic_life_dock_npcs:
+		if npc == null or not is_instance_valid(npc):
+			continue
+
+		var route: Array = npc.get_meta("dock_route", [])
+		if route.is_empty():
+			continue
+
+		var idle_until: float = float(npc.get_meta("dock_idle_until", 0.0))
+		if now < idle_until:
+			if rng.randf() < 0.55:
+				npc.rotation.y += rng.randf_range(-0.5, 0.5)
+			continue
+
+		var idx: int = int(npc.get_meta("dock_idx", 0))
+		idx = clamp(idx, 0, route.size() - 1)
+		var target: Vector3 = route[idx]
+
+		var dist := npc.global_position.distance_to(target)
+		if dist < 0.9:
+			var role := str(npc.get_meta("dock_role", "Worker"))
+			var wait := 0.0
+			match role:
+				"Fisherman":    wait = rng.randf_range(1.0, 2.4)
+				"NetMender":    wait = rng.randf_range(1.8, 4.0)
+				"HarborMaster": wait = rng.randf_range(0.8, 1.8)
+				_:              wait = rng.randf_range(0.8, 2.2)
+
+			npc.set_meta("dock_idle_until", now + wait)
+			_try_play_anim(npc, "idle")
+			idx = (idx + 1) % route.size()
+			npc.set_meta("dock_idx", idx)
+			continue
+
+		_try_play_anim(npc, "walk")
+		_npc_go_to(npc, target)
+
+
+func _npc_go_to(npc: Node3D, target: Vector3) -> void:
+	if npc.has_method("walk_to"):
+		npc.call("walk_to", target)
+		return
+
+	var agent: Node = npc.find_child("Agent", true, false)
+	if agent == null:
+		agent = npc.find_child("NavigationAgent3D", true, false)
+	if agent and agent is NavigationAgent3D:
+		(agent as NavigationAgent3D).target_position = target
+		return
+
+	# Tween fallback — kills any in-progress tween to avoid stacking
+	if npc.has_meta("dock_tween"):
+		var old = npc.get_meta("dock_tween")
+		if old is Tween and is_instance_valid(old):
+			(old as Tween).kill()
+
+	var t := npc.create_tween()
+	npc.set_meta("dock_tween", t)
+
+	var role := str(npc.get_meta("dock_role", "Worker"))
+	var speed := 2.0
+	match role:
+		"Fisherman":    speed = 2.6
+		"HarborMaster": speed = 2.2
+		"NetMender":    speed = 1.4
+
+	var dist := npc.global_position.distance_to(target)
+	var dur := clamp(dist / max(0.1, speed), 0.4, 6.0)
+
+	var dir := target - npc.global_position
+	dir.y = 0
+	if dir.length() > 0.001:
+		npc.rotation.y = atan2(dir.x, dir.z)
+
+	t.tween_property(npc, "global_position", target, dur)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _try_play_anim(npc: Node3D, logical: String) -> void:
+	var aps := npc.find_children("*", "AnimationPlayer", true, false)
+	if aps.is_empty():
+		return
+	var ap := aps[0] as AnimationPlayer
+	if ap == null:
+		return
+
+	var candidates: Dictionary = {
+		"idle": ["idle", "Idle", "humanoid/idle", "humanoid/Idle"],
+		"walk": ["walk", "Walk", "humanoid/walk", "humanoid/Walk", "run", "Run"],
+	}
+	var list: Array = candidates.get(logical, [logical])
+	for anim_name in list:
+		if ap.has_animation(anim_name):
+			if ap.current_animation != anim_name:
+				ap.play(anim_name)
+			return
+
+
+# ============================================================================
+# PHASE 6 — Harbor Interactions
+# ============================================================================
+
+var _nordic_interactables: Array[Node3D] = []
+var _nordic_interact_cd: Dictionary = {}
+
+func _register_interactable(node: Node3D, kind: String) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	node.set_meta("interactable_kind", kind)
+	node.add_to_group("world_interactables")
+	_nordic_interactables.append(node)
+
+
+func _tick_nordic_interactions() -> void:
+	var player := _get_player()
+	if player == null:
+		return
+
+	var best: Node3D = null
+	var best_d2 := 999999.0
+	var player_pos: Vector3 = player.global_position
+
+	for n in _nordic_interactables:
+		if n == null or not is_instance_valid(n):
+			continue
+		var d2 := player_pos.distance_squared_to(n.global_position)
+		if d2 < best_d2:
+			best_d2 = d2
+			best = n
+
+	if best == null or best_d2 > (2.6 * 2.6):
+		return
+
+	_show_interact_hint(best)
+
+	if Input.is_action_just_pressed("interact"):
+		_handle_interaction(best, player)
+
+
+func _get_player() -> Node3D:
+	var players := get_tree().get_nodes_in_group("player")
+	if players.size() > 0 and players[0] is Node3D:
+		return players[0] as Node3D
+	return null
+
+
+func _show_interact_hint(node: Node3D) -> void:
+	var kind := str(node.get_meta("interactable_kind", ""))
+	if kind == "":
+		return
+	var key := "hint|" + str(node.get_instance_id())
+	var now := Time.get_ticks_msec() / 1000.0
+	if float(_nordic_interact_cd.get(key, 0.0)) > now:
+		return
+	_nordic_interact_cd[key] = now + 1.25
+
+	var msg := ""
+	match kind:
+		"fish_rack":       msg = "Press E: Collect fish"
+		"inn":             msg = "Press E: Rest at the Inn"
+		"boat_travel":     msg = "Press E: Take boat"
+		"harbor_master":   msg = "Press E: Talk to Harbor Master"
+		"quest_board":     msg = "Press E: View quests"
+		"training_dummy":  msg = "Press E: Train (restore HP)"
+		"smith_shop":      msg = "Press E: Visit Smith"
+		"merchant_shop":   msg = "Press E: Visit Merchant"
+		"mayor":           msg = "Press E: Talk to Mayor"
+		"innkeeper":       msg = "Press E: Talk to Innkeeper"
+		"crafting":        msg = "Press E: Craft items"
+		"enter_inn":       msg = "Press E: Enter the Inn"
+		"enter_shop":      msg = "Press E: Enter the Shop"
+		"enter_smith":     msg = "Press E: Enter the Smithy"
+		"exit_interior":   msg = "Press E: Exit"
+		"inn_bed":         msg = "Press E: Rest & Save"
+		_:                 msg = "Press E: Interact"
+	_try_toast(msg)
+
+
+func _handle_interaction(node: Node3D, player: Node3D) -> void:
+	var kind := str(node.get_meta("interactable_kind", ""))
+	if kind == "":
+		return
+
+	var now := Time.get_ticks_msec() / 1000.0
+	var cd_key := "use|" + str(node.get_instance_id())
+	if now < float(_nordic_interact_cd.get(cd_key, 0.0)):
+		_try_toast("Not ready yet…")
+		return
+
+	match kind:
+		"fish_rack":
+			_nordic_interact_cd[cd_key] = now + nordic_fish_cooldown_sec
+			_collect_fish(player)
+		"inn":
+			_nordic_interact_cd[cd_key] = now + 2.0
+			_rest_at_inn(player)
+		"boat_travel":
+			_nordic_interact_cd[cd_key] = now + 2.0
+			_boat_travel(player)
+			_tutorial_on_event("boat")
+		"harbor_master":
+			_nordic_interact_cd[cd_key] = now + 0.5
+			_harbor_master_turnin(player)
+			_tutorial_on_event("harbor_master")
+		"mayor":
+			_nordic_interact_cd[cd_key] = now + 0.5
+			_mayor_talk(player)
+		"innkeeper":
+			_nordic_interact_cd[cd_key] = now + 0.5
+			_innkeeper_talk(player)
+		"quest_board":
+			_nordic_interact_cd[cd_key] = now + 0.5
+			_show_quest_board_ui(player)
+			_tutorial_on_event("board")
+		"training_dummy":
+			_nordic_interact_cd[cd_key] = now + 1.5  # short cooldown — feels like repeated hits
+			_interact_training_dummy(player)
+			_tutorial_on_event("dummy_hit")
+		"smith_shop":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_show_shop_ui(player, "smith")
+			_tutorial_on_event("smith")
+		"merchant_shop":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_show_shop_ui(player, "merchant")
+		"crafting":
+			_nordic_interact_cd[cd_key] = now + 0.5
+			_show_crafting_ui(player)
+		"enter_inn":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_enter_interior(player, "inn")
+		"enter_shop":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_enter_interior(player, "shop")
+		"enter_smith":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_enter_interior(player, "smith")
+		"exit_interior":
+			_nordic_interact_cd[cd_key] = now + 1.0
+			_exit_interior(player)
+		"inn_bed":
+			_nordic_interact_cd[cd_key] = now + 2.0
+			_inn_rest_and_save(player)
+			_tutorial_on_event("rest")
+		_:
+			_try_toast("Nothing happens.")
+
+
+func _collect_fish(player: Node3D) -> void:
+	var did_item := false
+	var inv = player.get("inventory") if "inventory" in player else null
+	if inv and inv.has_method("add_item"):
+		inv.add_item(nordic_fish_item_id, nordic_fish_item_qty)
+		did_item = true
+
+	if did_item:
+		_try_toast("+%d %s" % [nordic_fish_item_qty, nordic_fish_item_id])
+	else:
+		if "gold" in player:
+			player.gold += nordic_fish_gold_reward
+			if player.has_signal("stats_changed"):
+				player.stats_changed.emit()
+		_try_toast("+%d gold (fish sale)" % nordic_fish_gold_reward)
+
+	_call_world_sfx("pickup")
+
+
+func _rest_at_inn(player: Node3D) -> void:
+	if "hp" in player and "max_hp" in player:
+		player.hp = player.max_hp
+	if "mp" in player and "max_mp" in player:
+		player.mp = player.max_mp
+	if player.has_signal("stats_changed"):
+		player.stats_changed.emit()
+	_try_toast("Rested. Fully healed.")
+	_call_world_sfx("rest")
+	get_tree().call_group("world", "save_game")
+
+
+func _boat_travel(player: Node3D) -> void:
+	# Phase 21 — tutorial gate: boat is locked until step 4 (after smith visit)
+	if tutorial_gating_enabled and tutorial_enabled and not _tutorial_done:
+		if _tutorial_step < 4:
+			match _tutorial_step:
+				0: _try_toast("The dockhand shrugs: \"Check the Notice Board first, traveller.\"")
+				1: _try_toast("Dockhand: \"Prove yourself on the training dummy before I let you board.\"")
+				2: _try_toast("Dockhand: \"You look tired. Rest at the Inn, then come back.\"")
+				3: _try_toast("Dockhand: \"Get your gear sorted at the Smith first.\"")
+			return
+	if boat_ui_enabled:
+		_show_boat_travel_ui(player)
+	else:
+		player.global_position = boat_dest_briarwood + Vector3(0, 0.02, 0)
+		_try_toast("Boat ride… Briarwood!")
+		_call_world_sfx("boat")
+
+
+func _harbor_master_talk(player: Node3D) -> void:
+	var inv = player.get("inventory") if "inventory" in player else null
+	var has_fish := inv != null and inv.has_method("count_item") \
+	                and inv.count_item(nordic_fish_item_id) > 0
+
+	if has_fish and inv and inv.has_method("consume_item"):
+		inv.consume_item(nordic_fish_item_id, 1)
+		if "gold" in player:
+			player.gold += 15
+			if player.has_signal("stats_changed"):
+				player.stats_changed.emit()
+		_try_toast("Harbor Master: Fine catch. Here's 15 gold.")
+		_call_world_sfx("quest_complete")
+	else:
+		_try_toast("Harbor Master: Bring me a fish from the racks.")
+		_call_world_sfx("dialog")
+
+
+func _try_toast(msg: String) -> void:
+	if get_tree():
+		get_tree().call_group("world", "_show_toast", msg)
+	print("[Nordic] " + msg)
+
+
+func _call_world_sfx(sfx_name: String) -> void:
+	get_tree().call_group("world", "play_sfx", sfx_name)
+
+
+# ============================================================================
+# PHASE 7 — Boat Travel UI
+# ============================================================================
+
+var _boat_ui_layer: CanvasLayer = null
+var _boat_ui_panel: Panel = null
+var _boat_ui_player: Node3D = null
+
+
+func _ensure_boat_ui() -> void:
+	if _boat_ui_layer and is_instance_valid(_boat_ui_layer):
+		return
+
+	_boat_ui_layer = CanvasLayer.new()
+	_boat_ui_layer.name = "BoatTravelUI"
+	add_child(_boat_ui_layer)
+
+	_boat_ui_panel = Panel.new()
+	_boat_ui_panel.name = "Panel"
+	_boat_ui_panel.visible = false
+	_boat_ui_panel.size = Vector2(520, 260)
+	_boat_ui_panel.position = (get_viewport().get_visible_rect().size * 0.5) \
+	                          - (_boat_ui_panel.size * 0.5)
+	_boat_ui_layer.add_child(_boat_ui_panel)
+
+	var root := VBoxContainer.new()
+	root.name = "Root"
+	root.anchor_right = 1.0
+	root.anchor_bottom = 1.0
+	root.offset_left = 18
+	root.offset_top = 18
+	root.offset_right = -18
+	root.offset_bottom = -18
+	_boat_ui_panel.add_child(root)
+
+	var title := Label.new()
+	title.text = "Choose Destination"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 24)
+	root.add_child(title)
+
+	root.add_child(_ui_spacer(10))
+
+	# Dynamic destination buttons — built from BOAT_DESTS table (Phase 8)
+	for d in BOAT_DESTS:
+		var dest_id := str(d.get("id", ""))
+		if dest_id == "":
+			continue
+		var dest_name := str(d.get("name", dest_id))
+		var cost      := int(d.get("cost", 0))
+		var requires  := bool(d.get("requires_discovery", false))
+		var unlocked  := not requires or bool(_discovered_places.get(dest_id, false))
+
+		var btn := Button.new()
+		btn.text     = dest_name + ("  —  %d gold" % cost if cost > 0 else "")
+		btn.disabled = not unlocked
+		btn.pressed.connect(func(did := dest_id): _boat_ui_go(did))
+		root.add_child(btn)
+
+		if not unlocked:
+			var hint := Label.new()
+			hint.text     = "Locked — discover this place first."
+			hint.modulate = Color(0.8, 0.8, 0.8)
+			root.add_child(hint)
+
+	root.add_child(_ui_spacer(8))
+
+	var btn_cancel := Button.new()
+	btn_cancel.text = "Cancel"
+	btn_cancel.pressed.connect(func(): _hide_boat_travel_ui())
+	root.add_child(btn_cancel)
+
+	_boat_ui_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _ui_spacer(h: float) -> Control:
+	var c := Control.new()
+	c.custom_minimum_size = Vector2(0, h)
+	return c
+
+
+func _show_boat_travel_ui(player: Node3D) -> void:
+	_ensure_boat_ui()
+	_boat_ui_player = player
+	_boat_ui_panel.visible = true
+
+	if _boat_ui_player and _boat_ui_player.has_method("set_cinematic_lock"):
+		_boat_ui_player.call("set_cinematic_lock", true)
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	_try_toast("Boat ready.")
+
+
+func _hide_boat_travel_ui() -> void:
+	if _boat_ui_panel and is_instance_valid(_boat_ui_panel):
+		_boat_ui_panel.visible = false
+
+	if _boat_ui_player and is_instance_valid(_boat_ui_player):
+		if _boat_ui_player.has_method("set_cinematic_lock"):
+			_boat_ui_player.call("set_cinematic_lock", false)
+
+	_boat_ui_player = null
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+
+func _boat_ui_go(dest_id: String) -> void:
+	if _boat_ui_player == null or not is_instance_valid(_boat_ui_player):
+		_hide_boat_travel_ui()
+		return
+
+	# Look up in BOAT_DESTS table (Phase 8)
+	var dest := {}
+	for d in BOAT_DESTS:
+		if str(d.get("id", "")) == dest_id:
+			dest = d
+			break
+	if dest.is_empty():
+		_try_toast("Unknown destination.")
+		_hide_boat_travel_ui()
+		return
+
+	# Unlock gate
+	var requires := bool(dest.get("requires_discovery", false))
+	if requires and not bool(_discovered_places.get(dest_id, false)):
+		_try_toast("Locked — discover it first.")
+		return
+
+	# Cost gate
+	var cost := int(dest.get("cost", 0))
+	if cost > 0 and ("gold" in _boat_ui_player):
+		if int(_boat_ui_player.gold) < cost:
+			_try_toast("Need %d gold." % cost)
+			return
+		_boat_ui_player.gold -= cost
+		if _boat_ui_player.has_signal("stats_changed"):
+			_boat_ui_player.stats_changed.emit()
+
+	var target := Vector3(dest.get("pos", Vector3.ZERO))
+	var label  := str(dest.get("name", dest_id))
+
+	# Lock player movement while traveling
+	if _boat_ui_player.has_method("set_cinematic_lock"):
+		_boat_ui_player.call("set_cinematic_lock", true)
+
+	# Force-load destination district if streaming is on (Phase 9/10)
+	_ensure_destination_loaded(dest_id)
+	var district_id := _district_id_for_destination(dest_id)
+	if district_streaming_enabled and district_id != "":
+		_try_toast("Preparing route…")
+		var max_frames := 90  # ~1.5 s at 60 fps
+		while max_frames > 0 and not _is_district_loaded(district_id):
+			await get_tree().process_frame
+			max_frames -= 1
+
+	# Close UI before teleport so it doesn't flash on arrival
+	_hide_boat_travel_ui()
+
+	_teleport_player_to(target, _boat_ui_player)
+	_call_world_sfx("boat")
+	_try_toast("Boat ride… %s!" % label)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+	var ke := event as InputEventKey
+	if not ke.pressed or ke.echo:
+		return
+	if ke.keycode != KEY_ESCAPE:
+		return
+
+	# Dialog UI (highest priority — story beats can override anything)
+	if _dlg_panel != null and is_instance_valid(_dlg_panel) and _dlg_panel.visible:
+		_hide_dialog()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Quest board takes priority (closes first if open)
+	if _qb_panel != null and is_instance_valid(_qb_panel) and _qb_panel.visible:
+		_hide_quest_board_ui()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Shop UI
+	if _shop_panel != null and is_instance_valid(_shop_panel) and _shop_panel.visible:
+		_hide_shop_ui()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Crafting UI
+	if _craft_panel != null and is_instance_valid(_craft_panel) and _craft_panel.visible:
+		_hide_crafting_ui()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Boat UI
+	if _boat_ui_panel != null and is_instance_valid(_boat_ui_panel) and _boat_ui_panel.visible:
+		_hide_boat_travel_ui()
+		get_viewport().set_input_as_handled()
+
+# ============================================================================
+# PHASE 8 — Discovery system
+# ============================================================================
+
+func discover_place(id: String) -> void:
+	_discovered_places[id] = true
+	_try_toast("Discovered: %s" % id)
+	# Wire into your save system here if you have one:
+	# GameBrain.set_flag("discovered_" + id, true)
+
+# ============================================================================
+# PHASE 9 — District streaming
+# ============================================================================
+
+func _init_district_streaming() -> void:
+	if _district_timer and is_instance_valid(_district_timer):
+		_district_timer.queue_free()
+
+	_district_timer = Timer.new()
+	_district_timer.name = "DistrictStreamingTick"
+	_district_timer.wait_time = max(0.2, nordic_stream_tick)
+	_district_timer.one_shot = false
+	_district_timer.autostart = true
+	_district_timer.timeout.connect(_tick_district_streaming)
+	add_child(_district_timer)
+
+	_tick_district_streaming()
+
+
+func _tick_district_streaming() -> void:
+	if not district_streaming_enabled:
+		return
+	var player := _get_player_for_streaming()
+	if player == null:
+		return
+
+	var d := player.global_position.distance_to(NORDIC_ORIGIN)
+	if d <= nordic_stream_load_dist:
+		_ensure_district_loaded("nordic")
+	elif d >= nordic_stream_unload_dist:
+		_try_unload_district("nordic")
+
+
+func _get_player_for_streaming() -> Node3D:
+	var players := get_tree().get_nodes_in_group("player")
+	if players.size() > 0 and players[0] is Node3D:
+		return players[0] as Node3D
+	return null
+
+
+func _ensure_district_loaded(id: String) -> void:
+	if _district_roots.has(id) and is_instance_valid(_district_roots[id]):
+		return
+	if bool(_district_building.get(id, false)):
+		return
+	_district_building[id] = true
+	match id:
+		"nordic":
+			_safe_call("_build_nordic_streamed")
+		_:
+			_district_building[id] = false
+
+
+func _build_nordic_streamed() -> void:
+	# Creates a district root so all Nordic nodes can be freed as a group.
+	# IMPORTANT: to make unloading work, Nordic build functions must call
+	# _add_to_build_root() instead of add_child() for their top-level nodes.
+	# Until that refactor is done, nodes go to WorldBuilder root as usual,
+	# but the streaming load/build trigger still works correctly.
+	var root := Node3D.new()
+	root.name = "District_Nordic"
+	add_child(root)
+	_set_build_root(root)
+
+	_build_nordic_fishing_village()
+	_build_nordic_road()
+	if has_method("_build_nordic_ambient_audio"):
+		_build_nordic_ambient_audio()
+	if nordic_dock_life_enabled and has_method("_build_nordic_dock_life"):
+		_build_nordic_dock_life()
+
+	_clear_build_root()
+	_district_roots["nordic"] = root
+	_district_building["nordic"] = false
+
+
+func _set_build_root(n: Node) -> void:
+	_build_root_override = n
+
+func _clear_build_root() -> void:
+	_build_root_override = null
+
+# Use this instead of add_child() for top-level district nodes in build functions.
+# While _build_root_override is set (during a streamed build), nodes go under the
+# district root so the whole district can be freed with one queue_free().
+func _add_to_build_root(n: Node) -> void:
+	if _build_root_override and is_instance_valid(_build_root_override):
+		_build_root_override.add_child(n)
+	else:
+		add_child(n)
+
+
+func _try_unload_district(id: String) -> void:
+	if not _district_roots.has(id):
+		return
+	var root: Node3D = _district_roots.get(id)
+	if root == null or not is_instance_valid(root):
+		_district_roots.erase(id)
+		return
+
+	# Never unload if player is still inside the district radius
+	var player := _get_player_for_streaming()
+	if player:
+		var anchor := NORDIC_ORIGIN if id == "nordic" else root.global_position
+		if player.global_position.distance_to(anchor) < nordic_stream_load_dist * 0.75:
+			return
+
+	root.queue_free()
+	_district_roots.erase(id)
+
+# ============================================================================
+# PHASE 10 — Stream-safe travel helpers
+# ============================================================================
+
+func _district_id_for_destination(dest_id: String) -> String:
+	match dest_id:
+		"nordic":    return "nordic"
+		"briarwood": return ""  # always loaded
+		_:           return ""
+
+
+func _is_district_loaded(id: String) -> bool:
+	if id == "":
+		return true
+	return _district_roots.has(id) and is_instance_valid(_district_roots[id])
+
+
+func _ensure_destination_loaded(dest_id: String) -> void:
+	if not district_streaming_enabled:
+		return
+	var did := _district_id_for_destination(dest_id)
+	if did != "":
+		_ensure_district_loaded(did)
+
+
+func _teleport_player_to(target: Vector3, player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	player.global_position = target + Vector3(0, 0.02, 0)
+	if player.has_method("set_cinematic_lock"):
+		player.call("set_cinematic_lock", false)
+
+# ============================================================================
+# BRIARWOOD HUB BUILDER v1
+# ============================================================================
+
+func _build_briarwood_hub() -> void:
+	if _briarwood_root and is_instance_valid(_briarwood_root):
+		_briarwood_root.queue_free()
+
+	_briarwood_root = Node3D.new()
+	_briarwood_root.name = "BriarwoodHub"
+	_briarwood_root.global_position = briarwood_origin
+	add_child(_briarwood_root)
+
+	var plaza    := briarwood_origin + bw_plaza_offset
+	var gate     := briarwood_origin + bw_gate_offset
+	var market   := briarwood_origin + bw_market_offset
+	var craft    := briarwood_origin + bw_craft_offset
+	var shrine   := briarwood_origin + bw_shrine_offset
+	var townhall := briarwood_origin + bw_townhall_offset
+
+	var civic := _build_bw_civic_core(_briarwood_root, plaza, townhall, shrine)
+	_build_bw_market_street(_briarwood_root, market, plaza)
+	_build_bw_craft_row(_briarwood_root, craft, plaza)
+	# Phase 24: real layout replaces the simple ring
+	if bw_real_village_enabled:
+		_build_bw_real_layout(_briarwood_root, plaza, gate, market, craft, townhall)
+	else:
+		_build_bw_residential_ring(_briarwood_root, plaza, bw_house_count)
+	_build_bw_edge_read(_briarwood_root, plaza)
+	_spawn_bw_npcs(_briarwood_root, plaza, market, craft, gate)
+	_register_bw_interactions(civic, plaza, market, craft)
+	_spawn_briarwood_quest_givers(_briarwood_root, townhall, market, craft)
+	_safe_call("_build_briarwood_life")
+	if briarwood_atmosphere_enabled:
+		_build_briarwood_atmosphere(_briarwood_root, plaza, market, craft, gate, townhall)
+	if bw_dressing_enabled:
+		_dress_briarwood_v2(_briarwood_root, plaza, market, craft, gate)
+	if bw_multimesh_enabled:
+		_mm_finalize()
+
+	_dlog("Briarwood Hub built — %d children" % _briarwood_root.get_child_count())
+
+
+# ── Civic core ────────────────────────────────────────────────────────────────
+
+func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrine: Vector3) -> Dictionary:
+	var out := {}
+
+	# Well — landmark at plaza centre
+	var well := MeshInstance3D.new()
+	well.name = "PlazaWell"
+	var wm := CylinderMesh.new()
+	wm.top_radius    = 1.2
+	wm.bottom_radius = 1.35
+	wm.height        = 0.9
+	well.mesh = wm
+	well.material_override = MAT_STONE(2.0)
+	well.global_position = plaza + Vector3(0, 0.45, 0)
+	root.add_child(well)
+	out["well"] = well
+
+	# Quest board
+	var board := _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
+	root.add_child(board)
+	out["quest_board"] = board
+
+	# Town hall
+	var hall := _make_bw_townhall(townhall)
+	root.add_child(hall)
+	out["townhall"] = hall
+
+	# Shrine
+	var sh := _make_bw_shrine(shrine)
+	root.add_child(sh)
+	out["shrine"] = sh
+
+	# Lantern ring (10 posts around plaza)
+	for i in range(10):
+		var ang := TAU * float(i) / 10.0
+		var p := plaza + Vector3(cos(ang), 0, sin(ang)) * 10.0
+		root.add_child(_make_bw_lantern_post(p))
+
+	return out
+
+
+# ============================================================================
+# Phase 23 — Briarwood Style Kit (timber + stone + warm windows)
+# ============================================================================
+
+func _bw_mat_stone() -> StandardMaterial3D:
+	return MAT_STONE(1.0)
+
+func _bw_mat_timber() -> StandardMaterial3D:
+	# Plaster wall infill between dark-wood timbers — half-timbered "Tudor" look
+	return MAT_PLASTER(2.0)
+
+func _bw_mat_darkwood() -> StandardMaterial3D:
+	return MAT_DARK_WOOD(0.72)
+
+func _bw_mat_roof() -> StandardMaterial3D:
+	return MAT_ROOF(1.8)
+
+func _bw_window_material(energy: float) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color            = Color(1.0, 0.88, 0.60, 0.90)
+	mat.emission_enabled        = true
+	mat.emission                = Color(1.0, 0.75, 0.45)
+	mat.emission_energy_multiplier = energy
+	mat.transparency            = BaseMaterial3D.TRANSPARENCY_ALPHA
+	return mat
+
+func _bw_add_warm_window(parent: Node3D, local_pos: Vector3, side_sign: float, energy: float) -> void:
+	var win := Node3D.new()
+	win.name = "Window"
+	win.position = local_pos
+	parent.add_child(win)
+
+	var frame := MeshInstance3D.new()
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.08, 0.62, 0.92)
+	frame.mesh = fm
+	frame.material_override = _bw_mat_darkwood()
+	win.add_child(frame)
+
+	var glass := MeshInstance3D.new()
+	var gm := BoxMesh.new()
+	gm.size = Vector3(0.03, 0.52, 0.80)
+	glass.mesh = gm
+	glass.name = "WindowGlass"
+	glass.position = Vector3(side_sign * 0.04, 0.0, 0.0)
+	glass.material_override = _bw_window_material(energy)
+	win.add_child(glass)
+
+func _bw_gable_roof(w: float, d: float, base_y: float, pitch_deg: float, overhang: float) -> Node3D:
+	var n := Node3D.new()
+	n.name = "BWRoof"
+	n.position.y = base_y
+
+	var pitch    := deg_to_rad(pitch_deg)
+	var roof_mat := _bw_mat_roof()
+	var half     := (w * 0.5 + overhang)
+	var plen     := (d + overhang * 2.0)
+
+	for sx in [-1.0, 1.0]:
+		var plane := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(half, 0.18, plen)
+		plane.mesh = bm
+		plane.material_override = roof_mat
+		plane.position = Vector3(sx * half * 0.5, 0.0, 0.0)
+		plane.rotation.z = sx * pitch
+		n.add_child(plane)
+
+	var ridge := MeshInstance3D.new()
+	var rb := BoxMesh.new()
+	rb.size = Vector3(0.18, 0.18, plen)
+	ridge.mesh = rb
+	ridge.material_override = _bw_mat_darkwood()
+	ridge.position = Vector3(0.0, 0.55, 0.0)
+	n.add_child(ridge)
+
+	return n
+
+func _bw_add_timber_frame(parent: Node3D, w: float, d: float, wall_h: float, base_y: float) -> void:
+	var beam_mat := _bw_mat_darkwood()
+	# Corner posts
+	for sx in [-w * 0.40, w * 0.40]:
+		for sz in [-d * 0.40, d * 0.40]:
+			var post := MeshInstance3D.new()
+			var pm := BoxMesh.new()
+			pm.size = Vector3(0.16, wall_h, 0.16)
+			post.mesh = pm
+			post.position = Vector3(sx, base_y + wall_h * 0.5, sz)
+			post.material_override = beam_mat
+			parent.add_child(post)
+
+	# Horizontal mid-bands front and back
+	var band_mesh := BoxMesh.new()
+	band_mesh.size = Vector3(w * 0.92, 0.14, 0.14)
+	for z in [-d * 0.40, d * 0.40]:
+		var band := MeshInstance3D.new()
+		band.mesh = band_mesh
+		band.position = Vector3(0.0, base_y + 1.5, z)
+		band.material_override = beam_mat
+		parent.add_child(band)
+
+func _bw_add_chimney(parent: Node3D, local_pos: Vector3, height: float) -> void:
+	if not bw_chimney_enabled:
+		return
+	var chim := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.35
+	cm.bottom_radius = 0.45
+	cm.height        = height
+	chim.mesh = cm
+	chim.position = local_pos + Vector3(0.0, height * 0.5, 0.0)
+	chim.material_override = _bw_mat_stone()
+	parent.add_child(chim)
+
+func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void:
+	var sign := Node3D.new()
+	sign.name = "SignBoard"
+	sign.position = local_pos
+	parent.add_child(sign)
+
+	var board := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(1.9, 0.55, 0.08)
+	board.mesh = bm
+	board.material_override = _bw_mat_darkwood()
+	board.position = Vector3(0.0, 2.2, 0.0)
+	sign.add_child(board)
+
+	var label := Label3D.new()
+	label.text            = text
+	label.billboard       = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test   = true
+	label.pixel_size      = 0.0034
+	label.font_size       = 34
+	label.outline_size    = 8
+	label.outline_modulate = Color(0, 0, 0, 1)
+	label.modulate        = Color(1.0, 0.88, 0.55)
+	label.position        = Vector3(0.0, 2.2, 0.06)
+	sign.add_child(label)
+
+
+# ============================================================================
+# Phase 23 — Briarwood landmark builders
+# ============================================================================
+
+func _make_bw_townhall(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "TownHall"
+	n.global_position = pos
+
+	const W      := 10.0
+	const D      := 20.0
+	const WALL_H := 4.2
+	const BASE_H := 0.7
+
+	# Stone foundation
+	var base := MeshInstance3D.new()
+	var bsm := BoxMesh.new()
+	bsm.size = Vector3(W, BASE_H, D)
+	base.mesh = bsm
+	base.position.y = BASE_H * 0.5
+	base.material_override = _bw_mat_stone()
+	n.add_child(base)
+
+	# Plaster walls
+	var walls := MeshInstance3D.new()
+	var wm := BoxMesh.new()
+	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
+	walls.mesh = wm
+	walls.position.y = BASE_H + WALL_H * 0.5
+	walls.material_override = _bw_mat_timber()
+	n.add_child(walls)
+
+	# Timber frame
+	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
+
+	# Gable roof
+	var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	n.add_child(_bw_gable_roof(W * 1.08, D * 1.05, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
+
+	# Collision
+	var body := StaticBody3D.new()
+	var col  := CollisionShape3D.new()
+	var box  := BoxShape3D.new()
+	box.size = Vector3(W, BASE_H + WALL_H + 3.6, D)
+	col.shape = box
+	col.position.y = box.size.y * 0.5
+	body.add_child(col)
+	n.add_child(body)
+
+	# Entrance steps
+	var steps := MeshInstance3D.new()
+	var sm := BoxMesh.new()
+	sm.size = Vector3(4.6, 0.35, 2.4)
+	steps.mesh = sm
+	steps.position = Vector3(0.0, 0.18, D * 0.52)
+	steps.material_override = _bw_mat_stone()
+	n.add_child(steps)
+
+	# Flag pole
+	var pole := MeshInstance3D.new()
+	var pcm := CylinderMesh.new()
+	pcm.top_radius    = 0.06
+	pcm.bottom_radius = 0.08
+	pcm.height        = 6.2
+	pole.mesh = pcm
+	pole.material_override = _bw_mat_darkwood()
+	pole.position = Vector3(-W * 0.32, BASE_H + WALL_H - 0.4, D * 0.40)
+	n.add_child(pole)
+
+	# Warm windows (4 side windows + 2 front gable)
+	_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.9, -3.0),  1.0, bw_window_energy_day)
+	_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.9,  3.0),  1.0, bw_window_energy_day)
+	_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.9, -3.0), -1.0, bw_window_energy_day)
+	_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.9,  3.0), -1.0, bw_window_energy_day)
+
+	# Signboard + chimney
+	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.3), "TOWN HALL")
+	_bw_add_chimney(n, Vector3(W * 0.28, BASE_H + WALL_H + 0.2, -D * 0.10), 6.2)
+
+	return n
+
+
+func _make_bw_shrine(pos: Vector3) -> Node3D:
+	var shrine := Node3D.new()
+	shrine.name = "Shrine"
+	shrine.global_position = pos
+
+	var base := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(4.0, 0.6, 4.0)
+	base.mesh = bm
+	base.material_override = MAT_STONE(2.0)
+	base.position.y = 0.3
+	shrine.add_child(base)
+
+	var pillar := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.35
+	cm.bottom_radius = 0.45
+	cm.height        = 4.2
+	pillar.mesh = cm
+	pillar.material_override = MAT_STONE(1.0)
+	pillar.position.y = 0.6 + 2.1
+	shrine.add_child(pillar)
+
+	# Emissive top sphere — "spirit light"
+	var orb := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.38
+	sm.height = 0.76
+	orb.mesh = sm
+	var orb_mat := StandardMaterial3D.new()
+	orb_mat.albedo_color = Color(0.6, 0.85, 1.0)
+	orb_mat.emission_enabled = true
+	orb_mat.emission = Color(0.5, 0.8, 1.0)
+	orb_mat.emission_energy_multiplier = 1.4
+	orb.material_override = orb_mat
+	orb.position.y = 0.6 + 4.2 + 0.38
+	shrine.add_child(orb)
+
+	return shrine
+
+
+func _make_bw_quest_board(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "QuestBoard"
+	n.global_position = pos
+
+	var post := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.10
+	cm.bottom_radius = 0.12
+	cm.height        = 2.2
+	post.mesh = cm
+	post.material_override = MAT_DARK_WOOD(0.5)
+	post.position.y = 1.1
+	n.add_child(post)
+
+	var board := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(2.2, 1.2, 0.12)
+	board.mesh = bm
+	board.material_override = MAT_DARK_WOOD(1.5)
+	board.position = Vector3(0, 1.6, 0.06)
+	n.add_child(board)
+
+	# Warm notice-light
+	var light := OmniLight3D.new()
+	light.light_color  = Color(1.0, 0.85, 0.55)
+	light.light_energy = 0.8
+	light.omni_range   = 5.0
+	light.position     = Vector3(0, 2.4, 0.3)
+	n.add_child(light)
+
+	return n
+
+
+func _make_bw_lantern_post(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.add_to_group("lanterns")
+
+	var shaft := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.05
+	cm.bottom_radius = 0.07
+	cm.height        = 3.0
+	shaft.mesh = cm
+	shaft.material_override = MAT_DARK_WOOD(0.5)
+	shaft.position.y = 1.5
+	n.add_child(shaft)
+
+	var globe := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.22
+	sm.height = 0.44
+	globe.mesh = sm
+	var gm := StandardMaterial3D.new()
+	gm.albedo_color = Color(1.0, 0.9, 0.6)
+	gm.emission_enabled = true
+	gm.emission = Color(1.0, 0.75, 0.3)
+	gm.emission_energy_multiplier = 1.0
+	globe.material_override = gm
+	globe.position.y = 3.1
+	n.add_child(globe)
+
+	var light := OmniLight3D.new()
+	light.name = "OmniLight3D"
+	light.light_color  = Color(1.0, 0.78, 0.40)
+	light.light_energy = 1.4
+	light.omni_range   = 10.0
+	light.position.y   = 3.1
+	n.add_child(light)
+
+	n.global_position = pos
+	return n
+
+
+# ── Market street ─────────────────────────────────────────────────────────────
+
+func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1234
+
+	var dir  := (plaza - market); dir.y = 0.0; dir = dir.normalized()
+	var side := dir.rotated(Vector3.UP, PI * 0.5)
+
+	# Inn frontage anchor — styled inn replaces the generic house
+	var inn_bldg := _make_bw_inn(market + dir * -6.0, -dir)
+	root.add_child(inn_bldg)
+
+	# Stall row
+	for i in range(bw_market_stall_count):
+		var t  := float(i) - float(bw_market_stall_count) * 0.5
+		var p  := market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
+		root.add_child(_make_bw_stall(p, -dir))
+
+	# Clutter scatter
+	var clutter_n := int(40.0 * bw_prop_density)
+	for i in range(clutter_n):
+		var p := market + side * rng.randf_range(-18.0, 18.0) \
+		         + dir * rng.randf_range(-7.0, 10.0)
+		root.add_child(_make_bw_clutter(p, rng))
+
+	# Market lanterns on a line
+	for i in range(6):
+		var t := float(i) - 2.5
+		var p := market + side * (t * 4.0)
+		root.add_child(_make_bw_lantern_post(p))
+
+
+func _make_bw_inn(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
+	var n := Node3D.new()
+	n.name = "Inn"
+	n.global_position = pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	const W      := 11.0
+	const D      := 16.0
+	const WALL_H := 4.0
+	const BASE_H := 0.7
+
+	var base := MeshInstance3D.new()
+	var bsm := BoxMesh.new()
+	bsm.size = Vector3(W, BASE_H, D)
+	base.mesh = bsm
+	base.position.y = BASE_H * 0.5
+	base.material_override = _bw_mat_stone()
+	n.add_child(base)
+
+	var walls := MeshInstance3D.new()
+	var wm := BoxMesh.new()
+	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
+	walls.mesh = wm
+	walls.position.y = BASE_H + WALL_H * 0.5
+	walls.material_override = _bw_mat_timber()
+	n.add_child(walls)
+
+	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
+
+	var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	n.add_child(_bw_gable_roof(W * 1.12, D * 1.08, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
+
+	# Collision
+	var body := StaticBody3D.new()
+	var col  := CollisionShape3D.new()
+	var box  := BoxShape3D.new()
+	box.size = Vector3(W, BASE_H + WALL_H + 3.6, D)
+	col.shape = box
+	col.position.y = box.size.y * 0.5
+	body.add_child(col)
+	n.add_child(body)
+
+	# Porch
+	if bw_porch_enabled:
+		var porch := MeshInstance3D.new()
+		var pm := BoxMesh.new()
+		pm.size = Vector3(6.0, 0.22, 2.4)
+		porch.mesh = pm
+		porch.position = Vector3(0.0, BASE_H + 0.11, D * 0.52)
+		porch.material_override = _bw_mat_darkwood()
+		n.add_child(porch)
+
+	# Signboard + chimney
+	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.2), "THE OAK & ALE")
+	_bw_add_chimney(n, Vector3(W * 0.30, BASE_H + WALL_H + 0.2, -D * 0.15), 6.0)
+
+	# Warm windows (3 per long side)
+	for wz in [-4.0, 0.0, 4.0]:
+		_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.8, wz),  1.0, bw_window_energy_day)
+		_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.8, wz), -1.0, bw_window_energy_day)
+
+	return n
+
+
+func _make_bw_stall(pos: Vector3, facing: Vector3) -> Node3D:
+	var stall := Node3D.new()
+	stall.global_position = pos
+	stall.rotation.y = atan2(facing.x, facing.z)
+
+	var counter := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(1.8, 0.8, 0.8)
+	counter.mesh = bm
+	counter.material_override = MAT_DARK_WOOD(1.5)
+	counter.position.y = 0.4
+	stall.add_child(counter)
+
+	for dx in [-0.8, 0.8]:
+		var post := MeshInstance3D.new()
+		var pm := CylinderMesh.new()
+		pm.top_radius    = 0.05
+		pm.bottom_radius = 0.05
+		pm.height        = 1.6
+		post.mesh = pm
+		post.material_override = MAT_DARK_WOOD(0.5)
+		post.position = Vector3(dx, 1.2, -0.3)
+		stall.add_child(post)
+
+	# Awning with flap animation (same rig as the Briarwood market stalls)
+	var awn_pivot := Node3D.new()
+	awn_pivot.position = Vector3(0, 1.95, -0.3)
+	awn_pivot.set_meta("phase", randf() * TAU)
+	awn_pivot.set_meta("base_pitch", 0.4)
+	awn_pivot.add_to_group("stall_awnings")
+	stall.add_child(awn_pivot)
+
+	var awn_mat := StandardMaterial3D.new()
+	awn_mat.albedo_color = Color(0.62, 0.18, 0.14)
+	awn_mat.roughness    = 0.7
+	awn_mat.cull_mode    = BaseMaterial3D.CULL_DISABLED
+	var awn := MeshInstance3D.new()
+	var am := BoxMesh.new()
+	am.size = Vector3(2.2, 0.05, 1.2)
+	awn.mesh = am
+	awn.material_override = awn_mat
+	awn.position = Vector3(0, 0.05, 0.4)
+	awn_pivot.add_child(awn)
+
+	return stall
+
+
+# ── Craft row ─────────────────────────────────────────────────────────────────
+
+func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5678
+
+	var dir  := (plaza - craft); dir.y = 0.0; dir = dir.normalized()
+	var side := dir.rotated(Vector3.UP, PI * 0.5)
+
+	# Smith building — styled smithy replaces the generic house + standalone chimney
+	var smithy := _make_bw_smithy(craft, -dir)
+	root.add_child(smithy)
+
+	# Chimney smoke light (warm glow above smithy chimney)
+	var smoke_light := OmniLight3D.new()
+	smoke_light.light_color  = Color(1.0, 0.55, 0.2)
+	smoke_light.light_energy = 1.2
+	smoke_light.omni_range   = 8.0
+	smoke_light.global_position = craft + Vector3(2.2, 8.0, -1.6)
+	root.add_child(smoke_light)
+
+	# Two more buildings along craft row
+	root.add_child(_make_bw_house(craft + side * 9.0))
+	root.add_child(_make_bw_house(craft + side * -9.0))
+
+	# Yard clutter (log piles + barrels)
+	var yard_n := int(40.0 * bw_prop_density)
+	for i in range(yard_n):
+		var p := craft + side * rng.randf_range(-12.0, 12.0) \
+		         + dir * rng.randf_range(-5.0, 7.0)
+		root.add_child(_make_bw_clutter(p, rng))
+
+	# Fence posts along craft yard front
+	for i in range(12):
+		var t  := float(i) - 5.5
+		var p  := craft + side * (t * 1.8) + dir * 4.5
+		var fp := MeshInstance3D.new()
+		var fcm := CylinderMesh.new()
+		fcm.top_radius    = 0.07
+		fcm.bottom_radius = 0.09
+		fcm.height        = 1.2
+		fp.mesh = fcm
+		fp.material_override = MAT_DARK_WOOD(0.5)
+		fp.global_position = p + Vector3(0, 0.6, 0)
+		root.add_child(fp)
+
+
+# ── Residential ring ─────────────────────────────────────────────────────────
+
+func _build_bw_residential_ring(root: Node3D, plaza: Vector3, count: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7331
+
+	var ring_r := 28.0
+	for i in range(count):
+		var ang := (TAU * float(i) / float(maxi(1, count))) \
+		           + rng.randf_range(-0.18, 0.18)
+		var r   := rng.randf_range(ring_r * 0.85, ring_r * 1.15)
+		var p   := plaza + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		root.add_child(_make_bw_house(p))
+
+
+# ── Hub house (parented version of _make_building, sized 7×6m) ───────────────
+
+func _make_bw_house(pos: Vector3) -> Node3D:
+	var house := Node3D.new()
+	house.add_to_group("buildings")
+	house.global_position = pos
+
+	# Slight random yaw so the ring doesn't look drilled
+	house.rotation.y = randf_range(-PI, PI)
+
+	var w := 7.0; var d := 6.0; var wh := 3.2
+
+	# Foundation
+	var foundation := MeshInstance3D.new()
+	var fm := BoxMesh.new()
+	fm.size = Vector3(w, 0.5, d)
+	foundation.mesh = fm
+	foundation.material_override = MAT_FOUNDATION(2)
+	foundation.position.y = 0.25
+	house.add_child(foundation)
+
+	# Walls
+	var wall := MeshInstance3D.new()
+	var wm := BoxMesh.new()
+	wm.size = Vector3(w * 0.94, wh, d * 0.94)
+	wall.mesh = wm
+	wall.material_override = MAT_PLASTER(3)
+	wall.position.y = 0.5 + wh * 0.5
+	house.add_child(wall)
+
+	# Collision (foundation + walls height)
+	var body := StaticBody3D.new()
+	var col  := CollisionShape3D.new()
+	var box  := BoxShape3D.new()
+	box.size = Vector3(w * 0.94, 0.5 + wh, d * 0.94)
+	col.shape = box
+	col.position.y = (0.5 + wh) * 0.5
+	body.add_child(col)
+	house.add_child(body)
+
+	# Corner timber beams
+	for dx in [-(w * 0.45), w * 0.45]:
+		for dz in [-(d * 0.45), d * 0.45]:
+			var beam := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.22, wh, 0.22)
+			beam.mesh = bm
+			beam.material_override = MAT_DARK_WOOD(0.5)
+			beam.position = Vector3(dx, 0.5 + wh * 0.5, dz)
+			house.add_child(beam)
+
+	# Eave
+	var eave := MeshInstance3D.new()
+	var em := BoxMesh.new()
+	em.size = Vector3(w + 0.3, 0.18, d + 0.3)
+	eave.mesh = em
+	eave.material_override = MAT_DARK_WOOD(0.5)
+	eave.position.y = 0.5 + wh
+	house.add_child(eave)
+
+	# Gable roof
+	var roof := MeshInstance3D.new()
+	var pyr := PrismMesh.new()
+	pyr.left_to_right = 0.5
+	pyr.size = Vector3(w + 0.4, 2.6, d + 0.4)
+	roof.mesh = pyr
+	roof.material_override = MAT_ROOF(2.0)
+	roof.position.y = 0.5 + wh + 1.3
+	house.add_child(roof)
+
+	# Chimney
+	var chim := MeshInstance3D.new()
+	var cm := BoxMesh.new()
+	cm.size = Vector3(0.5, 1.8, 0.5)
+	chim.mesh = cm
+	chim.material_override = MAT_STONE(1)
+	chim.name = "Chimney"
+	chim.position = Vector3(w * 0.28, 0.5 + wh + 0.9, d * 0.3)
+	house.add_child(chim)
+
+	# Emissive window
+	var win_mat := StandardMaterial3D.new()
+	win_mat.albedo_color = Color(0.95, 0.6, 0.25)
+	win_mat.emission_enabled = true
+	win_mat.emission = Color(1.0, 0.7, 0.3)
+	win_mat.emission_energy_multiplier = 1.0
+	var win := MeshInstance3D.new()
+	var qm := QuadMesh.new()
+	qm.size = Vector2(0.85, 0.7)
+	win.mesh = qm
+	win.material_override = win_mat
+	win.position = Vector3(0, 0.5 + wh * 0.72, d * 0.471)
+	house.add_child(win)
+
+	# Door
+	var door := MeshInstance3D.new()
+	var dm := BoxMesh.new()
+	dm.size = Vector3(0.9, 2.1, 0.08)
+	door.mesh = dm
+	door.material_override = MAT_DARK_WOOD(0.6)
+	door.position = Vector3(-w * 0.2, 0.5 + 1.05, d * 0.471)
+	house.add_child(door)
+
+	return house
+
+
+func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
+	var n := Node3D.new()
+	n.name = "Smithy"
+	n.global_position = pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	const W      := 9.0
+	const D      := 12.0
+	const WALL_H := 3.6
+	const BASE_H := 0.6
+
+	var base := MeshInstance3D.new()
+	var bsm := BoxMesh.new()
+	bsm.size = Vector3(W, BASE_H, D)
+	base.mesh = bsm
+	base.position.y = BASE_H * 0.5
+	base.material_override = _bw_mat_stone()
+	n.add_child(base)
+
+	var walls := MeshInstance3D.new()
+	var wm := BoxMesh.new()
+	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
+	walls.mesh = wm
+	walls.position.y = BASE_H + WALL_H * 0.5
+	walls.material_override = _bw_mat_timber()
+	n.add_child(walls)
+
+	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
+
+	var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	n.add_child(_bw_gable_roof(W * 1.10, D * 1.10, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
+
+	# Collision
+	var body := StaticBody3D.new()
+	var col  := CollisionShape3D.new()
+	var box  := BoxShape3D.new()
+	box.size = Vector3(W, BASE_H + WALL_H + 3.2, D)
+	col.shape = box
+	col.position.y = box.size.y * 0.5
+	body.add_child(col)
+	n.add_child(body)
+
+	# Tall chimney (primary visual read: "this is the smith")
+	_bw_add_chimney(n, Vector3(W * 0.25, BASE_H + WALL_H + 0.2, -D * 0.12), 7.2)
+
+	# Signboard + one warm front window
+	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.2), "BLACKSMITH")
+	_bw_add_warm_window(n, Vector3(W * 0.44, BASE_H + 1.7, 0.0), 1.0, bw_window_energy_day)
+
+	return n
+
+
+# ── Clutter prop (barrel or crate — replaces missing _make_woodpile) ─────────
+
+func _make_bw_clutter(pos: Vector3, rng: RandomNumberGenerator) -> Node3D:
+	var n := Node3D.new()
+	n.global_position = pos
+	n.rotation.y = rng.randf_range(-PI, PI)
+	n.add_to_group("village_barrels")
+
+	var mi := MeshInstance3D.new()
+	if rng.randf() < 0.55:
+		var cm := CylinderMesh.new()
+		cm.top_radius    = 0.22
+		cm.bottom_radius = 0.25
+		cm.height        = rng.randf_range(0.5, 0.82)
+		mi.mesh = cm
+		mi.material_override = MAT_DARK_WOOD(0.5)
+		mi.position.y = cm.height * 0.5
+	else:
+		var bx := BoxMesh.new()
+		bx.size = Vector3(rng.randf_range(0.38, 0.70),
+		                  rng.randf_range(0.28, 0.52),
+		                  rng.randf_range(0.38, 0.70))
+		mi.mesh = bx
+		mi.material_override = MAT_WOOD(1.0)
+		mi.position.y = bx.size.y * 0.5
+	n.add_child(mi)
+	return n
+
+
+# ── Palisade edge read ────────────────────────────────────────────────────────
+
+func _build_bw_edge_read(root: Node3D, plaza: Vector3) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	var r := 44.0
+	var post_count := 70
+	for i in range(post_count):
+		var ang := TAU * float(i) / float(post_count)
+		var p   := plaza + Vector3(cos(ang), 0, sin(ang)) * r
+		var post := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius    = 0.12
+		cm.bottom_radius = 0.16
+		cm.height        = rng.randf_range(2.2, 3.2)
+		post.mesh = cm
+		post.material_override = MAT_DARK_WOOD(0.5)
+		post.global_position = p + Vector3(0, cm.height * 0.5, 0)
+		root.add_child(post)
+
+
+# ── NPC crowd ─────────────────────────────────────────────────────────────────
+
+func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector3, gate: Vector3) -> void:
+	if briarwood_npc_scene == null:
+		return
+
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	var hubs := [plaza, market, craft, gate]
+	for i in range(bw_npc_count):
+		var base := hubs[rng.randi() % hubs.size()]
+		var p    := base + Vector3(rng.randf_range(-8.0, 8.0), 0.0, rng.randf_range(-8.0, 8.0))
+		var npc  := briarwood_npc_scene.instantiate() as Node3D
+		if npc == null:
+			continue
+		npc.global_position = p
+		npc.rotation.y = rng.randf_range(-PI, PI)
+		root.add_child(npc)
+
+
+# ── Interactions: quest board, inn marker, smith marker, training dummy ───────
+
+func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector3, craft: Vector3) -> void:
+	# Quest board (already created; just register)
+	if civic.has("quest_board"):
+		var qb := civic["quest_board"] as Node3D
+		_register_interactable(qb, "quest_board")
+		_register_minimap_marker(qb, "Board", "❖")
+
+	# Training dummy at plaza edge
+	var dummy := _make_training_dummy(plaza + Vector3(-2.6, 0, 3.0))
+	_briarwood_root.add_child(dummy)
+	_register_interactable(dummy, "training_dummy")
+
+	# Inn marker (frontage of the anchor building near market)
+	var inn_marker := Node3D.new()
+	inn_marker.name = "InnMarker"
+	inn_marker.global_position = market + Vector3(0, 0, -6)
+	_briarwood_root.add_child(inn_marker)
+	_register_interactable(inn_marker, "inn")
+	_register_minimap_marker(inn_marker, "Inn", "🏠")
+
+	# Smith marker
+	var smith_marker := Node3D.new()
+	smith_marker.name = "SmithMarker"
+	smith_marker.global_position = craft + Vector3(0, 0, 1.5)
+	_briarwood_root.add_child(smith_marker)
+	_register_interactable(smith_marker, "smith_shop")
+	_register_minimap_marker(smith_marker, "Smith", "⚒")
+
+	# Merchant marker (market stall area)
+	var merchant_marker := Node3D.new()
+	merchant_marker.name = "MerchantMarker"
+	merchant_marker.global_position = market + Vector3(4.0, 0, 2.0)
+	_briarwood_root.add_child(merchant_marker)
+	_register_interactable(merchant_marker, "merchant_shop")
+
+	# Alchemy bench / crafting marker (near market)
+	var bench := Node3D.new()
+	bench.name = "AlchemyBench"
+	bench.global_position = market + Vector3(-6.0, 0, 3.0)
+	_briarwood_root.add_child(bench)
+	_register_interactable(bench, "crafting")
+
+	# Door markers — interior portals (Phase 17)
+	var door_inn := Node3D.new()
+	door_inn.name = "DoorInn"
+	door_inn.global_position = inn_marker.global_position + Vector3(0, 0, 1.5)
+	_briarwood_root.add_child(door_inn)
+	_register_interactable(door_inn, "enter_inn")
+
+	var door_shop := Node3D.new()
+	door_shop.name = "DoorShop"
+	door_shop.global_position = merchant_marker.global_position + Vector3(0, 0, 1.5)
+	_briarwood_root.add_child(door_shop)
+	_register_interactable(door_shop, "enter_shop")
+
+	var door_smith := Node3D.new()
+	door_smith.name = "DoorSmith"
+	door_smith.global_position = smith_marker.global_position + Vector3(0, 0, 1.5)
+	_briarwood_root.add_child(door_smith)
+	_register_interactable(door_smith, "enter_smith")
+
+	# Boat road marker (points travellers toward Nordic harbor)
+	var boat_marker := Node3D.new()
+	boat_marker.name = "BoatRoadMarker"
+	boat_marker.global_position = briarwood_origin + bw_gate_offset + Vector3(0, 0, -8)
+	_briarwood_root.add_child(boat_marker)
+	_register_minimap_marker(boat_marker, "Boat → Nordic", "⛵")
+
+
+func _make_training_dummy(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "TrainingDummy"
+	n.global_position = pos
+
+	var pole := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.18
+	cm.bottom_radius = 0.22
+	cm.height        = 2.0
+	pole.mesh = cm
+	pole.material_override = MAT_DARK_WOOD(0.5)
+	pole.position.y = 1.0
+	n.add_child(pole)
+
+	var head := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.32
+	sm.height = 0.64
+	head.mesh = sm
+	head.material_override = MAT_PLASTER(1.0)
+	head.position.y = 2.32
+	n.add_child(head)
+
+	# Crossbar arms
+	var arms := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(1.6, 0.14, 0.14)
+	arms.mesh = bm
+	arms.material_override = MAT_DARK_WOOD(0.5)
+	arms.position.y = 1.55
+	n.add_child(arms)
+
+	return n
+
+
+func _interact_training_dummy(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+
+	# Advance active kill-quest targeting "training_dummy"
+	if "active_quest" in player:
+		var aq = player.active_quest
+		if aq is Dictionary and aq.size() > 0 \
+				and str(aq.get("kind", "")) == "kill" \
+				and str(aq.get("target", "")) == "training_dummy":
+			aq["killed"] = int(aq.get("killed", 0)) + 1
+			player.active_quest = aq
+			if player.has_signal("stats_changed"):
+				player.stats_changed.emit()
+			get_tree().call_group("world", "on_quest_progress", aq)
+			var got  := int(aq.get("killed", 0))
+			var need := int(aq.get("needed", 0))
+			_try_toast("Thwack! Hit %d/%d" % [got, need])
+			if player.has_method("is_quest_ready_to_turn_in") \
+					and bool(player.call("is_quest_ready_to_turn_in")):
+				_try_toast("Combo mastered — return to the board!")
+		else:
+			_try_toast("Thwack! Practise your stance.")
+	else:
+		_try_toast("Thwack! Practise your stance.")
+
+	# Partial HP restore each hit
+	if "hp" in player and "max_hp" in player:
+		var heal: int = maxi(1, int(player.max_hp) / 8)
+		player.hp = mini(int(player.hp) + heal, int(player.max_hp))
+		if player.has_signal("stats_changed"):
+			player.stats_changed.emit()
+
+	_call_world_sfx("hit")
+
+# ============================================================================
+# QUEST BOARD UI — Briarwood (Quest System 3)
+# ============================================================================
+
+func _ensure_questboard_ui() -> void:
+	if _qb_layer and is_instance_valid(_qb_layer):
+		return
+
+	_qb_layer = CanvasLayer.new()
+	_qb_layer.name = "QuestBoardUI"
+	_qb_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_qb_layer)
+
+	_qb_panel = Panel.new()
+	_qb_panel.name = "Panel"
+	_qb_panel.visible = false
+	_qb_panel.size = Vector2(760, 420)
+	_qb_panel.position = (get_viewport().get_visible_rect().size * 0.5) \
+	                     - (_qb_panel.size * 0.5)
+	_qb_layer.add_child(_qb_panel)
+
+	var outer := HBoxContainer.new()
+	outer.anchor_right  = 1.0
+	outer.anchor_bottom = 1.0
+	outer.offset_left   = 18
+	outer.offset_top    = 18
+	outer.offset_right  = -18
+	outer.offset_bottom = -18
+	_qb_panel.add_child(outer)
+
+	# ── Left column: quest list ──────────────────────────────────────────────
+	var left := VBoxContainer.new()
+	left.custom_minimum_size = Vector2(300, 0)
+	outer.add_child(left)
+
+	var list_title := Label.new()
+	list_title.text = "Briarwood Notice Board"
+	list_title.add_theme_font_size_override("font_size", 20)
+	left.add_child(list_title)
+
+	left.add_child(_ui_spacer(6))
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_child(scroll)
+
+	_qb_list_root = VBoxContainer.new()
+	_qb_list_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_qb_list_root)
+
+	# ── Right column: detail + buttons ──────────────────────────────────────
+	var right := VBoxContainer.new()
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_child(right)
+
+	_qb_detail = RichTextLabel.new()
+	_qb_detail.bbcode_enabled = true
+	_qb_detail.fit_content = true
+	_qb_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_qb_detail.text = "[b]Select a notice on the left.[/b]"
+	right.add_child(_qb_detail)
+
+	right.add_child(_ui_spacer(8))
+
+	var btn_row := HBoxContainer.new()
+	right.add_child(btn_row)
+
+	var btn_accept := Button.new()
+	btn_accept.text = "Accept Quest"
+	btn_accept.pressed.connect(func(): _qb_accept_selected())
+	btn_row.add_child(btn_accept)
+
+	var btn_turnin := Button.new()
+	btn_turnin.text = "Turn In"
+	btn_turnin.pressed.connect(func(): _qb_turn_in())
+	btn_row.add_child(btn_turnin)
+
+	right.add_child(_ui_spacer(4))
+
+	var btn_close := Button.new()
+	btn_close.text = "Close  [Esc]"
+	btn_close.pressed.connect(func(): _hide_quest_board_ui())
+	right.add_child(btn_close)
+
+
+func _show_quest_board_ui(player: Node3D) -> void:
+	if not briarwood_questboard_enabled:
+		return
+	# Phase 21 — soft gate: nudge the player to meet the Mayor first.
+	# This is intentionally a gentle hint, not a hard block, so kids aren't
+	# stuck if they reach the board before the intro fires.
+	if tutorial_enabled and mayor_intro_enabled and not _tutorial_done and not _mayor_intro_ran:
+		_try_toast("A voice calls out: \"Talk to the Mayor first, traveller!\"")
+		# Don't return — still let them open the board.
+	_ensure_questboard_ui()
+
+	_qb_player = player
+	_qb_selected_id = ""
+	_qb_panel.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+	if _qb_player and _qb_player.has_method("set_cinematic_lock"):
+		_qb_player.call("set_cinematic_lock", true)
+
+	_qb_rebuild_list()
+	_qb_show_details("")
+
+
+func _hide_quest_board_ui() -> void:
+	if _qb_panel and is_instance_valid(_qb_panel):
+		_qb_panel.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _qb_player and is_instance_valid(_qb_player):
+		if _qb_player.has_method("set_cinematic_lock"):
+			_qb_player.call("set_cinematic_lock", false)
+	_qb_player = null
+	_qb_selected_id = ""
+
+
+func _qb_rebuild_list() -> void:
+	if _qb_list_root == null:
+		return
+	for c in _qb_list_root.get_children():
+		c.queue_free()
+
+	var active := _qb_get_active_quest()
+	var has_active := active.size() > 0
+
+	for q in BRIARWOOD_QUESTS:
+		var id    := str(q.get("id", ""))
+		var title := str(q.get("title", "Quest"))
+		var btn   := Button.new()
+		# Gray out quests that aren't the active one
+		btn.disabled = has_active and not _qb_matches_active(id, active)
+		if has_active and _qb_matches_active(id, active):
+			btn.text = "★ " + title
+		else:
+			btn.text = title
+		btn.pressed.connect(func(qid := id): _qb_select(qid))
+		_qb_list_root.add_child(btn)
+
+
+func _qb_select(id: String) -> void:
+	_qb_selected_id = id
+	_qb_show_details(id)
+
+
+func _qb_show_details(id: String) -> void:
+	if _qb_detail == null:
+		return
+	if id == "":
+		_qb_detail.text = "[b]Briarwood Notice Board[/b]\n\nPick a notice on the left to read it."
+		return
+
+	var qdef := _qb_find_def(id)
+	if qdef.is_empty():
+		_qb_detail.text = "[color=red]Quest not found.[/color]"
+		return
+
+	var title  := str(qdef.get("title", "Quest"))
+	var desc   := str(qdef.get("desc", ""))
+	var qdata  := qdef.get("quest", {}) as Dictionary
+	var kind   := str(qdata.get("kind", ""))
+	var gold   := int(qdata.get("gold_reward", 0))
+	var xp     := int(qdata.get("xp_reward", 0))
+	var giver  := str(qdata.get("giver", "Briarwood Board"))
+
+	var text := "[b]%s[/b]\n" % title
+	text += "[i]Posted by: %s[/i]\n\n" % giver
+	text += "%s\n\n" % desc
+
+	if kind == "kill":
+		var need := int(qdata.get("needed", 1))
+		text += "[b]Objective:[/b] Defeat %d %s\n" % [need, str(qdata.get("target", "enemy"))]
+	elif kind == "fetch":
+		var need := int(qdata.get("needed", 1))
+		text += "[b]Objective:[/b] Bring %d %s\n" % [need, str(qdata.get("item", "item"))]
+
+	text += "[b]Reward:[/b] %d gold  +  %d XP\n\n" % [gold, xp]
+
+	var active := _qb_get_active_quest()
+	if active.size() > 0:
+		if _qb_matches_active(id, active):
+			text += "[color=yellow][b]ACTIVE:[/b][/color]  "
+			text += _qb_progress_string(active) + "\n"
+			if player_is_quest_ready():
+				text += "\n[color=lime]Ready to turn in![/color]"
+		else:
+			text += "[color=gray]You have another quest in progress.[/color]"
+	else:
+		text += "[color=aqua]Available — press Accept.[/color]"
+
+	_qb_detail.text = text
+
+
+func _qb_accept_selected() -> void:
+	if _qb_player == null or not is_instance_valid(_qb_player):
+		return
+	if _qb_selected_id == "":
+		_try_toast("Select a quest first.")
+		return
+
+	var active := _qb_get_active_quest()
+	if active.size() > 0:
+		_try_toast("Finish your current quest first.")
+		return
+
+	var qdef := _qb_find_def(_qb_selected_id)
+	if qdef.is_empty():
+		return
+	var qdata := qdef.get("quest", {}) as Dictionary
+	if qdata.is_empty():
+		return
+
+	if _qb_player.has_method("accept_quest"):
+		_qb_player.call("accept_quest", qdata)
+		_try_toast("Quest accepted: %s" % str(qdef.get("title", "Quest")))
+		_call_world_sfx("quest_accept")
+	else:
+		_try_toast("Player missing accept_quest().")
+
+	_qb_rebuild_list()
+	_qb_show_details(_qb_selected_id)
+
+
+func _qb_turn_in() -> void:
+	if _qb_player == null or not is_instance_valid(_qb_player):
+		return
+	if not player_is_quest_ready():
+		_try_toast("Quest not finished yet.")
+		return
+	if not _qb_player.has_method("complete_quest_if_done"):
+		_try_toast("Player missing complete_quest_if_done().")
+		return
+
+	var ok := bool(_qb_player.call("complete_quest_if_done"))
+	if ok:
+		_try_toast("Quest complete! Rewards granted.")
+		_call_world_sfx("quest_complete")
+		_qb_selected_id = ""
+		_qb_rebuild_list()
+		_qb_show_details("")
+	else:
+		_try_toast("Not finished yet.")
+
+
+func _qb_find_def(id: String) -> Dictionary:
+	for q in BRIARWOOD_QUESTS:
+		if str(q.get("id", "")) == id:
+			return q
+	return {}
+
+
+func _qb_get_active_quest() -> Dictionary:
+	if _qb_player == null or not is_instance_valid(_qb_player):
+		return {}
+	if not ("active_quest" in _qb_player):
+		return {}
+	var aq = _qb_player.active_quest
+	if aq is Dictionary and aq.size() > 0:
+		return aq
+	return {}
+
+
+func player_is_quest_ready() -> bool:
+	if _qb_player == null or not is_instance_valid(_qb_player):
+		return false
+	if _qb_player.has_method("is_quest_ready_to_turn_in"):
+		return bool(_qb_player.call("is_quest_ready_to_turn_in"))
+	# Fallback: check progress manually
+	var aq := _qb_get_active_quest()
+	if aq.is_empty():
+		return false
+	var kind := str(aq.get("kind", ""))
+	if kind == "kill":
+		return int(aq.get("killed", 0)) >= int(aq.get("needed", 999))
+	if kind == "fetch":
+		return int(aq.get("have", 0)) >= int(aq.get("needed", 999))
+	return false
+
+
+func _qb_matches_active(def_id: String, active: Dictionary) -> bool:
+	if def_id == "":
+		return false
+	var def := _qb_find_def(def_id)
+	if def.is_empty():
+		return false
+	var q    := def.get("quest", {}) as Dictionary
+	var kind := str(active.get("kind", "kill"))
+	if kind != str(q.get("kind", "kill")):
+		return false
+	if kind == "kill":
+		return str(active.get("target", "")) == str(q.get("target", ""))
+	if kind == "fetch":
+		return str(active.get("item", "")) == str(q.get("item", ""))
+	return false
+
+
+func _qb_progress_string(active: Dictionary) -> String:
+	var kind := str(active.get("kind", ""))
+	match kind:
+		"kill":
+			var got  := int(active.get("killed", 0))
+			var need := int(active.get("needed", 0))
+			return "%d / %d defeated" % [got, need]
+		"fetch":
+			var got  := int(active.get("have", 0))
+			var need := int(active.get("needed", 0))
+			return "%d / %d collected" % [got, need]
+	return ""
+
+
+# ============================================================================
+# Phase 11 — NPC Quest Givers + Turn-in Markers
+# ============================================================================
+
+func _spawn_briarwood_quest_givers(root: Node3D, townhall: Vector3, market: Vector3, craft: Vector3) -> void:
+	if root == null or not is_instance_valid(root):
+		return
+	_spawn_named_giver(root, "Mayor",     townhall + Vector3(0, 0, 8),  "mayor")
+	_spawn_named_giver(root, "Innkeeper", market   + Vector3(-3, 0, 0), "innkeeper")
+	_spawn_named_giver(root, "Smith",     craft    + Vector3(0, 0, 3),  "smith_shop")
+
+
+func _spawn_named_giver(root: Node3D, display_name: String, pos: Vector3, kind: String) -> Node3D:
+	var npc: Node3D = null
+	if briarwood_npc_scene != null:
+		npc = briarwood_npc_scene.instantiate() as Node3D
+	if npc == null:
+		var mi := MeshInstance3D.new()
+		var cm := CapsuleMesh.new()
+		cm.radius = 0.3
+		cm.height = 1.8
+		mi.mesh = cm
+		mi.material_override = _pbr_mat("", "", "", Vector3(1,1,1), Color(0.6, 0.75, 0.9))
+		npc = mi
+	npc.name = display_name.replace(" ", "_")
+	root.add_child(npc)
+	npc.global_position = pos
+
+	# Floating name tag
+	var label := Label3D.new()
+	label.text = display_name
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.position = Vector3(0, 2.3, 0)
+	label.pixel_size = 0.004
+	label.font_size = 36
+	label.outline_size = 8
+	label.modulate = Color(1.0, 1.0, 0.85, 1.0)
+	npc.add_child(label)
+
+	_register_interactable(npc, kind)
+	return npc
+
+
+func _init_quest_markers() -> void:
+	if _quest_marker_timer and is_instance_valid(_quest_marker_timer):
+		return
+	_quest_marker_timer = Timer.new()
+	_quest_marker_timer.name = "QuestMarkerTick"
+	_quest_marker_timer.wait_time = maxf(0.2, quest_marker_tick)
+	_quest_marker_timer.autostart = true
+	_quest_marker_timer.one_shot = false
+	_quest_marker_timer.timeout.connect(_tick_quest_markers)
+	add_child(_quest_marker_timer)
+	_tick_quest_markers()
+
+
+func _tick_quest_markers() -> void:
+	if not quest_marker_enabled:
+		return
+	var player := _get_player()
+	var has_quest := false
+	var ready := false
+	var active_kind := ""
+	var active_target := ""
+	var active_item := ""
+	var turn_in_kind := ""
+
+	if player != null:
+		if "active_quest" in player and player.active_quest is Dictionary and player.active_quest.size() > 0:
+			var aq: Dictionary = player.active_quest
+			has_quest = true
+			active_kind   = str(aq.get("kind", ""))
+			active_target = str(aq.get("target", ""))
+			active_item   = str(aq.get("item", ""))
+			turn_in_kind  = str(aq.get("turn_in", ""))
+			if player.has_method("is_quest_ready_to_turn_in"):
+				ready = bool(player.call("is_quest_ready_to_turn_in"))
+			elif active_kind == "kill":
+				ready = int(aq.get("killed", 0)) >= int(aq.get("needed", 999))
+			elif active_kind == "fetch":
+				ready = int(aq.get("have", 0)) >= int(aq.get("needed", 999))
+
+	# Quest board — show "?" when player has no quest
+	var board_node := _find_first_interactable_kind("quest_board")
+	if board_node:
+		var show_board := not has_quest
+		_set_marker(board_node, show_board, "?", player)
+
+	# Mayor — show "!" when crate delivery is ready to turn in
+	var mayor_node := _find_first_interactable_kind("mayor")
+	if mayor_node:
+		var show_mayor := has_quest and ready and turn_in_kind == ""
+		_set_marker(mayor_node, show_mayor, "!", player)
+
+	# Innkeeper — show "!" when innkeeper quest ready
+	var inn_node := _find_first_interactable_kind("innkeeper")
+	if inn_node:
+		var show_inn := has_quest and ready
+		_set_marker(inn_node, show_inn, "!", player)
+
+	# Harbor master — show "!" when crate delivery turn-in
+	var hm_node := _find_first_interactable_kind("harbor_master")
+	if hm_node:
+		var show_hm := has_quest and ready and turn_in_kind == "harbor_master"
+		_set_marker(hm_node, show_hm, "!", player)
+
+
+func _find_first_interactable_kind(kind: String) -> Node3D:
+	var nodes := get_tree().get_nodes_in_group("world_interactables")
+	for n in nodes:
+		if n is Node3D and str(n.get_meta("interactable_kind", "")) == kind:
+			return n as Node3D
+	return null
+
+
+func _set_marker(target: Node, enabled: bool, symbol: String, player: Node3D = null, fade_dist: float = 55.0) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+
+	var key := str(target.get_instance_id())
+	if not _quest_markers.has(key):
+		var l := Label3D.new()
+		l.text = symbol
+		l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		l.no_depth_test = true
+		l.position = Vector3(0, 3.0, 0)
+		l.pixel_size = 0.004
+		l.font_size = 48
+		l.outline_size = 10
+		l.outline_modulate = Color(0, 0, 0, 1)
+		l.modulate = Color(1.0, 0.95, 0.30, 1.0)
+		target.add_child(l)
+		_quest_markers[key] = l
+
+	var label: Label3D = _quest_markers[key]
+	if label == null or not is_instance_valid(label):
+		_quest_markers.erase(key)
+		return
+
+	label.text = symbol
+	label.visible = enabled
+
+	if enabled and player != null and target is Node3D:
+		var d := (player as Node3D).global_position.distance_to((target as Node3D).global_position)
+		var a := clampf(1.0 - (d / fade_dist), 0.15, 1.0)
+		var c := label.modulate
+		c.a = a
+		label.modulate = c
+
+
+func _mayor_talk(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	# Phase 21 — first-meet greeting (only if intro was skipped / disabled)
+	if not _mayor_intro_ran and mayor_intro_enabled and tutorial_enabled and not _tutorial_done:
+		_run_mayor_intro()
+		return
+	show_dialog(
+		player,
+		"Mayor Aldric",
+		"Briarwood stands because we stand together.\nWhat can I do for you?",
+		[
+			{"label": "Check Notice Board",      "action": func(): _show_quest_board_ui(player)},
+			{"label": "Any advice for a traveller?", "action": func(): _try_toast("Stay on the roads at night, and mind the treeline.")},
+			{"label": "Leave",                   "action": func(): pass},
+		]
+	)
+
+
+func _innkeeper_talk(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	show_dialog(
+		player,
+		"Innkeeper Bram",
+		"Welcome to the Briar & Barrel!\nWarm fire, soft beds. Need something?",
+		[
+			{"label": "Rest & Save",             "action": func(): _inn_rest_and_save(player)},
+			{"label": "Harbor delivery quest",   "action": func(): _innkeeper_offer_delivery(player)},
+			{"label": "Never mind",              "action": func(): pass},
+		]
+	)
+
+
+func _smith_talk(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	show_dialog(
+		player,
+		"Smith Edda",
+		"Fire and iron — that's what makes a warrior.\nWhat'll it be?",
+		[
+			{"label": "Browse Smith Shop",       "action": func(): _show_shop_ui(player, "smith")},
+			{"label": "Upgrade weapon (+DMG)",   "action": func(): _smith_upgrade()},
+			{"label": "Leave",                   "action": func(): pass},
+		]
+	)
+
+
+func _harbor_master_turnin(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if "active_quest" in player and player.active_quest is Dictionary and player.active_quest.size() > 0:
+		var aq: Dictionary = player.active_quest
+		var ready := false
+		if player.has_method("is_quest_ready_to_turn_in"):
+			ready = bool(player.call("is_quest_ready_to_turn_in"))
+		elif str(aq.get("kind","")) == "fetch":
+			ready = int(aq.get("have",0)) >= int(aq.get("needed",999))
+		if ready and str(aq.get("turn_in","")) == "harbor_master":
+			if player.has_method("complete_quest_if_done"):
+				var ok := bool(player.call("complete_quest_if_done"))
+				if ok:
+					_try_toast("Harbor Master: The crate arrived safely. Well done!")
+					_call_world_sfx("quest_complete")
+					return
+			_try_toast("Harbor Master: I can see you've brought the crate — well done!")
+			_call_world_sfx("quest_complete")
+			return
+	# Fall through to original fish-trade behaviour
+	_harbor_master_talk(player)
+
+
+# ============================================================================
+# Phase 12 — Quest HUD Tracker
+# ============================================================================
+
+func _ensure_quest_hud() -> void:
+	if _qh_layer and is_instance_valid(_qh_layer):
+		return
+	_qh_layer = CanvasLayer.new()
+	_qh_layer.name = "QuestHUD"
+	add_child(_qh_layer)
+
+	_qh_panel = Panel.new()
+	_qh_panel.name = "Panel"
+	_qh_panel.size = Vector2(360, 120)
+	_qh_panel.position = quest_hud_corner
+	_qh_layer.add_child(_qh_panel)
+
+	_qh_label = RichTextLabel.new()
+	_qh_label.bbcode_enabled = true
+	_qh_label.fit_content = true
+	_qh_label.anchor_right = 1.0
+	_qh_label.anchor_bottom = 1.0
+	_qh_label.offset_left = 12
+	_qh_label.offset_top = 10
+	_qh_label.offset_right = -10
+	_qh_label.offset_bottom = -10
+	_qh_panel.add_child(_qh_label)
+
+
+func _tick_quest_hud() -> void:
+	if not quest_hud_enabled:
+		return
+	var player := _get_player()
+	if player == null:
+		return
+	_ensure_quest_hud()
+
+	if not ("active_quest" in player) or not (player.active_quest is Dictionary) or player.active_quest.size() == 0:
+		_qh_panel.visible = false
+		return
+
+	_qh_panel.visible = true
+	var aq: Dictionary = player.active_quest
+
+	var kind := str(aq.get("kind", "kill"))
+	var ready := false
+	if player.has_method("is_quest_ready_to_turn_in"):
+		ready = bool(player.call("is_quest_ready_to_turn_in"))
+	elif kind == "kill":
+		ready = int(aq.get("killed", 0)) >= int(aq.get("needed", 999))
+	elif kind == "fetch":
+		ready = int(aq.get("have", 0)) >= int(aq.get("needed", 999))
+
+	var title := _quest_title_from_active(aq)
+	var body := ""
+	match kind:
+		"kill":
+			body = "Defeat [b]%s[/b]\nProgress: [b]%d/%d[/b]" % [
+				str(aq.get("target", "")),
+				int(aq.get("killed", 0)),
+				int(aq.get("needed", 0)),
+			]
+		"fetch":
+			body = "Bring [b]%s[/b]\nProgress: [b]%d/%d[/b]" % [
+				str(aq.get("item", "")),
+				int(aq.get("have", 0)),
+				int(aq.get("needed", 0)),
+			]
+
+	var status := "[color=#ffd66b][b]READY TO TURN IN![/b][/color]" if ready else "[color=#cccccc]In progress[/color]"
+	_qh_label.text = "[b]%s[/b]\n%s\n%s" % [title, body, status]
+
+
+func _quest_title_from_active(aq: Dictionary) -> String:
+	var kind := str(aq.get("kind", "kill"))
+	for d in BRIARWOOD_QUESTS:
+		var q := d.get("quest", {}) as Dictionary
+		if str(q.get("kind", "")) != kind:
+			continue
+		if kind == "kill" and str(q.get("target", "")) == str(aq.get("target", "")):
+			return str(d.get("title", "Quest"))
+		if kind == "fetch" and str(q.get("item", "")) == str(aq.get("item", "")):
+			return str(d.get("title", "Quest"))
+	return "Quest"
+
+
+# ============================================================================
+# Phase 12 — Briarwood Crowd Life Loops
+# ============================================================================
+
+func _build_briarwood_life() -> void:
+	if not briarwood_life_enabled:
+		return
+	if _briarwood_root == null or not is_instance_valid(_briarwood_root):
+		return
+	if briarwood_npc_scene == null:
+		return
+
+	if _bw_life_root and is_instance_valid(_bw_life_root):
+		_bw_life_root.queue_free()
+
+	_bw_life_root = Node3D.new()
+	_bw_life_root.name = "BriarwoodLife"
+	_briarwood_root.add_child(_bw_life_root)
+	_bw_life_npcs.clear()
+
+	var plaza  := briarwood_origin + bw_plaza_offset
+	var gate   := briarwood_origin + bw_gate_offset
+	var market := briarwood_origin + bw_market_offset
+
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	# Guards (2) patrol gate ↔ plaza
+	for i in range(2):
+		var npc := briarwood_npc_scene.instantiate() as Node3D
+		if npc == null:
+			continue
+		_bw_life_root.add_child(npc)
+		npc.name = "LifeGuard_%d" % i
+		npc.global_position = gate + Vector3(rng.randf_range(-2, 2), 0, rng.randf_range(-2, 2))
+		npc.set_meta("life_role", "guard")
+		npc.set_meta("life_route", [
+			gate   + Vector3(-1, 0,  0),
+			plaza  + Vector3( 0, 0, -4),
+			plaza  + Vector3( 2, 0,  2),
+			gate   + Vector3( 1, 0,  1),
+		])
+		npc.set_meta("life_idx", 0)
+		_bw_life_npcs.append(npc)
+
+	# Villagers wander near plaza + market
+	var vill_count := clampi(bw_npc_count, 8, 18)
+	for i in range(vill_count):
+		var npc2 := briarwood_npc_scene.instantiate() as Node3D
+		if npc2 == null:
+			continue
+		_bw_life_root.add_child(npc2)
+		npc2.name = "LifeVillager_%d" % i
+		var hub := plaza if rng.randf() < 0.55 else market
+		npc2.global_position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
+		npc2.set_meta("life_role", "villager")
+		npc2.set_meta("life_home", npc2.global_position)
+		npc2.set_meta("life_idle_until", 0.0)
+		_bw_life_npcs.append(npc2)
+
+	_bw_life_timer = Timer.new()
+	_bw_life_timer.name = "BriarwoodLifeTick"
+	_bw_life_timer.wait_time = maxf(0.4, briarwood_life_tick)
+	_bw_life_timer.autostart = true
+	_bw_life_timer.one_shot = false
+	_bw_life_timer.timeout.connect(_tick_briarwood_life)
+	_bw_life_root.add_child(_bw_life_timer)
+
+	_tick_briarwood_life()
+
+
+func _tick_briarwood_life() -> void:
+	if _bw_life_npcs.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var now := Time.get_ticks_msec() / 1000.0
+
+	for npc in _bw_life_npcs:
+		if npc == null or not is_instance_valid(npc):
+			continue
+		var role := str(npc.get_meta("life_role", "villager"))
+		if role == "guard":
+			var route: Array = npc.get_meta("life_route", [])
+			if route.is_empty():
+				continue
+			var idx := int(npc.get_meta("life_idx", 0))
+			var target: Vector3 = route[idx]
+			if npc.global_position.distance_to(target) < 0.9:
+				idx = (idx + 1) % route.size()
+				npc.set_meta("life_idx", idx)
+			_npc_go_to(npc, target)
+			_try_play_anim(npc, "walk")
+		else:
+			var idle_until := float(npc.get_meta("life_idle_until", 0.0))
+			if now < idle_until:
+				if rng.randf() < 0.4:
+					npc.rotation.y += rng.randf_range(-0.5, 0.5)
+				_try_play_anim(npc, "idle")
+				continue
+			var home: Vector3 = npc.get_meta("life_home", npc.global_position)
+			var target2 := home + Vector3(rng.randf_range(-6, 6), 0, rng.randf_range(-6, 6))
+			npc.set_meta("life_idle_until", now + rng.randf_range(1.0, 3.0))
+			_npc_go_to(npc, target2)
+			_try_play_anim(npc, "walk")
+
+
+# ============================================================================
+# Phase 13 — Briarwood Atmosphere (Audio Zones + Micro VFX)
+# ============================================================================
+
+func _build_briarwood_atmosphere(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector3, gate: Vector3, townhall: Vector3) -> void:
+	var aroot := Node3D.new()
+	aroot.name = "BriarwoodAtmosphere"
+	root.add_child(aroot)
+
+	# ── Audio zones (3D loops, distance falloff) ───────────────────────────
+	_add_loop_3d(aroot, "BW_Birds",  sfx_bw_birds_loop,  plaza  + Vector3(0,   2.0,  0),    80.0, -10.0)
+	_add_loop_3d(aroot, "BW_Wind",   sfx_bw_wind_loop,   gate   + Vector3(0,   2.0,  0),   110.0, -12.0)
+	_add_loop_3d(aroot, "BW_Tavern", sfx_bw_tavern_loop, market + Vector3(0,   2.0, -6.0),  55.0, -10.0)
+	_add_loop_3d(aroot, "BW_Hammer", sfx_bw_hammer_loop, craft  + Vector3(0,   2.0,  2.0),  65.0,  -8.0)
+	_add_loop_3d(aroot, "BW_Forge",  sfx_bw_forge_loop,  craft  + Vector3(2.0, 1.0, -1.0),  55.0, -12.0)
+
+	# ── Micro VFX ─────────────────────────────────────────────────────────
+	if bw_smoke_enabled:
+		aroot.add_child(_make_smoke_stack(craft + Vector3(2.2, 6.0, -1.6)))
+
+	if bw_flag_enabled:
+		aroot.add_child(_make_flag_sway(townhall + Vector3(-3.8, 6.0, 8.2)))
+
+	if bw_lantern_sway_enabled:
+		_sway_lanterns_in_tree(root)
+
+
+func _add_loop_3d(parent: Node3D, node_name: String, stream: AudioStream, pos: Vector3, max_dist: float, vol_db: float) -> void:
+	if stream == null:
+		return
+	var p := AudioStreamPlayer3D.new()
+	p.name = node_name
+	p.stream = stream
+	p.autoplay = true
+	p.max_distance = max_dist
+	p.volume_db = vol_db
+	p.global_position = pos
+	parent.add_child(p)
+
+
+func _make_smoke_stack(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "SmokeStack"
+	n.global_position = pos
+
+	var gpu := GPUParticles3D.new()
+	gpu.amount = 60
+	gpu.lifetime = 3.8
+	gpu.one_shot = false
+	gpu.emitting = true
+	gpu.visibility_aabb = AABB(Vector3(-6, -6, -6), Vector3(12, 12, 12))
+	n.add_child(gpu)
+
+	var mat := ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 18.0
+	mat.gravity = Vector3(0, 0.25, 0)
+	mat.initial_velocity_min = 0.6
+	mat.initial_velocity_max = 1.3
+	mat.scale_min = 0.35
+	mat.scale_max = 0.9
+	mat.damping_min = 0.0
+	mat.damping_max = 0.15
+	mat.color = Color(0.70, 0.70, 0.70, 0.45)
+	gpu.process_material = mat
+
+	var draw := QuadMesh.new()
+	draw.size = Vector2(0.6, 0.6)
+	gpu.draw_pass_1 = draw
+
+	return n
+
+
+func _make_flag_sway(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "TownHallFlag"
+	n.global_position = pos
+
+	# Pole
+	var pole := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.05
+	cm.bottom_radius = 0.07
+	cm.height = 4.8
+	pole.mesh = cm
+	pole.material_override = MAT_DARK_WOOD(1.0)
+	pole.position = Vector3(0, -2.4, 0)
+	n.add_child(pole)
+
+	# Flag cloth
+	var flag := MeshInstance3D.new()
+	var qm := QuadMesh.new()
+	qm.size = Vector2(1.6, 0.9)
+	flag.mesh = qm
+	var flag_mat := StandardMaterial3D.new()
+	flag_mat.albedo_color = Color(0.55, 0.12, 0.12)  # deep red
+	flag_mat.roughness = 0.9
+	flag.material_override = flag_mat
+	flag.position = Vector3(0.9, -1.2, 0)
+	flag.rotation.y = deg_to_rad(90)
+	n.add_child(flag)
+
+	# Sway tween
+	var tw := n.create_tween().set_loops()
+	tw.tween_property(flag, "rotation:z", deg_to_rad(12), 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(flag, "rotation:z", deg_to_rad(-10), 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	return n
+
+
+func _sway_lanterns_in_tree(root: Node) -> void:
+	# Find every Node3D with "Lantern" in its name under root and apply a wind sway tween.
+	# Each gets a slightly different period so they don't oscillate in unison.
+	var lanterns := root.find_children("*Lantern*", "Node3D", true, false)
+	for i in range(lanterns.size()):
+		var ln := lanterns[i] as Node3D
+		if ln == null:
+			continue
+		var period_a := 1.7 + float(i % 5) * 0.12
+		var period_b := 2.0 + float(i % 7) * 0.09
+		var tw := ln.create_tween().set_loops()
+		tw.tween_property(ln, "rotation:z", deg_to_rad(4),  period_a).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tw.tween_property(ln, "rotation:z", deg_to_rad(-3), period_b).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+# ============================================================================
+# Phases 14/15 — Real Shop UI (buy/sell + icons + equip + smith upgrade)
+# ============================================================================
+
+func _item_name(id: String) -> String:
+	return str(ITEM_DB.get(id, {}).get("name", id))
+
+func _item_icon(id: String) -> String:
+	return str(ITEM_DB.get(id, {}).get("icon", "•"))
+
+func _item_slot(id: String) -> String:
+	return str(ITEM_DB.get(id, {}).get("slot", ""))
+
+
+func _ensure_shop_ui() -> void:
+	if _shop_layer and is_instance_valid(_shop_layer):
+		return
+	_shop_layer = CanvasLayer.new()
+	_shop_layer.name = "ShopUI"
+	_shop_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_shop_layer)
+
+	_shop_panel = Panel.new()
+	_shop_panel.name = "ShopPanel"
+	_shop_panel.visible = false
+	_shop_panel.size = Vector2(880, 480)
+	_shop_panel.position = get_viewport().get_visible_rect().size * 0.5 - _shop_panel.size * 0.5
+	_shop_layer.add_child(_shop_panel)
+
+	var outer := VBoxContainer.new()
+	outer.name = "VBoxContainer"
+	outer.anchor_right  = 1.0
+	outer.anchor_bottom = 1.0
+	outer.offset_left   = 18
+	outer.offset_top    = 18
+	outer.offset_right  = -18
+	outer.offset_bottom = -18
+	_shop_panel.add_child(outer)
+
+	var title := Label.new()
+	title.name = "Title"
+	title.text = "Shop"
+	title.add_theme_font_size_override("font_size", 22)
+	outer.add_child(title)
+
+	var split := HBoxContainer.new()
+	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer.add_child(split)
+
+	# Left: shop items (Buy)
+	var left := VBoxContainer.new()
+	left.custom_minimum_size = Vector2(380, 0)
+	split.add_child(left)
+	var left_hdr := Label.new()
+	left_hdr.text = "For Sale"
+	left.add_child(left_hdr)
+	var left_scroll := ScrollContainer.new()
+	left_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_child(left_scroll)
+	_shop_shop_list = VBoxContainer.new()
+	_shop_shop_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_scroll.add_child(_shop_shop_list)
+
+	# Right: inventory (Sell)
+	var right := VBoxContainer.new()
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	split.add_child(right)
+	var right_hdr := Label.new()
+	right_hdr.text = "Your Bag (Sell)"
+	right.add_child(right_hdr)
+	var right_scroll := ScrollContainer.new()
+	right_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right.add_child(right_scroll)
+	_shop_inv_list = VBoxContainer.new()
+	_shop_inv_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_scroll.add_child(_shop_inv_list)
+
+	# Detail strip
+	_shop_detail = RichTextLabel.new()
+	_shop_detail.bbcode_enabled = true
+	_shop_detail.fit_content = true
+	_shop_detail.custom_minimum_size = Vector2(0, 72)
+	outer.add_child(_shop_detail)
+
+	# Bottom bar: gold + upgrade (smith) + close
+	var bottom := HBoxContainer.new()
+	outer.add_child(bottom)
+
+	_shop_gold_label = Label.new()
+	_shop_gold_label.text = "Gold: 0"
+	bottom.add_child(_shop_gold_label)
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom.add_child(spacer)
+
+	var up_btn := Button.new()
+	up_btn.name = "UpgradeBtn"
+	up_btn.text = "⚒ Upgrade (+DMG)"
+	up_btn.visible = false
+	up_btn.pressed.connect(func(): _smith_upgrade())
+	bottom.add_child(up_btn)
+
+	var close_btn := Button.new()
+	close_btn.text = "Close  [Esc]"
+	close_btn.pressed.connect(func(): _hide_shop_ui())
+	bottom.add_child(close_btn)
+
+
+func _show_shop_ui(player: Node3D, kind: String) -> void:
+	if not bw_shops_enabled:
+		return
+	_ensure_shop_ui()
+	_shop_player = player
+	_shop_kind   = kind
+	_shop_panel.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if _shop_player and _shop_player.has_method("set_cinematic_lock"):
+		_shop_player.call("set_cinematic_lock", true)
+
+	var title_node := _shop_panel.get_node_or_null("VBoxContainer/Title")
+	if title_node is Label:
+		(title_node as Label).text = "Blacksmith" if kind == "smith" else "Merchant"
+
+	var up_btn := _shop_panel.find_child("UpgradeBtn", true, false) as Button
+	if up_btn:
+		up_btn.visible = (kind == "smith")
+
+	_shop_refresh()
+
+
+func _hide_shop_ui() -> void:
+	if _shop_panel and is_instance_valid(_shop_panel):
+		_shop_panel.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _shop_player and is_instance_valid(_shop_player) and _shop_player.has_method("set_cinematic_lock"):
+		_shop_player.call("set_cinematic_lock", false)
+	_shop_player = null
+	_shop_kind   = ""
+
+
+# ── Phase 16: rotating stock helpers ─────────────────────────────────────────
+
+func _shop_day_index() -> int:
+	if shop_day_length_real_seconds > 0.0:
+		return int(floor((Time.get_ticks_msec() / 1000.0) / shop_day_length_real_seconds))
+	return int(floor(Time.get_unix_time_from_system() / 86400.0))
+
+
+func _shop_rng(kind: String) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(shop_global_seed) ^ (_shop_day_index() * 1103515245) ^ int(hash(kind))
+	return rng
+
+
+func _shop_daily_stock(kind: String) -> Array:
+	var pool: Array = SHOP_POOLS.get(kind, [])
+	if pool.is_empty():
+		return SHOP_ITEMS.get(kind, [])
+	var n := 5 if kind == "merchant" else 4
+	var rng := _shop_rng(kind)
+	var shuffled := pool.duplicate()
+	for i in range(shuffled.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = shuffled[i]
+		shuffled[i] = shuffled[j]
+		shuffled[j] = tmp
+	var picked: Array = []
+	for k in range(mini(n, shuffled.size())):
+		var def := _shop_find_item_def(kind, str(shuffled[k]))
+		if def.is_empty():
+			def = {"id": str(shuffled[k]), "name": _item_name(str(shuffled[k])), "price": 20, "sell": 10}
+		picked.append(def)
+	return picked
+
+
+func _shop_find_item_def(kind: String, id: String) -> Dictionary:
+	for it in SHOP_ITEMS.get(kind, []):
+		if str(it.get("id", "")) == id:
+			var out := it.duplicate()
+			out["name"] = _item_name(id)
+			return out
+	return {}
+
+
+# ── Bag slot helpers (adjust here if your Inventory schema differs) ───────────
+
+func _inv_bag(inv: Node) -> Array:
+	if inv == null:
+		return []
+	if "bag" in inv and inv.bag is Array:
+		return inv.bag
+	return []
+
+
+func _slot_id(slot: Dictionary) -> String:
+	return str(slot.get("id", ""))
+
+
+func _slot_qty(slot: Dictionary) -> int:
+	if slot.has("qty"):   return int(slot["qty"])
+	if slot.has("count"): return int(slot["count"])
+	return 1
+
+
+func _set_slot_qty(slot: Dictionary, qty: int) -> void:
+	if slot.has("qty"):
+		slot["qty"] = qty
+	elif slot.has("count"):
+		slot["count"] = qty
+	else:
+		slot["qty"] = qty
+
+
+# ── Shop refresh (Phase 14+15+16 all-in-one) ─────────────────────────────────
+
+func _shop_refresh() -> void:
+	if _shop_player == null or not is_instance_valid(_shop_player):
+		return
+	if _shop_shop_list == null or _shop_inv_list == null:
+		return
+
+	var g := 0
+	if "gold" in _shop_player:
+		g = int(_shop_player.gold)
+	_shop_gold_label.text = "Gold: %d" % g
+
+	for c in _shop_shop_list.get_children():
+		c.queue_free()
+	for c in _shop_inv_list.get_children():
+		c.queue_free()
+
+	# ── For Sale list ─────────────────────────────────────────────────────────
+	var items: Array = _shop_daily_stock(_shop_kind) if shop_stock_rotation_enabled \
+	                   else SHOP_ITEMS.get(_shop_kind, [])
+	for it in items:
+		var id    := str(it.get("id", ""))
+		var price := int(it.get("price", 0))
+		var nice  := "%s %s" % [_item_icon(id), _item_name(id)]
+
+		var row := HBoxContainer.new()
+		_shop_shop_list.add_child(row)
+
+		var lbl := Label.new()
+		lbl.text = "%s  —  %dg" % [nice, price]
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(lbl)
+
+		var buy_btn := Button.new()
+		buy_btn.text = "Buy"
+		buy_btn.pressed.connect(func(_i := id, _p := price, _n := nice): _shop_buy(_i, _p, _n))
+		row.add_child(buy_btn)
+
+		var slot_name := _item_slot(id)
+		if slot_name != "":
+			var eq_btn := Button.new()
+			eq_btn.text = "Equip"
+			eq_btn.pressed.connect(func(_i := id, _s := slot_name): _shop_equip(_i, _s))
+			row.add_child(eq_btn)
+
+	# ── Sell list (real bag slots) ────────────────────────────────────────────
+	var inv := _shop_get_inventory()
+	if inv == null:
+		var warn := Label.new()
+		warn.text = "(No inventory found)"
+		_shop_inv_list.add_child(warn)
+	else:
+		var bag := _inv_bag(inv)
+		if bag.size() > 0:
+			for i in range(bag.size()):
+				var s = bag[i]
+				if not (s is Dictionary):
+					continue
+				var sid := _slot_id(s)
+				var qty := _slot_qty(s)
+				if sid == "" or qty <= 0:
+					continue
+				var sell_p := _shop_sell_price(sid)
+				var row2 := HBoxContainer.new()
+				_shop_inv_list.add_child(row2)
+				var lbl2 := Label.new()
+				lbl2.text = "%s %s x%d  —  %dg" % [_item_icon(sid), _item_name(sid), qty, sell_p]
+				lbl2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				row2.add_child(lbl2)
+				var sell_btn := Button.new()
+				sell_btn.text = "Sell 1"
+				sell_btn.pressed.connect(func(_idx := i, _p := sell_p):
+					_shop_sell_slot(_shop_get_inventory(), _idx, 1, _p)
+				)
+				row2.add_child(sell_btn)
+		else:
+			# Fallback: show known items player owns via count_item
+			for it2 in SHOP_ITEMS.get(_shop_kind, []):
+				var sid2 := str(it2.get("id", ""))
+				var have := 0
+				if inv.has_method("count_item"):
+					have = int(inv.count_item(sid2))
+				if have <= 0:
+					continue
+				var sell_p2 := _shop_sell_price(sid2)
+				var row3 := HBoxContainer.new()
+				_shop_inv_list.add_child(row3)
+				var lbl3 := Label.new()
+				lbl3.text = "%s %s x%d  —  %dg" % [_item_icon(sid2), _item_name(sid2), have, sell_p2]
+				lbl3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				row3.add_child(lbl3)
+				var sell_btn2 := Button.new()
+				sell_btn2.text = "Sell 1"
+				sell_btn2.pressed.connect(func(_i2 := sid2, _p2 := sell_p2): _shop_sell(_i2, 1, _p2))
+				row3.add_child(sell_btn2)
+
+	var detail := "[b]Tip:[/b] Buy on the left, sell on the right."
+	if _shop_kind == "smith":
+		detail = "[b]Smith[/b]\nUpgrade weapon: costs 2 iron_ingot + 40g.\n\n" + detail
+	_shop_detail.text = detail
+
+
+func _shop_get_inventory() -> Node:
+	if _shop_player == null or not is_instance_valid(_shop_player):
+		return null
+	var inv = _shop_player.get("inventory") if "inventory" in _shop_player else null
+	return inv
+
+
+func _shop_buy(item_id: String, price: int, display_name: String) -> void:
+	if _shop_player == null or not is_instance_valid(_shop_player):
+		return
+	if not ("gold" in _shop_player):
+		_try_toast("Player has no gold field.")
+		return
+	if int(_shop_player.gold) < price:
+		_try_toast("Not enough gold.")
+		return
+	var inv := _shop_get_inventory()
+	if inv == null or not inv.has_method("add_item"):
+		_try_toast("No inventory.add_item().")
+		return
+	_shop_player.gold -= price
+	inv.add_item(item_id, 1)
+	if _shop_player.has_signal("stats_changed"):
+		_shop_player.stats_changed.emit()
+	_try_toast("Bought: %s" % display_name)
+	_shop_refresh()
+
+
+func _shop_sell(item_id: String, qty: int, unit_price: int) -> void:
+	if _shop_player == null or not is_instance_valid(_shop_player):
+		return
+	if not ("gold" in _shop_player):
+		_try_toast("Player has no gold field.")
+		return
+	var inv := _shop_get_inventory()
+	if inv == null or not inv.has_method("count_item") or not inv.has_method("consume_item"):
+		_try_toast("Inventory missing count/consume.")
+		return
+	if int(inv.count_item(item_id)) < qty:
+		_try_toast("You don't have that.")
+		return
+	inv.consume_item(item_id, qty)
+	_shop_player.gold += unit_price * qty
+	if _shop_player.has_signal("stats_changed"):
+		_shop_player.stats_changed.emit()
+	_try_toast("Sold: %s" % _item_name(item_id))
+	_shop_refresh()
+
+
+func _shop_sell_slot(inv: Node, slot_index: int, qty: int, unit_price: int) -> void:
+	if _shop_player == null or not is_instance_valid(_shop_player):
+		return
+	if inv == null or not ("gold" in _shop_player):
+		return
+	var bag := _inv_bag(inv)
+	if slot_index < 0 or slot_index >= bag.size():
+		return
+	var slot = bag[slot_index]
+	if not (slot is Dictionary):
+		return
+	var id  := _slot_id(slot)
+	var have := _slot_qty(slot)
+	if have < qty:
+		_try_toast("Not enough to sell.")
+		return
+	if inv.has_method("consume_item"):
+		inv.consume_item(id, qty)
+	else:
+		var new_qty := have - qty
+		if new_qty <= 0:
+			bag.remove_at(slot_index)
+		else:
+			_set_slot_qty(slot, new_qty)
+			bag[slot_index] = slot
+		if "bag" in inv:
+			inv.bag = bag
+	_shop_player.gold += unit_price * qty
+	if inv.has_signal("inventory_changed"):
+		inv.inventory_changed.emit()
+	if _shop_player.has_signal("stats_changed"):
+		_shop_player.stats_changed.emit()
+	_try_toast("Sold: %s" % _item_name(id))
+	_shop_refresh()
+
+
+func _shop_sell_price(item_id: String) -> int:
+	for k in SHOP_ITEMS.keys():
+		for it in SHOP_ITEMS[k]:
+			if str(it.get("id", "")) == item_id:
+				return int(it.get("sell", maxi(1, int(it.get("price", 2)) / 2)))
+	return 1
+
+
+func _shop_equip(item_id: String, slot: String) -> void:
+	var inv := _shop_get_inventory()
+	if inv == null:
+		_try_toast("No inventory.")
+		return
+	if inv.has_method("count_item") and int(inv.count_item(item_id)) <= 0:
+		_try_toast("You don't own that yet.")
+		return
+	if "equipped" in inv and inv.equipped is Dictionary:
+		inv.equipped[slot] = item_id
+		if inv.has_signal("equipment_changed"):
+			inv.equipment_changed.emit()
+		_try_toast("Equipped %s" % _item_name(item_id))
+		_shop_refresh()
+		return
+	if inv.has_method("set_equipped"):
+		inv.call("set_equipped", slot, item_id)
+		_try_toast("Equipped %s" % _item_name(item_id))
+		_shop_refresh()
+		return
+	_try_toast("Inventory has no equip system yet.")
+
+
+func _smith_upgrade() -> void:
+	# Phase 21 — tutorial gate: upgrades unlock at step 3 (after inn rest)
+	if tutorial_gating_enabled and tutorial_enabled and not _tutorial_done:
+		if _tutorial_step < 3:
+			_try_toast("Edda: \"Rest up at the Inn first. I'll still be here when you're ready.\"")
+			return
+	if _shop_player == null or not is_instance_valid(_shop_player) or _shop_kind != "smith":
+		return
+	var inv := _shop_get_inventory()
+	if inv == null:
+		_try_toast("No inventory.")
+		return
+	if not ("gold" in _shop_player):
+		_try_toast("Player has no gold.")
+		return
+	if int(_shop_player.gold) < 40:
+		_try_toast("Need 40 gold.")
+		return
+	if not inv.has_method("count_item") or not inv.has_method("consume_item"):
+		_try_toast("Inventory missing count/consume.")
+		return
+	if int(inv.count_item("iron_ingot")) < 2:
+		_try_toast("Need 2 iron_ingot.")
+		return
+	inv.consume_item("iron_ingot", 2)
+	_shop_player.gold -= 40
+	if "upgrade_bonus_damage" in inv:
+		inv.upgrade_bonus_damage = float(inv.upgrade_bonus_damage) + 1.0
+	elif inv.has_method("set_upgrade_bonus_damage"):
+		inv.call("set_upgrade_bonus_damage", 1.0)
+	else:
+		inv.set_meta("upgrade_bonus_damage", float(inv.get_meta("upgrade_bonus_damage", 0.0)) + 1.0)
+	if inv.has_signal("equipment_changed"):
+		inv.equipment_changed.emit()
+	if _shop_player.has_signal("stats_changed"):
+		_shop_player.stats_changed.emit()
+	_try_toast("Smith: Weapon damage +1!")
+	_shop_refresh()
+
+
+# ============================================================================
+# Phase 16 — Crafting UI
+# ============================================================================
+
+func _ensure_crafting_ui() -> void:
+	if _craft_layer and is_instance_valid(_craft_layer):
+		return
+	_craft_layer = CanvasLayer.new()
+	_craft_layer.name = "CraftUI"
+	_craft_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_craft_layer)
+
+	_craft_panel = Panel.new()
+	_craft_panel.name = "CraftPanel"
+	_craft_panel.visible = false
+	_craft_panel.size = Vector2(760, 420)
+	_craft_panel.position = get_viewport().get_visible_rect().size * 0.5 - _craft_panel.size * 0.5
+	_craft_layer.add_child(_craft_panel)
+
+	var outer := HBoxContainer.new()
+	outer.anchor_right  = 1.0
+	outer.anchor_bottom = 1.0
+	outer.offset_left   = 18
+	outer.offset_top    = 18
+	outer.offset_right  = -18
+	outer.offset_bottom = -18
+	_craft_panel.add_child(outer)
+
+	var left := VBoxContainer.new()
+	left.custom_minimum_size = Vector2(340, 0)
+	outer.add_child(left)
+
+	var t := Label.new()
+	t.text = "Crafting"
+	t.add_theme_font_size_override("font_size", 22)
+	left.add_child(t)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_child(scroll)
+
+	_craft_list = VBoxContainer.new()
+	_craft_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(_craft_list)
+
+	var right := VBoxContainer.new()
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_child(right)
+
+	_craft_detail = RichTextLabel.new()
+	_craft_detail.bbcode_enabled = true
+	_craft_detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right.add_child(_craft_detail)
+
+	var close_btn := Button.new()
+	close_btn.text = "Close  [Esc]"
+	close_btn.pressed.connect(func(): _hide_crafting_ui())
+	right.add_child(close_btn)
+
+
+func _show_crafting_ui(player: Node3D) -> void:
+	_ensure_crafting_ui()
+	_craft_player = player
+	_craft_panel.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if _craft_player and _craft_player.has_method("set_cinematic_lock"):
+		_craft_player.call("set_cinematic_lock", true)
+	_craft_rebuild()
+
+
+func _hide_crafting_ui() -> void:
+	if _craft_panel and is_instance_valid(_craft_panel):
+		_craft_panel.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _craft_player and is_instance_valid(_craft_player) and _craft_player.has_method("set_cinematic_lock"):
+		_craft_player.call("set_cinematic_lock", false)
+	_craft_player = null
+
+
+func _craft_rebuild() -> void:
+	for c in _craft_list.get_children():
+		c.queue_free()
+	_craft_detail.text = "[b]Crafting[/b]\nSelect a recipe to craft.\n\nMaterials are taken from your bag."
+
+	var inv := _shop_get_inventory() if _craft_player != null else null
+
+	for r in CRAFT_RECIPES:
+		var row := HBoxContainer.new()
+		_craft_list.add_child(row)
+
+		var rname := str(r.get("name", "Recipe"))
+		var can_craft := true
+		if inv != null and inv.has_method("count_item"):
+			for inp in r.get("inputs", []):
+				if int(inv.count_item(str(inp.get("id", "")))) < int(inp.get("qty", 1)):
+					can_craft = false
+					break
+
+		var lbl := Label.new()
+		lbl.text = rname
+		lbl.modulate = Color(1, 1, 1, 1) if can_craft else Color(0.55, 0.55, 0.55, 1)
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(lbl)
+
+		var btn := Button.new()
+		btn.text = "Craft"
+		btn.disabled = not can_craft
+		btn.pressed.connect(func(_rid := str(r.get("id", ""))): _craft_do(_rid))
+		row.add_child(btn)
+
+
+func _craft_do(recipe_id: String) -> void:
+	if _craft_player == null or not is_instance_valid(_craft_player):
+		return
+	var inv := _shop_get_inventory()
+	if inv == null:
+		_try_toast("No inventory.")
+		return
+	if not inv.has_method("count_item") or not inv.has_method("consume_item") or not inv.has_method("add_item"):
+		_try_toast("Inventory missing craft methods.")
+		return
+
+	var recipe := {}
+	for r in CRAFT_RECIPES:
+		if str(r.get("id", "")) == recipe_id:
+			recipe = r
+			break
+	if recipe.is_empty():
+		return
+
+	for inp in recipe.get("inputs", []):
+		var iid := str(inp.get("id", ""))
+		var q   := int(inp.get("qty", 1))
+		if int(inv.count_item(iid)) < q:
+			_try_toast("Missing: %s x%d" % [_item_name(iid), q])
+			return
+
+	for inp in recipe.get("inputs", []):
+		inv.consume_item(str(inp.get("id", "")), int(inp.get("qty", 1)))
+
+	for out in recipe.get("outputs", []):
+		inv.add_item(str(out.get("id", "")), int(out.get("qty", 1)))
+
+	if inv.has_signal("inventory_changed"):
+		inv.inventory_changed.emit()
+	if _craft_player and _craft_player.has_signal("stats_changed"):
+		_craft_player.stats_changed.emit()
+
+	_try_toast("Crafted: %s" % str(recipe.get("name", "Item")))
+	_craft_rebuild()
+
+
+# ============================================================================
+# Phase 17 — Town Schedule (day/night cycle + NPC shifts)
+# ============================================================================
+
+func _town_time_of_day() -> float:
+	if day_length_seconds <= 0.1:
+		return 0.35
+	return fmod((Time.get_ticks_msec() / 1000.0) / day_length_seconds, 1.0)
+
+
+func _is_night(t: float) -> bool:
+	return (t >= night_start) or (t <= night_end)
+
+
+func _init_town_schedule() -> void:
+	if _schedule_timer and is_instance_valid(_schedule_timer):
+		_schedule_timer.queue_free()
+	_schedule_timer = Timer.new()
+	_schedule_timer.name = "TownScheduleTick"
+	_schedule_timer.wait_time = 1.0
+	_schedule_timer.autostart = true
+	_schedule_timer.one_shot = false
+	_schedule_timer.timeout.connect(_tick_town_schedule)
+	add_child(_schedule_timer)
+	_tick_town_schedule()
+
+
+func _tick_town_schedule() -> void:
+	if not town_schedule_enabled:
+		return
+	var t := _town_time_of_day()
+	var night := _is_night(t)
+	if night != _last_night_state:
+		_last_night_state = night
+		_apply_briarwood_lighting(night)
+		_apply_briarwood_npc_shift(night)
+
+
+func _apply_briarwood_lighting(night: bool) -> void:
+	var root := _briarwood_root if _briarwood_root and is_instance_valid(_briarwood_root) else get_tree().current_scene
+	if root == null:
+		return
+	for l in root.find_children("*Lantern*", "Node3D", true, false):
+		var ln := l as Node3D
+		if ln == null:
+			continue
+		for lx in ln.find_children("*", "OmniLight3D", true, false):
+			var ol := lx as OmniLight3D
+			if ol:
+				ol.visible = night
+	for m in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		if mi == null or mi.name.to_lower().find("window") == -1:
+			continue
+		var mat := mi.material_override
+		if mat is StandardMaterial3D:
+			var sm := mat as StandardMaterial3D
+			if sm.emission_enabled:
+				sm.emission_energy_multiplier = bw_window_energy_night if night else bw_window_energy_day
+
+
+func _apply_briarwood_npc_shift(night: bool) -> void:
+	for npc in _bw_life_npcs:
+		if npc == null or not is_instance_valid(npc):
+			continue
+		if str(npc.get_meta("life_role", "villager")) == "villager" and night:
+			var home: Vector3 = npc.get_meta("life_home", npc.global_position)
+			_npc_go_to(npc, home)
+			npc.set_meta("life_idle_until", (Time.get_ticks_msec() / 1000.0) + 6.0)
+
+
+# ============================================================================
+# Phase 17 — Interior Portals
+# ============================================================================
+
+func _enter_interior(player: Node3D, kind: String) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+
+	_call_world_sfx("door_open")
+	_transition_fade(true, transition_fade_time)
+	await get_tree().create_timer(maxf(0.05, transition_fade_time)).timeout
+
+	var scene: PackedScene = null
+	match kind:
+		"inn":   scene = briarwood_inn_interior
+		"shop":  scene = briarwood_shop_interior
+		"smith": scene = briarwood_smith_interior
+	_exterior_return_pos = player.global_position
+	_interior_kind = kind
+
+	if _interior_root and is_instance_valid(_interior_root):
+		_interior_root.queue_free()
+
+	if scene == null:
+		if interior_fallback_builders_enabled:
+			_interior_root = _build_interior_fallback(kind)
+		else:
+			_try_toast("Interior not set in Inspector.")
+			_transition_fade(false, transition_fade_time)
+			return
+	else:
+		_interior_root = scene.instantiate() as Node3D
+
+	if _interior_root == null:
+		_try_toast("Failed to load interior.")
+		_transition_fade(false, transition_fade_time)
+		return
+
+	_interior_root.name = "Interior_%s" % kind
+	add_child(_interior_root)
+
+	var spawn := _interior_root.find_child("Spawn", true, false)
+	if spawn and spawn is Node3D:
+		player.global_position = (spawn as Node3D).global_position + Vector3(0, 0.02, 0)
+	else:
+		player.global_position = _interior_root.global_position + Vector3(0, 0.02, 0)
+
+	_interior_register_points()
+	_interior_audio_enter(kind)
+	_transition_fade(false, transition_fade_time)
+	_try_toast("Entered %s — press E on the exit to leave." % kind)
+
+
+func _exit_interior(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+
+	_call_world_sfx("door_open")
+	_transition_fade(true, transition_fade_time)
+	await get_tree().create_timer(maxf(0.05, transition_fade_time)).timeout
+
+	if _interior_root and is_instance_valid(_interior_root):
+		_interior_root.queue_free()
+	_interior_root = null
+	_interior_kind = ""
+	player.global_position = _exterior_return_pos + Vector3(0, 0.02, 0)
+	_interior_audio_exit()
+	_transition_fade(false, transition_fade_time)
+	_try_toast("Back outside.")
+
+
+# ============================================================================
+# Phase 18A — Interior fallback builders
+# ============================================================================
+
+func _build_interior_fallback(kind: String) -> Node3D:
+	var root := Node3D.new()
+	root.name = "InteriorFallback_%s" % kind
+
+	# Floor
+	var floor_mi := MeshInstance3D.new()
+	var floor_mesh := BoxMesh.new()
+	floor_mesh.size = Vector3(16, 0.25, 14)
+	floor_mi.mesh = floor_mesh
+	floor_mi.material_override = MAT_WOOD(3.0)
+	floor_mi.position.y = -0.12
+	root.add_child(floor_mi)
+
+	# Walls shell (hollow shell — just ceiling for collision)
+	var wall_mi := MeshInstance3D.new()
+	var wall_mesh := BoxMesh.new()
+	wall_mesh.size = Vector3(16.4, 0.25, 14.4)
+	wall_mi.mesh = wall_mesh
+	wall_mi.material_override = MAT_STONE(2.0)
+	wall_mi.position.y = 4.25
+	root.add_child(wall_mi)
+
+	# Spawn point
+	var spawn := Node3D.new()
+	spawn.name = "Spawn"
+	spawn.position = Vector3(0, 0.5, 5.0)
+	root.add_child(spawn)
+
+	# Exit door interactable
+	var exit_node := Node3D.new()
+	exit_node.name = "ExitDoor"
+	exit_node.position = Vector3(0, 0, 6.5)
+	root.add_child(exit_node)
+	_register_interactable(exit_node, "exit_interior")
+
+	match kind:
+		"inn":   _build_inn_contents(root)
+		"shop":  _build_shop_contents(root)
+		"smith": _build_smith_contents(root)
+
+	return root
+
+
+func _build_inn_contents(root: Node3D) -> void:
+	# Counter
+	root.add_child(_box_prop(Vector3(0, 0, 1.0), Vector3(6.0, 1.0, 1.2), "Counter", MAT_DARK_WOOD(1.5)))
+
+	# Tables + stools
+	for p in [Vector3(-4.0, 0, -1.5), Vector3(3.5, 0, -2.0), Vector3(-2.0, 0, -4.0)]:
+		root.add_child(_box_prop(p, Vector3(2.2, 0.9, 1.6), "Table", MAT_WOOD(2.0)))
+
+	# Fireplace
+	root.add_child(_box_prop(Vector3(-6.5, 0, -5.0), Vector3(2.0, 1.6, 1.4), "Fireplace", MAT_STONE(2.0)))
+
+	# Bed — interactable
+	var bed := _box_prop(Vector3(6.0, 0, -4.5), Vector3(2.2, 0.7, 3.0), "Bed", MAT_ROOF(2.0))
+	root.add_child(bed)
+	_register_interactable(bed, "inn_bed")
+
+	# Small lantern on counter
+	root.add_child(_make_bw_lantern_post(Vector3(2.5, 1.0, 1.0)))
+
+
+func _build_shop_contents(root: Node3D) -> void:
+	# Counter
+	root.add_child(_box_prop(Vector3(0, 0, 1.0), Vector3(6.0, 1.0, 1.2), "Counter", MAT_DARK_WOOD(1.5)))
+
+	# Shelves lining back wall
+	for x in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
+		root.add_child(_box_prop(Vector3(x, 0.6, -5.5), Vector3(1.2, 2.0, 0.5), "Shelf", MAT_WOOD(2.0)))
+
+	# Merchant interactable spot
+	var npc_spot := Node3D.new()
+	npc_spot.name = "MerchantInside"
+	npc_spot.position = Vector3(0, 0, 0.2)
+	root.add_child(npc_spot)
+	_register_interactable(npc_spot, "merchant_shop")
+
+
+func _build_smith_contents(root: Node3D) -> void:
+	# Anvil — interactable (opens smith shop)
+	var anvil := _box_prop(Vector3(2.5, 0, 1.0), Vector3(1.4, 0.9, 1.0), "Anvil", MAT_STONE(2.0))
+	root.add_child(anvil)
+	_register_interactable(anvil, "smith_shop")
+
+	# Forge block
+	root.add_child(_box_prop(Vector3(-5.5, 0, -4.0), Vector3(3.0, 1.6, 2.4), "Forge", MAT_STONE(2.0)))
+
+	# Tool racks
+	for x in [-6.0, -4.0, -2.0]:
+		root.add_child(_box_prop(Vector3(x, 0.6, 5.5), Vector3(1.0, 2.0, 0.5), "ToolRack", MAT_DARK_WOOD(1.5)))
+
+
+func _box_prop(pos: Vector3, size: Vector3, prop_name: String, mat: StandardMaterial3D = null) -> Node3D:
+	var n := Node3D.new()
+	n.name = prop_name
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mi.mesh = bm
+	if mat != null:
+		mi.material_override = mat
+	mi.position = Vector3(0, size.y * 0.5, 0)
+	n.add_child(mi)
+	n.position = pos
+	return n
+
+
+# ============================================================================
+# Phase 18B — Inn Rest/Save
+# ============================================================================
+
+func _inn_rest_and_save(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if "hp" in player and "max_hp" in player:
+		player.hp = player.max_hp
+	if "mp" in player and "max_mp" in player:
+		player.mp = player.max_mp
+	if player.has_signal("stats_changed"):
+		player.stats_changed.emit()
+	get_tree().call_group("world", "save_game")
+	# Optional: skip to morning
+	if town_schedule_enabled:
+		_town_time = 0.28
+	_try_toast("Rested. Fully healed and saved.")
+	_call_world_sfx("rest")
+
+
+# ============================================================================
+# Phase 18C — Dialog system
+# ============================================================================
+
+func _ensure_dialog_ui() -> void:
+	if _dlg_layer and is_instance_valid(_dlg_layer):
+		return
+
+	_dlg_layer = CanvasLayer.new()
+	_dlg_layer.name = "DialogUI"
+	_dlg_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_dlg_layer)
+
+	_dlg_panel = Panel.new()
+	_dlg_panel.name = "DialogPanel"
+	_dlg_panel.visible = false
+	_dlg_panel.size = Vector2(820, 260)
+	_dlg_panel.position = Vector2(40, get_viewport().get_visible_rect().size.y - 300)
+	_dlg_layer.add_child(_dlg_panel)
+
+	var outer := VBoxContainer.new()
+	outer.anchor_right  = 1.0
+	outer.anchor_bottom = 1.0
+	outer.offset_left   = 16
+	outer.offset_top    = 14
+	outer.offset_right  = -16
+	outer.offset_bottom = -14
+	_dlg_panel.add_child(outer)
+
+	_dlg_title = Label.new()
+	_dlg_title.add_theme_font_size_override("font_size", 20)
+	outer.add_child(_dlg_title)
+
+	_dlg_text = RichTextLabel.new()
+	_dlg_text.bbcode_enabled = true
+	_dlg_text.fit_content = true
+	_dlg_text.custom_minimum_size = Vector2(0, 80)
+	outer.add_child(_dlg_text)
+
+	_dlg_choices = VBoxContainer.new()
+	outer.add_child(_dlg_choices)
+
+
+func show_dialog(player: Node3D, speaker: String, text: String, choices: Array) -> void:
+	_ensure_dialog_ui()
+	_dlg_player = player
+	_dlg_title.text = speaker
+	_dlg_text.text  = text
+
+	for c in _dlg_choices.get_children():
+		c.queue_free()
+
+	for ch in choices:
+		if not (ch is Dictionary):
+			continue
+		var btn := Button.new()
+		btn.text = str(ch.get("label", "..."))
+		var act = ch.get("action", null)
+		btn.pressed.connect(func():
+			_hide_dialog()
+			if act is Callable:
+				act.call()
+		)
+		_dlg_choices.add_child(btn)
+
+	_dlg_panel.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	if player and player.has_method("set_cinematic_lock"):
+		player.call("set_cinematic_lock", true)
+	_call_world_sfx("dialog")
+
+
+func _hide_dialog() -> void:
+	if _dlg_panel and is_instance_valid(_dlg_panel):
+		_dlg_panel.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if _dlg_player and is_instance_valid(_dlg_player) and _dlg_player.has_method("set_cinematic_lock"):
+		_dlg_player.call("set_cinematic_lock", false)
+	_dlg_player = null
+
+
+# ============================================================================
+# Phase 18D — NPC quest helper (innkeeper delivery offer)
+# ============================================================================
+
+func _innkeeper_offer_delivery(player: Node3D) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if "active_quest" in player and player.active_quest is Dictionary and player.active_quest.size() > 0:
+		_try_toast("Finish your current task first.")
+		return
+	var qdef := _qb_find_def("bw_deliver_crate_nordic")
+	if qdef.is_empty():
+		_try_toast("No deliveries today.")
+		return
+	var q := qdef.get("quest", {}) as Dictionary
+	var inv = player.get("inventory") if "inventory" in player else null
+	if inv != null and inv.has_method("add_item"):
+		inv.add_item("supply_crate", 1)
+	if player.has_method("accept_quest"):
+		player.call("accept_quest", q)
+		_try_toast("Take that crate to the Harbor Master at the Nordic docks.")
+
+
+# ============================================================================
+# Phase 20A — Fade transition controller
+# ============================================================================
+
+func _ensure_fade() -> void:
+	if _fade_layer and is_instance_valid(_fade_layer):
+		return
+	_fade_layer = CanvasLayer.new()
+	_fade_layer.name = "FadeLayer"
+	_fade_layer.layer = 128  # render on top of everything
+	_fade_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_fade_layer)
+
+	_fade_rect = ColorRect.new()
+	_fade_rect.name = "FadeRect"
+	_fade_rect.color = Color(0, 0, 0, 0)
+	_fade_rect.anchor_right  = 1.0
+	_fade_rect.anchor_bottom = 1.0
+	_fade_rect.mouse_filter  = Control.MOUSE_FILTER_IGNORE
+	_fade_layer.add_child(_fade_rect)
+
+
+func _transition_fade(fade_out: bool, seconds: float) -> void:
+	if not transitions_enabled:
+		return
+	_ensure_fade()
+	if _fade_tween and is_instance_valid(_fade_tween):
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	var target_a := 1.0 if fade_out else 0.0
+	_fade_tween.tween_property(_fade_rect, "color:a", target_a, maxf(0.05, seconds)) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+# ============================================================================
+# Phase 20B — Interior audio controller
+# ============================================================================
+
+func _ensure_music_player() -> void:
+	if _music_player and is_instance_valid(_music_player):
+		return
+	_music_player = AudioStreamPlayer.new()
+	_music_player.name = "MusicPlayer"
+	_music_player.bus = "Music"
+	add_child(_music_player)
+
+
+func _set_music(stream: AudioStream, id: String) -> void:
+	if not interior_audio_enabled or stream == null:
+		return
+	_ensure_music_player()
+	if _current_music_id == id and _music_player.playing:
+		return
+	_music_player.stream = stream
+	_music_player.play()
+	_current_music_id = id
+
+
+func _interior_audio_enter(kind: String) -> void:
+	if not interior_audio_enabled:
+		return
+	match kind:
+		"inn":   _set_music(music_inn,   "inn")
+		"shop":  _set_music(music_shop,  "shop")
+		"smith": _set_music(music_smith, "smith")
+
+
+func _interior_audio_exit() -> void:
+	_set_music(music_outside, "outside")
+
+
+# ============================================================================
+# Phase 20B — Interior interactable registration helper
+# ============================================================================
+
+func _interior_register_points() -> void:
+	if _interior_root == null or not is_instance_valid(_interior_root):
+		return
+	var exit := _interior_root.find_child("ExitDoor", true, false)
+	if exit and exit is Node3D:
+		_register_interactable(exit as Node3D, "exit_interior")
+	var bed := _interior_root.find_child("Bed", true, false)
+	if bed and bed is Node3D:
+		_register_interactable(bed as Node3D, "inn_bed")
+	var merchant := _interior_root.find_child("MerchantSpot", true, false)
+	if merchant and merchant is Node3D:
+		_register_interactable(merchant as Node3D, "merchant_shop")
+	var anvil := _interior_root.find_child("AnvilSpot", true, false)
+	if anvil and anvil is Node3D:
+		_register_interactable(anvil as Node3D, "smith_shop")
+
+
+# ============================================================================
+# Phase 20C — Minimap markers
+# ============================================================================
+
+func _register_minimap_marker(node: Node3D, label: String, icon: String = "●") -> void:
+	if node == null or not is_instance_valid(node) or not minimap_markers_enabled:
+		return
+	node.set_meta("minimap_label", label)
+	node.set_meta("minimap_icon",  icon)
+	node.add_to_group("minimap_markers")
+
+	var l := Label3D.new()
+	l.text = "%s %s" % [icon, label]
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.pixel_size  = 0.003
+	l.font_size   = 22
+	l.outline_size = 6
+	l.outline_modulate = Color(0, 0, 0, 1)
+	l.modulate    = Color(1.0, 0.96, 0.55, 0.85)
+	l.position    = Vector3(0, 2.2, 0)
+	node.add_child(l)
+
+
+# ============================================================================
+# Phase 20D — Tutorial chain (first 10 minutes)
+# ============================================================================
+
+func _tutorial_start_if_needed() -> void:
+	if not tutorial_enabled or _tutorial_done:
+		return
+	# Small delay so the world finishes building before the first hint fires
+	await get_tree().create_timer(2.0).timeout
+	if not tutorial_enabled or _tutorial_done:
+		return
+	# Phase 21 — cinematic intro fires once on very first load
+	if mayor_intro_enabled and not _mayor_intro_ran:
+		_run_mayor_intro()
+		return  # intro ends with the board hint baked in
+	_try_toast("Welcome to Briarwood! Check the Notice Board in the plaza.")
+
+
+func _tutorial_on_event(ev: String) -> void:
+	if not tutorial_enabled or _tutorial_done:
+		return
+
+	match _tutorial_step:
+		0:
+			# Phase 21 — intro acceptance moves player gently toward the board
+			if ev == "_intro_accept":
+				_safe_call("_intro_advance_to_board")
+			elif ev == "board":
+				_tutorial_step = 1
+				_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+				_try_toast("Tutorial: Hit the training dummy 3 times.")
+				_tutorial_assign_kill("training_dummy", 3, "Guard Captain")
+		1:
+			# Any event while on step 1 — check if kill quest is finished
+			var p := _get_player()
+			if p != null:
+				var ready := false
+				if p.has_method("is_quest_ready_to_turn_in"):
+					ready = bool(p.call("is_quest_ready_to_turn_in"))
+				elif "active_quest" in p and p.active_quest is Dictionary:
+					var aq: Dictionary = p.active_quest
+					if str(aq.get("kind","")) == "kill":
+						ready = int(aq.get("killed",0)) >= int(aq.get("needed",999))
+				if ready:
+					_tutorial_step = 2
+					_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+					_try_toast("Nice form! Rest at the Inn bed to recover.")
+		2:
+			if ev == "rest":
+				_tutorial_step = 3
+				_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+				_try_toast("Visit the Smith and browse upgrades.")
+		3:
+			if ev == "smith":
+				_tutorial_step = 4
+				_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+				_try_toast("Take the boat to Nordic Harbor.")
+		4:
+			if ev == "boat":
+				_tutorial_step = 5
+				_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+				_try_toast("Talk to the Harbor Master at the docks.")
+		5:
+			if ev == "harbor_master":
+				_tutorial_done = true
+				_tutorial_step = 6
+				_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0  # Phase 22
+				_clear_tutorial_trail()
+				_hide_tutorial_arrow()
+				_try_toast("Tutorial complete! Briarwood is yours to explore.")
+				_call_world_sfx("quest_complete")
+
+
+func _tutorial_assign_kill(target: String, needed: int, giver: String) -> void:
+	var p := _get_player()
+	if p == null or not is_instance_valid(p) or not p.has_method("accept_quest"):
+		return
+	if ("active_quest" in p) and (p.active_quest is Dictionary) and p.active_quest.size() > 0:
+		return  # don't clobber an existing quest
+	p.call("accept_quest", {
+		"kind": "kill", "target": target,
+		"needed": needed, "giver": giver,
+		"gold_reward": 0, "xp_reward": 0,
+	})
+
+
+# ============================================================================
+# Phase 21A — Cinematic Mayor Intro
+# ============================================================================
+# Plays on first load (or first Mayor interaction if auto-fire is missed).
+# Uses the existing show_dialog + toast infrastructure — no new UI nodes.
+# Sequence: fade-in black → Mayor greeting panel → choice to accept tutorial
+# quest or skip. After dismissal the tutorial toast fires as normal.
+#
+# The sequence is intentionally non-blocking for the rest of the world:
+# it uses `await` inside the coroutine but the caller (_tutorial_start_if_needed
+# or _mayor_talk) simply calls it and moves on. Any panel click calls
+# _hide_dialog() which clears the lock before the next await completes.
+# ============================================================================
+
+func _run_mayor_intro() -> void:
+	if not mayor_intro_enabled:
+		return
+	if _mayor_intro_ran:
+		return
+	_mayor_intro_ran = true
+
+	var player := _get_player()
+	if player == null:
+		# World isn't ready yet — reschedule once more
+		await get_tree().create_timer(1.0).timeout
+		player = _get_player()
+		if player == null:
+			_try_toast("Welcome to Briarwood. Check the Notice Board.")
+			return
+
+	# ── 1. Lock movement briefly ─────────────────────────────────────────────
+	if player.has_method("set_cinematic_lock"):
+		player.call("set_cinematic_lock", true)
+
+	# ── 2. Ensure screen is visible (fade in if needed) ─────────────────────
+	_transition_fade(false, 0.25)
+
+	# ── 3. Title card toast ──────────────────────────────────────────────────
+	_try_toast("⚜  Briarwood — Home Village  ⚜")
+
+	# ── 4. Soft walk toward plaza (tween position, doesn't fight physics) ────
+	var plaza  := briarwood_origin + bw_plaza_offset
+	var target := Vector3(plaza.x, player.global_position.y, plaza.z - 2.0)
+	var start  := player.global_position
+	var walk_dur := 1.8
+	var tw := create_tween()
+	tw.tween_property(player, "global_position",
+		Vector3(target.x, start.y, target.z), walk_dur) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	await get_tree().create_timer(walk_dur + 0.1).timeout
+
+	# ── 5. Mayor greeting dialog ─────────────────────────────────────────────
+	show_dialog(
+		player,
+		"Mayor Aldric",
+		"Welcome to Briarwood.\n\n" \
+		+ "Merchants from the coast, rangers from the north, trouble from " \
+		+ "everywhere else — this village has seen it all.\n\n" \
+		+ "I'd feel better knowing you can handle yourself before I point " \
+		+ "you toward the harbor road.",
+		[
+			{
+				"label": "Got it — what do you need?",
+				"action": func():
+					_try_toast("Mayor: Start at the Notice Board — it keeps the village's troubles sorted.")
+					_tutorial_step = 0
+					_tutorial_on_event("_intro_accept")
+			},
+			{
+				"label": "Open Notice Board now",
+				"action": func():
+					_tutorial_step = 0
+					_show_quest_board_ui(player)
+					_tutorial_on_event("board")
+			},
+			{
+				"label": "I know Briarwood — skip the tour.",
+				"action": func():
+					_tutorial_done = true
+					_clear_tutorial_trail()
+					_hide_tutorial_arrow()
+					_try_toast("Mayor: Fair enough. Briarwood's yours to explore.")
+			},
+		]
+	)
+
+	# ── 6. Unlock after a short delay (dialog system unlocks too on close) ───
+	await get_tree().create_timer(0.5).timeout
+	if player != null and is_instance_valid(player):
+		if player.has_method("set_cinematic_lock"):
+			player.call("set_cinematic_lock", false)
+
+
+# ── Tutorial-step advance triggered by intro acceptance ────────────────────
+# Called when the player picks "I'm ready" in the intro dialog.
+# We re-use _tutorial_on_event but need a dedicated event string so the
+# normal board/boat events don't accidentally advance the intro mid-flight.
+# The function simply ensures step 0 is active and shows the board hint.
+
+func _intro_advance_to_board() -> void:
+	if _tutorial_done:
+		return
+	_tutorial_step = 0
+	await get_tree().create_timer(1.2).timeout
+	if not _tutorial_done:
+		_try_toast("Hint: Walk up to the Notice Board and press E.")
+
+
+# ── Patch _tutorial_on_event to also accept "_intro_accept" ─────────────────
+# We override the event check inline: if the intro fires "_intro_accept"
+# we kick off the board-hint delay so the flow reads naturally.
+# (This extends the existing function via a call — no duplicate match needed.)
+
+func _intro_accept_chain() -> void:
+	_safe_call("_intro_advance_to_board")
+
+
+# ============================================================================
+# Phase 22A — Tutorial polish init + tick
+# ============================================================================
+
+func _init_tutorial_polish() -> void:
+	if _tutorial_tick_timer and is_instance_valid(_tutorial_tick_timer):
+		_tutorial_tick_timer.queue_free()
+
+	_tutorial_tick_timer = Timer.new()
+	_tutorial_tick_timer.name = "TutorialPolishTick"
+	_tutorial_tick_timer.wait_time = 0.5
+	_tutorial_tick_timer.one_shot = false
+	_tutorial_tick_timer.autostart = true
+	_tutorial_tick_timer.timeout.connect(_tick_tutorial_polish)
+	add_child(_tutorial_tick_timer)
+
+	_tutorial_last_progress_time = Time.get_ticks_msec() / 1000.0
+	_ensure_tutorial_arrow()
+	_ensure_tutorial_trail()
+
+
+func _tick_tutorial_polish() -> void:
+	if not tutorial_enabled or _tutorial_done:
+		_hide_tutorial_arrow()
+		_clear_tutorial_trail()
+		return
+
+	var player := _get_player()
+	if player == null:
+		return
+
+	# Update objective arrow
+	_update_tutorial_arrow_target()
+	_update_tutorial_arrow_visual(player)
+
+	# Sparkle breadcrumb trail
+	if tutorial_trail_enabled:
+		_tick_tutorial_trail(player)
+
+	# NPC proximity barks
+	if tutorial_barks_enabled:
+		_tick_tutorial_barks(player)
+
+	# Fail-safe hints + auto-help
+	if tutorial_failsafe_enabled:
+		_tick_tutorial_failsafe(player)
+
+
+# ============================================================================
+# Phase 22B — Objective Arrow
+# ============================================================================
+
+func _ensure_tutorial_arrow() -> void:
+	if _arrow_root and is_instance_valid(_arrow_root):
+		return
+
+	_arrow_root = Node3D.new()
+	_arrow_root.name = "TutorialArrow"
+	add_child(_arrow_root)
+
+	# Downward-pointing cone (CylinderMesh with top_radius=0 = cone)
+	_arrow_mesh = MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius    = 0.0
+	cm.bottom_radius = 0.28
+	cm.height        = 0.55
+	_arrow_mesh.mesh = cm
+	_arrow_mesh.rotation_degrees.x = 180.0   # tip points down
+	_arrow_root.add_child(_arrow_mesh)
+
+	# Material — golden, unshaded so it reads against any background
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color         = Color(1.0, 0.85, 0.15)
+	mat.emission_enabled     = true
+	mat.emission             = Color(0.9, 0.65, 0.05)
+	mat.emission_energy_multiplier = 0.9
+	mat.shading_mode         = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_arrow_mesh.material_override = mat
+
+	# Label below the arrow
+	_arrow_label = Label3D.new()
+	_arrow_label.text           = ""
+	_arrow_label.billboard      = BaseMaterial3D.BILLBOARD_ENABLED
+	_arrow_label.no_depth_test  = true
+	_arrow_label.pixel_size     = 0.0035
+	_arrow_label.font_size      = 26
+	_arrow_label.outline_size   = 8
+	_arrow_label.outline_modulate = Color(0, 0, 0, 1)
+	_arrow_label.modulate       = Color(1.0, 0.95, 0.30)
+	_arrow_label.position       = Vector3(0, 0.9, 0)
+	_arrow_root.add_child(_arrow_label)
+
+	_arrow_root.visible = false
+
+
+func _hide_tutorial_arrow() -> void:
+	if _arrow_root and is_instance_valid(_arrow_root):
+		_arrow_root.visible = false
+
+
+func _update_tutorial_arrow_target() -> void:
+	# Pick the interactable node the player should visit next
+	match _tutorial_step:
+		0: _arrow_target = _find_first_interactable_kind("quest_board")
+		1: _arrow_target = _find_first_interactable_kind("training_dummy")
+		2: _arrow_target = _find_first_interactable_kind("inn_bed")
+		3: _arrow_target = _find_first_interactable_kind("smith_shop")
+		4: _arrow_target = _find_first_interactable_kind("boat_travel")
+		5: _arrow_target = _find_first_interactable_kind("harbor_master")
+		_: _arrow_target = null
+
+
+func _update_tutorial_arrow_visual(player: Node3D) -> void:
+	if not tutorial_arrow_enabled:
+		_hide_tutorial_arrow()
+		return
+	if _arrow_root == null or not is_instance_valid(_arrow_root):
+		_ensure_tutorial_arrow()
+		return
+	if _arrow_target == null or not is_instance_valid(_arrow_target):
+		_arrow_root.visible = false
+		return
+
+	_arrow_root.visible = true
+
+	# Hover above the target + sinusoidal bob
+	var t   := Time.get_ticks_msec() / 1000.0
+	var bob := sin(t * 2.6) * 0.18
+	_arrow_root.global_position = _arrow_target.global_position + Vector3(0, 3.2 + bob, 0)
+
+	# Rotate toward player (cosmetic orientation only)
+	var to_player := player.global_position - _arrow_root.global_position
+	to_player.y = 0.0
+	if to_player.length_squared() > 0.0001:
+		_arrow_root.rotation.y = atan2(to_player.x, to_player.z)
+
+	# Fade out when the player is very close (< 3 m) — avoids visual clutter
+	var dist := player.global_position.distance_to(_arrow_target.global_position)
+	var alpha := clampf(remap(dist, 1.5, 5.0, 0.0, 1.0), 0.0, 1.0)
+	_arrow_root.modulate = Color(1, 1, 1, alpha)
+
+	# Update the objective label text
+	_arrow_label.text = _tutorial_objective_text()
+
+
+func _tutorial_objective_text() -> String:
+	match _tutorial_step:
+		0: return "Notice Board"
+		1: return "Training Dummy"
+		2: return "Rest at Inn"
+		3: return "Visit Smith"
+		4: return "Boat to Harbor"
+		5: return "Harbor Master"
+	return ""
+
+
+# ============================================================================
+# Phase 22C — NPC Barks (proximity + per-NPC cooldown)
+# ============================================================================
+
+func _tick_tutorial_barks(player: Node3D) -> void:
+	var now := Time.get_ticks_msec() / 1000.0
+
+	_bark_if_close(player, _find_first_interactable_kind("mayor"),     "mayor",     now)
+	_bark_if_close(player, _find_first_interactable_kind("innkeeper"),  "innkeeper", now)
+	_bark_if_close(player, _find_first_interactable_kind("smith_shop"), "smith",     now)
+	_bark_if_close(player, _find_first_interactable_kind("quest_board"),"board",     now)
+
+
+func _bark_if_close(player: Node3D, npc: Node3D, key: String, now: float) -> void:
+	if npc == null or not is_instance_valid(npc):
+		return
+	var cd_key := "bark|" + key
+	if float(_bark_cd.get(cd_key, 0.0)) > now:
+		return
+	if player.global_position.distance_to(npc.global_position) > 6.0:
+		return
+
+	var line := ""
+	match key:
+		"board":
+			match _tutorial_step:
+				0: line = "Read the board — it will give you a task."
+		"mayor":
+			match _tutorial_step:
+				0: line = "The Notice Board keeps the village sorted. Start there."
+				1: line = "Show those dummies what you're made of."
+				2: line = "Rest up — the Inn bed is just inside."
+				4, 5: line = "You're doing well, traveller."
+		"innkeeper":
+			match _tutorial_step:
+				2: line = "Beds are warm. A short rest does wonders."
+				3, 4, 5: line = "Safe travels whenever you need a room."
+		"smith":
+			match _tutorial_step:
+				3: line = "Glad you came — let's see what your kit needs."
+				4, 5: line = "Bring iron ingots next time for an upgrade."
+
+	if line == "":
+		return
+
+	_try_toast(line)
+	_bark_cd[cd_key] = now + 18.0   # 18-second cooldown per NPC
+
+
+# ============================================================================
+# Phase 22D — Fail-Safe (hint after 2 min, auto-help after 5 min)
+# ============================================================================
+
+func _tick_tutorial_failsafe(player: Node3D) -> void:
+	var now  := Time.get_ticks_msec() / 1000.0
+	var idle := now - _tutorial_last_progress_time
+
+	# ── 1. Gentle hint (120 s) — toast + point arrow, once per 60 s ──────────
+	if idle >= tutorial_hint_after_sec and idle < tutorial_autofix_after_sec:
+		var cd := float(_bark_cd.get("failsafe_hint", 0.0))
+		if now > cd:
+			_bark_cd["failsafe_hint"] = now + 60.0
+			_try_toast("Hint: Head to " + _tutorial_objective_text() + ".")
+		return
+
+	# ── 2. Auto-help (300 s) — open UI or nudge, once per 120 s ─────────────
+	if idle >= tutorial_autofix_after_sec:
+		var cd2 := float(_bark_cd.get("failsafe_fix", 0.0))
+		if now <= cd2:
+			return
+		_bark_cd["failsafe_fix"] = now + 120.0
+		_try_toast("Need a hand? Opening the next step…")
+
+		# Sparkle trail re-emphasis — show a fresh trail burst then toast the step.
+		# For the two UI-triggerable steps we still open the panel; for everything
+		# else the trail + toast is enough and avoids yanking control.
+		# Sparkle trail re-emphasis — show a fresh trail burst then toast the step.
+		# For the two UI-triggerable steps we still open the panel; for everything
+		# else the trail + toast is enough and avoids yanking control.
+		match _tutorial_step:
+			0:
+				_show_quest_board_ui(player)
+			4:
+				_show_boat_travel_ui(player)
+			_:
+				_try_toast("Follow the sparkles to " + _tutorial_objective_text() + "!")
+				# Force an immediate trail rebuild so the path is freshly visible
+				_trail_last_update = 0.0
+
+
+# ============================================================================
+# Phase 22B — Sparkle breadcrumb trail
+# ============================================================================
+
+func _ensure_tutorial_trail() -> void:
+	if _trail_root and is_instance_valid(_trail_root):
+		return
+	_trail_root = Node3D.new()
+	_trail_root.name = "TutorialTrail"
+	add_child(_trail_root)
+
+
+func _clear_tutorial_trail() -> void:
+	if _trail_root and is_instance_valid(_trail_root):
+		_trail_root.queue_free()
+	_trail_root = null
+
+
+func _tick_tutorial_trail(player: Node3D) -> void:
+	if not tutorial_trail_enabled:
+		return
+	if _trail_root == null or not is_instance_valid(_trail_root):
+		_ensure_tutorial_trail()
+		return  # spawned fresh — nothing to clear yet
+
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - _trail_last_update < tutorial_trail_update_sec:
+		return
+	_trail_last_update = now
+
+	if _arrow_target == null or not is_instance_valid(_arrow_target):
+		_trail_root.visible = false
+		return
+
+	_trail_root.visible = true
+
+	# Remove previous pip nodes (they self-queue_free via cleanup timers too,
+	# but clearing here prevents a one-frame overlap on fast updates)
+	for c in _trail_root.get_children():
+		c.queue_free()
+
+	var start := player.global_position
+	var end   := _arrow_target.global_position
+	var dir   := end - start
+	dir.y = 0.0
+	var dist  := dir.length()
+	if dist < 1.2:
+		return   # player is already right on top of the target
+	dir = dir.normalized()
+
+	# Side vector for organic jitter
+	var side := dir.rotated(Vector3.UP, PI * 0.5)
+
+	var count := clampi(tutorial_trail_count, 4, 18)
+	var step  := clampf(tutorial_trail_step, 0.9, 3.0)
+
+	for i in range(count):
+		var t := float(i + 1) * step
+		if t > dist:
+			break
+		var p := start + dir * t
+		p.y = start.y + tutorial_trail_height
+
+		# Subtle sinusoidal weave — unique phase per pip so they're staggered
+		var jitter := sin(now * 1.8 + float(i) * 0.9) * 0.25
+		p += side * jitter
+
+		# Fade size: pips near the player are smaller (less obtrusive)
+		var size_scale := 0.55 + float(i) * 0.06
+
+		_trail_root.add_child(_make_sparkle_pip(p, size_scale))
+
+
+func _make_sparkle_pip(pos: Vector3, size: float) -> Node3D:
+	var n := Node3D.new()
+	n.global_position = pos
+
+	var gpu := GPUParticles3D.new()
+	gpu.amount        = 10
+	gpu.lifetime      = 0.55
+	gpu.one_shot      = true
+	gpu.emitting      = true
+	gpu.visibility_aabb = AABB(Vector3(-2, -2, -2), Vector3(4, 4, 4))
+	n.add_child(gpu)
+
+	var mat := ParticleProcessMaterial.new()
+	mat.direction              = Vector3(0, 1, 0)
+	mat.spread                 = 35.0
+	mat.gravity                = Vector3(0, -0.35, 0)
+	mat.initial_velocity_min   = 0.35
+	mat.initial_velocity_max   = 0.75
+	mat.scale_min              = 0.10 * size
+	mat.scale_max              = 0.22 * size
+	mat.color                  = Color(1.0, 0.92, 0.55, 0.65)
+	gpu.process_material = mat
+
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.25, 0.25)
+	gpu.draw_pass_1 = quad
+
+	# Self-cleaning timer — pip lives just long enough for one emission cycle
+	var cleanup := Timer.new()
+	cleanup.one_shot    = true
+	cleanup.wait_time   = 0.8
+	cleanup.autostart   = true
+	cleanup.timeout.connect(func():
+		if is_instance_valid(n):
+			n.queue_free()
+	)
+	n.add_child(cleanup)
+
+	return n
+
+
+# ============================================================================
+# Phase 24A — Street Dressing (fence/laundry/cart/clutter/plaza furniture)
+# ============================================================================
+
+# ── Material wrappers (bw_mat_stone already in Phase 23 kit) ─────────────────
+
+func _bw_mat_fence() -> StandardMaterial3D:
+	return MAT_DARK_WOOD(0.65)
+
+func _bw_mat_clutter() -> StandardMaterial3D:
+	return MAT_DARK_WOOD(0.55)
+
+
+# ── Lazy-init mesh getters ────────────────────────────────────────────────────
+
+func _bw_get_fence_post_mesh() -> CylinderMesh:
+	if _bw_fence_post_mesh == null:
+		_bw_fence_post_mesh = CylinderMesh.new()
+		_bw_fence_post_mesh.top_radius    = 0.10
+		_bw_fence_post_mesh.bottom_radius = 0.13
+		_bw_fence_post_mesh.height        = 1.55
+	return _bw_fence_post_mesh
+
+func _bw_get_bench_mesh() -> BoxMesh:
+	if _bw_bench_mesh == null:
+		_bw_bench_mesh = BoxMesh.new()
+		_bw_bench_mesh.size = Vector3(1.8, 0.45, 0.55)
+	return _bw_bench_mesh
+
+func _bw_get_crate_mesh() -> BoxMesh:
+	if _bw_crate_mesh == null:
+		_bw_crate_mesh = BoxMesh.new()
+		_bw_crate_mesh.size = Vector3(0.6, 0.45, 0.6)
+	return _bw_crate_mesh
+
+func _bw_get_barrel_mesh() -> CylinderMesh:
+	if _bw_barrel_mesh == null:
+		_bw_barrel_mesh = CylinderMesh.new()
+		_bw_barrel_mesh.top_radius    = 0.22
+		_bw_barrel_mesh.bottom_radius = 0.26
+		_bw_barrel_mesh.height        = 0.80
+	return _bw_barrel_mesh
+
+func _bw_get_woodpile_mesh() -> BoxMesh:
+	if _bw_woodpile_mesh == null:
+		_bw_woodpile_mesh = BoxMesh.new()
+		_bw_woodpile_mesh.size = Vector3(1.3, 0.55, 0.9)
+	return _bw_woodpile_mesh
+
+
+# ── Main dressing entry point ─────────────────────────────────────────────────
+
+func _dress_briarwood_v2(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector3, gate: Vector3) -> void:
+	_build_bw_plaza_furniture(root, plaza,  int(6  * bw_dressing_density))
+	_build_bw_market_dressing(root, market, plaza, int(5 * bw_dressing_density))
+	_build_bw_craft_dressing(root,  craft,  plaza, int(8 * bw_dressing_density))
+	_build_bw_residential_dressing(root, plaza, int(18 * bw_dressing_density))
+	_build_bw_gate_dressing(root, gate, plaza)
+
+
+# ── Plaza furniture ───────────────────────────────────────────────────────────
+
+func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	for i in range(count):
+		var ang    := TAU * float(i) / float(maxi(1, count))
+		var p      := plaza + Vector3(cos(ang), 0.0, sin(ang)) * 8.8
+		var facing := (plaza - p); facing.y = 0.0; facing = facing.normalized()
+		var rot    := Basis(Vector3.UP, atan2(facing.x, facing.z))
+		var xf     := Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
+
+		if bw_multimesh_enabled and bw_mm_benches:
+			_mm_add(root, _bw_get_bench_mesh(), _bw_mat_fence(), xf, 64)
+		else:
+			root.add_child(_make_bw_bench_node(p, facing))
+
+	# Stone planters scattered across plaza
+	for i in range(int(4 * bw_dressing_density)):
+		var p2  := plaza + Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-6.0, 6.0))
+		var pot := MeshInstance3D.new()
+		var cm  := CylinderMesh.new()
+		cm.top_radius    = 0.75
+		cm.bottom_radius = 0.85
+		cm.height        = 0.55
+		pot.mesh = cm
+		pot.material_override = _bw_mat_stone()
+		pot.global_position = p2 + Vector3(0.0, 0.28, 0.0)
+		root.add_child(pot)
+
+
+func _make_bw_bench_node(pos: Vector3, facing: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "Bench"
+	n.global_position = pos
+	n.rotation.y = atan2(facing.x, facing.z)
+	var m := MeshInstance3D.new()
+	m.mesh = _bw_get_bench_mesh()
+	m.position.y = 0.22
+	m.material_override = _bw_mat_fence()
+	n.add_child(m)
+	return n
+
+
+# ── Market dressing ───────────────────────────────────────────────────────────
+
+func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, count: int) -> void:
+	var rng  := RandomNumberGenerator.new()
+	rng.randomize()
+	var dir  := (plaza - market); dir.y = 0.0; dir = dir.normalized()
+	var side := dir.rotated(Vector3.UP, PI * 0.5)
+
+	# Carts parked near market
+	for i in range(count):
+		var p := market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
+		root.add_child(_make_bw_cart(p, -dir))
+
+	# Free-standing hanging signboards
+	for i in range(int(6 * bw_dressing_density)):
+		var p2 := market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
+		var post := Node3D.new()
+		post.global_position = p2
+		root.add_child(post)
+		_bw_add_signboard(post, Vector3.ZERO, "MARKET" if rng.randf() < 0.5 else "GOODS")
+
+	# Extra clutter scatter over market area
+	for i in range(int(20 * bw_dressing_density)):
+		var p3 := market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
+		_bw_place_clutter(root, p3, rng)
+
+
+func _make_bw_cart(pos: Vector3, facing: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.name = "Cart"
+	n.global_position = pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	var bed := MeshInstance3D.new()
+	var bm  := BoxMesh.new()
+	bm.size = Vector3(1.6, 0.5, 2.4)
+	bed.mesh = bm
+	bed.position.y = 0.25
+	bed.material_override = _bw_mat_fence()
+	n.add_child(bed)
+
+	for sx in [-0.85, 0.85]:
+		for sz in [-1.0, 1.0]:
+			var w   := MeshInstance3D.new()
+			var wcm := CylinderMesh.new()
+			wcm.top_radius    = 0.26
+			wcm.bottom_radius = 0.26
+			wcm.height        = 0.14
+			w.mesh = wcm
+			w.rotation_degrees.x = 90.0
+			w.position = Vector3(sx, 0.26, sz)
+			w.material_override = _bw_mat_fence()
+			n.add_child(w)
+
+	return n
+
+
+# ── Craft yard dressing ───────────────────────────────────────────────────────
+
+func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, count: int) -> void:
+	var rng  := RandomNumberGenerator.new()
+	rng.randomize()
+	var dir  := (plaza - craft); dir.y = 0.0; dir = dir.normalized()
+	var side := dir.rotated(Vector3.UP, PI * 0.5)
+
+	# Fence line defining yard boundary
+	_build_bw_fence_line(root, craft + side * 8.0 + dir * -4.0,
+	                           craft + side * 8.0 + dir *  10.0)
+
+	# Yard clutter scatter
+	for i in range(count):
+		var p := craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
+		_bw_place_clutter(root, p, rng)
+
+	# Chopping block (log stump)
+	var block := MeshInstance3D.new()
+	var bcm   := CylinderMesh.new()
+	bcm.top_radius    = 0.55
+	bcm.bottom_radius = 0.60
+	bcm.height        = 0.55
+	block.mesh = bcm
+	block.material_override = _bw_mat_fence()
+	block.global_position = craft + Vector3(5.0, 0.28, 6.0)
+	root.add_child(block)
+
+
+# ── Residential dressing ──────────────────────────────────────────────────────
+
+func _build_bw_residential_dressing(root: Node3D, plaza: Vector3, count: int) -> void:
+	var rng    := RandomNumberGenerator.new()
+	rng.randomize()
+	var ring_r := 30.0
+
+	for i in range(count):
+		var ang    := TAU * float(i) / float(maxi(1, count))
+		var center := plaza + Vector3(cos(ang), 0.0, sin(ang)) * ring_r
+
+		# Small yard fence segment
+		var a := center + Vector3(rng.randf_range(-3.0, 3.0), 0.0, rng.randf_range(-3.0, 3.0))
+		var b := a + Vector3(rng.randf_range(4.0, 8.0), 0.0, rng.randf_range(-2.0, 2.0))
+		_build_bw_fence_line(root, a, b)
+
+		# Laundry line (35% chance)
+		if rng.randf() < 0.35:
+			_build_bw_laundry_line(root, a + Vector3(0.0, 0.0, 2.0),
+			                             a + Vector3(3.5, 0.0, 2.5), rng)
+
+		# Yard clutter (55% chance)
+		if rng.randf() < 0.55:
+			_bw_place_clutter(root, center + Vector3(rng.randf_range(-4.0, 4.0), 0.0,
+			                                         rng.randf_range(-4.0, 4.0)), rng)
+
+
+func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNumberGenerator) -> void:
+	var mat := _bw_mat_fence()
+
+	# Posts at each end
+	for p in [a, b]:
+		var post := MeshInstance3D.new()
+		var pcm  := CylinderMesh.new()
+		pcm.top_radius    = 0.07
+		pcm.bottom_radius = 0.09
+		pcm.height        = 1.9
+		post.mesh = pcm
+		post.material_override = mat
+		post.global_position = p + Vector3(0.0, 0.95, 0.0)
+		root.add_child(post)
+
+	# Horizontal line beam
+	var mid := (a + b) * 0.5
+	var len := Vector2(b.x - a.x, b.z - a.z).length()
+	var line := MeshInstance3D.new()
+	var lbm  := BoxMesh.new()
+	lbm.size = Vector3(0.05, 0.05, len)
+	line.mesh = lbm
+	line.material_override = mat
+	line.global_position = mid + Vector3(0.0, 1.65, 0.0)
+	line.rotation.y = atan2(b.x - a.x, b.z - a.z)
+	root.add_child(line)
+
+	# Cloth pieces hanging from line
+	var cloth_n := rng.randi_range(2, 5)
+	for i in range(cloth_n):
+		var t   := float(i + 1) / float(cloth_n + 1)
+		var cp  := a.lerp(b, t) + Vector3(0.0, 1.55, 0.0)
+		var cl  := MeshInstance3D.new()
+		var cbm := BoxMesh.new()
+		cbm.size = Vector3(0.35, 0.25, 0.03)
+		cl.mesh = cbm
+		var cm := StandardMaterial3D.new()
+		cm.albedo_color = Color(rng.randf_range(0.4, 1.0),
+		                        rng.randf_range(0.4, 1.0),
+		                        rng.randf_range(0.4, 1.0))
+		cl.material_override = cm
+		cl.global_position = cp
+		cl.rotation.y = rng.randf_range(-PI, PI)
+		root.add_child(cl)
+
+
+# ── Fence line builder (MultiMesh preferred) ──────────────────────────────────
+
+func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
+	var mat := _bw_mat_fence()
+	var dir := b - a; dir.y = 0.0
+	var len := dir.length()
+	if len < 0.5:
+		return
+	dir = dir.normalized()
+
+	var post_spacing := 1.6
+	var posts        := int(ceil(len / post_spacing)) + 1
+
+	for i in range(posts):
+		var p  := a + dir * (float(i) * post_spacing)
+		var xf := Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
+		if bw_multimesh_enabled and bw_mm_fences:
+			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 256)
+		else:
+			var post := MeshInstance3D.new()
+			post.mesh = _bw_get_fence_post_mesh()
+			post.material_override = mat
+			post.global_position = p + Vector3(0.0, 0.78, 0.0)
+			root.add_child(post)
+
+	# Two rails spanning the whole segment
+	var rail_mesh := BoxMesh.new()
+	rail_mesh.size = Vector3(0.10, 0.10, len)
+	var mid := (a + b) * 0.5
+	var yaw := atan2(b.x - a.x, b.z - a.z)
+	var rot := Basis(Vector3.UP, yaw)
+	for rail_y in [0.55, 1.05]:
+		var xf2 := Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
+		if bw_multimesh_enabled and bw_mm_fences:
+			_mm_add(root, rail_mesh, mat, xf2, 128)
+		else:
+			var rail := MeshInstance3D.new()
+			rail.mesh = rail_mesh
+			rail.material_override = mat
+			rail.global_position = mid + Vector3(0.0, rail_y, 0.0)
+			rail.rotation.y = yaw
+			root.add_child(rail)
+
+
+# ── Generic clutter placer (MultiMesh preferred) ──────────────────────────────
+
+func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> void:
+	var mat  := _bw_mat_clutter()
+	var kind := rng.randf()
+	var rot  := Basis(Vector3.UP, rng.randf_range(-PI, PI))
+
+	if bw_multimesh_enabled and bw_mm_clutter:
+		if kind < 0.45:
+			_mm_add(root, _bw_get_barrel_mesh(),  mat, Transform3D(rot, p + Vector3(0.0, 0.40, 0.0)),  256)
+		elif kind < 0.80:
+			_mm_add(root, _bw_get_crate_mesh(),   mat, Transform3D(rot, p + Vector3(0.0, 0.225, 0.0)), 256)
+		else:
+			_mm_add(root, _bw_get_woodpile_mesh(), mat, Transform3D(rot, p + Vector3(0.0, 0.275, 0.0)), 128)
+		return
+
+	# Fallback node path
+	var m := MeshInstance3D.new()
+	if kind < 0.45:
+		m.mesh = _bw_get_barrel_mesh()
+		m.global_position = p + Vector3(0.0, 0.40, 0.0)
+	elif kind < 0.80:
+		m.mesh = _bw_get_crate_mesh()
+		m.global_position = p + Vector3(0.0, 0.225, 0.0)
+	else:
+		m.mesh = _bw_get_woodpile_mesh()
+		m.global_position = p + Vector3(0.0, 0.275, 0.0)
+	m.material_override = mat
+	m.rotation.y = rng.randf_range(-PI, PI)
+	root.add_child(m)
+
+
+# ── Gate dressing ─────────────────────────────────────────────────────────────
+
+func _build_bw_gate_dressing(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
+	# Signpost beside the gate arch
+	var sp := Node3D.new()
+	sp.global_position = gate + Vector3(2.4, 0.0, 1.4)
+	root.add_child(sp)
+	_bw_add_signboard(sp, Vector3.ZERO, "BRIARWOOD")
+
+	# Two flanking lantern posts
+	root.add_child(_make_bw_lantern_post(gate + Vector3(-3.0, 0.0, 2.0)))
+	root.add_child(_make_bw_lantern_post(gate + Vector3( 3.0, 0.0, 2.0)))
+
+
+# ============================================================================
+# Phase 24B — Real Village Layout (palisade, loop roads, farms)
+# ============================================================================
+
+func _build_bw_real_layout(root: Node3D, plaza: Vector3, gate: Vector3,
+		market: Vector3, craft: Vector3, _townhall: Vector3) -> void:
+	# 1. Elliptical palisade with gate gap + towers
+	_build_bw_palisade(root, plaza, gate)
+
+	# 2. Two loop roads
+	var outer := _bw_loop_points(plaza,
+		bw_palisade_radius_x * 0.84, bw_palisade_radius_z * 0.84, 28)
+	var inner := _bw_loop_points(plaza,
+		bw_palisade_radius_x * bw_inner_loop_scale,
+		bw_palisade_radius_z * bw_inner_loop_scale, 22)
+
+	for i in range(outer.size() - 1):
+		_build_bw_cobble_strip(outer[i], outer[i + 1], root)
+	for i in range(inner.size() - 1):
+		_build_bw_cobble_strip(inner[i], inner[i + 1], root)
+
+	# 3. Houses along both loop roads, facing the road
+	_place_houses_along_loop(root, outer, 14, "residential")
+	_place_houses_along_loop(root, inner, 12, "residential")
+
+	# 4. Yard fence segments behind houses
+	_build_bw_yards(root, outer)
+	_build_bw_yards(root, inner)
+
+	# 5. Farms outside the gate
+	if bw_farm_enabled:
+		_build_bw_farms(root, gate, plaza)
+
+
+func _bw_loop_points(center: Vector3, rx: float, rz: float, n: int) -> Array[Vector3]:
+	var pts: Array[Vector3] = []
+	for i in range(n + 1):
+		var t := TAU * float(i) / float(n)
+		pts.append(center + Vector3(cos(t) * rx, 0.0, sin(t) * rz))
+	return pts
+
+
+# ── Cobble road strip (lightweight Briarwood version) ─────────────────────────
+
+func _build_bw_cobble_strip(a: Vector3, b: Vector3, parent: Node3D) -> void:
+	var dir := b - a; dir.y = 0.0
+	var dist := dir.length()
+	if dist < 0.5:
+		return
+	dir = dir.normalized()
+	var steps := int(dist / 2.0)
+	for i in range(steps + 1):
+		var p   := a + dir * float(i) * 2.0
+		var seg := MeshInstance3D.new()
+		var bm  := BoxMesh.new()
+		bm.size = Vector3(3.0, 0.12, 2.1)
+		seg.mesh = bm
+		seg.material_override = MAT_PATH(3.0)
+		seg.global_position = p + Vector3(0.0, 0.02, 0.0)
+		seg.rotation.y = atan2(dir.x, dir.z)
+		parent.add_child(seg)
+
+
+# ── Palisade with gate gap + towers ──────────────────────────────────────────
+
+func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7331
+
+	var mat       := _bw_mat_fence()
+	var gate_dir  := (gate - center); gate_dir.y = 0.0; gate_dir = gate_dir.normalized()
+	var gate_yaw  := atan2(gate_dir.x, gate_dir.z)
+	var half_gap  := (bw_gate_width / maxf(1.0, bw_palisade_radius_z)) * 0.5
+
+	var post_n := 120
+	for i in range(post_n):
+		var t := TAU * float(i) / float(post_n)
+		var p := center + Vector3(cos(t) * bw_palisade_radius_x,
+		                          0.0,
+		                          sin(t) * bw_palisade_radius_z)
+
+		var yaw      := atan2((p - center).x, (p - center).z)
+		var ang_diff := absf(wrapf(yaw - gate_yaw, -PI, PI))
+		if ang_diff < half_gap:
+			continue   # gate gap
+
+		var h  := rng.randf_range(2.4, 3.4)
+		var xf := Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
+		                      p + Vector3(0.0, h * 0.5, 0.0))
+		if bw_multimesh_enabled and bw_mm_fences:
+			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 512)
+		else:
+			var post := MeshInstance3D.new()
+			var pcm  := CylinderMesh.new()
+			pcm.top_radius    = 0.12
+			pcm.bottom_radius = 0.16
+			pcm.height        = h
+			post.mesh = pcm
+			post.material_override = mat
+			post.global_position = p + Vector3(0.0, h * 0.5, 0.0)
+			root.add_child(post)
+
+	_build_bw_gate_towers(root, gate, gate_dir)
+
+
+func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> void:
+	var side := forward.rotated(Vector3.UP, PI * 0.5)
+	for s in [-1.0, 1.0]:
+		var p := gate + side * (bw_gate_width * 0.55 * s)
+		var tower := MeshInstance3D.new()
+		var bm    := BoxMesh.new()
+		bm.size = Vector3(2.2, 4.2, 2.2)
+		tower.mesh = bm
+		tower.global_position = p + Vector3(0.0, 2.1, 0.0)
+		tower.material_override = _bw_mat_stone()
+		root.add_child(tower)
+
+
+# ── Houses along loop roads ───────────────────────────────────────────────────
+
+func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zone: String = "residential") -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	for i in range(count):
+		var idx := int(rng.randi_range(0, pts.size() - 2))
+		var a   := pts[idx]
+		var b   := pts[idx + 1]
+
+		# Tangent along road segment
+		var road_dir := (b - a)
+		road_dir.y = 0.0
+		if road_dir.length() < 0.01:
+			continue
+		road_dir = road_dir.normalized()
+
+		# Pick a point along segment (avoid endpoints)
+		var mid := a.lerp(b, rng.randf_range(0.22, 0.78))
+
+		# Choose which side of road
+		var outward := road_dir.rotated(Vector3.UP, PI * 0.5)
+		if rng.randf() < 0.5:
+			outward = -outward
+
+		# Decide house kind first so setback depends on it
+		var kind    := _bw_pick_house_kind(zone, rng)
+		var setback := _bw_setback_for_kind(kind)
+
+		# Plot center offset from road by setback
+		var plot_center := mid + outward * setback
+
+		# Facing: toward road (inward = -outward)
+		var facing := -outward
+
+		# Build house
+		var house := _bw_build_kind(kind, plot_center, facing, rng)
+		root.add_child(house)
+
+		# Auto yard behind house
+		if bw_yard_fence_enabled:
+			_bw_auto_yard_for_house(root, house, plot_center, road_dir, outward, kind, zone, rng)
+
+
+# ── Yard fence segments ───────────────────────────────────────────────────────
+
+func _build_bw_yards(root: Node3D, pts: Array[Vector3]) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	var i := 0
+	while i < pts.size() - 1:
+		var a        := pts[i]
+		var b        := pts[i + 1]
+		var mid      := (a + b) * 0.5
+		var road_dir := (b - a); road_dir.y = 0.0; road_dir = road_dir.normalized()
+		var back     := road_dir.rotated(Vector3.UP, PI * 0.5)
+
+		var p1 := mid + back * (bw_house_setback + 2.0)
+		var p2 := p1 + road_dir * rng.randf_range(6.0, 10.0)
+		_build_bw_fence_line(root, p1, p2)
+
+		if rng.randf() < 0.25:
+			_build_bw_laundry_line(root, p1, p1 + Vector3(3.5, 0.0, 1.0), rng)
+
+		i += 2   # step by 2 so fence runs are spaced
+
+
+# ── Farm fields outside gate ──────────────────────────────────────────────────
+
+func _build_bw_farms(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
+	var rng     := RandomNumberGenerator.new()
+	rng.seed    = 7331
+	var forward := (gate - plaza); forward.y = 0.0
+	if forward.length_squared() > 0.001:
+		forward = forward.normalized()
+	else:
+		forward = Vector3(0.0, 0.0, 1.0)
+
+	var base := gate + forward * 18.0
+
+	for i in range(4):
+		var fw := rng.randf_range(8.0, 14.0)
+		var fd := rng.randf_range(10.0, 16.0)
+		var p  := base + Vector3(rng.randf_range(-14.0, 14.0), 0.0, rng.randf_range(6.0, 18.0))
+
+		var field := MeshInstance3D.new()
+		var bm    := BoxMesh.new()
+		bm.size = Vector3(fw, 0.08, fd)
+		field.mesh = bm
+		var fm := StandardMaterial3D.new()
+		fm.albedo_color = Color(0.22, 0.35, 0.16)
+		field.material_override = fm
+		field.global_position = p + Vector3(0.0, 0.04, 0.0)
+		root.add_child(field)
+
+		# Fence along front edge
+		_build_bw_fence_line(root,
+			p + Vector3(-fw * 0.5, 0.0, -fd * 0.5),
+			p + Vector3( fw * 0.5, 0.0, -fd * 0.5))
+
+
+# ============================================================================
+# Phase 24C — House Types + Variants
+# ============================================================================
+
+func _make_bw_house_variant(pos: Vector3, facing: Vector3, zone: String) -> Node3D:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	var t    := rng.randf()
+	var kind := "small"
+
+	if zone == "market" and t < bw_shopfront_weight_market:
+		kind = "shopfront"
+	else:
+		var sum := bw_house_small_weight + bw_house_medium_weight \
+		         + bw_house_large_weight + bw_house_corner_weight
+		var r := t * sum
+		if r < bw_house_small_weight:
+			kind = "small"
+		elif r < bw_house_small_weight + bw_house_medium_weight:
+			kind = "medium"
+		elif r < bw_house_small_weight + bw_house_medium_weight + bw_house_large_weight:
+			kind = "large"
+		else:
+			kind = "corner"
+
+	match kind:
+		"shopfront": return _bw_build_shopfront(pos, facing, rng)
+		"large":     return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0,  true,  true,  rng)
+		"medium":    return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4,  true,  true,  rng)
+		"corner":    return _bw_build_corner_house(pos, facing, rng)
+		_:           return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2,  false, true,  rng)
+
+
+func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: float,
+		chimney: bool, porch: bool, rng: RandomNumberGenerator) -> Node3D:
+	var n := Node3D.new()
+	n.name = "BW_House"
+	n.global_position = pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	var w      := footprint.x
+	var d      := footprint.y
+	var base_h := 0.55
+
+	# Stone base
+	var base := MeshInstance3D.new()
+	var bsm  := BoxMesh.new()
+	bsm.size = Vector3(w, base_h, d)
+	base.mesh = bsm
+	base.position.y = base_h * 0.5
+	base.material_override = _bw_mat_stone()
+	n.add_child(base)
+
+	# Plaster walls
+	var walls := MeshInstance3D.new()
+	var wm    := BoxMesh.new()
+	wm.size = Vector3(w * 0.92, wall_h, d * 0.92)
+	walls.mesh = wm
+	walls.position.y = base_h + wall_h * 0.5
+	walls.material_override = _bw_mat_timber()
+	n.add_child(walls)
+
+	# Timber frame + gable roof
+	_bw_add_timber_frame(n, w, d, wall_h, base_h)
+	var pitch := rng.randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	n.add_child(_bw_gable_roof(w * 1.10, d * 1.08, base_h + wall_h + 0.25, pitch, bw_roof_overhang))
+
+	# Collision
+	var body := StaticBody3D.new()
+	var col  := CollisionShape3D.new()
+	var box  := BoxShape3D.new()
+	box.size = Vector3(w, base_h + wall_h + 2.8, d)
+	col.shape = box
+	col.position.y = box.size.y * 0.5
+	body.add_child(col)
+	n.add_child(body)
+
+	# Optional porch slab (front-facing)
+	if porch and bw_porch_enabled and rng.randf() < 0.75:
+		var pm  := MeshInstance3D.new()
+		var pbm := BoxMesh.new()
+		pbm.size = Vector3(w * 0.42, 0.18, 1.8)
+		pm.mesh = pbm
+		pm.position = Vector3(0.0, base_h + 0.09, d * 0.52)
+		pm.material_override = _bw_mat_darkwood()
+		n.add_child(pm)
+
+	# 2–4 warm windows on random sides
+	var win_count := rng.randi_range(2, 4)
+	for _i in range(win_count):
+		var side := -1.0 if rng.randf() < 0.5 else 1.0
+		var z    := rng.randf_range(-d * 0.25, d * 0.25)
+		_bw_add_warm_window(n, Vector3(side * w * 0.44, base_h + 1.7, z), side, bw_window_energy_day)
+
+	# Optional chimney
+	if chimney and bw_chimney_enabled and rng.randf() < 0.70:
+		_bw_add_chimney(n, Vector3(w * 0.28, base_h + wall_h + 0.2, -d * 0.15),
+		                rng.randf_range(5.6, 7.0))
+
+	return n
+
+
+func _bw_build_corner_house(pos: Vector3, facing: Vector3, rng: RandomNumberGenerator) -> Node3D:
+	var n := _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true, true, rng)
+	n.name = "BW_CornerHouse"
+
+	# Lean-to wing on one side
+	var wing := MeshInstance3D.new()
+	var wbm  := BoxMesh.new()
+	wbm.size = Vector3(3.2, 2.4, 4.0)
+	wing.mesh = wbm
+	wing.material_override = _bw_mat_timber()
+	wing.position = Vector3(4.2, 0.55 + 1.2, -1.0)
+	n.add_child(wing)
+
+	# Shed roof over lean-to
+	var shed := MeshInstance3D.new()
+	var sbm  := BoxMesh.new()
+	sbm.size = Vector3(3.36, 0.16, 4.2)
+	shed.mesh = sbm
+	shed.material_override = _bw_mat_roof()
+	shed.position = Vector3(4.2, 0.55 + 2.5, -1.0)
+	shed.rotation_degrees.z = 18.0
+	n.add_child(shed)
+
+	return n
+
+
+func _bw_build_shopfront(pos: Vector3, facing: Vector3, rng: RandomNumberGenerator) -> Node3D:
+	var n := _bw_build_house(pos, facing, Vector2(8.0, 6.0), 3.4, true, true, rng)
+	n.name = "BW_Shopfront"
+
+	# Forward-tilted awning
+	var awn := MeshInstance3D.new()
+	var abm := BoxMesh.new()
+	abm.size = Vector3(4.0, 0.14, 2.0)
+	awn.mesh = abm
+	awn.material_override = _bw_mat_darkwood()
+	awn.position = Vector3(0.0, 0.55 + 2.4, 3.4)
+	awn.rotation_degrees.x = -12.0
+	n.add_child(awn)
+
+	# Signboard
+	_bw_add_signboard(n, Vector3(0.0, 0.0, 3.4), "SHOP" if rng.randf() < 0.5 else "TRADER")
+	return n
+
+
+# ============================================================================
+# Phase 25 — Street Alignment helpers
+# ============================================================================
+
+func _bw_pick_house_kind(zone: String, rng: RandomNumberGenerator) -> String:
+	if zone == "market" and rng.randf() < bw_shopfront_weight_market:
+		return "shopfront"
+
+	var w_small  := bw_house_small_weight
+	var w_med    := bw_house_medium_weight
+	var w_large  := bw_house_large_weight
+	var w_corner := bw_house_corner_weight
+	var sum      := w_small + w_med + w_large + w_corner
+
+	var t := rng.randf() * sum
+	if t < w_small:
+		return "small"
+	elif t < w_small + w_med:
+		return "medium"
+	elif t < w_small + w_med + w_large:
+		return "large"
+	else:
+		return "corner"
+
+
+func _bw_setback_for_kind(kind: String) -> float:
+	match kind:
+		"small":     return bw_setback_small
+		"medium":    return bw_setback_medium
+		"large":     return bw_setback_large
+		"shopfront": return bw_setback_shop
+		"corner":    return bw_setback_corner
+		_:           return bw_setback_medium
+
+
+func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
+		rng: RandomNumberGenerator) -> Node3D:
+	match kind:
+		"shopfront": return _bw_build_shopfront(pos, facing, rng)
+		"large":     return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
+		"medium":    return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
+		"corner":    return _bw_build_corner_house(pos, facing, rng)
+		_:           return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2, false, true,  rng)
+
+
+func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
+		road_dir: Vector3, outward: Vector3, kind: String, zone: String,
+		rng: RandomNumberGenerator) -> void:
+	# Yard dimensions vary by house type
+	var yard_w := rng.randf_range(bw_yard_width_min, bw_yard_width_max)
+	match kind:
+		"large":     yard_w *= 1.15
+		"small":     yard_w *= 0.90
+
+	var yard_d := bw_yard_depth
+	if kind == "shopfront":
+		yard_d *= 0.55   # shops have little/no backyard
+
+	# Yard is behind the house = further away from road
+	var back_dir := outward
+	var side_dir := road_dir
+
+	var yard_center := plot_center + back_dir * (yard_d * 0.55)
+
+	var half_w := yard_w * 0.5
+	var half_d := yard_d * 0.5
+
+	# Rectangle corners
+	var p1 := yard_center - side_dir * half_w - back_dir * half_d
+	var p2 := yard_center + side_dir * half_w - back_dir * half_d
+	var p3 := yard_center + side_dir * half_w + back_dir * half_d
+	var p4 := yard_center - side_dir * half_w + back_dir * half_d
+
+	# Fence 3 sides — front (road-facing) stays open
+	_build_bw_fence_line(root, p1, p2)   # back edge
+	_build_bw_fence_line(root, p2, p3)   # right side
+	_build_bw_fence_line(root, p4, p1)   # left side
+
+	# Yard clutter
+	if rng.randf() < 0.65 and kind != "shopfront":
+		var clutter_p := yard_center + Vector3(
+			rng.randf_range(-half_w * 0.6, half_w * 0.6),
+			0.0,
+			rng.randf_range(-half_d * 0.6, half_d * 0.6))
+		_bw_place_clutter(root, clutter_p, rng)
+
+	# Laundry (residential only, occasional)
+	if zone == "residential" and rng.randf() < 0.22:
+		var la := yard_center - side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
+		var lb := yard_center + side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
+		_build_bw_laundry_line(root, la, lb, rng)
