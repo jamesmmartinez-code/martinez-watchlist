@@ -2079,7 +2079,7 @@ func _build_bird_flocks() -> void:
 
 func _build_smoke_chimneys() -> void:
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
-	for b in get_tree().get_nodes_in_group("buildings"):
+	for b: Node3D in get_tree().get_nodes_in_group("buildings"):
 		var chim = b.get_node_or_null("Chimney")
 		if not chim: continue
 		var smoke := GPUParticles3D.new()
@@ -3050,9 +3050,9 @@ func _make_fire_gradient() -> GradientTexture1D:
 var _t: float = 0.0
 func _process(delta: float) -> void:
 	_t += delta
-	for b in get_tree().get_nodes_in_group("windmill_blades"):
+	for b: Node3D in get_tree().get_nodes_in_group("windmill_blades"):
 		b.rotate_object_local(Vector3.FORWARD, 0.5 * delta)
-	for lan in get_tree().get_nodes_in_group("lanterns"):
+	for lan: Node3D in get_tree().get_nodes_in_group("lanterns"):
 		var light: OmniLight3D = lan.get_node_or_null("OmniLight3D")
 		if light:
 			light.light_energy = 1.4 + sin(_t * 5.0 + lan.position.x) * 0.35
@@ -3072,12 +3072,12 @@ func _process(delta: float) -> void:
 			var lrock: float = sin(_t * 0.9 + lphase) * 0.045 + sin(_t * 1.7 + lphase * 1.3) * 0.020
 			lan3d.rotation.z = lrock
 	# Subtle tree sway
-	for tree in get_tree().get_nodes_in_group("trees"):
+	for tree: Node3D in get_tree().get_nodes_in_group("trees"):
 		var s = sin(_t * 0.8 + tree.position.x * 0.3) * 0.015
 		tree.rotation.z = s
 	# THEME §12 — fern frond sway. Slightly faster + smaller amplitude than
 	# trees so the undergrowth reads as "lighter" than the canopy.
-	for frond in get_tree().get_nodes_in_group("ferns"):
+	for frond: Node3D in get_tree().get_nodes_in_group("ferns"):
 		var fs = sin(_t * 1.6 + frond.position.x * 0.7 + frond.position.z * 0.4) * 0.04
 		frond.rotation.z = fs
 	# Env: 2026-05-06 — grass tufts join group "grass" (see _build_grass_tufts)
@@ -3085,7 +3085,7 @@ func _process(delta: float) -> void:
 	# 220 tufts ringing the village absolutely qualify. Tilt amplitude is the
 	# smallest of the foliage trio (canopy 0.015 / fern 0.04 / grass 0.07) but
 	# also the most spatially varied, so the meadow ripples like wind.
-	for tuft in get_tree().get_nodes_in_group("grass"):
+	for tuft: Node3D in get_tree().get_nodes_in_group("grass"):
 		var gs = sin(_t * 2.1 + tuft.position.x * 0.9 + tuft.position.z * 0.6) * 0.07
 		tuft.rotation.z = gs
 	# Env: 2026-05-06 — pond reeds (THEME §12). Reeds bend more than grass —
@@ -3093,7 +3093,7 @@ func _process(delta: float) -> void:
 	# amplitude is the largest of the foliage family (canopy 0.015 / fern
 	# 0.04 / grass 0.07 / reeds 0.12). Per-reed phase lifted from set_meta so
 	# the cluster around the pond rim doesn't ripple in unison.
-	for reed in get_tree().get_nodes_in_group("reeds"):
+	for reed: Node3D in get_tree().get_nodes_in_group("reeds"):
 		var rphase: float = float(reed.get_meta("phase", 0.0))
 		var rs: float = sin(_t * 1.9 + rphase) * 0.12
 		var reed3d: Node3D = reed as Node3D
@@ -3102,7 +3102,7 @@ func _process(delta: float) -> void:
 	# Env: 2026-05-06 — mushroom breathe (THEME §12). Mushrooms shouldn't
 	# sway like leaves, but "static = dead". Slow Y-scale breathe (±3%) so
 	# the cap reads as alive without wobbling like a tree.
-	for mush in get_tree().get_nodes_in_group("mushrooms"):
+	for mush: Node3D in get_tree().get_nodes_in_group("mushrooms"):
 		var mush3d: Node3D = mush as Node3D
 		if mush3d:
 			var mb: float = 1.0 + sin(_t * 1.1 + mush3d.position.x * 0.4 + mush3d.position.z * 0.7) * 0.03
@@ -3122,7 +3122,7 @@ func _process(delta: float) -> void:
 	# period — slower than the lantern rock (0.9 rad/s) because barrels are heavier.
 	# Per-barrel phase lifted from world position so two barrels standing side-by-side
 	# (pairs near houses/stable/market) never rock in unison.
-	for barrel in get_tree().get_nodes_in_group("village_barrels"):
+	for barrel: Node3D in get_tree().get_nodes_in_group("village_barrels"):
 		var b3d: Node3D = barrel as Node3D
 		if b3d == null:
 			continue
@@ -3131,7 +3131,7 @@ func _process(delta: float) -> void:
 		b3d.rotation.z = brock
 
 	# Campfire light flicker
-	for f in get_tree().get_nodes_in_group("campfires"):
+	for f: Node3D in get_tree().get_nodes_in_group("campfires"):
 		var fl: OmniLight3D = f.get_node_or_null("FireLight")
 		if fl:
 			fl.light_energy = 2.4 + sin(_t * 17.0) * 0.4 + sin(_t * 31.0) * 0.25
@@ -3140,7 +3140,7 @@ func _process(delta: float) -> void:
 	# so the visible mesh and the cast light tell the same story. Per-camp
 	# phase (lifted from pit world position) keeps a cluster of camps from
 	# flickering in lockstep.
-	for gf in get_tree().get_nodes_in_group("goblin_fires"):
+	for gf: Node3D in get_tree().get_nodes_in_group("goblin_fires"):
 		var gf3d: Node3D = gf as Node3D
 		if gf3d == null:
 			continue
@@ -3160,7 +3160,7 @@ func _process(delta: float) -> void:
 	# THEME §12 — banner flap. Each banner pivot sways around Y (wind passing
 	# through) plus a small Z-roll for "billow". Per-banner phase keeps every
 	# banner from moving in unison.
-	for pivot in get_tree().get_nodes_in_group("banner_cloths"):
+	for pivot: Node3D in get_tree().get_nodes_in_group("banner_cloths"):
 		var phase: float = float(pivot.get_meta("phase", 0.0))
 		var wind: float = sin(_t * 1.6 + phase) * 0.25 + sin(_t * 0.7 + phase * 1.7) * 0.10
 		var billow: float = sin(_t * 2.3 + phase) * 0.08
@@ -3172,7 +3172,7 @@ func _process(delta: float) -> void:
 	# the slope shape stays readable, and a slow Z-sway adds side-to-side
 	# motion without making the canopy feel unmoored. Per-stall phase keeps
 	# adjacent stalls out of lockstep.
-	for awn_pivot in get_tree().get_nodes_in_group("stall_awnings"):
+	for awn_pivot: Node3D in get_tree().get_nodes_in_group("stall_awnings"):
 		var ap3d: Node3D = awn_pivot as Node3D
 		if ap3d == null:
 			continue
@@ -3184,7 +3184,7 @@ func _process(delta: float) -> void:
 		ap3d.rotation.z = sway
 	# THEME §12 — water ripple. Subtle Y-bob on each water plane plus a slow
 	# emission breathe so the surface reads as catching changing light.
-	for wp in get_tree().get_nodes_in_group("water_planes"):
+	for wp: Node3D in get_tree().get_nodes_in_group("water_planes"):
 		var mi: MeshInstance3D = wp as MeshInstance3D
 		if mi == null:
 			continue
@@ -3201,7 +3201,7 @@ func _process(delta: float) -> void:
 	# left/right WingL / WingR meshes around their hinge axis on the bird's
 	# own phase. The lead bird (index 0) bobs slightly less than the
 	# trailing birds so the V reads as following the leader.
-	for flock in get_tree().get_nodes_in_group("bird_flocks"):
+	for flock: Node3D in get_tree().get_nodes_in_group("bird_flocks"):
 		var f3d: Node3D = flock as Node3D
 		if f3d == null:
 			continue
@@ -3217,7 +3217,7 @@ func _process(delta: float) -> void:
 		f3d.rotation.z = sin(_t * 0.4 + fphase) * 0.04
 	# Per-bird wing flap. Wing meshes named "WingL" / "WingR" hinge around X
 	# in the bird's local frame, so a positive rotation lifts the wing tip.
-	for bird in get_tree().get_nodes_in_group("bird_wings"):
+	for bird: Node3D in get_tree().get_nodes_in_group("bird_wings"):
 		var b3d: Node3D = bird as Node3D
 		if b3d == null:
 			continue
@@ -3246,7 +3246,7 @@ func _process(delta: float) -> void:
 	# pulse never settles into a metronome. Amplitudes are conservative
 	# (±25% on light, ±20% on emission) so the cave stays readable —
 	# no flicker, no strobe, just a steady breath.
-	for cluster in get_tree().get_nodes_in_group("crystals"):
+	for cluster: Node3D in get_tree().get_nodes_in_group("crystals"):
 		var c3d: Node3D = cluster as Node3D
 		if c3d == null:
 			continue
@@ -4152,7 +4152,7 @@ func _build_god_rays() -> void:
 
 		# Hook v: join group for World.gd time-of-day modulation.
 		# World.gd can dim god_ray_shafts at dusk/night with:
-		#   for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
+		#   for shaft: Node3D in get_tree().get_nodes_in_group("god_ray_shafts"):
 		#       shaft.amount_ratio = clamp(daylight, 0.0, 1.0)
 		p.add_to_group("god_ray_shafts")
 		add_child(p)
@@ -4622,7 +4622,7 @@ func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2
 	house.rotation.y = atan2(facing.x, facing.z)
 
 	var w      := footprint.x
-	var d      := footprint.y
+	var d: float = footprint.y
 	var wall_h := 3.0
 	var rpeak  := _nrng.randf_range(2.2, 3.0)
 	var deck_y := _nrng.randf_range(0.5, 1.6)
