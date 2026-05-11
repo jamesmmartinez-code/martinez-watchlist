@@ -495,7 +495,7 @@ func _do_floor_snap_unstick() -> void:
 # [CANON-APPROVED: 2026-05-11 auditor] — use this everywhere we place the player on ground.
 # If capsule radius/height ever changes, this auto-derives the right value.
 func _get_capsule_center_y() -> float:
-	var col := find_child("", "CollisionShape3D", true, false) as CollisionShape3D
+	var col := (find_children("*", "CollisionShape3D", true, false) as Array).front() as CollisionShape3D
 	if col and col.shape is CapsuleShape3D:
 		var cap := col.shape as CapsuleShape3D
 		return (cap.height + 2.0 * cap.radius) * 0.5
@@ -505,7 +505,7 @@ func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float 
 	# [CANON-APPROVED: 2026-05-11 auditor] Single-source center_y via _get_capsule_center_y().
 	# collision_mask = 1 (world/static only) — enemies on layer 4 must NOT block spawn recovery.
 	var shape: Shape3D
-	var col_node := find_child("", "CollisionShape3D", true, false) as CollisionShape3D
+	var col_node := (find_children("*", "CollisionShape3D", true, false) as Array).front() as CollisionShape3D
 	if col_node and col_node.shape != null:
 		shape = col_node.shape
 	else:
