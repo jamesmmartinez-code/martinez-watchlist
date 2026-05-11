@@ -21,14 +21,7 @@ chase_speed = 3.4
 aggro_range = 10.0
 attack_range = 2.2
 
-behavior_tags = PackedStringArray([
-	"crystal_cave_resident",
-	"caster_kiter",
-	"prefers_ranged_attack",
-	"enrager",
-	"fearless",
-	"summons_minor_shards_below_50pct",
-])
+behavior_tags = PackedStringArray(["crystal_cave_resident", "caster_kiter", "prefers_ranged_attack", "enrager", "fearless", "summons_minor_shards_below_50pct"])
 
 tells = [
 	{
