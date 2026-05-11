@@ -11,13 +11,10 @@ Terrain3D = "res://addons/terrain_3d/icons/terrain3d.svg"
 
 ; Pilot build — slimmed binary set:
 ;   macOS  : editor on James's Mac (debug + release)
-;   Linux  : CI runner builds Web export (release only)
+;   Linux  : CI runner builds Web export (debug + release — both point to same .so)
 ;   Web    : browser runtime (release only)
-;
-; Other platforms intentionally omitted to keep repo footprint small.
-; To restore: copy missing binaries from a Terrain3D v1.0.1 release zip
-; into bin/ and re-add the relevant lines below.
 
+linux.debug.x86_64 = "res://addons/terrain_3d/bin/libterrain.linux.release.x86_64.so"
 linux.release.x86_64 = "res://addons/terrain_3d/bin/libterrain.linux.release.x86_64.so"
 
 macos.debug = "res://addons/terrain_3d/bin/libterrain.macos.debug.framework"
