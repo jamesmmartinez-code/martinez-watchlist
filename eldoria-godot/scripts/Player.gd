@@ -149,9 +149,17 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(8, 3, 5)   # Physics: east of market stall, >5m clear of all buildings/NPCs/props
-# Layout check (2026-05-10): (8,3,5) is east of market stall, >5m from all collidable objects.
-#   Well=(0,0,6), windmill=(0,0,12), nearest NPC=(6,0,3). Y=3 clears terrain+capsule safely.
+const SAFE_SPAWN := Vector3(10, 0, 3)  # Physics: open ground north of Bram's inn.
+# WHY NOT (8,3,5): building at (6,0,6) extends x=4.2–7.8. Player at x=8 has capsule
+#   west edge at x=7.6 (inside the wall). Y=3 overlaps the roof face (y=3.4) in the
+#   same frame → physics ejects upward → player lands on roof → stuck at y≈3.4. WRONG.
+# WHY NOT y=3 EVER: y=3 puts the capsule near building tops; use y=0 and let
+#   floor_snap_length+move_and_slide settle to the actual ground (≤1 physics frame).
+# (10, 0, 3) checks (2026-05-11):
+#   building (10,0,0) z-range -1.8→1.8; player z=3 is OUTSIDE. ✓
+#   building (6,0,6)  x-range 4.2→7.8; player x=10 capsule edge=9.6 > 7.8. ✓
+#   Bram NPC (10,0,-2): 5m south, gap 4.3m. ✓  Maeve (6,0,3): 4m west, gap 3.2m. ✓
+#   No lanterns/props/well/windmill within 4m. ✓
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
