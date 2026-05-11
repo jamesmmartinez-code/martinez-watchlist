@@ -751,7 +751,7 @@ func use_skill(idx: int) -> void:
 		fwd.y = 0
 		fwd = fwd.normalized()
 
-		for enemy in get_tree().get_nodes_in_group("enemies"):
+		for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
 			if not is_instance_valid(enemy):
 				continue
 			var to_enemy: Vector3 = enemy.global_position - global_position
@@ -983,7 +983,7 @@ func _echo_strike_secondary(base_dmg: int) -> void:
 	var fwd        := -global_transform.basis.z
 	fwd.y = 0; fwd = fwd.normalized()
 	var secondary_hits := 0
-	for enemy in get_tree().get_nodes_in_group("enemies"):
+	for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
 		var to_e: Vector3 = enemy.global_position - global_position
