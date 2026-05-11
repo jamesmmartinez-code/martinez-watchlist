@@ -5,6 +5,8 @@
 # or when other UI elements are present). Without focus, WASD does nothing.
 # This script runs after every Godot export and injects a focus manager
 # + a visible "Click here to play" hint that activates if focus is lost.
+# 2026-05-11: removed box-shadow animation from canvas (non-composited, hurts perf).
+#             Focus ring now uses a composited overlay div (opacity+outline, GPU-driven).
 import sys, pathlib
 
 def main(html_path):
@@ -21,17 +23,27 @@ def main(html_path):
         'user-scalable=no',
         ''
     )
-    # 1. add tabindex to canvas
+    # 1. add tabindex to canvas — no inline box-shadow (causes non-composited animation)
     src = src.replace(
         '<canvas id="canvas">',
         '<canvas id="canvas" tabindex="0" style="outline:none;">'
     )
     # 2. add focus manager + hint right before <script src="index.js">
+    # NOTE: focus ring is now a sibling <div id="focus-ring"> overlay using
+    # opacity transitions (GPU composited) instead of box-shadow on canvas.
     inject = '''
         <style>
-            #canvas{transition:box-shadow 0.2s;}
-            body.unfocused #canvas{box-shadow:0 0 0 6px #ff4444 inset !important;}
-            body.focused   #canvas{box-shadow:0 0 0 4px #44ff44 inset !important;}
+            /* Focus ring: absolutely-positioned overlay, GPU-composited opacity transition */
+            #focus-ring{
+                position:absolute;top:0;left:0;width:100%;height:100%;
+                pointer-events:none;z-index:10;
+                box-shadow:0 0 0 6px #ff4444 inset;
+                opacity:0;
+                transition:opacity 0.2s;
+                will-change:opacity;
+            }
+            body.unfocused #focus-ring{opacity:1;}
+            body.focused   #focus-ring{opacity:0;box-shadow:0 0 0 4px #44ff44 inset;}
             #focus-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
                 background:rgba(255,80,80,0.97);color:#1a0e00;padding:24px 38px;
                 border-radius:14px;font:bold 26px/1.3 system-ui,sans-serif;
@@ -41,6 +53,7 @@ def main(html_path):
             @keyframes focus-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
             #focus-hint:hover{background:rgba(255,120,120,1);}
         </style>
+        <div id="focus-ring"></div>
         <div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:16px;font-weight:normal;">(canvas needs keyboard focus for WASD)</span></div>
         <script>
         (function(){
@@ -58,18 +71,16 @@ def main(html_path):
                     console.log('[Eldoria] focus state:',focused?'FOCUSED (WASD will work)':'NOT FOCUSED');
                 }
             }
-            // AGGRESSIVE: refocus every 100ms for first 5 seconds (covers Godot init reclaim)
-            // 2026-05-07: gentler initial focus — was 100ms × 50 (5s of focus-stealing); now 250ms × 12 (3s)
+            // AGGRESSIVE: refocus every 250ms for first 3s (covers Godot init reclaim)
             let aggressive_count=0;
             const aggressive=setInterval(()=>{
                 if(document.activeElement!==c) focusCanvas();
                 checkFocus();
                 if(++aggressive_count>=12){clearInterval(aggressive);}
             },250);
-            // After 5s, drop to gentle 1s polling
-            setTimeout(()=>{setInterval(()=>{checkFocus();if(!focused)focusCanvas();},1000);},5000);
+            // After 3s, drop to gentle 1s polling
+            setTimeout(()=>{setInterval(()=>{checkFocus();if(!focused)focusCanvas();},1000);},3000);
             // Click anywhere -> focus canvas
-            // 2026-05-07: removed mousedown refocus — was fighting Godot's right-drag camera + click-handling.
             document.addEventListener('click',(e)=>{if(document.activeElement!==c){focusCanvas();checkFocus();}});
             hint.addEventListener('click',(e)=>{e.stopPropagation();focusCanvas();checkFocus();});
             window.addEventListener('focus',()=>{focusCanvas();checkFocus();});
@@ -77,7 +88,7 @@ def main(html_path):
                 if(!focused){focusCanvas();checkFocus();}
                 console.log('[Eldoria] keydown:',e.code,'focused:',document.activeElement===c);
             },true);
-            console.log('[Eldoria] AGGRESSIVE focus manager v2 active');
+            console.log('[Eldoria] focus manager v3 (composited overlay) active');
         })();
         </script>
 '''
