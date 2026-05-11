@@ -137,7 +137,7 @@ func change_reputation(faction_id: String, delta: int) -> void:
 	reputation[faction_id] = clampi(int(reputation[faction_id]) + delta, -100, 100)
 	emit_signal("reputation_changed", faction_id, reputation[faction_id])
 	# Mirror: helping one faction angers its enemies
-	var base := BASE_RELATIONS.get("player", {})
+	var base: Dictionary = BASE_RELATIONS.get("player", {})
 	for other: String in reputation.keys():
 		if other == faction_id: continue
 		var rel: int = int(base.get(other, 0))
@@ -267,7 +267,7 @@ func _faction_tint(faction_id: String) -> Color:
 func on_player_killed_faction_enemy(faction_id: String) -> void:
 	on_faction_enemy_died(faction_id)
 	# Killing enemies of a hostile faction slightly improves rep with allies
-	var base := BASE_RELATIONS.get("player", {})
+	var base: Dictionary = BASE_RELATIONS.get("player", {})
 	for other: String in reputation.keys():
 		if other == faction_id: continue
 		if int(base.get(other, 0)) < 0 and int(BASE_RELATIONS.get(other, {}).get(faction_id, 0)) < 0:
