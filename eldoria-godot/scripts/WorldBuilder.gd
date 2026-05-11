@@ -38,10 +38,18 @@ func _populate_npc_models() -> void:
 		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 	}
 # Per-NPC scale tweak — different sources have different native heights.
-# NPC_SCALES removed 2026-05-11 — replaced by ScaleUtils.to_height(npc, ScaleUtils.HEIGHT_NPC)
-# _normalize_npc_scale() below now calls ScaleUtils instead of reading this dict.
-# Kept as empty dict so any legacy references don't crash.
-const NPC_SCALES := {}
+const NPC_SCALES := {
+	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
+	"Smith Edda":          Vector3(1.05, 1.05, 1.05),
+	"Mara the Merchant":   Vector3(1.10, 1.10, 1.10),
+	"Herbalist Lyra":      Vector3(1.30, 1.30, 1.30),
+	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
+	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
+	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
+	"Village Guard":        Vector3(1.05, 1.05, 1.05),
+	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
+	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
+}
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
 var _buildings_built: bool = false
@@ -824,7 +832,6 @@ func _ready() -> void:
 	_safe_call("_build_ground_overlay")
 	_safe_call("_build_path_network")
 	_safe_call("_build_village")
-	_safe_call("_build_reference_sticks")  # Scale fix 2026-05-11: toggle-able ruler near spawn
 	_safe_call("_scatter_trees", [140])
 	_safe_call("_scatter_rocks", [36])
 	_safe_call("_scatter_ferns", [48])
@@ -854,6 +861,7 @@ func _ready() -> void:
 	_safe_call("_build_player_home")  # Builder run 24 — Backlog #10
 	_safe_call("_build_weather")        # Builder run 36 — Weather System
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
+	_safe_call("_build_nordic_fishing_village")  # Builder run 25 — Nordic dock district, THEME §1 §11
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
@@ -946,38 +954,31 @@ func _make_building(pos: Vector3) -> void:
 	house.add_to_group("buildings")
 	add_child(house)
 
-	# ── HOUSE SCALE STANDARD (metres) — [CANON-APPROVED: 2026-05-11 auditor fix] ──
-	var house_w: float = 7.0      # believable small home footprint
-	var house_d: float = 6.0
-	var foundation_h: float = 0.6
-	var wall_h: float = 3.2       # single-storey interior height
-	var eave_y: float = foundation_h + wall_h
-
-	# Stone foundation
+	# Stone foundation (1m tall around the base)
 	var foundation := MeshInstance3D.new()
 	var fm := BoxMesh.new()
-	fm.size = Vector3(house_w, foundation_h, house_d)
+	fm.size = Vector3(4.0, 0.5, 4.0)
 	foundation.mesh = fm
 	foundation.material_override = MAT_FOUNDATION(2)
-	foundation.position.y = foundation_h * 0.5
+	foundation.position.y = 0.25
 	house.add_child(foundation)
 
-	# Walls — inset slightly from foundation edge for ledge detail
+	# Walls (whitewashed plaster — half-timbered look with dark wood corner beams)
 	var wall := MeshInstance3D.new()
 	var wall_mesh := BoxMesh.new()
-	wall_mesh.size = Vector3(house_w * 0.92, wall_h, house_d * 0.92)
+	wall_mesh.size = Vector3(3.6, 2.6, 3.6)
 	wall.mesh = wall_mesh
 	wall.material_override = MAT_PLASTER(3)
-	wall.position.y = foundation_h + wall_h * 0.5
+	wall.position.y = 1.3 + 0.5
 	house.add_child(wall)
 
-	# Unified collision — foundation + walls as one continuous volume (no floating gap)
+	# Wall collision — covers foundation + walls up to eave.
 	var body := StaticBody3D.new()
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(wall_mesh.size.x, foundation_h + wall_h, wall_mesh.size.z)
+	box.size = Vector3(3.6, 3.4, 3.6)
 	col.shape = box
-	col.position.y = (foundation_h + wall_h) * 0.5
+	col.position.y = 1.7
 	body.add_child(col)
 	house.add_child(body)
 
@@ -1006,7 +1007,7 @@ func _make_building(pos: Vector3) -> void:
 	# Eave
 	var eave := MeshInstance3D.new()
 	var em := BoxMesh.new()
-	em.size = Vector3(7.4, 0.18, 6.4)  # [CANON-APPROVED: 2026-05-11] eave overhangs walls
+	em.size = Vector3(4.0, 0.18, 4.0)
 	eave.mesh = em
 	eave.material_override = MAT_DARK_WOOD(0.5)
 	eave.position.y = 3.18
@@ -1016,7 +1017,7 @@ func _make_building(pos: Vector3) -> void:
 	var roof := MeshInstance3D.new()
 	var pyr := PrismMesh.new()
 	pyr.left_to_right = 0.5
-	pyr.size = Vector3(7.4, 2.4, 6.4)  # [CANON-APPROVED: 2026-05-11] roof matches footprint
+	pyr.size = Vector3(4.4, 1.9, 4.4)
 	roof.mesh = pyr
 	roof.material_override = MAT_ROOF(2.0)
 	roof.position.y = 4.13
@@ -1043,7 +1044,7 @@ func _make_building(pos: Vector3) -> void:
 	qm.size = Vector2(0.7, 0.6)
 	win.mesh = qm
 	win.material_override = win_mat
-	win.position = Vector3(0, 2.4, 3.05)  # Scale fix 2026-05-11
+	win.position = Vector3(0, 2.1, 1.81)
 	house.add_child(win)
 
 	# Window frame
@@ -1063,19 +1064,19 @@ func _make_building(pos: Vector3) -> void:
 	# Door
 	var door := MeshInstance3D.new()
 	var dm := BoxMesh.new()
-	dm.size = Vector3(1.0, 2.1, 0.08)  # Scale fix 2026-05-11: door 1.6→2.1m (adult-height)
+	dm.size = Vector3(0.9, 1.6, 0.08)
 	door.mesh = dm
 	door.material_override = MAT_DARK_WOOD(0.6)
-	door.position = Vector3(-1.4, foundation_h + 2.1 * 0.5, (house_d * 0.92 * 0.5) + 0.04)  # [CANON-APPROVED: 2026-05-11 auditor] sits on foundation
+	door.position = Vector3(-1.0, 1.3, 1.85)
 	house.add_child(door)
 
 	# Chimney
 	var chim := MeshInstance3D.new()
 	var cm := BoxMesh.new()
-	cm.size = Vector3(0.5, 1.8, 0.5)  # Scale fix 2026-05-11
+	cm.size = Vector3(0.5, 1.5, 0.5)
 	chim.mesh = cm
 	chim.material_override = MAT_STONE(1)
-	chim.position = Vector3(1.4, 5.5, 1.4)  # Scale fix 2026-05-11: raised for new roof height
+	chim.position = Vector3(1.2, 4.6, 1.0)
 	chim.name = "Chimney"
 	house.add_child(chim)
 
@@ -1232,7 +1233,7 @@ func _make_stall(pos: Vector3) -> void:
 	add_child(stall)
 	var counter := MeshInstance3D.new()
 	var bm := BoxMesh.new()
-	bm.size = Vector3(2.2, 1.0, 1.5)  # [CANON-APPROVED: 2026-05-11 auditor] deeper stall counter
+	bm.size = Vector3(1.8, 0.8, 0.8)
 	counter.mesh = bm
 	counter.material_override = MAT_DARK_WOOD(1.5)
 	counter.position.y = 0.4
@@ -1240,10 +1241,10 @@ func _make_stall(pos: Vector3) -> void:
 	for dx in [-0.8, 0.8]:
 		var post := MeshInstance3D.new()
 		var pm := CylinderMesh.new()
-		pm.top_radius = 0.05; pm.bottom_radius = 0.05; pm.height = 2.2  # [CANON-APPROVED: 2026-05-11] taller posts
+		pm.top_radius = 0.05; pm.bottom_radius = 0.05; pm.height = 1.6
 		post.mesh = pm
 		post.material_override = MAT_DARK_WOOD(0.5)
-		post.position = Vector3(dx, 1.6, -0.55)  # [CANON-APPROVED: 2026-05-11]
+		post.position = Vector3(dx, 1.2, -0.3)
 		stall.add_child(post)
 	# Awning (red striped cloth) — THEME §12: cloth must FLAP.
 	# Env: 2026-05-06 — was a static angled box. Wrap in a pivot Node3D at
@@ -1264,7 +1265,7 @@ func _make_stall(pos: Vector3) -> void:
 	awn_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var awn := MeshInstance3D.new()
 	var am := BoxMesh.new()
-	am.size = Vector3(2.6, 0.05, 2.0)  # [CANON-APPROVED: 2026-05-11 auditor] deeper awning matches counter
+	am.size = Vector3(2.2, 0.05, 1.2)
 	awn.mesh = am
 	awn.material_override = awn_mat
 	# Cloth offset forward of the pivot — pivot lives at the back edge so
@@ -2201,8 +2202,7 @@ func _make_npc(data: Dictionary) -> void:
 	# Auto-normalize to ~1.8m tall (handles any authored size — supersedes the
 	# hardcoded NPC_SCALES dict; the dict is left in place as a manual override
 	# fallback if a future run wants to bias a specific NPC up or down).
-	# [CANON-APPROVED: 2026-05-11] pre-scale removed — ScaleUtils.to_height handles normalisation
-	# model.scale left at import default; _normalize_npc_scale corrects via AABB
+	model.scale = NPC_SCALES.get(data.name, Vector3(1.0, 1.0, 1.0))
 	call_deferred("_normalize_npc_scale", model)
 	npc.add_child(model)
 	if not uses_real_model:
@@ -3391,7 +3391,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# play area without blocking the camera too aggressively.
 	var dome := MeshInstance3D.new()
 	var dm := SphereMesh.new()
-	dm.radius = 18.0; dm.height = 16.5  # [CANON-APPROVED: 2026-05-11 auditor] 24→18m, keeps cave grand but not a continent
+	dm.radius = 24.0; dm.height = 22.0
 	dome.mesh = dm
 	var dome_mat := StandardMaterial3D.new()
 	# REFINE: visual — Crystal Caves — push interior shell darker and more matte
@@ -3400,27 +3400,24 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	dome_mat.roughness = 0.98
 	dome_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render the inside
 	dome.material_override = dome_mat
-	dome.position = Vector3(0, 3.0, 0)  # [CANON-APPROVED: 2026-05-11]
+	dome.position = Vector3(0, 4.0, 0)
 	caves.add_child(dome)
 
 	# ── Entrance arch (two stone columns + capstone) ──
-	# column_height hoisted outside the loop — GDScript 4 scopes loop vars to
-	# the loop body, so cm.height was undefined when cap/beacon used it.
-	var column_height: float = 5.5
 	for sx in [-3.2, 3.2]:
 		var col := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
-		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = column_height
+		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = 5.5
 		col.mesh = cm
 		col.material_override = MAT_ROCK(1.5)
-		col.position = Vector3(sx, column_height * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] entrance z 22→16, y from column height
+		col.position = Vector3(sx, 2.75, 22.0)
 		caves.add_child(col)
 	var cap := MeshInstance3D.new()
 	var capm := BoxMesh.new()
 	capm.size = Vector3(8.4, 1.2, 1.6)
 	cap.mesh = capm
 	cap.material_override = MAT_ROCK(1.5)
-	cap.position = Vector3(0, column_height + capm.size.y * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] computed from column top — never floats
+	cap.position = Vector3(0, 6.1, 22.0)
 	caves.add_child(cap)
 	# Glowing entrance crystal above the arch — a beacon from the village
 	var beacon := MeshInstance3D.new()
@@ -3435,14 +3432,14 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# as a destination from the village edge (helps Alden spot the entrance).
 	beacon_mat.emission_energy_multiplier = 4.0
 	beacon.material_override = beacon_mat
-	beacon.position = Vector3(0, column_height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11] above arch
+	beacon.position = Vector3(0, 8.0, 22.0)
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
 	beacon_light.light_color = crystal_blue
 	# REFINE: visual — Crystal Caves — beacon light reaches the village treeline
 	beacon_light.light_energy = 3.2
 	beacon_light.omni_range = 18.0
-	beacon_light.position = Vector3(0, column_height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11]
+	beacon_light.position = Vector3(0, 8.0, 22.0)
 	caves.add_child(beacon_light)
 
 	# ── Ambient blue cave light ──
@@ -3467,7 +3464,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# ── Stone floor disc — a darker rocky ground inside the cave ──
 	var floor_mesh := MeshInstance3D.new()
 	var pm_floor := CylinderMesh.new()
-	pm_floor.top_radius = 16.0; pm_floor.bottom_radius = 16.0; pm_floor.height = 0.4  # [CANON-APPROVED: 2026-05-11 auditor]
+	pm_floor.top_radius = 22.0; pm_floor.bottom_radius = 22.0; pm_floor.height = 0.4
 	floor_mesh.mesh = pm_floor
 	var floor_mat := StandardMaterial3D.new()
 	# REFINE: visual — Crystal Caves — cooler, wetter-looking stone floor.
@@ -3563,10 +3560,35 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 
 # Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.
 # Sketchfab models come in mixed unit systems; this prevents the "giants" problem.
-func _normalize_npc_scale(model: Node, target_height: float = ScaleUtils.HEIGHT_NPC) -> void:
-	# [CANON-APPROVED: 2026-05-11 auditor] accepts per-NPC target; defaults to 1.65m
-	if model is Node3D:
-		ScaleUtils.to_height(model as Node3D, target_height)
+func _normalize_npc_scale(model: Node) -> void:
+	await get_tree().process_frame
+	var aabb := AABB()
+	var has := false
+	for c in model.find_children("*", "VisualInstance3D", true):
+		var v := c as VisualInstance3D
+		if not v: continue
+		var a := v.get_aabb()
+		a = v.global_transform * a
+		if not has:
+			aabb = a; has = true
+		else:
+			aabb = aabb.merge(a)
+	if not has or aabb.size.y <= 0.001:
+		return
+	# char-spec 2026-05-06: 1.8 (adult) → 1.65 per SIZE_STANDARDS.md §1.
+	var target_height := 1.65
+	var s := target_height / aabb.size.y
+	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
+	s = clamp(s, 0.1, 3.0)
+	model.scale = Vector3(s, s, s)
+
+
+# ════════════════════════════════════════════════════════════════════════
+# GLOBAL SCALE SWEEP — runs once 0.5s after _ready completes. Walks the
+# entire scene tree, finds any character GLB instance whose visible AABB
+# is unreasonably tall (>5m), and rescales it. Catches characters that
+# any other script spawned bypassing per-script normalization.
+# ════════════════════════════════════════════════════════════════════════
 
 func _global_scale_sweep() -> void:
 	# Realm-of-Eldoria size discipline — runs every 0.5s, no exemptions for
@@ -3955,7 +3977,7 @@ func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
 		return
 	if inst is Node3D:
 		var n3d: Node3D = inst as Node3D
-		var shrink: float = clamp(8.0 / aabb.size.y, 0.001, 1.0)  # [CANON-APPROVED: 2026-05-11 auditor] 4.5→8.0m — proper forest canopy height
+		var shrink: float = clamp(4.5 / aabb.size.y, 0.001, 1.0)  # 2026-05-06: dropped from 14.0 — trees were still too big to see character past
 		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
@@ -4238,3 +4260,641 @@ func _build_weather() -> void:
 	weather.name = "Weather"
 	parent.add_child(weather)
 	_dlog("Weather system spawned (state: clear — transitions on new world_day)")
+
+# ============================================================================
+# NORDIC FISHING VILLAGE — Builder run 25
+# A coastal dock district placed at NORDIC_ORIGIN (well clear of Briarwood).
+# Uses existing MAT_WOOD / MAT_DARK_WOOD / MAT_STONE / MAT_ROOF helpers for
+# visual consistency, plus a new MAT_WATER for the harbour surface.
+# All geometry is primitive-based (same pattern as _make_building) so it works
+# with zero extra GLBs — GLBs can be swapped in later per the assets backlog.
+# ============================================================================
+
+# ── Origin: 120 m north of village centre — clear of all existing objects ──
+const NORDIC_ORIGIN   := Vector3(0.0, 0.0, 120.0)
+const NORDIC_WATER_Y  : float = 0.0          # water surface (same as ground)
+const NORDIC_SEED     : int   = 7331
+const NORDIC_PIER_LEN : float = 52.0
+const NORDIC_PIER_W   : float = 2.6
+
+var _nrng: RandomNumberGenerator   # seeded per build, never touches world RNG
+
+func MAT_WATER() -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color        = Color(0.10, 0.28, 0.45, 0.82)
+	m.transparency        = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.roughness           = 0.12
+	m.metallic            = 0.05
+	m.emission_enabled    = true
+	m.emission            = Color(0.04, 0.12, 0.22)
+	m.emission_energy_multiplier = 0.35
+	return m
+
+func MAT_PLANK(uv := 1.5) -> StandardMaterial3D:
+	# Worn saltwater-bleached planks (reuses wood textures with a pale tint)
+	return _pbr_mat(
+		"res://assets/textures/wood/wood_diff.jpg",
+		"res://assets/textures/wood/wood_norm.jpg",
+		"res://assets/textures/wood/wood_rough.jpg",
+		Vector3(uv, uv, 1), Color(0.72, 0.64, 0.52))
+
+func MAT_DARKPOST() -> StandardMaterial3D:
+	return _pbr_mat(
+		"res://assets/textures/wood/wood_diff.jpg",
+		"res://assets/textures/wood/wood_norm.jpg",
+		"",
+		Vector3(1, 1, 1), Color(0.22, 0.15, 0.10))
+
+# ── Entry point ─────────────────────────────────────────────────────────────
+func _build_nordic_fishing_village() -> void:
+	_nrng = RandomNumberGenerator.new()
+	_nrng.seed = NORDIC_SEED
+
+	var origin := NORDIC_ORIGIN
+
+	# ── Water plane (harbour basin, 80×60 m) ──────────────────────────────
+	var water := MeshInstance3D.new()
+	var wpm   := PlaneMesh.new()
+	wpm.size  = Vector2(80.0, 60.0)
+	water.mesh              = wpm
+	water.material_override = MAT_WATER()
+	water.position          = origin + Vector3(0.0, NORDIC_WATER_Y - 0.02, -10.0)
+	water.name              = "NordicHarbour"
+	add_child(water)
+
+	# ── Shore direction: pier drives north (−Z in local space = deeper water) ──
+	# Village sits along a shore band; pier heads −Z from origin.
+	var pier_dir   := Vector3(0, 0, -1)   # toward water
+	var shore_dir  := Vector3(1, 0,  0)   # along shore (east-west)
+
+	# ── Main pier ────────────────────────────────────────────────────────────
+	var pier_start := origin + pier_dir * 6.0
+	pier_start.y   = NORDIC_WATER_Y + 0.15
+	_nordic_pier_spine(pier_start, pier_dir, NORDIC_PIER_LEN)
+
+	# ── Branch piers (4) ─────────────────────────────────────────────────────
+	var branch_offsets := [0.22, 0.42, 0.62, 0.80]
+	var branch_dirs    : Array[Vector3] = []
+	for i in range(4):
+		var t          := branch_offsets[i]
+		var bp         := pier_start + pier_dir * (NORDIC_PIER_LEN * t)
+		bp.y           = NORDIC_WATER_Y + 0.15
+		var side       := (1.0 if i % 2 == 0 else -1.0)
+		var bd         : Vector3 = pier_dir.rotated(Vector3.UP, side * PI * 0.5)
+		branch_dirs.append(bd)
+		var bl         := _nrng.randf_range(14.0, 22.0)
+		_nordic_pier_branch(bp, bd, bl)
+
+	# ── Longhouse (largest landmark, east of plaza) ───────────────────────────
+	var lh_pos := origin + shore_dir * 18.0 + Vector3(0, 0, 6.0)
+	lh_pos.y   = origin.y
+	_nordic_longhouse(lh_pos, shore_dir)
+
+	# ── Smokehouse (near fish racks) ──────────────────────────────────────────
+	var sh_pos := origin + shore_dir * -16.0 + pier_dir * 8.0
+	sh_pos.y   = origin.y
+	_nordic_smokehouse(sh_pos, shore_dir)
+
+	# ── Lighthouse beacon (end of main pier) ─────────────────────────────────
+	var lp_pos := pier_start + pier_dir * (NORDIC_PIER_LEN + 8.0)
+	lp_pos.y   = NORDIC_WATER_Y + 0.15
+	_nordic_beacon(lp_pos)
+
+	# ── Shore stilt houses (16) ───────────────────────────────────────────────
+	_nordic_shore_houses(origin, shore_dir, pier_dir, 16)
+
+	# ── Pier-arm stilt houses (5) ─────────────────────────────────────────────
+	var arm_bases := [
+		pier_start + pier_dir * (NORDIC_PIER_LEN * 0.22),
+		pier_start + pier_dir * (NORDIC_PIER_LEN * 0.42),
+		pier_start + pier_dir * (NORDIC_PIER_LEN * 0.62),
+	]
+	for i in range(minf(arm_bases.size(), branch_dirs.size())):
+		var ab     := arm_bases[i]
+		ab.y       = NORDIC_WATER_Y + 0.15
+		var hpos   := ab + branch_dirs[i] * _nrng.randf_range(8.0, 16.0) \
+		              + _nordic_side(branch_dirs[i]) * _nrng.randf_range(2.5, 4.5)
+		hpos.y     = NORDIC_WATER_Y + 0.15
+		_nordic_stilt_house(hpos, -branch_dirs[i], Vector2(6.5, 6.0))
+
+	# ── Dressing passes ───────────────────────────────────────────────────────
+	_nordic_dock_dressing(origin, pier_start, pier_dir, branch_dirs)
+	_nordic_shore_dressing(origin, shore_dir, pier_dir)
+
+	_dlog("Nordic fishing village built at " + str(origin))
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+func _nordic_side(dir: Vector3) -> Vector3:
+	var s := dir.rotated(Vector3.UP, PI * 0.5)
+	return s if _nrng.randi() % 2 == 0 else -s
+
+# ── Pier spine ───────────────────────────────────────────────────────────────
+func _nordic_pier_spine(start: Vector3, dir: Vector3, length: float) -> void:
+	var seg_len := 3.0
+	var count   := int(ceil(length / seg_len))
+	for i in range(count):
+		var seg_pos := start + dir * (float(i) * seg_len)
+		seg_pos.y   = start.y
+		_nordic_pier_segment(seg_pos, dir, seg_len)
+
+# ── Pier branch ──────────────────────────────────────────────────────────────
+func _nordic_pier_branch(start: Vector3, dir: Vector3, length: float) -> void:
+	var seg_len := 3.0
+	var count   := int(ceil(length / seg_len))
+	for i in range(count):
+		var seg_pos := start + dir * (float(i) * seg_len)
+		seg_pos.y   = start.y
+		_nordic_pier_segment(seg_pos, dir, seg_len)
+	# End platform
+	var plat   := MeshInstance3D.new()
+	var pm     := BoxMesh.new()
+	pm.size    = Vector3(NORDIC_PIER_W + 1.4, 0.22, 3.6)
+	plat.mesh  = pm
+	plat.material_override = MAT_PLANK(2.0)
+	plat.position = start + dir * (length + 1.6)
+	plat.position.y = start.y
+	plat.rotation.y = atan2(dir.x, dir.z)
+	add_child(plat)
+
+# ── Single pier segment: deck + posts + optional rail ────────────────────────
+func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> Node3D:
+	var seg := Node3D.new()
+	seg.name = "PierSeg"
+	add_child(seg)
+
+	var rot_y := atan2(dir.x, dir.z)
+	seg.global_position = world_pos
+	seg.rotation.y = rot_y
+
+	# Deck
+	var deck   := MeshInstance3D.new()
+	var dm     := BoxMesh.new()
+	dm.size    = Vector3(NORDIC_PIER_W, 0.20, seg_len)
+	deck.mesh  = dm
+	deck.material_override = MAT_PLANK(2.0)
+	deck.position = Vector3(0, 0.0, seg_len * 0.5)
+	seg.add_child(deck)
+
+	# Posts (into water)
+	for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
+		var post   := MeshInstance3D.new()
+		var cm     := CylinderMesh.new()
+		cm.top_radius    = 0.11
+		cm.bottom_radius = 0.14
+		cm.height        = 3.0
+		post.mesh        = cm
+		post.material_override = MAT_DARKPOST()
+		post.position    = Vector3(sx, -1.5, seg_len * 0.18)
+		seg.add_child(post)
+
+	# Rail (70% chance)
+	if _nrng.randf() < 0.70:
+		for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
+			var rail   := MeshInstance3D.new()
+			var rm     := BoxMesh.new()
+			rm.size    = Vector3(0.10, 0.08, seg_len)
+			rail.mesh  = rm
+			rail.material_override = MAT_PLANK(1.0)
+			rail.position = Vector3(sx, 1.0, seg_len * 0.5)
+			seg.add_child(rail)
+
+	return seg
+
+# ── Stilt house ───────────────────────────────────────────────────────────────
+func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2) -> Node3D:
+	var house  := Node3D.new()
+	house.name = "NordicHouse"
+	add_child(house)
+	house.global_position = world_pos
+	house.rotation.y = atan2(facing.x, facing.z)
+
+	var w      := footprint.x
+	var d      := footprint.y
+	var wall_h := 3.0
+	var rpeak  := _nrng.randf_range(2.2, 3.0)
+	var deck_y := _nrng.randf_range(0.5, 1.6)
+	var stilt_h := deck_y + 0.25
+
+	# Stilts
+	for sx in [-w * 0.44, w * 0.44]:
+		for sz in [-d * 0.44, d * 0.44]:
+			var post := MeshInstance3D.new()
+			var cm   := CylinderMesh.new()
+			cm.top_radius    = 0.09
+			cm.bottom_radius = 0.12
+			cm.height        = stilt_h
+			post.mesh        = cm
+			post.material_override = MAT_DARKPOST()
+			post.position    = Vector3(sx, stilt_h * 0.5, sz)
+			house.add_child(post)
+
+	# Deck
+	var deck := MeshInstance3D.new()
+	var ddm  := BoxMesh.new()
+	ddm.size = Vector3(w, 0.22, d)
+	deck.mesh = ddm
+	deck.material_override = MAT_PLANK(1.5)
+	deck.position.y = deck_y
+	house.add_child(deck)
+
+	# Walls
+	var walls := MeshInstance3D.new()
+	var wm    := BoxMesh.new()
+	wm.size   = Vector3(w * 0.88, wall_h, d * 0.88)
+	walls.mesh = wm
+	walls.material_override = MAT_PLASTER(3)
+	walls.position.y = deck_y + 0.11 + wall_h * 0.5
+	house.add_child(walls)
+
+	# Corner beams
+	for bx in [-w * 0.42, w * 0.42]:
+		for bz in [-d * 0.42, d * 0.42]:
+			var beam := MeshInstance3D.new()
+			var bm   := BoxMesh.new()
+			bm.size  = Vector3(0.18, wall_h, 0.18)
+			beam.mesh = bm
+			beam.material_override = MAT_DARK_WOOD(0.5)
+			beam.position = Vector3(bx, deck_y + 0.11 + wall_h * 0.5, bz)
+			house.add_child(beam)
+
+	# Gable roof (PrismMesh — same as main village houses)
+	var roof  := MeshInstance3D.new()
+	var pyr   := PrismMesh.new()
+	pyr.left_to_right = 0.5
+	pyr.size  = Vector3(w * 1.06, rpeak, d * 1.06)
+	roof.mesh = pyr
+	roof.material_override = MAT_ROOF(2.0)
+	roof.position.y = deck_y + 0.11 + wall_h + rpeak * 0.5
+	house.add_child(roof)
+
+	# Warm window glow
+	var wwin := StandardMaterial3D.new()
+	wwin.albedo_color             = Color(0.95, 0.60, 0.25)
+	wwin.emission_enabled         = true
+	wwin.emission                 = Color(1.0, 0.70, 0.3)
+	wwin.emission_energy_multiplier = 1.0
+	var win  := MeshInstance3D.new()
+	var qm   := QuadMesh.new()
+	qm.size  = Vector2(0.55, 0.45)
+	win.mesh = qm
+	win.material_override = wwin
+	win.position = Vector3(0, deck_y + 0.11 + wall_h * 0.55, d * 0.445)
+	house.add_child(win)
+
+	# Porch (60% chance)
+	if _nrng.randf() < 0.60:
+		var porch := MeshInstance3D.new()
+		var pm    := BoxMesh.new()
+		pm.size   = Vector3(w * 0.38, 0.16, 1.5)
+		porch.mesh = pm
+		porch.material_override = MAT_PLANK(1.0)
+		porch.position = Vector3(0, deck_y + 0.08, d * 0.54)
+		house.add_child(porch)
+
+	# Wall collision
+	var body  := StaticBody3D.new()
+	var col   := CollisionShape3D.new()
+	var box   := BoxShape3D.new()
+	box.size  = Vector3(w * 0.88, wall_h + deck_y, d * 0.88)
+	col.shape = box
+	col.position.y = (wall_h + deck_y) * 0.5
+	body.add_child(col)
+	house.add_child(body)
+
+	return house
+
+# ── Longhouse ─────────────────────────────────────────────────────────────────
+func _nordic_longhouse(world_pos: Vector3, facing: Vector3) -> void:
+	var b     := Node3D.new()
+	b.name    = "NordicLonghouse"
+	add_child(b)
+	b.global_position = world_pos
+	b.rotation.y = atan2(facing.x, facing.z)
+
+	var w := 8.0
+	var d := 20.0
+	var wh := 4.2
+
+	# Stone base
+	var base  := MeshInstance3D.new()
+	var bsm   := BoxMesh.new()
+	bsm.size  = Vector3(w, 0.65, d)
+	base.mesh = bsm
+	base.material_override = MAT_STONE(2.0)
+	base.position.y = 0.32
+	b.add_child(base)
+
+	# Walls
+	var walls := MeshInstance3D.new()
+	var wm    := BoxMesh.new()
+	wm.size   = Vector3(w * 0.92, wh, d * 0.92)
+	walls.mesh = wm
+	walls.material_override = MAT_PLASTER(3)
+	walls.position.y = 0.65 + wh * 0.5
+	b.add_child(walls)
+
+	# Corner timbers
+	for bx in [-w * 0.44, w * 0.44]:
+		for bz in [-d * 0.44, d * 0.44]:
+			var beam := MeshInstance3D.new()
+			var bm   := BoxMesh.new()
+			bm.size  = Vector3(0.25, wh, 0.25)
+			beam.mesh = bm
+			beam.material_override = MAT_DARK_WOOD(0.5)
+			beam.position = Vector3(bx, 0.65 + wh * 0.5, bz)
+			b.add_child(beam)
+
+	# Eave
+	var eave  := MeshInstance3D.new()
+	var em    := BoxMesh.new()
+	em.size   = Vector3(w + 1.0, 0.22, d + 1.0)
+	eave.mesh = em
+	eave.material_override = MAT_DARK_WOOD(0.5)
+	eave.position.y = 0.65 + wh + 0.11
+	b.add_child(eave)
+
+	# Roof
+	var roof  := MeshInstance3D.new()
+	var pyr   := PrismMesh.new()
+	pyr.left_to_right = 0.5
+	pyr.size  = Vector3(w + 1.2, 4.0, d + 1.2)
+	roof.mesh = pyr
+	roof.material_override = MAT_ROOF(2.5)
+	roof.position.y = 0.65 + wh + 2.2
+	b.add_child(roof)
+
+	# Inn sign (hanging board)
+	var sign  := MeshInstance3D.new()
+	var sm    := BoxMesh.new()
+	sm.size   = Vector3(2.0, 0.55, 0.10)
+	sign.mesh = sm
+	sign.material_override = MAT_DARK_WOOD(1.0)
+	sign.position = Vector3(0, 2.4, d * 0.50)
+	b.add_child(sign)
+
+	# Collision
+	var body  := StaticBody3D.new()
+	var col   := CollisionShape3D.new()
+	var box   := BoxShape3D.new()
+	box.size  = Vector3(w, wh + 0.65, d)
+	col.shape = box
+	col.position.y = (wh + 0.65) * 0.5
+	body.add_child(col)
+	b.add_child(body)
+
+# ── Smokehouse ────────────────────────────────────────────────────────────────
+func _nordic_smokehouse(world_pos: Vector3, facing: Vector3) -> void:
+	var b     := Node3D.new()
+	b.name    = "NordicSmokehouse"
+	add_child(b)
+	b.global_position = world_pos
+	b.rotation.y = atan2(facing.x, facing.z)
+
+	var w := 5.5
+	var d := 5.5
+	var wh := 3.0
+
+	var base  := MeshInstance3D.new()
+	var bsm   := BoxMesh.new()
+	bsm.size  = Vector3(w, 0.5, d)
+	base.mesh = bsm
+	base.material_override = MAT_STONE(2.0)
+	base.position.y = 0.25
+	b.add_child(base)
+
+	var walls := MeshInstance3D.new()
+	var wm    := BoxMesh.new()
+	wm.size   = Vector3(w * 0.90, wh, d * 0.90)
+	walls.mesh = wm
+	walls.material_override = MAT_WOOD(1.5)
+	walls.position.y = 0.5 + wh * 0.5
+	b.add_child(walls)
+
+	# Chimney (chunky, stone)
+	var ch_h  := _nrng.randf_range(5.5, 7.2)
+	var ch    := MeshInstance3D.new()
+	var cm    := CylinderMesh.new()
+	cm.top_radius    = 0.38
+	cm.bottom_radius = 0.48
+	cm.height        = ch_h
+	ch.mesh   = cm
+	ch.material_override = MAT_STONE(1.0)
+	ch.position = Vector3(w * 0.22, 0.5 + wh + ch_h * 0.5 - 0.6, -d * 0.08)
+	b.add_child(ch)
+
+	# Collision
+	var body  := StaticBody3D.new()
+	var col   := CollisionShape3D.new()
+	var box   := BoxShape3D.new()
+	box.size  = Vector3(w, wh + 0.5, d)
+	col.shape = box
+	col.position.y = (wh + 0.5) * 0.5
+	body.add_child(col)
+	b.add_child(body)
+
+# ── Lighthouse beacon ─────────────────────────────────────────────────────────
+func _nordic_beacon(world_pos: Vector3) -> void:
+	var b     := Node3D.new()
+	b.name    = "NordicBeacon"
+	add_child(b)
+	b.global_position = world_pos
+
+	# Tower
+	var tower  := MeshInstance3D.new()
+	var cm     := CylinderMesh.new()
+	cm.top_radius    = 1.1
+	cm.bottom_radius = 1.55
+	cm.height        = 10.0
+	tower.mesh = cm
+	tower.material_override = MAT_STONE(1.5)
+	tower.position.y = 5.0
+	b.add_child(tower)
+
+	# Lantern cap (dark wood octagonal box — BoxMesh approximation)
+	var cap   := MeshInstance3D.new()
+	var capm  := BoxMesh.new()
+	capm.size = Vector3(2.2, 1.6, 2.2)
+	cap.mesh  = capm
+	cap.material_override = MAT_DARK_WOOD(0.5)
+	cap.position.y = 10.8
+	b.add_child(cap)
+
+	# Beacon light (OmniLight3D — warm orange glow)
+	var light := OmniLight3D.new()
+	light.light_color  = Color(1.0, 0.82, 0.42)
+	light.light_energy = 3.5
+	light.omni_range   = 40.0
+	light.position     = Vector3(0, 11.6, 0)
+	b.add_child(light)
+
+	# Collision for the tower base
+	var body  := StaticBody3D.new()
+	var col   := CollisionShape3D.new()
+	var cyl   := CylinderShape3D.new()
+	cyl.radius = 1.55
+	cyl.height = 10.0
+	col.shape  = cyl
+	col.position.y = 5.0
+	body.add_child(col)
+	b.add_child(body)
+
+# ── Shore houses (16 stilt houses in a band along the shore) ─────────────────
+func _nordic_shore_houses(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3, count: int) -> void:
+	var spacing := 9.0
+	for i in range(count):
+		var t    := float(i) - float(count) * 0.5
+		var pos  := origin + shore_dir * (t * spacing) \
+		            + pier_dir * _nrng.randf_range(4.0, 12.0) \
+		            + _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
+		pos.y    = origin.y
+		var fp   := Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
+		_nordic_stilt_house(pos, -pier_dir, fp)
+
+# ── Fish rack prop ────────────────────────────────────────────────────────────
+func _nordic_fish_rack(world_pos: Vector3, facing: Vector3) -> void:
+	var n     := Node3D.new()
+	n.name    = "FishRack"
+	add_child(n)
+	n.global_position = world_pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	for sx in [-1.1, 1.1]:
+		for sz in [-0.5, 0.5]:
+			var post  := MeshInstance3D.new()
+			var cm    := CylinderMesh.new()
+			cm.top_radius    = 0.055
+			cm.bottom_radius = 0.07
+			cm.height        = 1.55
+			post.mesh = cm
+			post.material_override = MAT_DARKPOST()
+			post.position = Vector3(sx, 0.77, sz)
+			n.add_child(post)
+
+	var bar   := MeshInstance3D.new()
+	var bm    := BoxMesh.new()
+	bm.size   = Vector3(2.6, 0.07, 0.10)
+	bar.mesh  = bm
+	bar.material_override = MAT_PLANK(1.0)
+	bar.position.y = 1.42
+	n.add_child(bar)
+
+# ── Barrel / crate clutter ────────────────────────────────────────────────────
+func _nordic_clutter(world_pos: Vector3) -> void:
+	var n := Node3D.new()
+	add_child(n)
+	n.global_position = world_pos
+	n.rotation.y = _nrng.randf_range(-PI, PI)
+
+	var mi := MeshInstance3D.new()
+	if _nrng.randf() < 0.55:
+		# Barrel (primitive — GLB swap via assets backlog when barrel.glb is imported)
+		var cm := CylinderMesh.new()
+		cm.top_radius    = 0.22
+		cm.bottom_radius = 0.25
+		cm.height        = _nrng.randf_range(0.5, 0.80)
+		mi.mesh  = cm
+		mi.material_override = MAT_DARK_WOOD(0.5)
+		mi.position.y = cm.height * 0.5
+	else:
+		var bm := BoxMesh.new()
+		bm.size = Vector3(_nrng.randf_range(0.38, 0.70),
+		                  _nrng.randf_range(0.28, 0.52),
+		                  _nrng.randf_range(0.38, 0.70))
+		mi.mesh = bm
+		mi.material_override = MAT_WOOD(1.0)
+		mi.position.y = bm.size.y * 0.5
+
+	n.add_child(mi)
+
+# ── Boat proxy ────────────────────────────────────────────────────────────────
+func _nordic_boat(world_pos: Vector3, facing: Vector3) -> void:
+	var n := Node3D.new()
+	n.name = "NordicBoat"
+	add_child(n)
+	n.global_position = world_pos
+	n.rotation.y = atan2(facing.x, facing.z)
+
+	var hull  := MeshInstance3D.new()
+	var bm    := BoxMesh.new()
+	bm.size   = Vector3(_nrng.randf_range(1.7, 2.4), 0.65, _nrng.randf_range(4.5, 7.5))
+	hull.mesh = bm
+	hull.material_override = MAT_DARK_WOOD(1.5)
+	hull.position.y = 0.32
+	n.add_child(hull)
+
+	# Mast (50% chance)
+	if _nrng.randf() < 0.50:
+		var mast  := MeshInstance3D.new()
+		var cm    := CylinderMesh.new()
+		cm.top_radius    = 0.06
+		cm.bottom_radius = 0.09
+		cm.height        = _nrng.randf_range(4.0, 6.5)
+		mast.mesh = cm
+		mast.material_override = MAT_DARKPOST()
+		mast.position = Vector3(0, 0.65 + cm.height * 0.5, -bm.size.z * 0.12)
+		n.add_child(mast)
+
+# ── Woodpile ─────────────────────────────────────────────────────────────────
+func _nordic_woodpile(world_pos: Vector3) -> void:
+	var n  := Node3D.new()
+	n.name = "Woodpile"
+	add_child(n)
+	n.global_position = world_pos
+	n.rotation.y = _nrng.randf_range(-PI, PI)
+
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = Vector3(_nrng.randf_range(0.9, 1.8),
+	                  _nrng.randf_range(0.35, 0.65),
+	                  _nrng.randf_range(0.55, 1.1))
+	mi.mesh = bm
+	mi.material_override = MAT_DARK_WOOD(1.0)
+	mi.position.y = bm.size.y * 0.5
+	n.add_child(mi)
+
+# ── Dock dressing (fish racks, clutter, boats along piers) ───────────────────
+func _nordic_dock_dressing(origin: Vector3, pier_start: Vector3, pier_dir: Vector3, branch_dirs: Array[Vector3]) -> void:
+	# Fish racks near the base of the pier and shore
+	for i in range(10):
+		var z  := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
+		var x  := (_nrng.randf() < 0.5 ? -1.0 : 1.0) * _nrng.randf_range(3.0, 7.0)
+		var p  := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
+		p.y    = NORDIC_WATER_Y + 0.15
+		_nordic_fish_rack(p, -pier_dir)
+
+	# Barrel / crate clutter along pier and shore
+	for i in range(38):
+		var p  := pier_start + pier_dir * _nrng.randf_range(2.0, NORDIC_PIER_LEN) \
+		          + pier_dir.rotated(Vector3.UP, PI * 0.5) * _nrng.randf_range(-6.0, 6.0)
+		p.y    = NORDIC_WATER_Y + 0.15
+		_nordic_clutter(p)
+
+	# Boats alongside branch pier ends
+	for i in range(branch_dirs.size()):
+		if _nrng.randf() < 0.75:
+			var bp := pier_start + pier_dir * (NORDIC_PIER_LEN * (0.22 + float(i) * 0.18))
+			bp    += branch_dirs[i] * (_nrng.randf_range(12.0, 20.0))
+			bp    += _nordic_side(branch_dirs[i]) * 4.2
+			bp.y  = NORDIC_WATER_Y - 0.06
+			_nordic_boat(bp, -branch_dirs[i])
+
+	# A couple boats moored alongside the main pier too
+	for i in range(2):
+		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
+		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((_nrng.randf() < 0.5 ? -1.0 : 1.0) * 4.5)
+		bp.y  = NORDIC_WATER_Y - 0.06
+		_nordic_boat(bp, -pier_dir)
+
+# ── Shore dressing (woodpiles, clutter, extra fish racks) ────────────────────
+func _nordic_shore_dressing(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3) -> void:
+	for i in range(50):
+		var p  := origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
+		          + pier_dir * _nrng.randf_range(3.0, 18.0) \
+		          + _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
+		p.y    = origin.y
+		if _nrng.randf() < 0.40:
+			_nordic_woodpile(p)
+		elif _nrng.randf() < 0.55:
+			_nordic_clutter(p)
+		else:
+			_nordic_fish_rack(p, shore_dir)
