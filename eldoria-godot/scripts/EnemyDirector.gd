@@ -448,7 +448,7 @@ func load_save_data(data: Dictionary) -> void:
 func _find_player() -> void:
 	if _player and is_instance_valid(_player):
 		return
-	var ps := get_tree().get_nodes_in_group("player")
+	var ps: Array[Node] = get_tree().get_nodes_in_group("player")
 	if ps.size() > 0:
 		_player = ps[0]
 	else:
