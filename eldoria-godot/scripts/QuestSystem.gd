@@ -144,7 +144,7 @@ func _check_dynamic_triggers() -> void:
 		if trigger.is_empty():
 			add_quest(quest)
 		else:
-			var ratio := GameBrain.get_playstyle_ratio(trigger.get("key", ""))
+			var ratio: float = GameBrain.get_playstyle_ratio(trigger.get("key", ""))
 			if ratio >= float(trigger.get("min", 1.0)):
 				add_quest(quest)
 			else:
