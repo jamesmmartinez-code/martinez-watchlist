@@ -1366,7 +1366,7 @@ func _process(delta: float) -> void:
 	# breathing but not so large it looks like a strobe. THEME §12 MOTION & LIFE:
 	# light through leaves moves; light from a fixture does not.
 	var t_now: float = float(Time.get_ticks_msec()) / 1000.0
-	for shaft in get_tree().get_nodes_in_group("god_ray_shafts"):
+	for shaft: Node3D in get_tree().get_nodes_in_group("god_ray_shafts"):
 		if shaft is GPUParticles3D:
 			# Derive a stable per-shaft phase from its XZ position so the offset
 			# survives scene reloads (position is authored by WorldBuilder, not random).
@@ -2040,7 +2040,7 @@ func _check_zone_music() -> void:
 	if not player: return
 	var dist = player.global_position.length()
 	# In a boss fight? Check for any active boss in range
-	for boss in get_tree().get_nodes_in_group("bosses"):
+	for boss: Node3D in get_tree().get_nodes_in_group("bosses"):
 		if boss.has_method("get") and boss.global_position.distance_to(player.global_position) < 30.0:
 			play_music("battle")
 			return
@@ -2083,7 +2083,7 @@ func _force_close_all_panels() -> void:
 		dialogue_panel.visible = false
 	if inventory_panel and is_instance_valid(inventory_panel) and inventory_panel.visible:
 		inventory_panel.visible = false
-	for m in get_tree().get_nodes_in_group("world_maps"):
+	for m: Node3D in get_tree().get_nodes_in_group("world_maps"):
 		if is_instance_valid(m):
 			m.visible = false
 	var ach := get_node_or_null("UI/AchievementsPanel")
