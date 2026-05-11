@@ -141,7 +141,7 @@ func _physics_process(delta: float) -> void:
 		_adapt_to_player()
 
 	if not _player:
-		var ps: Array[Node] = get_tree().get_nodes_in_group("player")
+		var ps: Array[Node3D] = get_tree().get_nodes_in_group("player")
 		if ps.size() > 0:
 			_player = ps[0]
 	if not _player:
@@ -283,7 +283,7 @@ func _ek_sweep() -> void:
 	_show_telegraph_ring(global_position, 4.5, 0.80)
 	await get_tree().create_timer(0.80).timeout
 	if _state == "dead": return
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 4.5:
 			p.take_damage(int(damage * 1.2))
 			var d := (p.global_position - global_position).normalized()
@@ -353,7 +353,7 @@ func _ek_anti_air() -> void:
 	_show_telegraph_ring(global_position, 4.0, 0.70)
 	await get_tree().create_timer(0.70).timeout
 	if _state == "dead": return
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 4.5:
 			p.take_damage(int(damage * 1.1))
 			p.velocity += Vector3.UP * 8.0   # extra upward force — punishes air time
