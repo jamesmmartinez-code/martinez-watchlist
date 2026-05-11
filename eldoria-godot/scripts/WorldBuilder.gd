@@ -38,18 +38,10 @@ func _populate_npc_models() -> void:
 		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 	}
 # Per-NPC scale tweak — different sources have different native heights.
-const NPC_SCALES := {
-	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
-	"Smith Edda":          Vector3(1.05, 1.05, 1.05),
-	"Mara the Merchant":   Vector3(1.10, 1.10, 1.10),
-	"Herbalist Lyra":      Vector3(1.30, 1.30, 1.30),
-	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
-	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
-	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
-	"Village Guard":        Vector3(1.05, 1.05, 1.05),
-	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
-	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
-}
+# NPC_SCALES removed 2026-05-11 — replaced by ScaleUtils.to_height(npc, ScaleUtils.HEIGHT_NPC)
+# _normalize_npc_scale() below now calls ScaleUtils instead of reading this dict.
+# Kept as empty dict so any legacy references don't crash.
+const NPC_SCALES := {}
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
 var _buildings_built: bool = false
@@ -832,6 +824,7 @@ func _ready() -> void:
 	_safe_call("_build_ground_overlay")
 	_safe_call("_build_path_network")
 	_safe_call("_build_village")
+	_safe_call("_build_reference_sticks")  # Scale fix 2026-05-11: toggle-able ruler near spawn
 	_safe_call("_scatter_trees", [140])
 	_safe_call("_scatter_rocks", [36])
 	_safe_call("_scatter_ferns", [48])
@@ -956,7 +949,7 @@ func _make_building(pos: Vector3) -> void:
 	# Stone foundation (1m tall around the base)
 	var foundation := MeshInstance3D.new()
 	var fm := BoxMesh.new()
-	fm.size = Vector3(4.0, 0.5, 4.0)
+	fm.size = Vector3(6.4, 0.5, 6.4)  # Scale fix 2026-05-11: match new footprint
 	foundation.mesh = fm
 	foundation.material_override = MAT_FOUNDATION(2)
 	foundation.position.y = 0.25
@@ -965,7 +958,7 @@ func _make_building(pos: Vector3) -> void:
 	# Walls (whitewashed plaster — half-timbered look with dark wood corner beams)
 	var wall := MeshInstance3D.new()
 	var wall_mesh := BoxMesh.new()
-	wall_mesh.size = Vector3(3.6, 2.6, 3.6)
+	wall_mesh.size = Vector3(6.0, 3.2, 6.0)  # Scale fix 2026-05-11: 3.6→6.0m footprint, 2.6→3.2m wall height
 	wall.mesh = wall_mesh
 	wall.material_override = MAT_PLASTER(3)
 	wall.position.y = 1.3 + 0.5
@@ -975,7 +968,7 @@ func _make_building(pos: Vector3) -> void:
 	var body := StaticBody3D.new()
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(3.6, 3.4, 3.6)
+	box.size = Vector3(6.0, 4.0, 6.0)  # Scale fix 2026-05-11: match new wall size
 	col.shape = box
 	col.position.y = 1.7
 	body.add_child(col)
@@ -1006,7 +999,7 @@ func _make_building(pos: Vector3) -> void:
 	# Eave
 	var eave := MeshInstance3D.new()
 	var em := BoxMesh.new()
-	em.size = Vector3(4.0, 0.18, 4.0)
+	em.size = Vector3(6.4, 0.18, 6.4)  # Scale fix 2026-05-11
 	eave.mesh = em
 	eave.material_override = MAT_DARK_WOOD(0.5)
 	eave.position.y = 3.18
@@ -1016,7 +1009,7 @@ func _make_building(pos: Vector3) -> void:
 	var roof := MeshInstance3D.new()
 	var pyr := PrismMesh.new()
 	pyr.left_to_right = 0.5
-	pyr.size = Vector3(4.4, 1.9, 4.4)
+	pyr.size = Vector3(6.8, 2.2, 6.8)  # Scale fix 2026-05-11: taller roof to match larger footprint
 	roof.mesh = pyr
 	roof.material_override = MAT_ROOF(2.0)
 	roof.position.y = 4.13
@@ -1043,7 +1036,7 @@ func _make_building(pos: Vector3) -> void:
 	qm.size = Vector2(0.7, 0.6)
 	win.mesh = qm
 	win.material_override = win_mat
-	win.position = Vector3(0, 2.1, 1.81)
+	win.position = Vector3(0, 2.4, 3.05)  # Scale fix 2026-05-11
 	house.add_child(win)
 
 	# Window frame
@@ -1063,19 +1056,19 @@ func _make_building(pos: Vector3) -> void:
 	# Door
 	var door := MeshInstance3D.new()
 	var dm := BoxMesh.new()
-	dm.size = Vector3(0.9, 1.6, 0.08)
+	dm.size = Vector3(1.0, 2.1, 0.08)  # Scale fix 2026-05-11: door 1.6→2.1m (adult-height)
 	door.mesh = dm
 	door.material_override = MAT_DARK_WOOD(0.6)
-	door.position = Vector3(-1.0, 1.3, 1.85)
+	door.position = Vector3(-1.0, 1.05, 3.05)  # Scale fix 2026-05-11: recentred on new wall
 	house.add_child(door)
 
 	# Chimney
 	var chim := MeshInstance3D.new()
 	var cm := BoxMesh.new()
-	cm.size = Vector3(0.5, 1.5, 0.5)
+	cm.size = Vector3(0.5, 1.8, 0.5)  # Scale fix 2026-05-11
 	chim.mesh = cm
 	chim.material_override = MAT_STONE(1)
-	chim.position = Vector3(1.2, 4.6, 1.0)
+	chim.position = Vector3(1.4, 5.5, 1.4)  # Scale fix 2026-05-11: raised for new roof height
 	chim.name = "Chimney"
 	house.add_child(chim)
 
@@ -3560,34 +3553,9 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 # Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.
 # Sketchfab models come in mixed unit systems; this prevents the "giants" problem.
 func _normalize_npc_scale(model: Node) -> void:
-	await get_tree().process_frame
-	var aabb := AABB()
-	var has := false
-	for c in model.find_children("*", "VisualInstance3D", true):
-		var v := c as VisualInstance3D
-		if not v: continue
-		var a := v.get_aabb()
-		a = v.global_transform * a
-		if not has:
-			aabb = a; has = true
-		else:
-			aabb = aabb.merge(a)
-	if not has or aabb.size.y <= 0.001:
-		return
-	# char-spec 2026-05-06: 1.8 (adult) → 1.65 per SIZE_STANDARDS.md §1.
-	var target_height := 1.65
-	var s := target_height / aabb.size.y
-	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
-	s = clamp(s, 0.1, 3.0)
-	model.scale = Vector3(s, s, s)
-
-
-# ════════════════════════════════════════════════════════════════════════
-# GLOBAL SCALE SWEEP — runs once 0.5s after _ready completes. Walks the
-# entire scene tree, finds any character GLB instance whose visible AABB
-# is unreasonably tall (>5m), and rescales it. Catches characters that
-# any other script spawned bypassing per-script normalization.
-# ════════════════════════════════════════════════════════════════════════
+	# Scale fix 2026-05-11: delegate to ScaleUtils instead of inline AABB math
+	if model is Node3D:
+		ScaleUtils.to_height(model as Node3D, ScaleUtils.HEIGHT_NPC)
 
 func _global_scale_sweep() -> void:
 	# Realm-of-Eldoria size discipline — runs every 0.5s, no exemptions for
