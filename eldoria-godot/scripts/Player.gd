@@ -1581,7 +1581,7 @@ func _normalize_player_model(target_height: float) -> void:
 	for c in get_children():
 		if c is BoneAttachment3D: continue
 		if c.find_children("*", "VisualInstance3D", true, false).size() > 0:
-			var cs := c.scale
+			var cs: Vector3 = (c as Node3D).scale
 			if cs.x > 5.0 or cs.x < 0.01:
 				c.scale = Vector3.ONE
 			break
