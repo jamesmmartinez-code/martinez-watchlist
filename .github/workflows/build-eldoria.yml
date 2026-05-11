@@ -219,6 +219,15 @@ jobs:
               -H "Content-Type: $mime" --data-binary "@$f" \
               "$API/$name")
             if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ $name"; else FAIL=$((FAIL+1)); echo "  ❌ $name → HTTP $CODE"; fi
+            # Also upload index.html as game.html — the Worker fetches game.html
+            # so redirect commits never clobber the live game shell in R2.
+            if [ "$name" = "index.html" ]; then
+              CODE2=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
+                -X PUT -H "Authorization: Bearer $CF_TOKEN" \
+                -H "Content-Type: $mime" --data-binary "@$f" \
+                "$API/game.html")
+              if [ "$CODE2" = "200" ]; then OK=$((OK+1)); echo "  ✅ game.html (mirror)"; else FAIL=$((FAIL+1)); echo "  ❌ game.html → HTTP $CODE2"; fi
+            fi
           done
           # Upload manifest LAST — atomic swap so clients always see a consistent state.
           if [ -f "eldoria/pck-parts.json" ]; then
