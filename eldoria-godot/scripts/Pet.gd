@@ -72,7 +72,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0
 	if not _player:
-		var pls: Array[Node3D] = get_tree().get_nodes_in_group("player")
+		var pls: Array = get_tree().get_nodes_in_group("player")
 		if pls.size() > 0:
 			_player = pls[0]
 	if not _player:
