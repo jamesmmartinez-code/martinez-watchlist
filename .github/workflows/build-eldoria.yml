@@ -109,6 +109,13 @@ jobs:
             echo "⚠️  humanoid_base.glb missing — skipping AnimLib build"
           fi
 
+      - name: Disable editor-only plugins for headless export
+        run: |
+          # terrain_3d editor plugin uses Terrain3DEditor (editor-only class) which
+          # fails in headless --export mode. Strip it from enabled plugins before export.
+          sed -i '/^\[editor_plugins\]/,/^$/d' eldoria-godot/project.godot
+          echo "✅ editor_plugins section removed from project.godot"
+
       - name: Export Web build
         run: |
           cd eldoria-godot
