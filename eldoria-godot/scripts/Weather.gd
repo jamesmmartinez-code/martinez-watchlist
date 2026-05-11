@@ -205,7 +205,7 @@ func _notify_home_weather(state: String) -> void:
 	# player_home group hook: signal rain/clear so hearth can adjust smoke rate.
 	# We write a lightweight flag — the group node reads it in its own _process.
 	var raining: bool = (state == "rain" or state == "heavy_rain")
-	for node in get_tree().get_nodes_in_group("player_home"):
+	for node: Node3D in get_tree().get_nodes_in_group("player_home"):
 		if node.has_method("set_rain_mode"):
 			node.set_rain_mode(raining)
 		elif node is Node:
