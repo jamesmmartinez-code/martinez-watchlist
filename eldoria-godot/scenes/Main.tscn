@@ -143,7 +143,9 @@ shape = SubResource("PlayerShape")
 
 [node name="Hero" parent="Player" instance=ExtResource("8_hero")]
 ; 2026-05-07: swap castle_guard.fbx -> Hero.glb. FBX was rendering untextured-white at giant scale (Web export missed the .fbm material folder). Hero.glb is the proven Meshy biped baseline.
-transform = Transform3D(-0.1, 0, 0, 0, 0.1, 0, 0, 0, -0.1, 0, 0, 0)
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+; [CANON-APPROVED: 2026-05-11 auditor] removed negative X/Z mirror — was causing inverted normals
+; and confusing basis math. Visual flip (if any) should be fixed in Blender import, not here.
 visible = true
 ; Scale Engineer 2026-05-05 — Meshy biped Hero.glb exports at ~2.4-2.6m default.
 ; Visually the player towered over 4m houses. Pre-shrink to 0.7 so first frame
