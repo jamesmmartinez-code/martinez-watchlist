@@ -5008,7 +5008,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Fish racks
 	for i in range(10):
 		var z := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x := (_nrng.randf() < 0.5 ? -1.0 : 1.0) * _nrng.randf_range(3.0, 7.0)
+		var x := (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
 		var p := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_fish_rack(p, -pier_dir)
@@ -5031,7 +5031,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Two boats alongside main pier
 	for i in range(2):
 		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
-		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((_nrng.randf() < 0.5 ? -1.0 : 1.0) * 4.5)
+		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
 		bp.y  = NORDIC_WATER_Y - 0.06
 		_nordic_boat(bp, -pier_dir)
 
