@@ -162,7 +162,7 @@ func _physics_process(delta: float) -> void:
 		_adapt_attack_pool((_player.global_position - global_position).length())
 
 	if not _player:
-		var players: Array[Node3D] = get_tree().get_nodes_in_group("player")
+		var players: Array = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			_player = players[0]
 	if not _player:
