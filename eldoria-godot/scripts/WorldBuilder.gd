@@ -4368,8 +4368,8 @@ func _build_nordic_fishing_village() -> void:
 	var branch_dirs  : Array[Vector3] = []
 	var branch_bases : Array[Vector3] = []
 	for i in range(NORDIC_BRANCH_T.size()):
-		var t   := NORDIC_BRANCH_T[i]
-		var bp  := pier_start + pier_dir * (NORDIC_PIER_LEN * t)
+		var t   : float = NORDIC_BRANCH_T[i]
+		var bp  : Vector3 = pier_start + pier_dir * (NORDIC_PIER_LEN * t)
 		bp.y    = NORDIC_WATER_Y + 0.15
 		var side := (1.0 if i % 2 == 0 else -1.0)
 		var bd  : Vector3 = pier_dir.rotated(Vector3.UP, side * PI * 0.5)
