@@ -5134,7 +5134,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 		# Gentle meander that fades to straight near both ends
 		var wobble := sin(t * PI * 3.0) * 1.1 + rng.randf_range(-0.3, 0.3)
 		# Widen near the Nordic plaza
-		var width  := lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
+		var width: float = lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
 
 		var seg    := MeshInstance3D.new()
 		var bm     := BoxMesh.new()
