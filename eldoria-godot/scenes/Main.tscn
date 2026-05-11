@@ -89,8 +89,10 @@ metallic = 0.0
 size = Vector3(200, 0.5, 200)
 
 [sub_resource type="CapsuleShape3D" id="PlayerShape"]
-radius = 0.4
-height = 1.8
+; [CANON-APPROVED: 2026-05-11 auditor fix] capsule now matches 0.85m player target
+; CapsuleShape3D total height = height + 2*radius = 0.41 + 2*0.22 = 0.85m
+radius = 0.22
+height = 0.41
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_world")
