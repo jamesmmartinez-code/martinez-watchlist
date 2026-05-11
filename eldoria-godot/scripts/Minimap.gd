@@ -188,7 +188,7 @@ func _draw() -> void:
 			col = Color(col.r, col.g, col.b, 0.55)
 		_draw_landmark_glyph(String(l.get("kind", "")), p, col)
 
-	for c in get_tree().get_nodes_in_group("chests"):
+	for c: Node3D in get_tree().get_nodes_in_group("chests"):
 		if c is Node3D:
 			var node3d: Node3D = c
 			var ccol: Color = COL_CHEST
@@ -197,17 +197,17 @@ func _draw() -> void:
 			_pin_at(node3d.global_position, ccol, player, player_yaw, center, radius_px,
 					PIN_RADIUS_PX - 0.6)
 
-	for f in get_tree().get_nodes_in_group("goblin_fires"):
+	for f: Node3D in get_tree().get_nodes_in_group("goblin_fires"):
 		if f is Node3D:
 			_pin_at((f as Node3D).global_position, COL_FIRE, player, player_yaw,
 					center, radius_px, PIN_RADIUS_PX - 1.0)
 
-	for n in get_tree().get_nodes_in_group("npcs"):
+	for n: Node3D in get_tree().get_nodes_in_group("npcs"):
 		if n is Node3D:
 			_pin_at((n as Node3D).global_position, COL_NPC, player, player_yaw,
 					center, radius_px, PIN_RADIUS_PX)
 
-	for e in get_tree().get_nodes_in_group("enemies"):
+	for e: Node3D in get_tree().get_nodes_in_group("enemies"):
 		if e is Node3D:
 			var enode: Node3D = e
 			var dist_e: float = 999.0
@@ -226,7 +226,7 @@ func _draw() -> void:
 			_pin_at(enode.global_position, ec, player, player_yaw,
 					center, radius_px, PIN_RADIUS_PX)
 
-	for b in get_tree().get_nodes_in_group("bosses"):
+	for b: Node3D in get_tree().get_nodes_in_group("bosses"):
 		if b is Node3D:
 			_pin_at((b as Node3D).global_position, COL_BOSS, player, player_yaw,
 					center, radius_px, PIN_RADIUS_PX + 1.6)
