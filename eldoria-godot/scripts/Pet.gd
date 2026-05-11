@@ -72,7 +72,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0
 	if not _player:
-		var pls: Array[Node] = get_tree().get_nodes_in_group("player")
+		var pls: Array[Node3D] = get_tree().get_nodes_in_group("player")
 		if pls.size() > 0:
 			_player = pls[0]
 	if not _player:
@@ -101,7 +101,7 @@ func _physics_process(delta: float) -> void:
 		# REFINE: character — jittered bark cadence (was a flat 2.5s metronome) so Ember sounds alive.
 		# REFINE: character — cadence 1.8–2.6 → 2.0–2.7. Compounds on the recent Minimap.gd run that slowed enemy aggro flash rate 8.0 → 6.5 rad/s on the same logic ("warning is a heartbeat, not a strobe"). Ember's bark and the minimap flash are paired threat cues; their rhythms should align. Lower-bound +0.2s pulls the loudest case off the strobe edge; upper-bound +0.1s nudges the quiet rhythm slightly slower so the band doesn't squeeze. Mean cadence 2.20 → 2.35s. Alden's low-to-medium combat tolerance directly served (PLAYER_MODEL.md — Combat tolerance: low-to-medium; gets discouraged by deaths).
 		_bark_t = randf_range(2.0, 2.7)
-		for e in get_tree().get_nodes_in_group("enemies"):
+		for e: Node3D in get_tree().get_nodes_in_group("enemies"):
 			if e.global_position.distance_to(global_position) < bark_radius:
 				_bark()
 				break
