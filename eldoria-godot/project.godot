@@ -16,6 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 
 [autoload]
+ScaleUtils="*res://scripts/ScaleUtils.gd"
 
 EventBus="*res://scripts/EventBus.gd"
 Audio="*res://scripts/Audio.gd"
