@@ -153,17 +153,19 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(10, 2.0, 3)  # Physics: open ground north of Bram's inn.
-# Y=2.0: capsule bottom spawns ~2 m above terrain, well clear of any floor surface.
-#   Gravity + move_and_slide settle the player in ≤ 3 physics frames.
-#   _find_free_spawn adds another 0.5 m lift, so effective spawn ≥ 2.5 m above ground.
-# WHY NOT y=0: capsule bottom at y=0 is flush with terrain collision — physics engine
-#   can interpret the capsule as "inside" the mesh (float point, triangle seam) and
-#   either pin the player or eject upward.
-# (10, 2, 3) XZ checks (2026-05-11):
-#   building (10,0,0) z-range -1.8→1.8; player z=3 is OUTSIDE. ✓
-#   building (6,0,6)  x-range 4.2→7.8; player x=10 capsule edge=9.6 > 7.8. ✓
-#   Bram NPC (10,0,-2): 5m south.  Maeve (6,0,3): 4m west. ✓
+const SAFE_SPAWN := Vector3(0, 2.0, 0)   # Plaza centre — Briarwood village crossroads.
+# Scale fix 2026-05-11: buildings grew from 3.6 m to 6.0 m footprint.
+#   Old (10,2,3): building (10,0,0) north wall is now at z=+3.0 exactly — capsule
+#   radius 0.4 put the player INSIDE the wall → physics ejection → stuck on roof. WRONG.
+# (0, 2, 0) building clearances (all buildings are 6m footprint, half-extent 3m):
+#   (10,0,0):  x=[7,13]  — player x=0 is 7m west.  ✓
+#   (-10,0,0): x=[-13,-7]— player x=0 is 7m east.  ✓
+#   (6,0,6):   z=[3,9]   — player z=0 is 3m south. ✓
+#   (-6,0,6):  z=[3,9]   — same.                    ✓
+#   (6,0,-8):  z=[-11,-5]— player z=0 is 5m north.  ✓
+#   HOME(0,14): z=[11,17] — player z=0 is 11m south. ✓
+# Y=2.0: capsule bottom 2 m above terrain so floor seams can't read it as "inside".
+#   Gravity settles the player in ≤ 0.5 s.  _find_free_spawn adds 0.5 m extra lift.
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
