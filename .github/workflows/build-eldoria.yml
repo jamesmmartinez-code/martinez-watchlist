@@ -115,6 +115,9 @@ jobs:
           sed -i '/^\[editor_plugins\]/,/^$/d' eldoria-godot/project.godot
           echo "✅ editor_plugins section removed from project.godot"
 
+      - name: GDScript lint (catch ternary + Array[Node3D] regressions)
+        run: python3 .github/scripts/gdscript_lint.py
+
       - name: Export Web build
         run: |
           cd eldoria-godot
