@@ -4402,8 +4402,11 @@ func _build_nordic_fishing_village() -> void:
 # Road is split into its own _safe_call so a road crash never kills the village.
 func _build_nordic_road() -> void:
 	var origin := NORDIC_ORIGIN
-	_nordic_cobble_road(Vector3(0, 0, 12), origin + Vector3(0, 0, 8))
-	_dlog("Nordic cobble road built")
+	var road_end := origin + Vector3(0, 0, 8)
+	_nordic_cobble_road(Vector3(0, 0, 12), road_end)
+	# Harbor gate arch sits at the road's northern terminus, facing south (dir = +Z)
+	_nordic_harbor_gate(road_end + Vector3(0, 0, 4), Vector3(0, 0, 1))
+	_dlog("Nordic cobble road + harbor gate built")
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 func _nordic_side(dir: Vector3) -> Vector3:
@@ -5170,6 +5173,88 @@ func _nordic_signpost(world_pos: Vector3, facing: Vector3, top_text: String, bot
 		lbl.billboard  = BaseMaterial3D.BILLBOARD_ENABLED
 		lbl.position   = Vector3(0.5, 1.96 - float(i) * 0.30, 0.1)
 		n.add_child(lbl)
+
+# ── Harbor gate arch — marks the northern road terminus into Northhaven ───────
+# Stone post × 2 + crossbeam + "NORTHHAVEN" banner label.
+# Facing dir = which way players are travelling THROUGH the gate (into harbor).
+func _nordic_harbor_gate(world_pos: Vector3, facing: Vector3) -> void:
+	var root := Node3D.new()
+	root.name = "HarborGate"
+	add_child(root)
+	root.global_position = world_pos
+	root.rotation.y = atan2(facing.x, facing.z)
+
+	var post_h   : float = 4.2
+	var post_w   : float = 0.55
+	var gate_w   : float = 5.0   # clear passage width between post centres
+	var beam_h   : float = 0.50
+	var beam_overhang : float = 0.65
+
+	# Left and right stone pillars
+	for side in [-1.0, 1.0]:
+		var pillar := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(post_w, post_h, post_w)
+		pillar.mesh = bm
+		pillar.material_override = MAT_STONE(1.5)
+		pillar.position = Vector3(side * (gate_w * 0.5), post_h * 0.5, 0.0)
+		root.add_child(pillar)
+		# Collision for each pillar so players can't walk through the posts
+		var body := StaticBody3D.new()
+		var col  := CollisionShape3D.new()
+		var box  := BoxShape3D.new()
+		box.size = Vector3(post_w, post_h, post_w)
+		col.shape = box
+		col.position = pillar.position
+		body.add_child(col)
+		root.add_child(body)
+		# Stone cap on top
+		var cap := MeshInstance3D.new()
+		var cm  := BoxMesh.new()
+		cm.size = Vector3(post_w + 0.2, 0.28, post_w + 0.2)
+		cap.mesh = cm
+		cap.material_override = MAT_STONE(1.0)
+		cap.position = Vector3(side * (gate_w * 0.5), post_h + 0.14, 0.0)
+		root.add_child(cap)
+
+	# Crossbeam spanning both pillars
+	var beam := MeshInstance3D.new()
+	var bbm  := BoxMesh.new()
+	bbm.size = Vector3(gate_w + post_w * 2.0 + beam_overhang * 2.0, beam_h, post_w * 0.80)
+	beam.mesh = bbm
+	beam.material_override = MAT_DARK_WOOD(0.5)
+	beam.position = Vector3(0.0, post_h + beam_h * 0.5 + 0.28, 0.0)
+	root.add_child(beam)
+
+	# Banner board centred on the beam
+	var banner := MeshInstance3D.new()
+	var sbm    := BoxMesh.new()
+	sbm.size   = Vector3(gate_w * 0.70, 0.60, 0.12)
+	banner.mesh = sbm
+	banner.material_override = MAT_DARK_WOOD(0.8)
+	banner.position = Vector3(0.0, post_h + 0.28 + beam_h * 0.5 - 0.35, post_w * 0.45)
+	root.add_child(banner)
+
+	# "NORTHHAVEN" label — fixed (not billboarded) so it reads as a real sign
+	var lbl := Label3D.new()
+	lbl.text             = "NORTHHAVEN"
+	lbl.font_size        = 52
+	lbl.outline_size     = 8
+	lbl.outline_modulate = Color(0.0, 0.0, 0.0)
+	lbl.modulate         = Color(1.0, 0.88, 0.55)
+	lbl.billboard        = BaseMaterial3D.BILLBOARD_DISABLED
+	lbl.pixel_size       = 0.003
+	lbl.position         = banner.position + Vector3(0.0, 0.05, 0.07)
+	root.add_child(lbl)
+
+	# Ambient torch lights on each pillar top — same warm amber as road lanterns
+	for side in [-1.0, 1.0]:
+		var torch := OmniLight3D.new()
+		torch.light_color  = Color(1.0, 0.78, 0.40)
+		torch.light_energy = 2.8
+		torch.omni_range   = 14.0
+		torch.position     = Vector3(side * (gate_w * 0.5), post_h + 0.5, 0.0)
+		root.add_child(torch)
 
 # ============================================================================
 # GLB AABB SCALER — Builder run 25 (ported from WorldBuilder_patched.gd)
