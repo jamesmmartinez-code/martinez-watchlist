@@ -3404,20 +3404,23 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	caves.add_child(dome)
 
 	# ── Entrance arch (two stone columns + capstone) ──
+	# column_height hoisted outside the loop — GDScript 4 scopes loop vars to
+	# the loop body, so cm.height was undefined when cap/beacon used it.
+	var column_height: float = 5.5
 	for sx in [-3.2, 3.2]:
 		var col := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
-		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = 5.5
+		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = column_height
 		col.mesh = cm
 		col.material_override = MAT_ROCK(1.5)
-		col.position = Vector3(sx, cm.height * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] entrance z 22→16, y from column height
+		col.position = Vector3(sx, column_height * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] entrance z 22→16, y from column height
 		caves.add_child(col)
 	var cap := MeshInstance3D.new()
 	var capm := BoxMesh.new()
 	capm.size = Vector3(8.4, 1.2, 1.6)
 	cap.mesh = capm
 	cap.material_override = MAT_ROCK(1.5)
-	cap.position = Vector3(0, cm.height + capm.size.y * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] computed from column top — never floats
+	cap.position = Vector3(0, column_height + capm.size.y * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] computed from column top — never floats
 	caves.add_child(cap)
 	# Glowing entrance crystal above the arch — a beacon from the village
 	var beacon := MeshInstance3D.new()
@@ -3432,14 +3435,14 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# as a destination from the village edge (helps Alden spot the entrance).
 	beacon_mat.emission_energy_multiplier = 4.0
 	beacon.material_override = beacon_mat
-	beacon.position = Vector3(0, cm.height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11] above arch
+	beacon.position = Vector3(0, column_height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11] above arch
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
 	beacon_light.light_color = crystal_blue
 	# REFINE: visual — Crystal Caves — beacon light reaches the village treeline
 	beacon_light.light_energy = 3.2
 	beacon_light.omni_range = 18.0
-	beacon_light.position = Vector3(0, cm.height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11]
+	beacon_light.position = Vector3(0, column_height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11]
 	caves.add_child(beacon_light)
 
 	# ── Ambient blue cave light ──
