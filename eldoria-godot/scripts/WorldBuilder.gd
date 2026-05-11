@@ -862,6 +862,7 @@ func _ready() -> void:
 	_safe_call("_build_weather")        # Builder run 36 — Weather System
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_safe_call("_build_nordic_fishing_village")  # Builder run 25 — Nordic dock district, THEME §1 §11
+	_safe_call("_build_nordic_road")             # Builder run 25 — cobble road Briarwood→Nordic (isolated)
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
@@ -4281,6 +4282,23 @@ var _nrng: RandomNumberGenerator
 # can reference them by index (fixes review item: boat offset mismatch).
 const NORDIC_BRANCH_T := [0.22, 0.42, 0.62, 0.80]
 
+# ── Nordic inspector knobs (all optional — consts above are the runtime defaults)
+# Set these in the Godot Inspector to tweak the district without touching code.
+@export var nordic_pier_length: float = 52.0
+@export var nordic_pier_width: float = 2.6
+@export var nordic_pier_branch_count: int = 4
+@export var nordic_shore_house_count: int = 16
+@export var nordic_pier_house_count: int = 5
+@export var nordic_prop_density: float = 1.0
+@export var nordic_spawn_dock_npcs: bool = true
+
+# Optional GLB overrides (Meshy backlog). Leave null to keep primitive fallbacks.
+# Wire in the Inspector: e.g. glb_barrel = res://assets/models/props/wooden_barrel.glb
+@export var glb_barrel: PackedScene      # wooden_barrel.glb when available
+@export var glb_crate: PackedScene       # no GLB yet — leave null
+@export var glb_boat_small: PackedScene  # no GLB yet — leave null
+@export var glb_boat_mast: PackedScene   # no GLB yet — leave null
+
 func MAT_WATER() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color        = Color(0.10, 0.28, 0.45, 0.82)
@@ -4379,10 +4397,13 @@ func _build_nordic_fishing_village() -> void:
 	# Dock NPCs
 	_nordic_dock_npcs(origin, pier_start, pier_dir, shore_dir)
 
-	# Cobble road from Briarwood plaza to Nordic shore
-	_nordic_cobble_road(Vector3(0, 0, 12), origin + Vector3(0, 0, 8))
-
 	_dlog("Nordic fishing village built (rev2) at " + str(origin))
+
+# Road is split into its own _safe_call so a road crash never kills the village.
+func _build_nordic_road() -> void:
+	var origin := NORDIC_ORIGIN
+	_nordic_cobble_road(Vector3(0, 0, 12), origin + Vector3(0, 0, 8))
+	_dlog("Nordic cobble road built")
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 func _nordic_side(dir: Vector3) -> Vector3:
@@ -4803,6 +4824,14 @@ func _nordic_clutter(world_pos: Vector3) -> void:
 	n.global_position = world_pos
 	n.rotation.y = _nrng.randf_range(-PI, PI)
 
+	# GLB fast-path: use wooden_barrel.glb when wired in the Inspector.
+	# AABB scaler ensures correct height regardless of GLB source scale.
+	if glb_barrel != null and _nrng.randf() < 0.55:
+		var inst: Node3D = glb_barrel.instantiate() as Node3D
+		n.add_child(inst)
+		_scale_node_to_height(inst, _nrng.randf_range(0.55, 0.80))
+		return
+	# Primitive fallback (also used for crates when glb_crate is null)
 	var mi := MeshInstance3D.new()
 	if _nrng.randf() < 0.55:
 		var cm := CylinderMesh.new()
@@ -5141,3 +5170,47 @@ func _nordic_signpost(world_pos: Vector3, facing: Vector3, top_text: String, bot
 		lbl.billboard  = BaseMaterial3D.BILLBOARD_ENABLED
 		lbl.position   = Vector3(0.5, 1.96 - float(i) * 0.30, 0.1)
 		n.add_child(lbl)
+
+# ============================================================================
+# GLB AABB SCALER — Builder run 25 (ported from WorldBuilder_patched.gd)
+# Used by _nordic_clutter() for barrel GLB, and available for any future
+# GLB prop that needs to be normalised to a target world-space dimension.
+# ============================================================================
+
+## Scale node so its tallest visual axis (Y) equals target_h metres.
+func _scale_node_to_height(n: Node3D, target_h: float) -> void:
+	var aabb := _visual_aabb(n)
+	if aabb.size.y <= 0.0001:
+		return
+	var s := target_h / aabb.size.y
+	s = clamp(s, 0.05, 10.0)
+	n.scale = n.scale * Vector3.ONE * s
+
+## Scale node so its depth axis (Z) equals target_len metres.
+func _scale_node_to_length(n: Node3D, target_len: float) -> void:
+	var aabb := _visual_aabb(n)
+	if aabb.size.z <= 0.0001:
+		return
+	var s := target_len / aabb.size.z
+	s = clamp(s, 0.05, 10.0)
+	n.scale = n.scale * Vector3.ONE * s
+
+## Merge all VisualInstance3D AABBs in world-space and return the combined AABB.
+## Returns an empty AABB if the node has no visual children.
+func _visual_aabb(n: Node3D) -> AABB:
+	var has := false
+	var out := AABB()
+	for v in n.find_children("*", "VisualInstance3D", true, false):
+		var vi := v as VisualInstance3D
+		if not vi:
+			continue
+		var a := vi.get_aabb()
+		a = vi.global_transform * a
+		if not has:
+			out = a
+			has = true
+		else:
+			out = out.merge(a)
+	if not has:
+		return AABB()
+	return out
