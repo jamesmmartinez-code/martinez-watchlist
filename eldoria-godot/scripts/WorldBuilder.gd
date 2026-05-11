@@ -946,31 +946,38 @@ func _make_building(pos: Vector3) -> void:
 	house.add_to_group("buildings")
 	add_child(house)
 
-	# Stone foundation (1m tall around the base)
+	# ── HOUSE SCALE STANDARD (metres) — [CANON-APPROVED: 2026-05-11 auditor fix] ──
+	var house_w: float = 7.0      # believable small home footprint
+	var house_d: float = 6.0
+	var foundation_h: float = 0.6
+	var wall_h: float = 3.2       # single-storey interior height
+	var eave_y: float = foundation_h + wall_h
+
+	# Stone foundation
 	var foundation := MeshInstance3D.new()
 	var fm := BoxMesh.new()
-	fm.size = Vector3(6.4, 0.5, 6.4)  # Scale fix 2026-05-11: match new footprint
+	fm.size = Vector3(house_w, foundation_h, house_d)
 	foundation.mesh = fm
 	foundation.material_override = MAT_FOUNDATION(2)
-	foundation.position.y = 0.25
+	foundation.position.y = foundation_h * 0.5
 	house.add_child(foundation)
 
-	# Walls (whitewashed plaster — half-timbered look with dark wood corner beams)
+	# Walls — inset slightly from foundation edge for ledge detail
 	var wall := MeshInstance3D.new()
 	var wall_mesh := BoxMesh.new()
-	wall_mesh.size = Vector3(6.0, 3.2, 6.0)  # Scale fix 2026-05-11: 3.6→6.0m footprint, 2.6→3.2m wall height
+	wall_mesh.size = Vector3(house_w * 0.92, wall_h, house_d * 0.92)
 	wall.mesh = wall_mesh
 	wall.material_override = MAT_PLASTER(3)
-	wall.position.y = 1.3 + 0.5
+	wall.position.y = foundation_h + wall_h * 0.5
 	house.add_child(wall)
 
-	# Wall collision — covers foundation + walls up to eave.
+	# Unified collision — foundation + walls as one continuous volume (no floating gap)
 	var body := StaticBody3D.new()
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(6.0, 4.0, 6.0)  # Scale fix 2026-05-11: match new wall size
+	box.size = Vector3(wall_mesh.size.x, foundation_h + wall_h, wall_mesh.size.z)
 	col.shape = box
-	col.position.y = 1.7
+	col.position.y = (foundation_h + wall_h) * 0.5
 	body.add_child(col)
 	house.add_child(body)
 
@@ -999,7 +1006,7 @@ func _make_building(pos: Vector3) -> void:
 	# Eave
 	var eave := MeshInstance3D.new()
 	var em := BoxMesh.new()
-	em.size = Vector3(6.4, 0.18, 6.4)  # Scale fix 2026-05-11
+	em.size = Vector3(7.4, 0.18, 6.4)  # [CANON-APPROVED: 2026-05-11] eave overhangs walls
 	eave.mesh = em
 	eave.material_override = MAT_DARK_WOOD(0.5)
 	eave.position.y = 3.18
@@ -1009,7 +1016,7 @@ func _make_building(pos: Vector3) -> void:
 	var roof := MeshInstance3D.new()
 	var pyr := PrismMesh.new()
 	pyr.left_to_right = 0.5
-	pyr.size = Vector3(6.8, 2.2, 6.8)  # Scale fix 2026-05-11: taller roof to match larger footprint
+	pyr.size = Vector3(7.4, 2.4, 6.4)  # [CANON-APPROVED: 2026-05-11] roof matches footprint
 	roof.mesh = pyr
 	roof.material_override = MAT_ROOF(2.0)
 	roof.position.y = 4.13
@@ -1059,7 +1066,7 @@ func _make_building(pos: Vector3) -> void:
 	dm.size = Vector3(1.0, 2.1, 0.08)  # Scale fix 2026-05-11: door 1.6→2.1m (adult-height)
 	door.mesh = dm
 	door.material_override = MAT_DARK_WOOD(0.6)
-	door.position = Vector3(-1.0, 1.05, 3.05)  # Scale fix 2026-05-11: recentred on new wall
+	door.position = Vector3(-1.4, foundation_h + 2.1 * 0.5, (house_d * 0.92 * 0.5) + 0.04)  # [CANON-APPROVED: 2026-05-11 auditor] sits on foundation
 	house.add_child(door)
 
 	# Chimney
@@ -1225,7 +1232,7 @@ func _make_stall(pos: Vector3) -> void:
 	add_child(stall)
 	var counter := MeshInstance3D.new()
 	var bm := BoxMesh.new()
-	bm.size = Vector3(1.8, 0.8, 0.8)
+	bm.size = Vector3(2.2, 1.0, 1.5)  # [CANON-APPROVED: 2026-05-11 auditor] deeper stall counter
 	counter.mesh = bm
 	counter.material_override = MAT_DARK_WOOD(1.5)
 	counter.position.y = 0.4
@@ -1233,10 +1240,10 @@ func _make_stall(pos: Vector3) -> void:
 	for dx in [-0.8, 0.8]:
 		var post := MeshInstance3D.new()
 		var pm := CylinderMesh.new()
-		pm.top_radius = 0.05; pm.bottom_radius = 0.05; pm.height = 1.6
+		pm.top_radius = 0.05; pm.bottom_radius = 0.05; pm.height = 2.2  # [CANON-APPROVED: 2026-05-11] taller posts
 		post.mesh = pm
 		post.material_override = MAT_DARK_WOOD(0.5)
-		post.position = Vector3(dx, 1.2, -0.3)
+		post.position = Vector3(dx, 1.6, -0.55)  # [CANON-APPROVED: 2026-05-11]
 		stall.add_child(post)
 	# Awning (red striped cloth) — THEME §12: cloth must FLAP.
 	# Env: 2026-05-06 — was a static angled box. Wrap in a pivot Node3D at
@@ -1257,7 +1264,7 @@ func _make_stall(pos: Vector3) -> void:
 	awn_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var awn := MeshInstance3D.new()
 	var am := BoxMesh.new()
-	am.size = Vector3(2.2, 0.05, 1.2)
+	am.size = Vector3(2.6, 0.05, 2.0)  # [CANON-APPROVED: 2026-05-11 auditor] deeper awning matches counter
 	awn.mesh = am
 	awn.material_override = awn_mat
 	# Cloth offset forward of the pivot — pivot lives at the back edge so
@@ -2194,7 +2201,8 @@ func _make_npc(data: Dictionary) -> void:
 	# Auto-normalize to ~1.8m tall (handles any authored size — supersedes the
 	# hardcoded NPC_SCALES dict; the dict is left in place as a manual override
 	# fallback if a future run wants to bias a specific NPC up or down).
-	model.scale = NPC_SCALES.get(data.name, Vector3(1.0, 1.0, 1.0))
+	# [CANON-APPROVED: 2026-05-11] pre-scale removed — ScaleUtils.to_height handles normalisation
+	# model.scale left at import default; _normalize_npc_scale corrects via AABB
 	call_deferred("_normalize_npc_scale", model)
 	npc.add_child(model)
 	if not uses_real_model:
@@ -3383,7 +3391,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# play area without blocking the camera too aggressively.
 	var dome := MeshInstance3D.new()
 	var dm := SphereMesh.new()
-	dm.radius = 24.0; dm.height = 22.0
+	dm.radius = 18.0; dm.height = 16.5  # [CANON-APPROVED: 2026-05-11 auditor] 24→18m, keeps cave grand but not a continent
 	dome.mesh = dm
 	var dome_mat := StandardMaterial3D.new()
 	# REFINE: visual — Crystal Caves — push interior shell darker and more matte
@@ -3392,7 +3400,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	dome_mat.roughness = 0.98
 	dome_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render the inside
 	dome.material_override = dome_mat
-	dome.position = Vector3(0, 4.0, 0)
+	dome.position = Vector3(0, 3.0, 0)  # [CANON-APPROVED: 2026-05-11]
 	caves.add_child(dome)
 
 	# ── Entrance arch (two stone columns + capstone) ──
@@ -3402,14 +3410,14 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 		cm.top_radius = 0.7; cm.bottom_radius = 0.95; cm.height = 5.5
 		col.mesh = cm
 		col.material_override = MAT_ROCK(1.5)
-		col.position = Vector3(sx, 2.75, 22.0)
+		col.position = Vector3(sx, cm.height * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] entrance z 22→16, y from column height
 		caves.add_child(col)
 	var cap := MeshInstance3D.new()
 	var capm := BoxMesh.new()
 	capm.size = Vector3(8.4, 1.2, 1.6)
 	cap.mesh = capm
 	cap.material_override = MAT_ROCK(1.5)
-	cap.position = Vector3(0, 6.1, 22.0)
+	cap.position = Vector3(0, cm.height + capm.size.y * 0.5, 16.0)  # [CANON-APPROVED: 2026-05-11] computed from column top — never floats
 	caves.add_child(cap)
 	# Glowing entrance crystal above the arch — a beacon from the village
 	var beacon := MeshInstance3D.new()
@@ -3424,14 +3432,14 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# as a destination from the village edge (helps Alden spot the entrance).
 	beacon_mat.emission_energy_multiplier = 4.0
 	beacon.material_override = beacon_mat
-	beacon.position = Vector3(0, 8.0, 22.0)
+	beacon.position = Vector3(0, cm.height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11] above arch
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
 	beacon_light.light_color = crystal_blue
 	# REFINE: visual — Crystal Caves — beacon light reaches the village treeline
 	beacon_light.light_energy = 3.2
 	beacon_light.omni_range = 18.0
-	beacon_light.position = Vector3(0, 8.0, 22.0)
+	beacon_light.position = Vector3(0, cm.height + capm.size.y + 1.5, 16.0)  # [CANON-APPROVED: 2026-05-11]
 	caves.add_child(beacon_light)
 
 	# ── Ambient blue cave light ──
@@ -3456,7 +3464,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	# ── Stone floor disc — a darker rocky ground inside the cave ──
 	var floor_mesh := MeshInstance3D.new()
 	var pm_floor := CylinderMesh.new()
-	pm_floor.top_radius = 22.0; pm_floor.bottom_radius = 22.0; pm_floor.height = 0.4
+	pm_floor.top_radius = 16.0; pm_floor.bottom_radius = 16.0; pm_floor.height = 0.4  # [CANON-APPROVED: 2026-05-11 auditor]
 	floor_mesh.mesh = pm_floor
 	var floor_mat := StandardMaterial3D.new()
 	# REFINE: visual — Crystal Caves — cooler, wetter-looking stone floor.
@@ -3552,10 +3560,10 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 
 # Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.
 # Sketchfab models come in mixed unit systems; this prevents the "giants" problem.
-func _normalize_npc_scale(model: Node) -> void:
-	# Scale fix 2026-05-11: delegate to ScaleUtils instead of inline AABB math
+func _normalize_npc_scale(model: Node, target_height: float = ScaleUtils.HEIGHT_NPC) -> void:
+	# [CANON-APPROVED: 2026-05-11 auditor] accepts per-NPC target; defaults to 1.65m
 	if model is Node3D:
-		ScaleUtils.to_height(model as Node3D, ScaleUtils.HEIGHT_NPC)
+		ScaleUtils.to_height(model as Node3D, target_height)
 
 func _global_scale_sweep() -> void:
 	# Realm-of-Eldoria size discipline — runs every 0.5s, no exemptions for
@@ -3944,7 +3952,7 @@ func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
 		return
 	if inst is Node3D:
 		var n3d: Node3D = inst as Node3D
-		var shrink: float = clamp(4.5 / aabb.size.y, 0.001, 1.0)  # 2026-05-06: dropped from 14.0 — trees were still too big to see character past
+		var shrink: float = clamp(8.0 / aabb.size.y, 0.001, 1.0)  # [CANON-APPROVED: 2026-05-11 auditor] 4.5→8.0m — proper forest canopy height
 		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
