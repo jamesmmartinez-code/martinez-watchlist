@@ -629,7 +629,7 @@ func _physics_process(delta: float) -> void:
 
 	# Find player
 	if not _player:
-		var players: Array[Node] = get_tree().get_nodes_in_group("player")
+		var players: Array[Node3D] = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			_player = players[0]
 		else:
@@ -1098,7 +1098,7 @@ func _scan_faction_targets() -> void:
 	if not is_instance_valid(FactionSystem):
 		return
 	var closest_dist := aggro_range * 1.4   # slightly wider than normal aggro
-	for candidate in get_tree().get_nodes_in_group("enemies"):
+	for candidate: Node3D in get_tree().get_nodes_in_group("enemies"):
 		if candidate == self or not is_instance_valid(candidate):
 			continue
 		var cand_faction: String = str(candidate.get("faction_id") if candidate.get("faction_id") != null else "")
