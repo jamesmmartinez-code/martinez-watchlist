@@ -9,7 +9,6 @@ display_name = "Risen Bone Soldier"
 family = &"undead"
 tier = 1
 level = 6
-
 hp = 80
 armor = 0.20
 dmg_min = 10
@@ -20,35 +19,14 @@ move_speed = 2.4
 chase_speed = 4.2
 aggro_range = 8.5
 attack_range = 1.7
-
 behavior_tags = PackedStringArray(["ambusher", "crystal_cave_resident", "reform_on_first_kill", "fearless", "low_hp_no_flee"])
-
-tells = [
-	{
-		"id": "overhead_cleave",
-		"vfx_id": "rust_blade_arc",
-		"audio_id": "skeleton_shout_short",
-		"wind_up_ms": 750,
-		"damage_mult": 1.6,
-	},
-]
-
-resistances = {
-	"physical": 0.10,
-	"shadow": 0.50,
-	"poison": 1.00,
-}
-weaknesses = {
-	"holy": 1.50,
-	"blunt": 1.25,
-}
-
+tells_json = "[{\"id\":\"overhead_cleave\",\"vfx_id\":\"rust_blade_arc\",\"audio_id\":\"skeleton_shout_short\",\"wind_up_ms\":750,\"damage_mult\":1.6}]"
+resistances_json = "{\"physical\":0.10,\"shadow\":0.50,\"poison\":1.00}"
+weaknesses_json = "{\"holy\":1.50,\"blunt\":1.25}"
 xp_value = 32
 gold_min = 2
 gold_max = 6
 loot_table_id = &"skeleton"
-
 mesh_path = "res://assets/models/npcs/warrior.glb"
 nominal_height_m = 1.80
-
 regions = PackedStringArray(["crystal_caves"])
