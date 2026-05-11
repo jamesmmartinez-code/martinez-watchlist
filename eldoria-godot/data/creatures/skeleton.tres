@@ -21,13 +21,7 @@ chase_speed = 4.2
 aggro_range = 8.5
 attack_range = 1.7
 
-behavior_tags = PackedStringArray([
-	"ambusher",
-	"crystal_cave_resident",
-	"reform_on_first_kill",
-	"fearless",
-	"low_hp_no_flee",
-])
+behavior_tags = PackedStringArray(["ambusher", "crystal_cave_resident", "reform_on_first_kill", "fearless", "low_hp_no_flee"])
 
 tells = [
 	{
