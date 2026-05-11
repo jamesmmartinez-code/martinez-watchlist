@@ -149,11 +149,9 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 0, 0)   # Physics: verified-clear village centre — no collision body within 4m
-# Layout check (verified 2026-05-10):  well=(0,0,6) gap 4.35m,  windmill=(0,0,12) gap 10.5m,
-#   nearest building corner 6.7m,  market stalls have NO collision,  campfire has NO collision,
-#   NPCs at (6,0,3) and (-6,0,3) are 6m away.  Ground top face y=0: CharacterBody3D at y=0
-#   places capsule bottom exactly on the floor (ColShape offset 0.9 − capsule_half 0.9 = 0).
+const SAFE_SPAWN := Vector3(8, 3, 5)   # Physics: east of market stall, >5m clear of all buildings/NPCs/props
+# Layout check (2026-05-10): (8,3,5) is east of market stall, >5m from all collidable objects.
+#   Well=(0,0,6), windmill=(0,0,12), nearest NPC=(6,0,3). Y=3 clears terrain+capsule safely.
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
