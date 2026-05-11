@@ -2,7 +2,7 @@ extends Node
 # ScaleUtils — single enforced scale law for Realm of Eldoria
 # 1 Godot unit = 1 metre. All assets normalised to these targets.
 # [CANON-APPROVED: 2026-05-11] — replaces per-NPC NPC_SCALES hacks
-class_name ScaleUtils
+# class_name removed — autoload singleton name collision fix 2026-05-11
 
 # ── Canonical height targets (metres) ─────────────────────────────────────────
 const HEIGHT_PLAYER:    float = 0.85   # child hero (Alden/Owen)
