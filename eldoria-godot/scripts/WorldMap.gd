@@ -195,19 +195,19 @@ func _draw() -> void:
 				Color(0.20, 0.14, 0.08))
 
 	# 4. Live entities.
-	for n in get_tree().get_nodes_in_group("npcs"):
+	for n: Node3D in get_tree().get_nodes_in_group("npcs"):
 		if n is Node3D:
 			var np: Vector2 = _world_xz_to_face(
 				Vector2((n as Node3D).global_position.x, (n as Node3D).global_position.z), face)
 			draw_circle(np, 4.5, COL_INK)
 			draw_circle(np, 3.0, Color(1.0, 0.86, 0.46))  # REFINE: visual — match NPC nameplate modulate (NPC polish run convergence)
-	for e in get_tree().get_nodes_in_group("enemies"):
+	for e: Node3D in get_tree().get_nodes_in_group("enemies"):
 		if e is Node3D:
 			var ep: Vector2 = _world_xz_to_face(
 				Vector2((e as Node3D).global_position.x, (e as Node3D).global_position.z), face)
 			draw_circle(ep, 3.4, COL_INK)
 			draw_circle(ep, 2.6, Color(0.627, 0.125, 0.125))  # REFINE: visual — enemy core 2.4→2.6 silhouette readability
-	for b in get_tree().get_nodes_in_group("bosses"):
+	for b: Node3D in get_tree().get_nodes_in_group("bosses"):
 		if b is Node3D:
 			var bp: Vector2 = _world_xz_to_face(
 				Vector2((b as Node3D).global_position.x, (b as Node3D).global_position.z), face)
