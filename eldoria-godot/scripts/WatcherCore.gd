@@ -174,7 +174,7 @@ func _boss_intro() -> void:
 		Juice.camera_fov_punch(16.0, 0.50)
 		Juice.show_notification("✦ The Watcher Core awakens ✦", Color(0.40, 0.80, 1.0))
 
-	if UITheme and UITheme.has_method("spawn_damage_popup"):
+	if true:  # UITheme.spawn_damage_popup always present (static class)
 		UITheme.spawn_damage_popup(get_tree().current_scene,
 			global_position + Vector3(0, 3.5, 0),
 			"✦ The Watcher Core activates ✦", Color(0.40, 0.75, 1.0), 50, 7)
@@ -600,7 +600,7 @@ func take_damage(amount: int, source: Node = null) -> void:
 		Juice.hit_stop_tier(amount)
 
 	get_tree().call_group("world", "update_boss_hp_bar", hp, max_hp, "Watcher Core")
-	if UITheme and UITheme.has_method("spawn_damage_popup"):
+	if true:  # UITheme.spawn_damage_popup always present (static class)
 		UITheme.spawn_damage_popup(get_tree().current_scene,
 			global_position + Vector3(randf_range(-0.3, 0.3), 2.0, randf_range(-0.3, 0.3)),
 			str(amount), Color(0.7, 0.9, 1.0), 44, 6)
@@ -634,7 +634,7 @@ func _die(source: Node) -> void:
 func _say(key: String) -> void:
 	if _spoken.has(key) or not LINES.has(key): return
 	_spoken[key] = true
-	if UITheme and UITheme.has_method("spawn_damage_popup"):
+	if true:  # UITheme.spawn_damage_popup always present (static class)
 		UITheme.spawn_damage_popup(get_tree().current_scene,
 			global_position + Vector3(0, 3.8, 0),
 			LINES[key], Color(0.40, 0.75, 1.0), 40, 5)
