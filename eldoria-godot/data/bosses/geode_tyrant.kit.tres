@@ -68,14 +68,7 @@ chase_speed = 2.4
 aggro_range = 14.0
 attack_range = 2.4
 
-behavior_tags = PackedStringArray([
-	"crystal_cave_resident",
-	"boss_phase_driver",
-	"fearless",
-	"low_hp_no_flee",
-	"telegraph_then_strike",
-	"prefers_arena_center",
-])
+behavior_tags = PackedStringArray(["crystal_cave_resident", "boss_phase_driver", "fearless", "low_hp_no_flee", "telegraph_then_strike", "prefers_arena_center"])
 
 tells = [
 	{
@@ -119,11 +112,7 @@ phases = [
 	{
 		"id": &"p1_warden",
 		"hp_threshold": 1.00,
-		"behavior_tags": PackedStringArray([
-			"stationary_caster",
-			"prefers_ranged_attack",
-			"summons_minor_shards_on_enter",
-		]),
+		"behavior_tags": PackedStringArray(["stationary_caster", "prefers_ranged_attack", "summons_minor_shards_on_enter"]),
 		"mechanics": [
 			{ "tell_id": "sundering_chime", "cadence_s": 12.0, "first_at_s": 2.5 },
 			{ "tell_id": "crystal_quake",   "cadence_s": 8.0,  "first_at_s": 6.0 },
@@ -134,12 +123,7 @@ phases = [
 	{
 		"id": &"p2_awakened",
 		"hp_threshold": 0.70,
-		"behavior_tags": PackedStringArray([
-			"slow_walker",
-			"interruptible_chase",
-			"alternates_melee_and_ranged",
-			"summons_minor_shards_below_50pct",
-		]),
+		"behavior_tags": PackedStringArray(["slow_walker", "interruptible_chase", "alternates_melee_and_ranged", "summons_minor_shards_below_50pct"]),
 		"mechanics": [
 			{ "tell_id": "crystal_quake",   "cadence_s": 7.0,  "first_at_s": 1.5 },
 			{ "tell_id": "prismatic_echo",  "cadence_s": 9.0,  "first_at_s": 4.0 },
@@ -150,12 +134,7 @@ phases = [
 	{
 		"id": &"p3_remembered",
 		"hp_threshold": 0.35,
-		"behavior_tags": PackedStringArray([
-			"steady_walker",
-			"shorter_windups_when_alone",
-			"reads_player_position",
-			"no_self_summon",
-		]),
+		"behavior_tags": PackedStringArray(["steady_walker", "shorter_windups_when_alone", "reads_player_position", "no_self_summon"]),
 		"mechanics": [
 			{ "tell_id": "shard_storm",     "cadence_s": 6.0,  "first_at_s": 1.0 },
 			{ "tell_id": "prismatic_echo",  "cadence_s": 5.0,  "first_at_s": 3.0 },
