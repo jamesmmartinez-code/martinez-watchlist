@@ -153,7 +153,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 2.0, 0)   # Plaza centre — Briarwood village crossroads.
+const SAFE_SPAWN := Vector3(0, 0.5, 0)   # Plaza centre — Briarwood village crossroads.
 # Scale fix 2026-05-11: buildings grew from 3.6 m to 6.0 m footprint.
 #   Old (10,2,3): building (10,0,0) north wall is now at z=+3.0 exactly — capsule
 #   radius 0.4 put the player INSIDE the wall → physics ejection → stuck on roof. WRONG.
@@ -1579,8 +1579,7 @@ func _normalize_player_model(target_height: float) -> void:
 		var v := c as VisualInstance3D
 		if not v: continue
 		# Skip gear on BoneAttachment3D subtrees — measure body mesh only.
-		var par := v.get_parent()
-		if par is BoneAttachment3D: continue
+		if _is_under_bone_attachment(v): continue
 		var a := v.get_aabb()
 		a = v.global_transform * a
 		if not has:
@@ -1605,8 +1604,7 @@ func _force_hero_height_cap(cap: float) -> void:
 	for c in find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue
-		var par := v.get_parent()
-		if par is BoneAttachment3D: continue
+		if _is_under_bone_attachment(v): continue
 		var a := v.get_aabb()
 		a = v.global_transform * a
 		if not has:
