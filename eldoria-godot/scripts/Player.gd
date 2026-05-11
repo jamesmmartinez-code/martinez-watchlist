@@ -351,7 +351,9 @@ func _physics_process(delta: float) -> void:
 	# Camera-relative movement — MMORPG style:
 	# extract forward/right from the camera yaw (Y-rotation) so strafing and
 	# reversing always feel correct regardless of where the camera is pointing.
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	# Fix: get_vector maps "move_forward" (W) to negative_y → input_dir.y = -1.
+	# Swapping the order makes W = positive_y = +1, so forward*input_dir.y = forward. ✓
+	var input_dir := Input.get_vector("move_left", "move_right", "move_back", "move_forward")
 	# Re-acquire camera_pivot if it was lost (e.g. scene reload, camera swap)
 	if not camera_pivot or not is_instance_valid(camera_pivot):
 		var root := get_tree().current_scene
@@ -474,9 +476,7 @@ func _do_floor_snap_unstick() -> void:
 		# CharacterBody3D origin IS the capsule bottom, so hit.position alone puts
 		# the capsule flush on the surface.  Add 0.02m so floor_snap_length (0.3m)
 		# and move_and_slide() latch immediately without a one-frame free-fall gap.
-		# [CANON-APPROVED: 2026-05-11 auditor] single source via _get_capsule_center_y()
-		var _cy := _get_capsule_center_y()
-		global_position = hit.position + Vector3(0, _cy + 0.02, 0)
+		global_position = hit.position + Vector3(0, 0.02, 0)
 		print("[Player] auto-unstick: snapped to floor at y=%.2f" % global_position.y)
 	else:
 		global_position = _find_free_spawn(SAFE_SPAWN)
@@ -491,48 +491,46 @@ func _do_floor_snap_unstick() -> void:
 # Always call via teleport_to_safe_spawn() so floor_snap_length is
 # disabled for a few frames and physics can resolve overlaps first.
 # ────────────────────────────────────────────────────────────────────────
-# Single source of truth for capsule centre height above floor.
-# [CANON-APPROVED: 2026-05-11 auditor] — use this everywhere we place the player on ground.
-# If capsule radius/height ever changes, this auto-derives the right value.
-func _get_capsule_center_y() -> float:
-	var col := (find_children("*", "CollisionShape3D", true, false) as Array).front() as CollisionShape3D
-	if col and col.shape is CapsuleShape3D:
-		var cap := col.shape as CapsuleShape3D
-		return (cap.height + 2.0 * cap.radius) * 0.5
-	return 0.425  # safe fallback: half of 0.85m canon player height
-
 func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float = 0.75) -> Vector3:
-	# [CANON-APPROVED: 2026-05-11 auditor] Single-source center_y via _get_capsule_center_y().
-	# collision_mask = 1 (world/static only) — enemies on layer 4 must NOT block spawn recovery.
+	var space := get_world_3d().direct_space_state
+	# Prefer the actual player collider; fall back to a matching capsule.
 	var shape: Shape3D
-	var col_node := (find_children("*", "CollisionShape3D", true, false) as Array).front() as CollisionShape3D
-	if col_node and col_node.shape != null:
+	var col_node := get_node_or_null("CollisionShape3D")
+	if col_node is CollisionShape3D and col_node.shape != null:
 		shape = col_node.shape
 	else:
 		var cap := CapsuleShape3D.new()
-		cap.radius = 0.22
-		cap.height = 0.41
+		cap.radius = 0.4
+		cap.height = 1.8
 		shape = cap
-
-	var center_y := _get_capsule_center_y()
-	var space := get_world_3d().direct_space_state
 	var params := PhysicsShapeQueryParameters3D.new()
-	params.shape = shape
-	params.collision_mask = 1  # world geometry only — don't let enemies block recovery
-	params.exclude = [get_rid()]
-	var lift := Vector3(0, 0.5, 0)
-
-	for attempt in range(max_tries):
-		var ang: float = attempt * 2.39996  # golden angle spiral
-		var dist: float = radius_step * sqrt(float(attempt))
-		var candidate := desired + Vector3(cos(ang) * dist, 0.0, sin(ang) * dist)
-		params.transform = Transform3D(Basis.IDENTITY, candidate + Vector3(0, center_y, 0) + lift)
+	params.shape        = shape
+	params.collision_mask = collision_mask   # full player mask, not just layer 1
+	params.exclude      = [self]
+	for i in range(max_tries):
+		# Golden-angle-ish spread; ring grows slowly so nearby spots are tried first.
+		var ring   := float(i / 6)
+		var angle  := float(i) * 1.7
+		var offset := Vector3(cos(angle), 0.0, sin(angle)) * ring * radius_step
+		# Lift rises with ring — clears sloped edges and terrain-mesh seams.
+		var lift   := Vector3(0, 0.5 + ring * 0.25, 0)
+		var candidate := desired + offset
+		# Shape centre = candidate + capsule half-height (0.9) + lift.
+		params.transform = Transform3D(Basis.IDENTITY, candidate + Vector3(0, 0.9, 0) + lift)
 		if space.intersect_shape(params, 1).is_empty():
-			print("[Player] _find_free_spawn: try %d → clear at %s" % [attempt, candidate])
-			return candidate
-	push_warning("[Player] _find_free_spawn: no clear spot after %d tries — using %s+lift" % [max_tries, desired])
-	return desired + lift
+			if i > 0:
+				print("[Player] _find_free_spawn: try %d → clear at %s (lift +%.2fm)" % [
+					i, candidate + lift, lift.y])
+			return candidate + lift   # character origin: clear and above ground
+	push_warning("[Player] _find_free_spawn: no clear spot after %d tries — using %s+0.5" % [max_tries, desired])
+	return desired + Vector3(0, 0.5, 0)
 
+# ────────────────────────────────────────────────────────────────────────
+# teleport_to_safe_spawn — the ONE function that moves the player to spawn.
+# Disables floor_snap_length for 3 physics frames so Godot's overlap
+# resolver runs without immediately snapping into terrain.  _just_teleported
+# gates _do_floor_snap_unstick() for the same window.
+# ────────────────────────────────────────────────────────────────────────
 func teleport_to_safe_spawn() -> void:
 	var target := _find_free_spawn(SAFE_SPAWN)
 	velocity = Vector3.ZERO
@@ -751,7 +749,7 @@ func use_skill(idx: int) -> void:
 		fwd.y = 0
 		fwd = fwd.normalized()
 
-		for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
+		for enemy in get_tree().get_nodes_in_group("enemies"):
 			if not is_instance_valid(enemy):
 				continue
 			var to_enemy: Vector3 = enemy.global_position - global_position
@@ -983,7 +981,7 @@ func _echo_strike_secondary(base_dmg: int) -> void:
 	var fwd        := -global_transform.basis.z
 	fwd.y = 0; fwd = fwd.normalized()
 	var secondary_hits := 0
-	for enemy: Node3D in get_tree().get_nodes_in_group("enemies"):
+	for enemy in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):
 			continue
 		var to_e: Vector3 = enemy.global_position - global_position
@@ -1564,16 +1562,6 @@ func set_title(t: String) -> void:
 #   to cap (1.30m §1 hard cap) if bone-rest AABB underestimates live skin AABB.
 # NEVER CHANGE these values without [CANON-APPROVED: reason] in commit message.
 # ────────────────────────────────────────────────────────────────────────
-# [CANON-APPROVED: 2026-05-11 auditor] Walk full parent chain — catches gear nested
-# deeper than one level under BoneAttachment3D (e.g. sword → scabbard → BoneAttachment3D).
-func _is_under_bone_attachment(n: Node) -> bool:
-	var p := n.get_parent()
-	while p and p != self:
-		if p is BoneAttachment3D:
-			return true
-		p = p.get_parent()
-	return false
-
 func _normalize_player_model(target_height: float) -> void:
 	await get_tree().process_frame
 	# Pre-reset: if model child is at a wildly large scale (GLB in cm units),
@@ -1581,7 +1569,7 @@ func _normalize_player_model(target_height: float) -> void:
 	for c in get_children():
 		if c is BoneAttachment3D: continue
 		if c.find_children("*", "VisualInstance3D", true, false).size() > 0:
-			var cs: Vector3 = (c as Node3D).scale
+			var cs := c.scale
 			if cs.x > 5.0 or cs.x < 0.01:
 				c.scale = Vector3.ONE
 			break
@@ -1592,7 +1580,7 @@ func _normalize_player_model(target_height: float) -> void:
 		if not v: continue
 		# Skip gear on BoneAttachment3D subtrees — measure body mesh only.
 		var par := v.get_parent()
-		if _is_under_bone_attachment(v): continue  # [CANON-APPROVED: 2026-05-11] full chain check
+		if par is BoneAttachment3D: continue
 		var a := v.get_aabb()
 		a = v.global_transform * a
 		if not has:
@@ -1618,7 +1606,7 @@ func _force_hero_height_cap(cap: float) -> void:
 		var v := c as VisualInstance3D
 		if not v: continue
 		var par := v.get_parent()
-		if _is_under_bone_attachment(v): continue  # [CANON-APPROVED: 2026-05-11] full chain check
+		if par is BoneAttachment3D: continue
 		var a := v.get_aabb()
 		a = v.global_transform * a
 		if not has:
