@@ -863,6 +863,7 @@ func _ready() -> void:
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_safe_call("_build_nordic_fishing_village")  # Builder run 25 — Nordic dock district, THEME §1 §11
 	_safe_call("_build_nordic_road")             # Builder run 25 — cobble road Briarwood→Nordic (isolated)
+	_safe_call("_build_nordic_ambient_audio")    # Builder run 25 — harbor audio zones (waves/creak/gulls)
 	_dlog("_ready DONE — children=%d" % get_child_count())
 
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
@@ -4299,6 +4300,18 @@ const NORDIC_BRANCH_T := [0.22, 0.42, 0.62, 0.80]
 @export var glb_boat_small: PackedScene  # no GLB yet — leave null
 @export var glb_boat_mast: PackedScene   # no GLB yet — leave null
 
+# Ambient audio — all optional. Leave null and the audio system is silently skipped.
+# Suggested sources (all CC0): freesound.org — search "ocean waves loop", "dock creak loop", "seagull"
+@export var sfx_waves_loop: AudioStream      # large-radius background ocean loop
+@export var sfx_dock_creak_loop: AudioStream # medium-radius pier/rope creak near pier start
+@export var sfx_gulls_one_shot: AudioStream  # single gull cry, played on a random timer
+
+# Tuning knobs for the audio system
+@export var sfx_waves_volume_db: float  = -6.0
+@export var sfx_creak_volume_db: float  = -10.0
+@export var sfx_gulls_interval_min: float = 5.0   # seconds between gull cries
+@export var sfx_gulls_interval_max: float = 18.0
+
 func MAT_WATER() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color        = Color(0.10, 0.28, 0.45, 0.82)
@@ -4407,6 +4420,97 @@ func _build_nordic_road() -> void:
 	# Harbor gate arch sits at the road's northern terminus, facing south (dir = +Z)
 	_nordic_harbor_gate(road_end + Vector3(0, 0, 4), Vector3(0, 0, 1))
 	_dlog("Nordic cobble road + harbor gate built")
+
+# ── Harbor ambient audio — Builder run 25 ────────────────────────────────────
+# All three streams are optional — assign in the Inspector to activate.
+# Suggested CC0 sources: freesound.org ("ocean waves loop", "dock creak", "seagull cry")
+# Audio zones use Godot's built-in 3D distance attenuation — no extra code needed.
+func _build_nordic_ambient_audio() -> void:
+	if sfx_waves_loop == null and sfx_dock_creak_loop == null and sfx_gulls_one_shot == null:
+		_dlog("Nordic audio: no streams assigned — skipping")
+		return
+
+	var root := Node3D.new()
+	root.name = "NordicAmbientAudio"
+	add_child(root)
+
+	var origin := NORDIC_ORIGIN
+
+	# Ocean waves — large radius, centred on the harbour water plane
+	if sfx_waves_loop != null:
+		var waves := AudioStreamPlayer3D.new()
+		waves.name          = "WavesLoop"
+		waves.stream        = sfx_waves_loop
+		waves.max_distance  = 130.0
+		waves.unit_size     = 1.0
+		waves.volume_db     = sfx_waves_volume_db
+		waves.autoplay      = true
+		waves.global_position = origin + Vector3(0, 0, -20)  # over the water
+		root.add_child(waves)
+
+	# Dock creak — tighter radius, right at the pier head where ropes + posts are
+	if sfx_dock_creak_loop != null:
+		var creak := AudioStreamPlayer3D.new()
+		creak.name          = "DockCreakLoop"
+		creak.stream        = sfx_dock_creak_loop
+		creak.max_distance  = 55.0
+		creak.unit_size     = 1.0
+		creak.volume_db     = sfx_creak_volume_db
+		creak.autoplay      = true
+		creak.global_position = origin + Vector3(0, 0.15, 6)  # pier start
+		root.add_child(creak)
+
+	# Gulls — random one-shots on a timer, scattered across the harbour airspace
+	if sfx_gulls_one_shot != null:
+		var gull_timer := Timer.new()
+		gull_timer.name      = "GullTimer"
+		gull_timer.wait_time = sfx_gulls_interval_min
+		gull_timer.one_shot  = false
+		gull_timer.autostart = true
+		gull_timer.timeout.connect(func(): _play_nordic_gull(root))
+		root.add_child(gull_timer)
+
+	_dlog("Nordic ambient audio built")
+
+func _play_nordic_gull(audio_root: Node3D) -> void:
+	if sfx_gulls_one_shot == null:
+		return
+	if not is_instance_valid(audio_root):
+		return
+
+	# Use _nrng for position scatter — consistent with the rest of Nordic
+	var origin := NORDIC_ORIGIN
+	var p := origin + Vector3(
+		_nrng.randf_range(-30.0, 30.0),
+		_nrng.randf_range(3.0, 10.0),
+		_nrng.randf_range(-20.0, 40.0)
+	)
+
+	var gull := AudioStreamPlayer3D.new()
+	gull.stream      = sfx_gulls_one_shot
+	gull.max_distance = 140.0
+	gull.volume_db   = _nrng.randf_range(-14.0, -7.0)
+	gull.pitch_scale = _nrng.randf_range(0.88, 1.14)
+	gull.global_position = p
+	audio_root.add_child(gull)
+	gull.play()
+
+	# Self-cleanup: free the player node when the cry finishes (~3 s max)
+	var cleanup := Timer.new()
+	cleanup.wait_time = 3.5
+	cleanup.one_shot  = true
+	cleanup.autostart = true
+	cleanup.timeout.connect(func():
+		if is_instance_valid(gull):
+			gull.queue_free()
+		cleanup.queue_free()
+	)
+	audio_root.add_child(cleanup)
+
+	# Randomise next gull interval
+	var gull_timer := audio_root.find_child("GullTimer", false, false) as Timer
+	if gull_timer and is_instance_valid(gull_timer):
+		gull_timer.wait_time = _nrng.randf_range(sfx_gulls_interval_min, sfx_gulls_interval_max)
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 func _nordic_side(dir: Vector3) -> Vector3:
