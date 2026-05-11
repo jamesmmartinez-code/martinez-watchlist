@@ -30,6 +30,10 @@ var _world_feel_timer: float = 0.0
 var _attack_timeout: float = 0.0
 var _dead_timer: float = 0.0
 var _jam_timer: float = 0.0
+# Teleport-snap guard: floor_snap_length is zeroed at teleport time, restored
+# after _snap_restore_frames physics frames so overlap resolution runs first.
+var _just_teleported: bool = false
+var _snap_restore_frames: int = 0
 # Skill system
 var _skill_timers: Array[float] = [0.0, 0.0, 0.0, 0.0]
 var _dash_vel:     Vector3      = Vector3.ZERO
@@ -149,17 +153,17 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(10, 0, 3)  # Physics: open ground north of Bram's inn.
-# WHY NOT (8,3,5): building at (6,0,6) extends x=4.2–7.8. Player at x=8 has capsule
-#   west edge at x=7.6 (inside the wall). Y=3 overlaps the roof face (y=3.4) in the
-#   same frame → physics ejects upward → player lands on roof → stuck at y≈3.4. WRONG.
-# WHY NOT y=3 EVER: y=3 puts the capsule near building tops; use y=0 and let
-#   floor_snap_length+move_and_slide settle to the actual ground (≤1 physics frame).
-# (10, 0, 3) checks (2026-05-11):
+const SAFE_SPAWN := Vector3(10, 2.0, 3)  # Physics: open ground north of Bram's inn.
+# Y=2.0: capsule bottom spawns ~2 m above terrain, well clear of any floor surface.
+#   Gravity + move_and_slide settle the player in ≤ 3 physics frames.
+#   _find_free_spawn adds another 0.5 m lift, so effective spawn ≥ 2.5 m above ground.
+# WHY NOT y=0: capsule bottom at y=0 is flush with terrain collision — physics engine
+#   can interpret the capsule as "inside" the mesh (float point, triangle seam) and
+#   either pin the player or eject upward.
+# (10, 2, 3) XZ checks (2026-05-11):
 #   building (10,0,0) z-range -1.8→1.8; player z=3 is OUTSIDE. ✓
 #   building (6,0,6)  x-range 4.2→7.8; player x=10 capsule edge=9.6 > 7.8. ✓
-#   Bram NPC (10,0,-2): 5m south, gap 4.3m. ✓  Maeve (6,0,3): 4m west, gap 3.2m. ✓
-#   No lanterns/props/well/windmill within 4m. ✓
+#   Bram NPC (10,0,-2): 5m south.  Maeve (6,0,3): 4m west. ✓
 const INVENTORY_SCRIPT    = preload("res://scripts/Inventory.gd")
 
 # Visible weapon attached to the player's body (re-built when equipment changes)
@@ -253,20 +257,22 @@ func _ready() -> void:
 	get_tree().create_timer(0.5).timeout.connect(func(): _normalize_player_model(0.85))
 	get_tree().create_timer(1.5).timeout.connect(func(): _normalize_player_model(0.85))
 	get_tree().create_timer(3.0).timeout.connect(func(): _force_hero_height_cap(0.90))
-	# SPAWN-FIX 2026-05-11: first validate a collision-free position near SAFE_SPAWN,
-	# then ray-snap to actual ground.  Dynamic shape-query replaces the hand-picked
-	# coordinates that kept landing inside walls whenever a building or NPC shifted.
-	get_tree().create_timer(0.05).timeout.connect(func():
-		global_position = _find_free_spawn(SAFE_SPAWN)
-		_do_floor_snap_unstick()
-	)
+	# Teleport to a validated free spawn after the first physics frame.
+	get_tree().create_timer(0.05).timeout.connect(func(): teleport_to_safe_spawn())
 
 func _physics_process(delta: float) -> void:
+	# Restore floor_snap_length after teleport once physics has had time to
+	# resolve any overlap at the new position (see teleport_to_safe_spawn).
+	if _snap_restore_frames > 0:
+		_snap_restore_frames -= 1
+		if _snap_restore_frames == 0:
+			floor_snap_length = 0.3
+			_just_teleported = false
+
 	# Stuck-recovery #1: if we've fallen out of the world or punched through the
 	# top, snap back to a safe spawn so the kids never lose control.
 	if global_position.y < -50.0 or global_position.y > 500.0:
-		global_position = _find_free_spawn(SAFE_SPAWN)
-		_do_floor_snap_unstick()
+		teleport_to_safe_spawn()
 
 	# Stuck-recovery #2: is_attacking should never stay true longer than ~1s.
 	# If it does, the attack callback was lost — force-clear it.
@@ -446,6 +452,10 @@ func _physics_process(delta: float) -> void:
 # Falls back to SAFE_SPAWN if nothing is below us.
 # ────────────────────────────────────────────────────────────────────────
 func _do_floor_snap_unstick() -> void:
+	# Don't fight teleport_to_safe_spawn() — it already placed us in free space;
+	# let physics settle the position before we try to snap to a floor.
+	if _just_teleported:
+		return
 	velocity = Vector3.ZERO
 	var space := get_world_3d().direct_space_state
 	# Cast from 2m above to 8m below current position to find the floor.
@@ -469,61 +479,75 @@ func _do_floor_snap_unstick() -> void:
 		print("[Player] auto-unstick: no floor found — using safe spawn")
 
 # ────────────────────────────────────────────────────────────────────────
-# Dynamic spawn validator — spirals outward from `desired` until it finds
-# a position where the player capsule does not overlap any world geometry.
-# Replaces brittle hard-coded coordinates: no matter where buildings/NPCs
-# are placed, the player always spawns in free space.
+# Dynamic spawn validator — probes candidate positions around `desired`
+# using the player's real collision shape.  Spirals outward with a small
+# Y-lift per ring so uneven terrain edges and mesh seams don't false-block.
 #
-# Spiral layout (step = 1.5 m):
-#   try 0  — desired itself (fastest path: usually works)
-#   tries 1–8  — ring 1, 8 compass directions at radius 1.5 m
-#   tries 9–16 — ring 2, same directions at radius 3.0 m
-#   tries 17–24 — ring 3, radius 4.5 m
+# Returns a clear character-origin position (capsule bottom).
+# Always call via teleport_to_safe_spawn() so floor_snap_length is
+# disabled for a few frames and physics can resolve overlaps first.
 # ────────────────────────────────────────────────────────────────────────
-func _find_free_spawn(desired: Vector3, max_tries: int = 25, step: float = 1.5) -> Vector3:
+func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float = 0.75) -> Vector3:
 	var space := get_world_3d().direct_space_state
-	var check_shape := CapsuleShape3D.new()
-	check_shape.radius = 0.45   # 0.05 wider than actual capsule (0.4) — safety margin
-	check_shape.height = 1.8
+	# Prefer the actual player collider; fall back to a matching capsule.
+	var shape: Shape3D
+	var col_node := get_node_or_null("CollisionShape3D")
+	if col_node is CollisionShape3D and col_node.shape != null:
+		shape = col_node.shape
+	else:
+		var cap := CapsuleShape3D.new()
+		cap.radius = 0.4
+		cap.height = 1.8
+		shape = cap
 	var params := PhysicsShapeQueryParameters3D.new()
-	params.shape = check_shape
-	params.collision_mask = 1   # terrain / static world bodies only
-	params.exclude = [self]
+	params.shape        = shape
+	params.collision_mask = collision_mask   # full player mask, not just layer 1
+	params.exclude      = [self]
 	for i in range(max_tries):
-		var candidate: Vector3
-		if i == 0:
-			candidate = desired
-		else:
-			# Spiral: 8 directions per ring, radius grows one step per ring.
-			var ring_idx  := (i - 1) / 8
-			var angle_idx := (i - 1) % 8
-			var angle := float(angle_idx) / 8.0 * TAU
-			var r := step * float(ring_idx + 1)
-			candidate = Vector3(desired.x + cos(angle) * r, desired.y, desired.z + sin(angle) * r)
-		# CharacterBody3D origin = capsule bottom (CollisionShape3D offset +0.9, half-height 0.9)
-		# → capsule centre sits 0.9 m above candidate.
-		params.transform = Transform3D.IDENTITY.translated(candidate + Vector3(0, 0.9, 0))
+		# Golden-angle-ish spread; ring grows slowly so nearby spots are tried first.
+		var ring   := float(i / 6)
+		var angle  := float(i) * 1.7
+		var offset := Vector3(cos(angle), 0.0, sin(angle)) * ring * radius_step
+		# Lift rises with ring — clears sloped edges and terrain-mesh seams.
+		var lift   := Vector3(0, 0.5 + ring * 0.25, 0)
+		var candidate := desired + offset
+		# Shape centre = candidate + capsule half-height (0.9) + lift.
+		params.transform = Transform3D(Basis.IDENTITY, candidate + Vector3(0, 0.9, 0) + lift)
 		if space.intersect_shape(params, 1).is_empty():
 			if i > 0:
-				print("[Player] _find_free_spawn: ring %d dir %d° → clear at %s" % [
-					(i - 1) / 8 + 1, int(float((i - 1) % 8) / 8.0 * 360.0), candidate])
-			return candidate
-	push_warning("[Player] _find_free_spawn: no clear spot after %d tries from %s" % [max_tries, desired])
-	return desired
+				print("[Player] _find_free_spawn: try %d → clear at %s (lift +%.2fm)" % [
+					i, candidate + lift, lift.y])
+			return candidate + lift   # character origin: clear and above ground
+	push_warning("[Player] _find_free_spawn: no clear spot after %d tries — using %s+0.5" % [max_tries, desired])
+	return desired + Vector3(0, 0.5, 0)
+
+# ────────────────────────────────────────────────────────────────────────
+# teleport_to_safe_spawn — the ONE function that moves the player to spawn.
+# Disables floor_snap_length for 3 physics frames so Godot's overlap
+# resolver runs without immediately snapping into terrain.  _just_teleported
+# gates _do_floor_snap_unstick() for the same window.
+# ────────────────────────────────────────────────────────────────────────
+func teleport_to_safe_spawn() -> void:
+	var target := _find_free_spawn(SAFE_SPAWN)
+	velocity = Vector3.ZERO
+	# Zero floor snap so the engine resolves any remaining overlap first.
+	floor_snap_length   = 0.0
+	_just_teleported    = true
+	_snap_restore_frames = 3          # restored in _physics_process after 3 frames
+	global_position = target
 
 # ────────────────────────────────────────────────────────────────────────
 # Public unstuck — called by the SOS Unstuck button in the HUD.
 # Clears every transient lock, snaps to floor, notifies the player.
 # ────────────────────────────────────────────────────────────────────────
 func do_unstuck() -> void:
-	velocity        = Vector3.ZERO
 	cinematic_lock  = false
 	is_attacking    = false
 	is_dead         = false
 	_jam_timer      = 0.0
 	_attack_timeout = 0.0
 	get_tree().paused = false
-	_do_floor_snap_unstick()
+	teleport_to_safe_spawn()
 	if is_instance_valid(Juice):
 		Juice.show_notification("Teleported to safety!", Color(0.50, 1.0, 0.72))
 
@@ -542,19 +566,17 @@ func _panic_unstick(keycode: int) -> bool:
 			is_attacking = false
 			mounted = false
 			mount_node = null
-			velocity = Vector3.ZERO
-			global_position = _find_free_spawn(SAFE_SPAWN)
 			hp = max(1, hp)
 			_attack_timeout = 0.0
 			_dead_timer = 0.0
 			_jam_timer = 0.0
+			teleport_to_safe_spawn()
 			return true
 		KEY_F1:
 			# Soft unstick: unpause + reset position to spawn.
 			print("[Player] F1 — teleport to spawn")
 			get_tree().paused = false
-			velocity = Vector3.ZERO
-			global_position = _find_free_spawn(SAFE_SPAWN)
+			teleport_to_safe_spawn()
 			return true
 		KEY_F2:
 			# Nuclear option: unpause, wipe save and reload scene.
@@ -567,8 +589,7 @@ func _panic_unstick(keycode: int) -> bool:
 			# Alias for F1 — useful on keyboards where function keys are locked.
 			print("[Player] ] — teleport to spawn")
 			get_tree().paused = false
-			velocity = Vector3.ZERO
-			global_position = _find_free_spawn(SAFE_SPAWN)
+			teleport_to_safe_spawn()
 			return true
 	return false
 
@@ -1118,9 +1139,7 @@ func _die() -> void:
 	_respawn_at_well()
 
 func _respawn_at_well() -> void:
-	# Validate spawn is collision-free before floor-snapping to actual ground.
-	global_position = _find_free_spawn(SAFE_SPAWN)
-	_do_floor_snap_unstick()
+	teleport_to_safe_spawn()
 	hp = max_hp
 	mp = max_mp
 	is_dead = false
