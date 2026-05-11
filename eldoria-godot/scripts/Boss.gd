@@ -162,7 +162,7 @@ func _physics_process(delta: float) -> void:
 		_adapt_attack_pool((_player.global_position - global_position).length())
 
 	if not _player:
-		var players: Array[Node] = get_tree().get_nodes_in_group("player")
+		var players: Array[Node3D] = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			_player = players[0]
 	if not _player:
@@ -246,7 +246,7 @@ func _attack_slam() -> void:
 	await get_tree().create_timer(0.9).timeout
 	if _state == "dead": return
 	# Hit anyone within 5m
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 5.0:
 			if p.has_method("take_damage"):
 				p.take_damage(int(damage * 1.4))
@@ -284,7 +284,7 @@ func _attack_charge() -> void:
 		velocity.y = -2.0
 		move_and_slide()
 		# Damage player if hit
-		for p in get_tree().get_nodes_in_group("player"):
+		for p: Node3D in get_tree().get_nodes_in_group("player"):
 			if p.global_position.distance_to(global_position) < 1.6:
 				if p.has_method("take_damage"):
 					p.take_damage(int(damage * 1.6))
