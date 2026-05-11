@@ -1222,7 +1222,7 @@ func _build_mountain_ring() -> void:
 # Market stalls
 # ============================================================================
 func _build_market_stalls() -> void:
-	var spots = [Vector3(2.5, 0, 0), Vector3(-2.5, 0, 0)]
+	var spots = [Vector3(4.0, 0, -8.0), Vector3(-4.0, 0, -8.0)]
 	for spot in spots:
 		_make_stall(spot)
 
