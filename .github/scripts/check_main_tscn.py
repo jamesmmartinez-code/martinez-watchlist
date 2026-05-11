@@ -68,15 +68,19 @@ def main():
 
     # === Hero scale ===
     # Walk transform lines AFTER a "[node name="Hero"" header
+    # Scale is the magnitude of column-0 of the basis (handles rotation+scale matrices correctly).
     hero_block = re.search(r'\[node name="Hero".*?(?=\[node )', text, re.S)
     if hero_block:
         block = hero_block.group(0)
-        tm = re.search(r"transform\s*=\s*Transform3D\(\s*([\-0-9.]+)", block)
+        # Transform3D(xx, xy, xz, yx, yy, yz, zx, zy, zz, tx, ty, tz)
+        tm = re.search(r"transform\s*=\s*Transform3D\(\s*([\-0-9.e]+)\s*,\s*([\-0-9.e]+)\s*,\s*([\-0-9.e]+)", block)
         if tm:
-            sx = abs(float(tm.group(1)))
+            import math
+            xx, xy, xz = float(tm.group(1)), float(tm.group(2)), float(tm.group(3))
+            sx = math.sqrt(xx*xx + xy*xy + xz*xz)  # column-0 magnitude = uniform scale
             mn, mx = c["hero"]["scale_min"], c["hero"]["scale_max"]
             if sx < mn or sx > mx:
-                errors.append(f"Hero scale.x = {sx} OUT OF BOUNDS [{mn}, {mx}] — this is the giant-boot/invisible-hero bug class")
+                errors.append(f"Hero scale.x = {sx:.3f} OUT OF BOUNDS [{mn}, {mx}] — this is the giant-boot/invisible-hero bug class")
 
     if errors:
         print("=" * 60)
