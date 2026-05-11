@@ -219,7 +219,7 @@ func _physics_process(delta: float) -> void:
 
 	# ── Find player ─────────────────────────────────────────────────────────
 	if not _player:
-		var ps: Array[Node] = get_tree().get_nodes_in_group("player")
+		var ps: Array[Node3D] = get_tree().get_nodes_in_group("player")
 		if ps.size() > 0:
 			_player = ps[0]
 	if not _player:
@@ -421,7 +421,7 @@ func _wc_slam() -> void:
 		Juice.hit_stop_tier(int(damage * 1.6))
 		Juice.screen_flash(Color(0.5, 0.7, 1.0, 0.50), 0.22)
 	# Deal AoE damage at ground level
-	for p in get_tree().get_nodes_in_group("player"):
+	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 5.5:
 			p.take_damage(int(damage * 1.6))
 			var d := (p.global_position - global_position).normalized()
@@ -548,7 +548,7 @@ func _ring_hazard_damage(max_radius: float, dur: float) -> void:
 	for _s in steps:
 		await get_tree().create_timer(dur / float(steps)).timeout
 		if _state == "dead": return
-		for p in get_tree().get_nodes_in_group("player"):
+		for p: Node3D in get_tree().get_nodes_in_group("player"):
 			var dist_xz := Vector2(p.global_position.x - global_position.x,
 			                       p.global_position.z - global_position.z).length()
 			# Ring sweeps outward — damage band is ±1m of the current wave front
