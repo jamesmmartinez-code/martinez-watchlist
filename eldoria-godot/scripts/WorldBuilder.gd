@@ -1349,6 +1349,9 @@ func _safe_call(method_name: String, args: Array = []) -> void:
 
 var _wb_last_builder: String = ""
 func _safe_call_now(method_name: String, args: Array) -> void:
+	if not has_method(method_name):
+		_dlog("MISSING " + method_name)
+		return
 	_wb_last_builder = method_name
 	_dlog("-> " + method_name)
 	callv(method_name, args)
@@ -2884,8 +2887,8 @@ func _build_enemies() -> void:
 	var camp_size: Dictionary = _goblin_camp_size(goblin_pressure)
 	var scout_count: int = int(camp_size.get("scouts", 4))
 	var brute_count: int = int(camp_size.get("brutes", 1))
-	assert(scout_count >= 0 and scout_count <= 4, "scout_count out of contract")
-	assert(brute_count >= 0 and brute_count <= 1, "brute_count out of contract")
+	scout_count = clampi(scout_count, 0, 4)  # was assert — clamp avoids coroutine abort
+	brute_count = clampi(brute_count, 0, 1)  # was assert — clamp avoids coroutine abort
 
 	# Three goblin camps in the Whisperwood (outside the village)
 	var camp_centers = [
@@ -2932,7 +2935,7 @@ func _build_enemies() -> void:
 		wolf_pressure = float(world_node.faction_pressure("dire_wolves"))
 	var pack_size: Dictionary = _wolf_pack_size(wolf_pressure)
 	var wolf_count: int = int(pack_size.get("count", 4))
-	assert(wolf_count >= 0 and wolf_count <= 4, "wolf_count out of contract")
+	wolf_count = clampi(wolf_count, 0, 4)  # was assert — clamp avoids coroutine abort
 
 	# Stable position list — fewer wolves means we drop the LAST entries first
 	# so positions 0..wolf_count remain consistent across saves. Empty patches
@@ -2973,7 +2976,7 @@ func _build_enemies() -> void:
 		bandit_pressure = float(world_node.faction_pressure("bandits"))
 	var bandit_pop: Dictionary = _bandit_camp_size(bandit_pressure)
 	var bandit_count: int = int(bandit_pop.get("count", 0))
-	assert(bandit_count >= 0 and bandit_count <= 4, "bandit_count out of contract")
+	bandit_count = clampi(bandit_count, 0, 4)  # was assert — clamp avoids coroutine abort
 
 	# South road bandit camp — past the path-network terminus at z=-12, far
 	# enough south that the silhouette of the camp doesn't bleed into the
@@ -10782,18 +10785,18 @@ func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> 
 
 	# Fallback node path
 	var m := MeshInstance3D.new()
+	m.material_override = mat
+	m.rotation.y = rng.randf_range(-PI, PI)
 	if kind < 0.45:
 		m.mesh = _bw_get_barrel_mesh()
-	m.material_override = mat
 		m.position = p + Vector3(0.0, 0.40, 0.0)
 	elif kind < 0.80:
 		m.mesh = _bw_get_crate_mesh()
-	m.rotation.y = rng.randf_range(-PI, PI)
 		m.position = p + Vector3(0.0, 0.225, 0.0)
 	else:
 		m.mesh = _bw_get_woodpile_mesh()
-	root.add_child(m)
 		m.position = p + Vector3(0.0, 0.275, 0.0)
+	root.add_child(m)
 
 
 # ── Gate dressing ─────────────────────────────────────────────────────────────
