@@ -236,9 +236,9 @@ ENDSCRIPT
             esac
           }
           OK=0; FAIL=0
-          # Upload all files EXCEPT pck-parts.json and index.html first.
-          # pck-parts.json is uploaded last so clients never see the new manifest
-          # paired with old/incomplete chunks (race condition fix — empty world bug).
+          # Upload all files. index.html is the real Godot game shell at this point
+          # (redirect is written AFTER this step). pck-parts.json is uploaded last
+          # (atomic manifest swap — clients never see new manifest with old chunks).
           for f in eldoria/*; do
             [ -f "$f" ] || continue
             name=$(basename "$f")
@@ -251,6 +251,10 @@ ENDSCRIPT
             # Upload it as both index.html AND game.html in R2.
             # (The redirect overwrites index.html on disk AFTER this step, not before.)
             # Worker reads game.html so it always gets the game, never the redirect.
+            if [ "$name" = "pck-parts.json" ]; then
+              echo "  ⏳  pck-parts.json (deferred — uploading last)"
+              continue
+            fi
             mime=$(mime_for "$f")
             CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
               -X PUT -H "Authorization: Bearer $CF_TOKEN" \
