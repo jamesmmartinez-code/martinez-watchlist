@@ -52,7 +52,7 @@ for gd in sorted(ROOT.rglob("*.gd")):
                 violations.append((str(gd), lineno, "AUTOLOAD-IN-DEFAULT-PARAM", raw.rstrip()))
 
         # 5. Mixed tabs/spaces in leading whitespace
-        leading = re.match(r'^\(\s+)', raw)
+        leading = re.match(r'^(\s+)', raw)
         if leading:
             ws = leading.group(1)
             if '\t' in ws and ' ' in ws:
