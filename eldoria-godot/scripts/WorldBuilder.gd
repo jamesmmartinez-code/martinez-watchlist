@@ -7100,7 +7100,11 @@ func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void
 	var bm := BoxMesh.new()
 	bm.size = Vector3(1.9, 0.55, 0.08)
 	board.mesh = bm
-	board.material_override = _bw_mat_darkwood()
+	# Use inline color so sign never shows missing-texture magenta/red
+	var sign_mat := StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.32, 0.20, 0.10)  # dark oak brown
+	sign_mat.roughness = 0.9
+	board.material_override = sign_mat
 	board.position = Vector3(0.0, 2.2, 0.0)
 	sign.add_child(board)
 
@@ -7115,6 +7119,20 @@ func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void
 	label.modulate        = Color(1.0, 0.88, 0.55)
 	label.position        = Vector3(0.0, 2.2, 0.06)
 	sign.add_child(label)
+
+	# Wooden post under the sign
+	var pole := MeshInstance3D.new()
+	var pcm  := CylinderMesh.new()
+	pcm.top_radius    = 0.06
+	pcm.bottom_radius = 0.08
+	pcm.height        = 2.5
+	pole.mesh = pcm
+	var pole_mat := StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	pole_mat.roughness = 0.95
+	pole.material_override = pole_mat
+	pole.position = Vector3(0.0, 1.25, 0.0)
+	sign.add_child(pole)
 
 
 # ============================================================================
@@ -7747,6 +7765,7 @@ func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector
 		root.add_child(npc)
 		npc.global_position = p
 		npc.rotation.y = rng.randf_range(-PI, PI)
+		_scale_node_to_height(npc, rng.randf_range(1.55, 1.78))  # normalize to human height
 
 
 # ── Interactions: quest board, inn marker, smith marker, training dummy ───────
@@ -8230,6 +8249,7 @@ func _spawn_named_giver(root: Node3D, display_name: String, pos: Vector3, kind: 
 	npc.name = display_name.replace(" ", "_")
 	root.add_child(npc)
 	npc.global_position = pos
+	_scale_node_to_height(npc, 1.65)  # normalize quest-giver NPCs to human height
 
 	# Floating name tag
 	var label := Label3D.new()
@@ -8548,6 +8568,7 @@ func _build_briarwood_life() -> void:
 		_bw_life_root.add_child(npc)
 		npc.name = "LifeGuard_%d" % i
 		npc.global_position = gate + Vector3(rng.randf_range(-2, 2), 0, rng.randf_range(-2, 2))
+		_scale_node_to_height(npc, rng.randf_range(1.55, 1.75))
 		npc.set_meta("life_role", "guard")
 		npc.set_meta("life_route", [
 			gate   + Vector3(-1, 0,  0),
@@ -8568,6 +8589,7 @@ func _build_briarwood_life() -> void:
 		npc2.name = "LifeVillager_%d" % i
 		var hub: Vector3 = plaza if rng.randf() < 0.55 else market
 		npc2.global_position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
+		_scale_node_to_height(npc2, rng.randf_range(1.55, 1.75))
 		npc2.set_meta("life_role", "villager")
 		npc2.set_meta("life_home", npc2.global_position)
 		npc2.set_meta("life_idle_until", 0.0)
@@ -10551,9 +10573,9 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 		post.global_position = p2
 		_bw_add_signboard(post, Vector3.ZERO, "MARKET" if rng.randf() < 0.5 else "GOODS")
 
-	# Extra clutter scatter over market area
-	for i in range(int(20 * bw_dressing_density)):
-		var p3: Vector3 = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
+	# Extra clutter scatter over market area (reduced — was too dense)
+	for i in range(int(8 * bw_dressing_density)):
+		var p3: Vector3 = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-6.0, 8.0)
 		_bw_place_clutter(root, p3, rng)
 
 
