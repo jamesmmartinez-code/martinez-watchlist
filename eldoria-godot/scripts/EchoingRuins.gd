@@ -29,7 +29,7 @@ var _spawn_positions: Dictionary = {}
 
 # ── Section state ──────────────────────────────────────────────────────────
 var _section: int = -1
-var _alive_enemies: Array[Node] = []
+var _alive_enemies: Array = []
 var _boss: Node = null
 var _player: Node = null
 var _evolution_triggered: bool = false
