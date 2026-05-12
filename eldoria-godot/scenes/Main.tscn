@@ -143,7 +143,7 @@ shape = SubResource("PlayerShape")
 
 [node name="Hero" parent="Player" instance=ExtResource("8_hero")]
 ; 2026-05-11: alden_pathfinder.glb — scale=1 (Player.gd normalizes), 180Y rotation so model faces -Z (game forward).
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 ; [CANON-APPROVED: 2026-05-11 auditor] removed negative X/Z mirror — was causing inverted normals
 ; and confusing basis math. Visual flip (if any) should be fixed in Blender import, not here.
 visible = true
