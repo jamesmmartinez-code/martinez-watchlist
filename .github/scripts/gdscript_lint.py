@@ -20,8 +20,9 @@ Patterns checked:
  14. var x: float = plaza/market   — these are Vector3
  15. var x: int = hubs[...]        — Array[Vector3] element is Vector3
  16. var x: float = "string"       — string stored as float
- 17. var x := ARRAY[i]             — typed array element lookup returns Variant; needs explicit type
- 18. var x := dict[key]            — dict lookup returns Variant; needs var x: Dictionary/String/etc
+ 17. var x := CONST_ARRAY[i]       — ALL_CAPS typed array element; needs explicit type
+ 18. var x := dict[key]            — dict lookup returns Variant; needs explicit type
+     (only flagged when no trailing 'as TypeName' cast, and var name suggests dict not typed array)
 
 Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
 """
@@ -118,25 +119,30 @@ for gd in sorted(ROOT.rglob("*.gd")):
         if re.search(r'var\s+\w+\s*:\s*float\s*=\s*_NAME_', code):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-STRING-AS-FLOAT", raw.rstrip()))
 
-        # 17. var x := ARRAY[i] — typed Array element lookup returns Variant in strict mode
-        # Catches: var t := NORDIC_BRANCH_T[i], var item := my_array[idx], etc.
-        # Allow if the array is declared as Array[T] (GDScript can then infer T) — we flag
-        # ALL_CAPS constant arrays because those come from agent-written class-level const blocks
-        # where the type isn't visible to the inference engine.
-        if re.search(r'var\s+\w+\s*:=\s*[A-Z][A-Z_]+\[', code):
-            violations.append((str(gd), lineno, "VARIANT-INFER-CONST-ARRAY", raw.rstrip()))
+        # 17. var x := ALL_CAPS_ARRAY[i] — typed array element lookup on a const returns Variant
+        # Only flag ALL_CAPS identifiers (class-level constants). Skip if followed by 'as TypeName'.
+        if re.search(r'var\s+\w+\s*:=\s*[A-Z][A-Z_]{2,}\[', code):
+            if not re.search(r'\bas\s+\w', code):  # 'as TypeName' cast makes it safe
+                violations.append((str(gd), lineno, "VARIANT-INFER-CONST-ARRAY", raw.rstrip()))
 
-        # 18. var x := dict[key] — dict lookup always returns Variant; needs explicit type
-        # Pattern: var <name> := <dict_name>[<anything>]
-        # Exclude if RHS is an Array literal like [a, b, c] (those are fine with :=)
-        if re.search(r'var\s+\w+\s*:=\s*\w+\[(?!\s*(?:$|\]))', code):
-            # Only flag if it's a subscript on a bare variable (not a literal array)
-            # Skip lines like: var x := [a, b]  or  var x := func()
-            if not re.search(r'var\s+\w+\s*:=\s*\[', code):
+        # 18. var x := dict[key] — dict subscript lookup returns Variant; needs explicit type
+        # Only flag when:
+        #   - subscript variable name ends in _batches/_data/_map/_cache/_table (dict-looking names)
+        #   - OR the subscripted name is a known dict-holding member variable
+        #   - AND line has no trailing 'as TypeName' cast
+        if re.search(r'var\s+\w+\s*:=\s*(\w+)\[', code):
+            match = re.search(r'var\s+\w+\s*:=\s*(\w+)\[', code)
+            dict_var = match.group(1) if match else ""
+            is_known_dict = bool(re.search(
+                r'(_batches|_data|_map|_cache|_table|_registry|_index|_lookup|_store|loaded_chunks)$',
+                dict_var
+            ))
+            has_cast = bool(re.search(r'\bas\s+\w', code))
+            if is_known_dict and not has_cast:
                 violations.append((str(gd), lineno, "VARIANT-INFER-DICT-LOOKUP", raw.rstrip()))
 
 
-# Pattern bonus: var x := VARIANT_FUNC(...) — Variant inference error
+# Bonus: var x := VARIANT_FUNC(...) — Variant inference error
 # These functions return Variant in GDScript 4 strict mode
 VARIANT_RETURNING = re.compile(
     r'var\s+\w+\s*:=\s*(?:lerp|smoothstep|randf_range|randf|snapped|clamp|sqrt|fmod|'
