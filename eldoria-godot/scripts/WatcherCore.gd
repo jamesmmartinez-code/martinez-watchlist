@@ -267,7 +267,7 @@ func _physics_process(delta: float) -> void:
 
 	# Face player
 	if to_player.length() > 0.1:
-		var tb: Vector3 = Basis.looking_at(to_player.normalized(), Vector3.UP)
+		var tb: Basis = Basis.looking_at(to_player.normalized(), Vector3.UP)
 		global_transform.basis = global_transform.basis.slerp(tb, 5.0 * delta)
 
 	# Attack timer
