@@ -15,6 +15,11 @@ Patterns checked:
   9. var x: float = vec.lerp()      — lerp on Vector3 returns Vector3
  10. var x: float = vec + dir * ... — vector arithmetic stored as float
  11. Transform3D(float, Vector3)    — wrong constructor (needs Basis, Vector3)
+ 12. var x: Vector3 = Basis.looking_at() — returns Basis
+ 13. var x: Vector3 = _make_*()    — maker funcs return Node3D
+ 14. var x: float = plaza/market   — these are Vector3
+ 15. var x: int = hubs[...]        — Array[Vector3] element is Vector3
+ 16. var x: float = "string"       — string stored as float
 
 Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
 """
@@ -87,6 +92,31 @@ for gd in sorted(ROOT.rglob("*.gd")):
         # 11. Transform3D(float, Vector3(...)) — wrong constructor (should be Transform3D(Basis, Vector3))
         if re.search(r'Transform3D\(\s*[\d\w\.]+\s*,\s*Vector3\(', code) and 'Basis' not in code:
             violations.append((str(gd), lineno, "T3D-WRONG-CONSTRUCTOR", raw.rstrip()))
+
+
+        # 12. var x: Vector3 = Basis.looking_at(...) — looking_at returns Basis, not Vector3
+        if re.search(r'var\s+\w+\s*:\s*Vector3\s*=\s*Basis\.looking_at\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-BASIS-AS-V3", raw.rstrip()))
+
+        # 13. var x: Vector3 = _make_*/  _box_prop() — these return Node3D, not Vector3
+        if re.search(r'var\s+\w+\s*:\s*Vector3\s*=\s*(_make_|_box_prop|_bw_build)\w*\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-NODE3D-AS-V3", raw.rstrip()))
+
+        # 14. var x: (float|int) = plaza/market/craft/gate — these are Vector3, not scalars
+        if re.search(r'var\s+\w+\s*:\s*(float|int)\s*=\s*(plaza|market|craft|gate)', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-VEC3-AS-SCALAR", raw.rstrip()))
+
+        # 15. var x: int = hubs[...] — hubs is Array[Vector3], index returns Vector3
+        if re.search(r'var\s+\w+\s*:\s*int\s*=\s*\w+\[', code):
+            # only flag if it's on a known Vector3 array
+            if re.search(r'var\s+\w+\s*:\s*int\s*=\s*(hubs|pts|points|nodes)\[', code):
+                violations.append((str(gd), lineno, "TYPE-MISMATCH-VEC3-ARRAY-AS-INT", raw.rstrip()))
+
+        # 16. var x: float = "..." or var x: float = _NAME_ — string stored as float
+        if re.search(r'var\s+\w+\s*:\s*float\s*=\s*"', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-STRING-AS-FLOAT", raw.rstrip()))
+        if re.search(r'var\s+\w+\s*:\s*float\s*=\s*_NAME_', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-STRING-AS-FLOAT", raw.rstrip()))
 
 # Pattern 3: var x := VARIANT_FUNC(...) — Variant inference error
 # These functions return Variant in GDScript 4 strict mode
