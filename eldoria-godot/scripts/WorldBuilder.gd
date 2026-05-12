@@ -1200,7 +1200,20 @@ func _wb_crash_report(phase: String) -> void:
 		_dlog(msg)
 		if Engine.has_singleton("JavaScriptBridge"):
 			var js = Engine.get_singleton("JavaScriptBridge")
-			js.eval("window.WB_CRASH=" + JSON.stringify(msg) + "; var d=document.getElementById('wb-crash'); if(!d){d=document.createElement('div');d.id='wb-crash';d.style='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#ff4444;font:bold 18px monospace;padding:24px 32px;border:3px solid #ff4444;border-radius:8px;z-index:99999;text-align:center;max-width:90vw;';document.body.appendChild(d);} d.innerText='⚠ WORLD BUILD CRASH\n' + " + JSON.stringify(msg) + ";")
+			# Build JS inline: single quotes inside the JS use char(39) to avoid GDScript escape issues
+			var q := char(39)
+			var style := "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);" + \
+				"background:rgba(0,0,0,0.85);color:#ff4444;font:bold 18px monospace;" + \
+				"padding:24px 32px;border:3px solid #ff4444;border-radius:8px;" + \
+				"z-index:99999;text-align:center;max-width:90vw;"
+			var js_code := "window.WB_CRASH=" + q + msg + q + ";" + \
+				"var d=document.getElementById(" + q + "wb-crash" + q + ");" + \
+				"if(!d){d=document.createElement(" + q + "div" + q + ");" + \
+				"d.id=" + q + "wb-crash" + q + ";" + \
+				"d.style=" + q + style + q + ";" + \
+				"document.body.appendChild(d);}" + \
+				"d.innerText=" + q + "WORLD BUILD CRASH\n" + msg + q + ";"
+			js.eval(js_code)
 		_wb_last_builder = ""
 
 func _build_world_async() -> void:
