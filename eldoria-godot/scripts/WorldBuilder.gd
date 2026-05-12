@@ -2751,52 +2751,47 @@ func _build_far_world_scatter() -> void:
 	add_child(root)
 
 	# ── Distant tree silhouettes (rings from 120m to 500m) ──────────────────
-	var tree_count := 280
+	# Trees: kept at true scale (h=4-8m) but pushed to 180m+ so they read as
+	# background forest silhouettes, not foreground giants.
+	var tree_count := 160
 	for i in range(tree_count):
 		var angle := rng.randf() * TAU
-		var dist  := rng.randf_range(120.0, 480.0)
+		var dist  := rng.randf_range(180.0, 500.0)
 		var pos   := Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
-		# Skip the briarwood zone and Nordic zone
-		if pos.distance_to(Vector3(0, 0, 0)) < 100.0:
-			continue
-		var tree := MeshInstance3D.new()
-		var h    := rng.randf_range(4.0, 10.0)
-		# Trunk
+		var h     := rng.randf_range(4.0, 8.0)
+		# Trunk — thin and tall
 		var trunk_m := CylinderMesh.new()
-		trunk_m.top_radius    = rng.randf_range(0.12, 0.22)
-		trunk_m.bottom_radius = rng.randf_range(0.18, 0.30)
+		trunk_m.top_radius    = rng.randf_range(0.10, 0.18)
+		trunk_m.bottom_radius = rng.randf_range(0.14, 0.24)
 		trunk_m.height        = h * 0.55
 		var trunk := MeshInstance3D.new()
 		trunk.mesh = trunk_m
 		trunk.material_override = MAT_DARK_WOOD(0.5)
-		trunk.position.y = h * 0.55 * 0.5
 		root.add_child(trunk)
 		trunk.global_position = pos + Vector3(0, h * 0.55 * 0.5, 0)
-		# Canopy (sphere or cone alternating)
+		# Canopy — tight sphere or narrow cone (not wide blobs)
 		var canopy := MeshInstance3D.new()
 		if rng.randi() % 2 == 0:
 			var sm := SphereMesh.new()
-			sm.radius = rng.randf_range(1.4, 2.8)
+			sm.radius = rng.randf_range(0.8, 1.6)  # was 1.4-2.8
 			sm.height = sm.radius * 2.0
 			canopy.mesh = sm
 		else:
 			var prm := PrismMesh.new()
-			prm.size = Vector3(rng.randf_range(2.2, 4.0), h * 0.6, rng.randf_range(2.2, 4.0))
+			prm.size = Vector3(rng.randf_range(1.2, 2.2), h * 0.55, rng.randf_range(1.2, 2.2))  # was 2.2-4.0
 			canopy.mesh = prm
 		var cm := StandardMaterial3D.new()
-		# Vary green tones: deep forest, autumn hint, pine
 		var green_mix := rng.randf()
 		if green_mix < 0.6:
-			cm.albedo_color = Color(0.18 + rng.randf_range(0, 0.12), 0.38 + rng.randf_range(0, 0.15), 0.14)
+			cm.albedo_color = Color(0.15 + rng.randf_range(0, 0.12), 0.32 + rng.randf_range(0, 0.14), 0.10)
 		elif green_mix < 0.8:
-			cm.albedo_color = Color(0.35, 0.30, 0.10)  # autumn brown
+			cm.albedo_color = Color(0.28, 0.22, 0.08)  # autumn brown
 		else:
-			cm.albedo_color = Color(0.12, 0.28, 0.18)  # dark pine
-		cm.roughness = 0.9
+			cm.albedo_color = Color(0.08, 0.22, 0.14)  # dark pine
+		cm.roughness = 0.95
 		canopy.material_override = cm
-		canopy.position.y = h * 0.55 + h * 0.3
 		root.add_child(canopy)
-		canopy.global_position = pos + Vector3(0, h * 0.55 + h * 0.3, 0)
+		canopy.global_position = pos + Vector3(0, h * 0.55 + h * 0.28, 0)
 
 	# ── Boulder clusters (100m to 350m) ────────────────────────────────────
 	for i in range(60):
@@ -7100,11 +7095,7 @@ func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void
 	var bm := BoxMesh.new()
 	bm.size = Vector3(1.9, 0.55, 0.08)
 	board.mesh = bm
-	# Use inline color so sign never shows missing-texture magenta/red
-	var sign_mat := StandardMaterial3D.new()
-	sign_mat.albedo_color = Color(0.32, 0.20, 0.10)  # dark oak brown
-	sign_mat.roughness = 0.9
-	board.material_override = sign_mat
+	board.material_override = _bw_mat_darkwood()
 	board.position = Vector3(0.0, 2.2, 0.0)
 	sign.add_child(board)
 
@@ -7119,20 +7110,6 @@ func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void
 	label.modulate        = Color(1.0, 0.88, 0.55)
 	label.position        = Vector3(0.0, 2.2, 0.06)
 	sign.add_child(label)
-
-	# Wooden post under the sign
-	var pole := MeshInstance3D.new()
-	var pcm  := CylinderMesh.new()
-	pcm.top_radius    = 0.06
-	pcm.bottom_radius = 0.08
-	pcm.height        = 2.5
-	pole.mesh = pcm
-	var pole_mat := StandardMaterial3D.new()
-	pole_mat.albedo_color = Color(0.30, 0.18, 0.08)
-	pole_mat.roughness = 0.95
-	pole.material_override = pole_mat
-	pole.position = Vector3(0.0, 1.25, 0.0)
-	sign.add_child(pole)
 
 
 # ============================================================================
@@ -7765,7 +7742,6 @@ func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector
 		root.add_child(npc)
 		npc.global_position = p
 		npc.rotation.y = rng.randf_range(-PI, PI)
-		_scale_node_to_height(npc, rng.randf_range(1.55, 1.78))  # normalize to human height
 
 
 # ── Interactions: quest board, inn marker, smith marker, training dummy ───────
@@ -8249,7 +8225,6 @@ func _spawn_named_giver(root: Node3D, display_name: String, pos: Vector3, kind: 
 	npc.name = display_name.replace(" ", "_")
 	root.add_child(npc)
 	npc.global_position = pos
-	_scale_node_to_height(npc, 1.65)  # normalize quest-giver NPCs to human height
 
 	# Floating name tag
 	var label := Label3D.new()
@@ -8568,7 +8543,6 @@ func _build_briarwood_life() -> void:
 		_bw_life_root.add_child(npc)
 		npc.name = "LifeGuard_%d" % i
 		npc.global_position = gate + Vector3(rng.randf_range(-2, 2), 0, rng.randf_range(-2, 2))
-		_scale_node_to_height(npc, rng.randf_range(1.55, 1.75))
 		npc.set_meta("life_role", "guard")
 		npc.set_meta("life_route", [
 			gate   + Vector3(-1, 0,  0),
@@ -8589,7 +8563,6 @@ func _build_briarwood_life() -> void:
 		npc2.name = "LifeVillager_%d" % i
 		var hub: Vector3 = plaza if rng.randf() < 0.55 else market
 		npc2.global_position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
-		_scale_node_to_height(npc2, rng.randf_range(1.55, 1.75))
 		npc2.set_meta("life_role", "villager")
 		npc2.set_meta("life_home", npc2.global_position)
 		npc2.set_meta("life_idle_until", 0.0)
@@ -10573,9 +10546,9 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 		post.global_position = p2
 		_bw_add_signboard(post, Vector3.ZERO, "MARKET" if rng.randf() < 0.5 else "GOODS")
 
-	# Extra clutter scatter over market area (reduced — was too dense)
-	for i in range(int(8 * bw_dressing_density)):
-		var p3: Vector3 = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-6.0, 8.0)
+	# Extra clutter scatter over market area
+	for i in range(int(20 * bw_dressing_density)):
+		var p3: Vector3 = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
 		_bw_place_clutter(root, p3, rng)
 
 
