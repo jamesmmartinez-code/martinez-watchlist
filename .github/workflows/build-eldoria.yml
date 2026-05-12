@@ -248,6 +248,12 @@ jobs:
             if [ "$CODE" = "200" ]; then OK=$((OK+1)); echo "  ✅ pck-parts.json (manifest — uploaded last)"; else FAIL=$((FAIL+1)); echo "  ❌ pck-parts.json → HTTP $CODE"; fi
           fi
           echo "🚢 R2 sync: $OK ok, $FAIL failed"
+          if [ "$FAIL" -gt 0 ]; then
+            echo "❌ R2 sync had $FAIL failure(s) — aborting"
+            exit 1
+          fi
+          # Verify game.html in R2 is the real game shell, not a redirect
+          python3 .github/scripts/r2_verify.py
 
       - name: Overwrite GH Pages /eldoria/index.html with redirect → Cloudflare
         if: success()
@@ -293,4 +299,10 @@ jobs:
             sleep $((i * 2))
           done
           echo "❌ redirect push failed"; exit 1
+
+      - name: Post-deploy smoke test (verify live URL serves real game)
+        if: success()
+        run: |
+          sleep 10
+          python3 .github/scripts/smoke_test.py
 
