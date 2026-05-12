@@ -30,13 +30,13 @@ class_name World
 @onready var death_overlay: ColorRect = $UI/DeathOverlay
 @onready var death_label: Label = $UI/DeathOverlay/DeathLabel
 
-var time_of_day: float = 11.0
+var time_of_day: float = 9.5  # 9:30am — warm morning start
 # Run 16 (Builder): integer day-counter that increments every time `time_of_day`
 # wraps from late night back through dawn. Read by `npc_memory` so NPCs know
 # "first met you on day 0, last spoke day 4" (= "you've been gone four days").
 # Pure derivation from time_of_day — `_prev_tod` witnesses the wrap in _process.
 var world_day: int = 0
-var _prev_tod: float = 11.0
+var _prev_tod: float = 9.5
 var _current_npc_role: String = ""
 var _current_npc_name: String = ""
 
@@ -1282,7 +1282,7 @@ func _process(delta: float) -> void:
 		_zone_check_timer = 1.5
 		_check_zone_music()
 	# Day/night — full cycle in ~6 minutes
-	time_of_day = fposmod(time_of_day + delta * (24.0 / 360.0), 24.0)
+	time_of_day = fposmod(time_of_day + delta * (24.0 / 900.0), 24.0)  # 15-min day cycle
 	# Run 16 (Builder): increment world_day when time_of_day wraps. The
 	# fposmod above means a forward step of `delta * 24/360` (~0.067 sec
 	# of in-game time per real second) NEVER overshoots a full day in one
@@ -2736,5 +2736,6 @@ func _pulse_card(node: Control) -> void:
 	var tw: Tween = create_tween().set_loops(2)
 	tw.tween_property(node, "modulate", pulse_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(node, "modulate", base_mod, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
 
 
