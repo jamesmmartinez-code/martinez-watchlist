@@ -4877,7 +4877,7 @@ func _build_nordic_fishing_village() -> void:
 	var branch_dirs  : Array[Vector3] = []
 	var branch_bases : Array[Vector3] = []
 	for i in range(NORDIC_BRANCH_T.size()):
-		var t   := NORDIC_BRANCH_T[i]
+		var t: float = NORDIC_BRANCH_T[i]
 		var bp: Vector3 = pier_start + pier_dir * (NORDIC_PIER_LEN * t)
 		bp.y    = NORDIC_WATER_Y + 0.15
 		var side := (1.0 if i % 2 == 0 else -1.0)
@@ -4907,7 +4907,7 @@ func _build_nordic_fishing_village() -> void:
 
 	# Pier-arm stilt houses (one per branch that has room)
 	for i in range(mini(branch_bases.size(), branch_dirs.size())):  # FIX: minf→mini
-		var hpos: float = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(8.0, 16.0) \
+		var hpos: Vector3 = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(8.0, 16.0) \
 					+ _nordic_side(branch_dirs[i]) * _nrng.randf_range(2.5, 4.5)
 		hpos.y   = NORDIC_WATER_Y + 0.15
 		_nordic_stilt_house(hpos, -branch_dirs[i], Vector2(6.5, 6.0))
@@ -5103,7 +5103,7 @@ func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserv
 			mmi.material_override = mat
 		parent.add_child(mmi)
 		_mm_batches[key] = {"mmi": mmi, "mm": mm, "next": 0}
-	var d := _mm_batches[key]
+	var d: Dictionary = _mm_batches[key]
 	if d.next >= d.mm.instance_count:
 		d.mm.instance_count += reserve
 	d.mm.set_instance_transform(d.next, xform)
@@ -5112,7 +5112,7 @@ func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserv
 
 func _mm_finalize() -> void:
 	for key in _mm_batches:
-		var d := _mm_batches[key]
+		var d: Dictionary = _mm_batches[key]
 		if d.mm and d.next > 0:
 			d.mm.instance_count = d.next
 	_mm_batches.clear()
