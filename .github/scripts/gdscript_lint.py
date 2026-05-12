@@ -22,6 +22,7 @@ Patterns checked:
  16. var x: float = "string"       — string stored as float
  17. var x := CONST_ARRAY[i]       — ALL_CAPS typed array element; needs explicit type
  18. var x := dict[key]            — dict lookup returns Variant; needs explicit type
+ 19. var x: Vector3 = x.dot(...)      — .dot() returns float, not Vector3
      (only flagged when no trailing 'as TypeName' cast, and var name suggests dict not typed array)
 
 Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
@@ -140,6 +141,11 @@ for gd in sorted(ROOT.rglob("*.gd")):
             has_cast = bool(re.search(r'\bas\s+\w', code))
             if is_known_dict and not has_cast:
                 violations.append((str(gd), lineno, "VARIANT-INFER-DICT-LOOKUP", raw.rstrip()))
+
+
+        # 19. var x: Vector3 = something.dot(...) — .dot() returns float, not Vector3
+        if re.search(r'var\s+\w+\s*:\s*Vector3\s*=.*\.dot\s*\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-DOT-AS-V3", raw.rstrip()))
 
 
 # Bonus: var x := VARIANT_FUNC(...) — Variant inference error
