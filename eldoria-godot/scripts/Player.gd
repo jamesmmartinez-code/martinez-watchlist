@@ -818,7 +818,7 @@ func use_skill(idx: int) -> void:
 func _spawn_fireball(dmg: int) -> void:
 	var fb := Area3D.new()
 	fb.set_script(FIREBALL_SCRIPT)
-	fb.global_position = global_position + Vector3(0, 1.0, 0)
+	fb.position = global_position + Vector3(0, 1.0, 0)  # guard: was global_position (orphan crash fix)
 	get_tree().current_scene.add_child(fb)
 	# Direction = player's facing (forward axis)
 	var fire_dir := -global_transform.basis.z
@@ -1015,7 +1015,7 @@ func _inferno_spread_extra(base_dmg: int) -> void:
 		var spread_dir: Vector3 = base_dir.rotated(Vector3.UP, deg_to_rad(angle_deg))
 		var fb := Area3D.new()
 		fb.set_script(FIREBALL_SCRIPT)
-		fb.global_position = global_position + Vector3(0, 1.0, 0)
+		fb.position = global_position + Vector3(0, 1.0, 0)  # guard: was global_position (orphan crash fix)
 		get_tree().current_scene.add_child(fb)
 		fb.launch(spread_dir, spread_dmg, self)
 
@@ -1673,4 +1673,3 @@ func reset_save() -> void:
 	# For "New Game" button later
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
-

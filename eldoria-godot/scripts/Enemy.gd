@@ -803,7 +803,7 @@ func _fire_watcher_bolt() -> void:
 		return
 	var bolt := Area3D.new()
 	bolt.set_script(WATCHER_BOLT_SCRIPT)
-	bolt.global_position = global_position + Vector3(0, 1.0, 0)
+	bolt.position = global_position + Vector3(0, 1.0, 0)  # guard: was global_position (orphan crash fix)
 	get_tree().current_scene.add_child(bolt)
 	var dir: Vector3 = (_player.global_position + Vector3(0, 0.9, 0)) - bolt.global_position
 	bolt.launch(dir.normalized(), damage, self)
