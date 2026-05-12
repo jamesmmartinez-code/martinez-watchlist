@@ -358,7 +358,7 @@ func _observe_player_dodge() -> void:
 		return
 	# Project player velocity onto boss right-axis
 	var right := global_transform.basis.x
-	var dot: Vector3 = player_vel.normalized().dot(right)
+	var dot: float = player_vel.normalized().dot(right)
 	if dot > 0.35:
 		blackboard["dodge_right"] = blackboard.get("dodge_right", 0) + 1
 	elif dot < -0.35:
