@@ -237,7 +237,7 @@ func _observe_dodge() -> void:
 	var pv: Vector3 = Vector3(_player.velocity.x, 0, _player.velocity.z)
 	if pv.length() < 0.3:
 		return
-	var dot: Vector3 = pv.normalized().dot(global_transform.basis.x)
+	var dot: float = pv.normalized().dot(global_transform.basis.x)
 	if dot > 0.35:
 		_blackboard["dodge_right"] = _blackboard.get("dodge_right", 0) + 1
 	elif dot < -0.35:
