@@ -20,6 +20,8 @@ Patterns checked:
  14. var x: float = plaza/market   — these are Vector3
  15. var x: int = hubs[...]        — Array[Vector3] element is Vector3
  16. var x: float = "string"       — string stored as float
+ 17. var x := ARRAY[i]             — typed array element lookup returns Variant; needs explicit type
+ 18. var x := dict[key]            — dict lookup returns Variant; needs var x: Dictionary/String/etc
 
 Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
 """
@@ -72,7 +74,6 @@ for gd in sorted(ROOT.rglob("*.gd")):
         if re.match(r'\s*//', raw) and not re.match(r'\s*#', raw):
             violations.append((str(gd), lineno, "CPP-COMMENT", raw.rstrip()))
 
-
         # 7. var x: Vector3 = Transform3D(...) — wrong type annotation
         if re.search(r'var\s+\w+\s*:\s*Vector3\s*=\s*Transform3D\(', code):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-T3D-AS-V3", raw.rstrip()))
@@ -93,7 +94,6 @@ for gd in sorted(ROOT.rglob("*.gd")):
         if re.search(r'Transform3D\(\s*[\d\w\.]+\s*,\s*Vector3\(', code) and 'Basis' not in code:
             violations.append((str(gd), lineno, "T3D-WRONG-CONSTRUCTOR", raw.rstrip()))
 
-
         # 12. var x: Vector3 = Basis.looking_at(...) — looking_at returns Basis, not Vector3
         if re.search(r'var\s+\w+\s*:\s*Vector3\s*=\s*Basis\.looking_at\(', code):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-BASIS-AS-V3", raw.rstrip()))
@@ -103,7 +103,7 @@ for gd in sorted(ROOT.rglob("*.gd")):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-NODE3D-AS-V3", raw.rstrip()))
 
         # 14. var x: (float|int) = plaza/market/craft/gate — these are Vector3, not scalars
-        if re.search(r'var\s+\w+\s*:\s*(float|int)\s*=\s*(plaza|market|craft|gate)', code):
+        if re.search(r'var\s+\w+\s*:\s*(float|int)\s*=\s*(plaza|market|craft|gate)', code):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-VEC3-AS-SCALAR", raw.rstrip()))
 
         # 15. var x: int = hubs[...] — hubs is Array[Vector3], index returns Vector3
@@ -118,7 +118,25 @@ for gd in sorted(ROOT.rglob("*.gd")):
         if re.search(r'var\s+\w+\s*:\s*float\s*=\s*_NAME_', code):
             violations.append((str(gd), lineno, "TYPE-MISMATCH-STRING-AS-FLOAT", raw.rstrip()))
 
-# Pattern 3: var x := VARIANT_FUNC(...) — Variant inference error
+        # 17. var x := ARRAY[i] — typed Array element lookup returns Variant in strict mode
+        # Catches: var t := NORDIC_BRANCH_T[i], var item := my_array[idx], etc.
+        # Allow if the array is declared as Array[T] (GDScript can then infer T) — we flag
+        # ALL_CAPS constant arrays because those come from agent-written class-level const blocks
+        # where the type isn't visible to the inference engine.
+        if re.search(r'var\s+\w+\s*:=\s*[A-Z][A-Z_]+\[', code):
+            violations.append((str(gd), lineno, "VARIANT-INFER-CONST-ARRAY", raw.rstrip()))
+
+        # 18. var x := dict[key] — dict lookup always returns Variant; needs explicit type
+        # Pattern: var <name> := <dict_name>[<anything>]
+        # Exclude if RHS is an Array literal like [a, b, c] (those are fine with :=)
+        if re.search(r'var\s+\w+\s*:=\s*\w+\[(?!\s*(?:$|\]))', code):
+            # Only flag if it's a subscript on a bare variable (not a literal array)
+            # Skip lines like: var x := [a, b]  or  var x := func()
+            if not re.search(r'var\s+\w+\s*:=\s*\[', code):
+                violations.append((str(gd), lineno, "VARIANT-INFER-DICT-LOOKUP", raw.rstrip()))
+
+
+# Pattern bonus: var x := VARIANT_FUNC(...) — Variant inference error
 # These functions return Variant in GDScript 4 strict mode
 VARIANT_RETURNING = re.compile(
     r'var\s+\w+\s*:=\s*(?:lerp|smoothstep|randf_range|randf|snapped|clamp|sqrt|fmod|'
@@ -142,7 +160,7 @@ if violations:
         print(f"  {path}:{lineno}  [{kind}]")
         print(f"    {line[:120]}")
     print(f"\n{len(violations)} error(s). Fix before pushing.")
-    print("See ELDORIA_STATUS.md → 'How to Fix Recurring Errors'.")
+    print("See ELDORIA_STATUS.md -> 'How to Fix Recurring Errors'.")
     sys.exit(1)
 else:
     print(f"GDScript lint: CLEAN ({sum(1 for _ in ROOT.rglob('*.gd'))} files)")
