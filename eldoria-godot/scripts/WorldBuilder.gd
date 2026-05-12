@@ -75,7 +75,7 @@ var _qh_label: RichTextLabel = null
 
 var _bw_life_root: Node3D = null
 var _bw_life_timer: Timer = null
-var _bw_life_npcs: Array[Node3D] = []
+var _bw_life_npcs: Array = []
 
 var _shop_layer: CanvasLayer = null
 var _shop_panel: Panel = null
@@ -5088,7 +5088,7 @@ func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void
 
 # ── MultiMesh batching helpers (Builder run 26 — perf pass) ─────────────────
 func _mm_key(mesh: Mesh, mat: Material) -> String:
-	return "%s|%s" % [str(mesh.get_rid()), mat != null ? str(mat.get_rid()) : "null"]
+	return "%s|%s" % [str(mesh.get_rid()), str(mat.get_rid()) if mat != null else "null"]
 
 func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserve: int = 64) -> void:
 	var key := _mm_key(mesh, mat)
@@ -5576,7 +5576,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Fish racks
 	for i in range(10):
 		var z := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x := (_nrng.randf() < 0.5 ? -1.0 : 1.0) * _nrng.randf_range(3.0, 7.0)
+		var x := (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
 		var p := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_fish_rack(p, -pier_dir)
@@ -5599,7 +5599,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Two boats alongside main pier
 	for i in range(2):
 		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
-		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((_nrng.randf() < 0.5 ? -1.0 : 1.0) * 4.5)
+		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
 		bp.y  = NORDIC_WATER_Y - 0.06
 		_nordic_boat(bp, -pier_dir)
 
@@ -5977,7 +5977,7 @@ func _visual_aabb(n: Node3D) -> AABB:
 # ============================================================================
 
 var _nordic_life_root: Node3D = null
-var _nordic_life_dock_npcs: Array[Node3D] = []
+var _nordic_life_dock_npcs: Array = []
 var _nordic_life_timer: Timer = null
 
 func _build_nordic_dock_life() -> void:
@@ -6186,7 +6186,7 @@ func _try_play_anim(npc: Node3D, logical: String) -> void:
 # PHASE 6 — Harbor Interactions
 # ============================================================================
 
-var _nordic_interactables: Array[Node3D] = []
+var _nordic_interactables: Array = []
 var _nordic_interact_cd: Dictionary = {}
 
 func _register_interactable(node: Node3D, kind: String) -> void:
