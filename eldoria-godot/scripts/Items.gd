@@ -17,95 +17,95 @@ const RARITY_COLORS = {
 const ITEMS = {
 	# ── Weapons ───────────────────────────────────────────────────────────
 	"rusty_sword":   {"name":"Rusty Sword",   "type":"weapon", "slot":"weapon", "rarity":"common",
-	                  "icon":"⚔", "icon_path":"res://assets/icons/rusty_sword.png",  "color":Color(0.65,0.65,0.65), "damage":3,  "value":4},
+	"icon":"⚔", "icon_path":"res://assets/icons/rusty_sword.png",  "color":Color(0.65,0.65,0.65), "damage":3,  "value":4},
 	"iron_sword":    {"name":"Iron Sword",    "type":"weapon", "slot":"weapon", "rarity":"common",
-	                  "icon":"⚔", "icon_path":"res://assets/icons/iron_sword.png",  "color":Color(0.85,0.85,0.85), "damage":6,  "value":18},
+	"icon":"⚔", "icon_path":"res://assets/icons/iron_sword.png",  "color":Color(0.85,0.85,0.85), "damage":6,  "value":18},
 	"steel_blade":   {"name":"Steel Blade",   "type":"weapon", "slot":"weapon", "rarity":"uncommon",
-	                  "icon":"⚔", "icon_path":"res://assets/icons/steel_blade.png",  "color":Color(0.78,0.85,0.95), "damage":12, "value":55},
+	"icon":"⚔", "icon_path":"res://assets/icons/steel_blade.png",  "color":Color(0.78,0.85,0.95), "damage":12, "value":55},
 	"frost_saber":   {"name":"Frost Saber",   "type":"weapon", "slot":"weapon", "rarity":"rare",
-	                  "icon":"❄", "icon_path":"res://assets/icons/frost_saber.png",  "color":Color(0.45,0.78,1.00), "damage":22, "crit_bonus":0.06, "value":210},
+	"icon":"❄", "icon_path":"res://assets/icons/frost_saber.png",  "color":Color(0.45,0.78,1.00), "damage":22, "crit_bonus":0.06, "value":210},
 	"ember_axe":     {"name":"Ember Axe",     "type":"weapon", "slot":"weapon", "rarity":"rare",
-	                  "icon":"🪓", "icon_path":"res://assets/icons/ember_axe.png","color":Color(1.0,0.55,0.20),  "damage":26, "value":260},
+	"icon":"🪓", "icon_path":"res://assets/icons/ember_axe.png","color":Color(1.0,0.55,0.20),  "damage":26, "value":260},
 	"shadow_dagger": {"name":"Shadow Dagger", "type":"weapon", "slot":"weapon", "rarity":"epic",
-	                  "icon":"🗡", "icon_path":"res://assets/icons/shadow_dagger.png","color":Color(0.55,0.20,0.85), "damage":18, "crit_bonus":0.18, "value":420},
+	"icon":"🗡", "icon_path":"res://assets/icons/shadow_dagger.png","color":Color(0.55,0.20,0.85), "damage":18, "crit_bonus":0.18, "value":420},
 	"dragonfang":    {"name":"Dragonfang",    "type":"weapon", "slot":"weapon", "rarity":"legendary",
-	                  "icon":"🐉", "icon_path":"res://assets/icons/dragonfang.png","color":Color(1.0,0.85,0.20),  "damage":42, "crit_bonus":0.10, "value":1500},
+	"icon":"🐉", "icon_path":"res://assets/icons/dragonfang.png","color":Color(1.0,0.85,0.20),  "damage":42, "crit_bonus":0.10, "value":1500},
 
 	# ── Armor ─────────────────────────────────────────────────────────────
 	"cloth":         {"name":"Cloth Tunic",   "type":"armor",  "slot":"armor",  "rarity":"common",
-	                  "icon":"🧵", "icon_path":"res://assets/icons/cloth.png","color":Color(0.85,0.75,0.55), "armor":2,  "value":6},
+	"icon":"🧵", "icon_path":"res://assets/icons/cloth.png","color":Color(0.85,0.75,0.55), "armor":2,  "value":6},
 	"leather":       {"name":"Leather Vest",  "type":"armor",  "slot":"armor",  "rarity":"common",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/leather.png","color":Color(0.55,0.40,0.25), "armor":6,  "value":24},
+	"icon":"🛡", "icon_path":"res://assets/icons/leather.png","color":Color(0.55,0.40,0.25), "armor":6,  "value":24},
 	"chainmail":     {"name":"Chainmail",     "type":"armor",  "slot":"armor",  "rarity":"uncommon",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/chainmail.png","color":Color(0.65,0.65,0.70), "armor":12, "value":80},
+	"icon":"🛡", "icon_path":"res://assets/icons/chainmail.png","color":Color(0.65,0.65,0.70), "armor":12, "value":80},
 	"steel_plate":   {"name":"Steel Plate",   "type":"armor",  "slot":"armor",  "rarity":"rare",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/steel_plate.png","color":Color(0.80,0.80,0.85), "armor":22, "value":280},
+	"icon":"🛡", "icon_path":"res://assets/icons/steel_plate.png","color":Color(0.80,0.80,0.85), "armor":22, "value":280},
 	"emberforge":    {"name":"Emberforge Plate","type":"armor","slot":"armor","rarity":"epic",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/emberforge.png","color":Color(1.0,0.45,0.15),  "armor":34, "hp_bonus":35, "value":620},
+	"icon":"🛡", "icon_path":"res://assets/icons/emberforge.png","color":Color(1.0,0.45,0.15),  "armor":34, "hp_bonus":35, "value":620},
 	"dragonscale":   {"name":"Dragonscale",   "type":"armor",  "slot":"armor",  "rarity":"legendary",
-	                  "icon":"🐲", "icon_path":"res://assets/icons/dragonscale.png","color":Color(0.20,0.65,0.30), "armor":52, "hp_bonus":80, "value":2200},
+	"icon":"🐲", "icon_path":"res://assets/icons/dragonscale.png","color":Color(0.20,0.65,0.30), "armor":52, "hp_bonus":80, "value":2200},
 
 	# ── Trinkets ──────────────────────────────────────────────────────────
 	"ring_focus":    {"name":"Ring of Focus", "type":"trinket","slot":"trinket","rarity":"uncommon",
-	                  "icon":"💍", "icon_path":"res://assets/icons/ring_focus.png","color":Color(0.85,0.85,0.45), "mp_bonus":15, "value":85},
+	"icon":"💍", "icon_path":"res://assets/icons/ring_focus.png","color":Color(0.85,0.85,0.45), "mp_bonus":15, "value":85},
 	"talisman_oak":  {"name":"Oak Talisman",  "type":"trinket","slot":"trinket","rarity":"uncommon",
-	                  "icon":"🌳", "icon_path":"res://assets/icons/talisman_oak.png","color":Color(0.40,0.65,0.20), "hp_bonus":18, "value":75},
+	"icon":"🌳", "icon_path":"res://assets/icons/talisman_oak.png","color":Color(0.40,0.65,0.20), "hp_bonus":18, "value":75},
 	"crit_amulet":   {"name":"Hawk's Amulet", "type":"trinket","slot":"trinket","rarity":"rare",
-	                  "icon":"🦅", "icon_path":"res://assets/icons/crit_amulet.png","color":Color(0.80,0.55,0.20), "crit_bonus":0.10, "value":190},
+	"icon":"🦅", "icon_path":"res://assets/icons/crit_amulet.png","color":Color(0.80,0.55,0.20), "crit_bonus":0.10, "value":190},
 	"guardian_core": {"name":"Guardian's Core","type":"trinket","slot":"trinket","rarity":"legendary",
-	                  "icon":"💠", "icon_path":"res://assets/icons/guardian_core.png","color":Color(0.50,0.90,1.00), "hp_bonus":60, "mp_bonus":40, "crit_bonus":0.08, "value":1800},
+	"icon":"💠", "icon_path":"res://assets/icons/guardian_core.png","color":Color(0.50,0.90,1.00), "hp_bonus":60, "mp_bonus":40, "crit_bonus":0.08, "value":1800},
 
 	# ── Helmets (head slot — Equipment Visualizer 2026-05-05) ────────────
 	# These ride the player's head bone via Player._make_head_attachment.
 	# Iron / steel / silver are common→uncommon→rare tints of one base GLB
 	# (assets/gear/head/iron_helm.glb). Crown of Eldoria is a unique mesh.
 	"iron_helm":     {"name":"Iron Helm",     "type":"helmet", "slot":"helmet","rarity":"common",
-	                  "icon":"⛑", "icon_path":"res://assets/icons/iron_helm.png", "color":Color(0.78,0.78,0.82), "armor":3,  "value":22},
+	"icon":"⛑", "icon_path":"res://assets/icons/iron_helm.png", "color":Color(0.78,0.78,0.82), "armor":3,  "value":22},
 	"steel_helm":    {"name":"Steel Helm",    "type":"helmet", "slot":"helmet","rarity":"uncommon",
-	                  "icon":"⛑", "icon_path":"res://assets/icons/steel_helm.png", "color":Color(0.85,0.88,0.92), "armor":7,  "value":75},
+	"icon":"⛑", "icon_path":"res://assets/icons/steel_helm.png", "color":Color(0.85,0.88,0.92), "armor":7,  "value":75},
 	"silver_helm":   {"name":"Silver Helm",   "type":"helmet", "slot":"helmet","rarity":"rare",
-	                  "icon":"⛑", "icon_path":"res://assets/icons/silver_helm.png", "color":Color(0.92,0.92,0.95), "armor":12, "value":210},
+	"icon":"⛑", "icon_path":"res://assets/icons/silver_helm.png", "color":Color(0.92,0.92,0.95), "armor":12, "value":210},
 	"ranger_hood":   {"name":"Ranger Hood",   "type":"helmet", "slot":"helmet","rarity":"uncommon",
-	                  "icon":"🪖", "icon_path":"res://assets/icons/ranger_hood.png", "color":Color(0.40,0.55,0.30), "armor":5, "crit_bonus":0.04, "value":85},
+	"icon":"🪖", "icon_path":"res://assets/icons/ranger_hood.png", "color":Color(0.40,0.55,0.30), "armor":5, "crit_bonus":0.04, "value":85},
 	"crown_eldoria": {"name":"Crown of Eldoria","type":"helmet","slot":"helmet","rarity":"legendary",
-	                  "icon":"👑", "icon_path":"res://assets/icons/crown_eldoria.png", "color":Color(1.0,0.85,0.30), "armor":18, "hp_bonus":40, "mp_bonus":20, "value":2400},
+	"icon":"👑", "icon_path":"res://assets/icons/crown_eldoria.png", "color":Color(1.0,0.85,0.30), "armor":18, "hp_bonus":40, "mp_bonus":20, "value":2400},
 
 	# ── Capes (chest_back slot — Equipment Visualizer 2026-05-05) ────────
 	# Hangs off the player's spine bone. Tier-tinted from a single base GLB
 	# (assets/gear/chest_back/traveller_cape.glb) for the common variants.
 	"traveller_cape":{"name":"Traveller's Cape","type":"cape","slot":"cape","rarity":"common",
-	                  "icon":"🧣", "icon_path":"res://assets/icons/traveller_cape.png", "color":Color(0.65,0.30,0.25), "armor":1, "value":18},
+	"icon":"🧣", "icon_path":"res://assets/icons/traveller_cape.png", "color":Color(0.65,0.30,0.25), "armor":1, "value":18},
 	"mage_cape":     {"name":"Mage Cape",      "type":"cape", "slot":"cape", "rarity":"uncommon",
-	                  "icon":"🧣", "icon_path":"res://assets/icons/mage_cape.png", "color":Color(0.30,0.35,0.85), "mp_bonus":15, "value":85},
+	"icon":"🧣", "icon_path":"res://assets/icons/mage_cape.png", "color":Color(0.30,0.35,0.85), "mp_bonus":15, "value":85},
 	"ranger_cape":   {"name":"Ranger Cape",    "type":"cape", "slot":"cape", "rarity":"uncommon",
-	                  "icon":"🧣", "icon_path":"res://assets/icons/ranger_cape.png", "color":Color(0.35,0.55,0.30), "crit_bonus":0.05, "value":80},
+	"icon":"🧣", "icon_path":"res://assets/icons/ranger_cape.png", "color":Color(0.35,0.55,0.30), "crit_bonus":0.05, "value":80},
 	"royal_cloak":   {"name":"Royal Cloak",    "type":"cape", "slot":"cape", "rarity":"rare",
-	                  "icon":"🧣", "icon_path":"res://assets/icons/royal_cloak.png", "color":Color(0.55,0.20,0.55), "armor":4, "hp_bonus":20, "value":290},
+	"icon":"🧣", "icon_path":"res://assets/icons/royal_cloak.png", "color":Color(0.55,0.20,0.55), "armor":4, "hp_bonus":20, "value":290},
 	"dragonscale_cape":{"name":"Dragonscale Cape","type":"cape","slot":"cape","rarity":"epic",
-	                  "icon":"🧣", "icon_path":"res://assets/icons/dragonscale_cape.png", "color":Color(0.20,0.55,0.30), "armor":8, "hp_bonus":35, "value":820},
+	"icon":"🧣", "icon_path":"res://assets/icons/dragonscale_cape.png", "color":Color(0.20,0.55,0.30), "armor":8, "hp_bonus":35, "value":820},
 
 	# ── Shields (left_hand slot — Equipment Visualizer 2026-05-05) ───────
 	# Bolted to the off-hand bone. Note that equipping a shield doesn't yet
 	# disable two-handed weapons — Combat Specialist owns that interaction.
 	"wooden_shield": {"name":"Wooden Shield",  "type":"shield","slot":"shield","rarity":"common",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/wooden_shield.png", "color":Color(0.55,0.40,0.25), "armor":4,  "value":20},
+	"icon":"🛡", "icon_path":"res://assets/icons/wooden_shield.png", "color":Color(0.55,0.40,0.25), "armor":4,  "value":20},
 	"iron_shield":   {"name":"Iron Shield",    "type":"shield","slot":"shield","rarity":"uncommon",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/iron_shield.png", "color":Color(0.75,0.75,0.78), "armor":9,  "value":75},
+	"icon":"🛡", "icon_path":"res://assets/icons/iron_shield.png", "color":Color(0.75,0.75,0.78), "armor":9,  "value":75},
 	"kite_shield":   {"name":"Kite Shield",    "type":"shield","slot":"shield","rarity":"rare",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/kite_shield.png", "color":Color(0.60,0.70,0.85), "armor":15, "value":260},
+	"icon":"🛡", "icon_path":"res://assets/icons/kite_shield.png", "color":Color(0.60,0.70,0.85), "armor":15, "value":260},
 	"runed_shield":  {"name":"Runed Shield",   "type":"shield","slot":"shield","rarity":"epic",
-	                  "icon":"🛡", "icon_path":"res://assets/icons/runed_shield.png", "color":Color(0.50,0.85,1.00), "armor":24, "hp_bonus":30, "value":720},
+	"icon":"🛡", "icon_path":"res://assets/icons/runed_shield.png", "color":Color(0.50,0.85,1.00), "armor":24, "hp_bonus":30, "value":720},
 
 	# ── Consumables ───────────────────────────────────────────────────────
 	"hp_potion_s":   {"name":"Lesser Health Potion","type":"consumable","slot":"","rarity":"common",
-	                  "icon":"🧪", "icon_path":"res://assets/icons/hp_potion_s.png","color":Color(0.95,0.30,0.25),"heal":40, "stack":true,"value":12},
+	"icon":"🧪", "icon_path":"res://assets/icons/hp_potion_s.png","color":Color(0.95,0.30,0.25),"heal":40, "stack":true,"value":12},
 	# REFINE: balance — Greater Health Potion heal 120 → 130 (+8.3%). Mid-tier
 	# consumable was untouched in run-2 while max_hp grew per-level (run-2 +18/lvl).
 	# At level 5 (max_hp ≈ 210) a single greater pot now heals ~62% of bar instead
 	# of ~57% — restores the "this is the BIG potion" feel Owen's boss-prep stockpile
 	# leans on. value held at 40 (Mara's economy unchanged).
 	"hp_potion_l":   {"name":"Greater Health Potion","type":"consumable","slot":"","rarity":"uncommon",
-	                  "icon":"🧪", "icon_path":"res://assets/icons/hp_potion_l.png","color":Color(0.95,0.30,0.25),"heal":130,"stack":true,"value":40},
+	"icon":"🧪", "icon_path":"res://assets/icons/hp_potion_l.png","color":Color(0.95,0.30,0.25),"heal":130,"stack":true,"value":40},
 	# REFINE: balance — Mana Draught mana 40 → 45 (+12.5%). Per-level max_mp grew
 	# +10 in run-2 (was +8) so the flat 40 mana pot was eroding into a smaller
 	# fraction of total bar. 45 keeps it at ~45% of bar at level 5 (mp ≈ 100),
@@ -113,13 +113,13 @@ const ITEMS = {
 	# table tilt above (more mp_potions to find means each one needs to feel worth
 	# the bag slot).
 	"mp_potion":     {"name":"Mana Draught", "type":"consumable","slot":"","rarity":"common",
-	                  "icon":"🍶", "icon_path":"res://assets/icons/mp_potion.png","color":Color(0.30,0.55,1.00),"mana":45, "stack":true,"value":15},
+	"icon":"🍶", "icon_path":"res://assets/icons/mp_potion.png","color":Color(0.30,0.55,1.00),"mana":45, "stack":true,"value":15},
 
 	# ── Materials (drop from enemies, used in fetch quests) ───────────────
 	"wolf_pelt":     {"name":"Wolf Pelt",       "type":"material","slot":"","rarity":"common",
-	                  "icon":"🦊", "icon_path":"res://assets/icons/wolf_pelt.png","color":Color(0.65,0.55,0.40),"stack":true,"value":8},
+	"icon":"🦊", "icon_path":"res://assets/icons/wolf_pelt.png","color":Color(0.65,0.55,0.40),"stack":true,"value":8},
 	"wolf_fang":     {"name":"Wolf Fang",       "type":"material","slot":"","rarity":"common",
-	                  "icon":"🦷", "icon_path":"res://assets/icons/wolf_fang.png","color":Color(0.92,0.88,0.78),"stack":true,"value":6},
+	"icon":"🦷", "icon_path":"res://assets/icons/wolf_fang.png","color":Color(0.92,0.88,0.78),"stack":true,"value":6},
 	# COMPOUND (run 19): wolf_heart — RARE wolf trophy, fetch material for
 	# `wolf_heart_for_bram` (Bram's Heartwood Mead bounty, 4th `dire_wolves`
 	# reducer). Rarity bumped to "rare" so the inventory tooltip shows the
@@ -130,11 +130,11 @@ const ITEMS = {
 	# 🫀 emoji as legacy fallback; icon_path lights up if `wolf_heart.png`
 	# painterly icon ships from the artist agent (same fail-soft as wolf_fang).
 	"wolf_heart":    {"name":"Wolf Heart",      "type":"material","slot":"","rarity":"rare",
-	                  "icon":"🫀", "icon_path":"res://assets/icons/wolf_heart.png","color":Color(0.65,0.18,0.22),"stack":true,"value":32},
+	"icon":"🫀", "icon_path":"res://assets/icons/wolf_heart.png","color":Color(0.65,0.18,0.22),"stack":true,"value":32},
 	"goblin_ear":    {"name":"Goblin Ear",      "type":"material","slot":"","rarity":"common",
-	                  "icon":"👂", "icon_path":"res://assets/icons/goblin_ear.png","color":Color(0.45,0.65,0.30),"stack":true,"value":3},
+	"icon":"👂", "icon_path":"res://assets/icons/goblin_ear.png","color":Color(0.45,0.65,0.30),"stack":true,"value":3},
 	"crystal_shard": {"name":"Crystal Shard",   "type":"material","slot":"","rarity":"uncommon",
-	                  "icon":"💎", "icon_path":"res://assets/icons/crystal_shard.png","color":Color(0.55,0.85,1.00),"stack":true,"value":35},
+	"icon":"💎", "icon_path":"res://assets/icons/crystal_shard.png","color":Color(0.55,0.85,1.00),"stack":true,"value":35},
 	# COMPOUND (run 24 — Builder): captain_seal — RARE bandit-captain trophy,
 	# fetch material for `captain_seal_for_maeve` (Maeve's SECOND quest, the
 	# first cross-NPC application of run-23's `prerequisite_npc_flag` schema).
@@ -152,9 +152,9 @@ const ITEMS = {
 	# Renaissance). THEME §1: lived-in / weathered — meant to sit on a
 	# mantle, not be polished.
 	"captain_seal":  {"name":"Captain's Seal",  "type":"material","slot":"","rarity":"rare",
-	                  "icon":"🕯", "icon_path":"res://assets/icons/captain_seal.png","color":Color(0.55,0.45,0.30),"stack":true,"value":60},
+	"icon":"🕯", "icon_path":"res://assets/icons/captain_seal.png","color":Color(0.55,0.45,0.30),"stack":true,"value":60},
 	"warlord_horn":  {"name":"Warlord's Horn",  "type":"material","slot":"","rarity":"epic",
-	                  "icon":"🐃", "icon_path":"res://assets/icons/warlord_horn.png","color":Color(0.85,0.30,0.20),"stack":true,"value":250},
+	"icon":"🐃", "icon_path":"res://assets/icons/warlord_horn.png","color":Color(0.85,0.30,0.20),"stack":true,"value":250},
 
 	# ── CQ-S2-02 (Builder run 32): .tres-defined items missing from ITEMS dict ─
 	# briar_shortbow, mossbound_buckler, roan_woodbow were defined as .tres
@@ -164,14 +164,14 @@ const ITEMS = {
 	# THEME §1: all three are period-correct — a carved-briar hunting bow,
 	# a moss-lashed buckler from Whisperwood oakwood, a stable master's gift bow.
 	"briar_shortbow": {"name":"Briar Shortbow",  "type":"weapon", "slot":"weapon", "rarity":"uncommon",
-	                   "icon":"🏹", "icon_path":"res://assets/icons/briar_shortbow.png",
-	                   "color":Color(0.55, 0.35, 0.18), "damage":8, "crit_bonus":0.04, "value":65},
+	"icon":"🏹", "icon_path":"res://assets/icons/briar_shortbow.png",
+	"color":Color(0.55, 0.35, 0.18), "damage":8, "crit_bonus":0.04, "value":65},
 	"mossbound_buckler": {"name":"Mossbound Buckler", "type":"armor", "slot":"shield", "rarity":"common",
-	                   "icon":"🛡", "icon_path":"res://assets/icons/mossbound_buckler.png",
-	                   "color":Color(0.35, 0.55, 0.25), "armor":4, "value":18},
+	"icon":"🛡", "icon_path":"res://assets/icons/mossbound_buckler.png",
+	"color":Color(0.35, 0.55, 0.25), "armor":4, "value":18},
 	"roan_woodbow":   {"name":"Roan Woodbow",    "type":"weapon", "slot":"weapon", "rarity":"common",
-	                   "icon":"🏹", "icon_path":"res://assets/icons/roan_woodbow.png",
-	                   "color":Color(0.60, 0.42, 0.20), "damage":3, "value":10},
+	"icon":"🏹", "icon_path":"res://assets/icons/roan_woodbow.png",
+	"color":Color(0.60, 0.42, 0.20), "damage":3, "value":10},
 
 	# ── CQ-S2-03 (Builder run 32): practice_cudgel — Hala's after_first_quest_complete gift ─
 	# Trainer Hala's dialogue tree references this item but it had no ITEMS entry,
@@ -180,8 +180,8 @@ const ITEMS = {
 	# it's a teaching tool, not a combat weapon. Sets world_flag cudgel_acknowledged.
 	# THEME §1: wrapped leather grip, bound briar-wood haft — no metal.
 	"practice_cudgel": {"name":"Practice Cudgel", "type":"weapon", "slot":"weapon", "rarity":"common",
-	                   "icon":"🪵", "icon_path":"res://assets/icons/practice_cudgel.png",
-	                   "color":Color(0.52, 0.38, 0.22), "damage":4, "value":8},
+	"icon":"🪵", "icon_path":"res://assets/icons/practice_cudgel.png",
+	"color":Color(0.52, 0.38, 0.22), "damage":4, "value":8},
 
 	# ── CQ-S2-04 (Builder run 32): roan_steppe_halter — Roan's gift item ────────
 	# Stablemaster Roan's dialogue sets `roan_halter_gifted` on after_first_quest_
@@ -191,28 +191,28 @@ const ITEMS = {
 	# Trinket slot so it can sit in the inventory paperdoll. THEME §1: woven
 	# hemp with geometric step-dye pattern — nomadic steppe craft, period-correct.
 	"roan_steppe_halter": {"name":"Steppe-Patterned Halter", "type":"trinket", "slot":"trinket", "rarity":"uncommon",
-	                   "icon":"🐎", "icon_path":"res://assets/icons/roan_steppe_halter.png",
-	                   "color":Color(0.65, 0.45, 0.20), "value":22},
+	"icon":"🐎", "icon_path":"res://assets/icons/roan_steppe_halter.png",
+	"color":Color(0.65, 0.45, 0.20), "value":22},
 	# ── Giftable items (Builder run 35 — NPC memory/gift mechanic) ─────────────
 	# Player can give these to NPCs via the "Give Gift" dialogue button.
 	# type="gift" flags them as giftable. stack=true for the cheap ones.
 	# THEME §1: period-correct foraged/crafted goods — no modern items.
 	"wildflower_bunch": {"name":"Wildflower Bunch",  "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"\U0001f490", "icon_path":"res://assets/icons/wildflower_bunch.png",
-	                    "color":Color(0.95,0.65,0.85), "stack":true, "value":5,
-	                    "gift_flavor":"A few bright blossoms from the meadow."},
+	"icon":"\U0001f490", "icon_path":"res://assets/icons/wildflower_bunch.png",
+	"color":Color(0.95,0.65,0.85), "stack":true, "value":5,
+	"gift_flavor":"A few bright blossoms from the meadow."},
 	"herb_bundle":      {"name":"Herb Bundle",        "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"\U0001f33f", "icon_path":"res://assets/icons/herb_bundle.png",
-	                    "color":Color(0.30,0.70,0.35), "stack":true, "value":8,
-	                    "gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
+	"icon":"\U0001f33f", "icon_path":"res://assets/icons/herb_bundle.png",
+	"color":Color(0.30,0.70,0.35), "stack":true, "value":8,
+	"gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
 	"sweet_roll":       {"name":"Sweet Roll",          "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"\U0001f950", "icon_path":"res://assets/icons/sweet_roll.png",
-	                    "color":Color(0.90,0.72,0.45), "stack":true, "value":6,
-	                    "gift_flavor":"Freshly baked, still warm."},
+	"icon":"\U0001f950", "icon_path":"res://assets/icons/sweet_roll.png",
+	"color":Color(0.90,0.72,0.45), "stack":true, "value":6,
+	"gift_flavor":"Freshly baked, still warm."},
 	"painted_stone":    {"name":"Painted River Stone", "type":"gift", "slot":"", "rarity":"uncommon",
-	                    "icon":"\U0001faa8", "icon_path":"res://assets/icons/painted_stone.png",
-	                    "color":Color(0.55,0.72,0.90), "stack":false, "value":14,
-	                    "gift_flavor":"River-smoothed, painted with warding runes."},
+	"icon":"\U0001faa8", "icon_path":"res://assets/icons/painted_stone.png",
+	"color":Color(0.55,0.72,0.90), "stack":false, "value":14,
+	"gift_flavor":"River-smoothed, painted with warding runes."},
 
 }
 
@@ -500,21 +500,21 @@ const AFFIX_PREFIXES = {
 	# type="gift" flags them for the Give Gift dialogue button.
 	# THEME §1: period-correct foraged/crafted goods only.
 	"wildflower_bunch": {"name":"Wildflower Bunch",  "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"💐", "icon_path":"res://assets/icons/wildflower_bunch.png",
-	                    "color":Color(0.95,0.65,0.85), "stack":true, "value":5,
-	                    "gift_flavor":"A few bright blossoms from the meadow."},
+	"icon":"💐", "icon_path":"res://assets/icons/wildflower_bunch.png",
+	"color":Color(0.95,0.65,0.85), "stack":true, "value":5,
+	"gift_flavor":"A few bright blossoms from the meadow."},
 	"herb_bundle":      {"name":"Herb Bundle",        "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"🌿", "icon_path":"res://assets/icons/herb_bundle.png",
-	                    "color":Color(0.30,0.70,0.35), "stack":true, "value":8,
-	                    "gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
+	"icon":"🌿", "icon_path":"res://assets/icons/herb_bundle.png",
+	"color":Color(0.30,0.70,0.35), "stack":true, "value":8,
+	"gift_flavor":"Dried herbs tied with twine — useful and fragrant."},
 	"sweet_roll":       {"name":"Sweet Roll",          "type":"gift", "slot":"", "rarity":"common",
-	                    "icon":"🥐", "icon_path":"res://assets/icons/sweet_roll.png",
-	                    "color":Color(0.90,0.72,0.45), "stack":true, "value":6,
-	                    "gift_flavor":"Freshly baked, still warm."},
+	"icon":"🥐", "icon_path":"res://assets/icons/sweet_roll.png",
+	"color":Color(0.90,0.72,0.45), "stack":true, "value":6,
+	"gift_flavor":"Freshly baked, still warm."},
 	"painted_stone":    {"name":"Painted River Stone", "type":"gift", "slot":"", "rarity":"uncommon",
-	                    "icon":"🪨", "icon_path":"res://assets/icons/painted_stone.png",
-	                    "color":Color(0.55,0.72,0.90), "stack":false, "value":14,
-	                    "gift_flavor":"River-smoothed, painted with warding runes."},
+	"icon":"🪨", "icon_path":"res://assets/icons/painted_stone.png",
+	"color":Color(0.55,0.72,0.90), "stack":false, "value":14,
+	"gift_flavor":"River-smoothed, painted with warding runes."},
 
 }
 const AFFIX_SUFFIXES = {

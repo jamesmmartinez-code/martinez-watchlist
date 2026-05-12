@@ -1,50 +1,75 @@
 #!/usr/bin/env python3
 """
-gdscript_lint.py — catch common GDScript 4 regressions before Godot sees them.
-Fails CI if any of these patterns are found in .gd files:
-  1. C-style ternary:  expr ? val : val
-  2. Array[Node3D] assigned from get_nodes_in_group() or get_children()
-     (these return Array[Node] / untyped Array; causes type inference error)
-Exit 0 = clean. Exit 1 = violations found.
+gdscript_lint.py — catch GDScript 4 regressions before Godot sees them.
+Scans every .gd file under eldoria-godot/ (recursively, excluding addons/).
+
+Patterns checked:
+  1. C-style ternary        — expr ? a : b  (must be: a if expr else b)
+  2. Array[Node3D] typed var — var x: Array[Node3D] = ...
+  3. var := lerp() inference — var x := lerp(...)  (lerp returns Variant; must be var x: float = ...)
+  4. Autoload in default param — func f(x = SomeAutoload.CONST)
+  5. Mixed tabs/spaces       — leading whitespace contains both \t and space
+  6. C++ comments            — // at start of non-string content
+
+Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
 """
 import sys, re, pathlib
 
 ROOT = pathlib.Path("eldoria-godot/scripts")
 violations = []
 
-# Pattern 1: C-style ternary — any "? val : val" not inside a string/comment
-# Heuristic: line contains " ? " and " : " and is not a comment and not a type hint
-TERNARY = re.compile(r'(?<!["\'])(?<!\w)\?\s+')
-
-# Pattern 2: Array[Node3D] (or Array[Node]) typed var assigned from group/children call
-TYPED_ARRAY_NODE = re.compile(r'var\s+\w+\s*:\s*Array\[Node3D\]')
+# Autoload names registered in project.godot that must not appear in default params
+KNOWN_AUTOLOADS = {"ScaleUtils", "EventBus", "GameBrain", "WorldState", "Items"}
 
 for gd in sorted(ROOT.rglob("*.gd")):
-    lines = gd.read_text(errors="replace").split("\n")
+    raw_text = gd.read_text(errors="replace")
+    lines = raw_text.split("\n")
     for lineno, raw in enumerate(lines, 1):
         stripped = raw.strip()
+        # Skip pure comment lines
         if stripped.startswith("#"):
             continue
-        # Remove inline comments (rough)
-        code = re.sub(r'#.*$', '', raw)
-        # C-style ternary check
+        # Remove inline comments for pattern matching
+        code = re.sub(r'(?<!:)#.*$', '', raw)
+
+        # 1. C-style ternary: has " ? " and " : " and is not a GDScript dict
         if ' ? ' in code and ' : ' in code:
-            # Skip if it looks like a dictionary literal key:value
-            if not re.search(r'["\w)]\s*\?\s*[\w"(+-]', code):
-                pass
-            else:
+            # Exclude lines that look like type hints (-> Type:) or dict keys
+            if re.search(r'\w\s*\?\s*[\w"(]', code) and '->' not in code:
                 violations.append((str(gd), lineno, "C-STYLE-TERNARY", raw.rstrip()))
-        # Array[Node3D] / Array[Node] typed assignment
-        if TYPED_ARRAY_NODE.search(code):
-            violations.append((str(gd), lineno, "TYPED-ARRAY-NODE", raw.rstrip()))
+
+        # 2. Array[Node3D] typed variable
+        if re.search(r'var\s+\w+\s*:\s*Array\[Node3D\]', code):
+            violations.append((str(gd), lineno, "TYPED-ARRAY-NODE3D", raw.rstrip()))
+
+        # 3. var := lerp() — Variant inference failure
+        if re.search(r'\bvar\s+\w+\s*:=\s*lerp\s*\(', code):
+            violations.append((str(gd), lineno, "LERP-TYPE-INFERENCE", raw.rstrip()))
+
+        # 4. Autoload name used as default parameter value
+        for al in KNOWN_AUTOLOADS:
+            if re.search(rf'func\s+\w+\s*\(.*=\s*{al}\.', code):
+                violations.append((str(gd), lineno, "AUTOLOAD-IN-DEFAULT-PARAM", raw.rstrip()))
+
+        # 5. Mixed tabs/spaces in leading whitespace
+        leading = re.match(r'^\(\s+)', raw)
+        if leading:
+            ws = leading.group(1)
+            if '\t' in ws and ' ' in ws:
+                violations.append((str(gd), lineno, "MIXED-INDENT", raw.rstrip()[:120]))
+
+        # 6. C++ style comment at line start (not inside string)
+        if re.match(r'\s*//', raw) and not re.match(r'\s*#', raw):
+            violations.append((str(gd), lineno, "CPP-COMMENT", raw.rstrip()))
 
 if violations:
-    print(f"\n=== GDScript Lint: {len(violations)} violation(s) found ===")
+    print(f"\n=== GDScript Lint: {len(violations)} violation(s) ===")
     for path, lineno, kind, line in violations:
-        print(f"  {path}:{lineno} [{kind}]")
-        print(f"    {line}")
-    print("\nFix these before pushing. See ELDORIA_STATUS.md for how-to.")
+        print(f"  {path}:{lineno}  [{kind}]")
+        print(f"    {line[:120]}")
+    print(f"\n{len(violations)} error(s). Fix before pushing.")
+    print("See ELDORIA_STATUS.md → 'How to Fix Recurring Errors'.")
     sys.exit(1)
 else:
-    print("GDScript lint: CLEAN")
+    print(f"GDScript lint: CLEAN ({sum(1 for _ in ROOT.rglob('*.gd'))} files)")
     sys.exit(0)

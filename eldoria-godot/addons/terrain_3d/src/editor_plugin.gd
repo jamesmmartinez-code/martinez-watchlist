@@ -264,7 +264,7 @@ func _read_input(p_event: InputEvent = null) -> AfterGUIInput:
 	match get_setting("editors/3d/navigation/navigation_scheme", 0):
 		2, 1: # Modo, Maya
 			if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) or \
-	 			( Input.is_key_pressed(KEY_ALT) and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) ):
+				( Input.is_key_pressed(KEY_ALT) and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) ):
 					_input_mode = -1 
 			if p_event is InputEventMouseButton and p_event.is_released() and \
 				( p_event.get_button_index() == MOUSE_BUTTON_RIGHT or \

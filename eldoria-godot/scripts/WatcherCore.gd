@@ -296,7 +296,7 @@ func _enter_phase(p: int) -> void:
 		1:
 			_say("phase_1")
 			_attack_pool = ["_wc_bolt", "_wc_volley", "_wc_slam",
-			                "_wc_drone_spawn", "_wc_ring_hazard"]
+			"_wc_drone_spawn", "_wc_ring_hazard"]
 			_aura.light_color  = Color(1.0, 0.55, 0.15)
 			_aura.light_energy = 3.8
 			_open_vulnerability(1.0)
@@ -308,8 +308,8 @@ func _enter_phase(p: int) -> void:
 		2:
 			_say("phase_2")
 			_attack_pool = ["_wc_volley", "_wc_volley", "_wc_slam",
-			                "_wc_drone_spawn", "_wc_ring_hazard",
-			                "_wc_ring_hazard", "_wc_eye_beam"]
+			"_wc_drone_spawn", "_wc_ring_hazard",
+			"_wc_ring_hazard", "_wc_eye_beam"]
 			_aura.light_color  = Color(1.0, 0.12, 0.08)
 			_aura.light_energy = 4.8
 			damage = int(damage * 1.25)
@@ -550,7 +550,7 @@ func _ring_hazard_damage(max_radius: float, dur: float) -> void:
 		if _state == "dead": return
 		for p: Node3D in get_tree().get_nodes_in_group("player"):
 			var dist_xz := Vector2(p.global_position.x - global_position.x,
-			                       p.global_position.z - global_position.z).length()
+			p.global_position.z - global_position.z).length()
 			# Ring sweeps outward — damage band is ±1m of the current wave front
 			var wave_r := max_radius * (float(_s + 1) / float(steps))
 			if abs(dist_xz - wave_r) < 1.0 and abs(p.global_position.y - global_position.y) < 3.0:

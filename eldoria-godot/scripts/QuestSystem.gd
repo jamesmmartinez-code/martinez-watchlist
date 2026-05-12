@@ -296,8 +296,8 @@ func get_save_data() -> Dictionary:
 		var objs: Array = []
 		for obj in q.objectives:
 			objs.append({"type": obj.type, "target": obj.target,
-			              "required": obj.required, "progress": obj.progress,
-			              "completed": obj.completed})
+			"required": obj.required, "progress": obj.progress,
+			"completed": obj.completed})
 		return {"id": q.id, "completed": q.completed, "objectives": objs}
 
 	var active_data:    Array = []

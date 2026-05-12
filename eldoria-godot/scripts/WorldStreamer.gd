@@ -59,7 +59,7 @@ func _process(_delta: float) -> void:
 func _player_chunk() -> Vector2i:
 	var pos := _player.global_position
 	return Vector2i(int(floor(pos.x / chunk_size)),
-	                int(floor(pos.z / chunk_size)))
+	int(floor(pos.z / chunk_size)))
 
 func chunk_world_origin(grid: Vector2i) -> Vector3:
 	return Vector3(grid.x * chunk_size, 0.0, grid.y * chunk_size)

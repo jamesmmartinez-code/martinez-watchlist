@@ -368,8 +368,8 @@ func _apply_variant_shader() -> void:
 	# variant_color: tint scaled by brightness (clamped to valid colour range).
 	mat.set_shader_parameter("variant_color",
 		Color(clampf(tint.r * b, 0.0, 1.0),
-		      clampf(tint.g * b, 0.0, 1.0),
-		      clampf(tint.b * b, 0.0, 1.0), 1.0))
+		clampf(tint.g * b, 0.0, 1.0),
+		clampf(tint.b * b, 0.0, 1.0), 1.0))
 	# emissive_color: per-kind lore glow (eye zone at UV.y ≈ 0.85).
 	mat.set_shader_parameter("emissive_color",    _get_kind_emissive())
 	mat.set_shader_parameter("emissive_strength", 0.35)
@@ -1118,7 +1118,7 @@ func _utility_action(dist: float) -> String:
 	#   defensive  = flees early            (0.30) — dark enemies value survival.
 	#   balanced   = standard               (0.18)
 	var retreat_hp: float = 0.10 if _behavior_type == "aggressive" else \
-	                        0.30 if _behavior_type == "defensive"  else 0.18
+	0.30 if _behavior_type == "defensive"  else 0.18
 	if float(hp) / float(max_hp) < retreat_hp and dist < aggro_range * 1.5:
 		return "retreat"
 

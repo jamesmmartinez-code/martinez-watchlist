@@ -36,20 +36,20 @@ const COL_PLAYER_STAR: Color = Color(1.00, 0.88, 0.50)  # REFINE: visual — pul
 # soft watercolor washes underneath the landmarks.  THEME §8 tints.
 const REGIONS: Array = [
 	{"name": "Briarwood",
-	 "color": Color(1.00, 0.85, 0.42, 0.22),  # REFINE: visual — §3 #FFD86B exact + warmer alpha 0.18→0.22
-	 "poly": [Vector2(-22, -22), Vector2(22, -22), Vector2(22, 22), Vector2(-22, 22)]},
+	"color": Color(1.00, 0.85, 0.42, 0.22),  # REFINE: visual — §3 #FFD86B exact + warmer alpha 0.18→0.22
+	"poly": [Vector2(-22, -22), Vector2(22, -22), Vector2(22, 22), Vector2(-22, 22)]},
 	{"name": "Whisperwood",
-	 "color": Color(0.290, 0.439, 0.220, 0.22),
-	 "poly": [Vector2(-65, -55), Vector2(-22, -55), Vector2(-22, 55), Vector2(-65, 55)]},
+	"color": Color(0.290, 0.439, 0.220, 0.22),
+	"poly": [Vector2(-65, -55), Vector2(-22, -55), Vector2(-22, 55), Vector2(-65, 55)]},
 	{"name": "Whisperwood (East)",
-	 "color": Color(0.290, 0.439, 0.220, 0.18),
-	 "poly": [Vector2(22, -55), Vector2(65, -55), Vector2(65, 55), Vector2(22, 55)]},
+	"color": Color(0.290, 0.439, 0.220, 0.18),
+	"poly": [Vector2(22, -55), Vector2(65, -55), Vector2(65, 55), Vector2(22, 55)]},
 	{"name": "Crystal Caves",
-	 "color": Color(0.396, 0.875, 0.898, 0.24),  # REFINE: visual — alpha 0.20→0.24, converges with Crystal-Caves polish run (cooler/darker cave reads from map too)
-	 "poly": [Vector2(-65, -55), Vector2(-32, -55), Vector2(-32, -28), Vector2(-65, -28)]},
+	"color": Color(0.396, 0.875, 0.898, 0.24),  # REFINE: visual — alpha 0.20→0.24, converges with Crystal-Caves polish run (cooler/darker cave reads from map too)
+	"poly": [Vector2(-65, -55), Vector2(-32, -55), Vector2(-32, -28), Vector2(-65, -28)]},
 	{"name": "Mountain Pass",
-	 "color": Color(0.482, 0.525, 0.576, 0.30),
-	 "poly": [Vector2(-65, -78), Vector2(65, -78), Vector2(65, -55), Vector2(-65, -55)]},
+	"color": Color(0.482, 0.525, 0.576, 0.30),
+	"poly": [Vector2(-65, -78), Vector2(65, -78), Vector2(65, -55), Vector2(-65, -55)]},
 ]
 
 var title_label: Label = null
@@ -231,7 +231,7 @@ func _draw() -> void:
 
 	# 6. Compass rose in lower-right of the face.
 	var rose_center: Vector2 = Vector2(face.position.x + face.size.x - 30,
-									   face.position.y + face.size.y - 30)
+									face.position.y + face.size.y - 30)
 	draw_circle(rose_center, 18.0, Color(0.93, 0.86, 0.65))
 	draw_arc(rose_center, 18.0, 0.0, TAU, 24, COL_FRAME_BRONZE, 1.4, true)
 	for i in 4:

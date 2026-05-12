@@ -87,19 +87,19 @@ const COL_GRID: Color = Color(0.40, 0.34, 0.22, 0.36)
 
 const LANDMARKS: Array = [
 	{"pos": Vector3(  0.0, 0.0,  0.0),  "name": "Briarwood Square",
-	 "kind": "village",  "color": Color(1.0, 0.847, 0.42), "icon": "⌂"},
+	"kind": "village",  "color": Color(1.0, 0.847, 0.42), "icon": "⌂"},
 	{"pos": Vector3(  0.0, 0.0,  6.0),  "name": "Stone Well",
-	 "kind": "well",     "color": Color(0.78, 0.85, 0.93), "icon": "○"},
+	"kind": "well",     "color": Color(0.78, 0.85, 0.93), "icon": "○"},
 	{"pos": Vector3(  0.0, 0.0, -2.0),  "name": "Village Campfire",
-	 "kind": "campfire", "color": Color(1.0, 0.604, 0.247), "icon": "✺"},
+	"kind": "campfire", "color": Color(1.0, 0.604, 0.247), "icon": "✺"},
 	{"pos": Vector3(-50.0, 0.0,-40.0),  "name": "Crystal Caves",
-	 "kind": "cave",     "color": Color(0.396, 0.875, 0.898), "icon": "❖"},
+	"kind": "cave",     "color": Color(0.396, 0.875, 0.898), "icon": "❖"},
 	{"pos": Vector3(-40.0, 0.0, 30.0),  "name": "Goblin Camp — West Glade",
-	 "kind": "camp",     "color": Color(0.55, 0.30, 0.18), "icon": "△"},
+	"kind": "camp",     "color": Color(0.55, 0.30, 0.18), "icon": "△"},
 	{"pos": Vector3( 20.0, 0.0,-45.0),  "name": "Goblin Camp — North Ridge",
-	 "kind": "camp",     "color": Color(0.55, 0.30, 0.18), "icon": "△"},
+	"kind": "camp",     "color": Color(0.55, 0.30, 0.18), "icon": "△"},
 	{"pos": Vector3(  0.0, 0.0,-60.0),  "name": "Mountain Pass — Boss",
-	 "kind": "boss",     "color": Color(0.486, 0.247, 0.690), "icon": "☠"},
+	"kind": "boss",     "color": Color(0.486, 0.247, 0.690), "icon": "☠"},
 ]
 
 var visible_radius_m: float = DEFAULT_RADIUS_M

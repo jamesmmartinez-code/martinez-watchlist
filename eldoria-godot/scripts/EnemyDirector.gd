@@ -453,4 +453,4 @@ func _find_player() -> void:
 		_player = ps[0]
 	else:
 		_player = get_tree().current_scene.get_node_or_null("Player") \
-		          if get_tree().current_scene else null
+		if get_tree().current_scene else null
