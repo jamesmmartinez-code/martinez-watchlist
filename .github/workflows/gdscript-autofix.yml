@@ -7,7 +7,6 @@ on:
       - 'eldoria-godot/scripts/**.gd'
 
 # Don't run if the push was itself from this workflow (loop guard)
-# We check commit message below too
 concurrency:
   group: gdscript-autofix
   cancel-in-progress: true
@@ -18,7 +17,6 @@ permissions:
 jobs:
   autofix:
     runs-on: ubuntu-latest
-    # Skip if this commit was already an auto-fix (prevent loop)
     if: "!contains(github.event.head_commit.message, '[autofix]')"
     steps:
       - uses: actions/checkout@v4
@@ -69,14 +67,7 @@ jobs:
                           line = line.replace(code, new); changed = True
                           fixes.append(f"{gd.name}:{i} ternary")
 
-                  # Fix 2: Array[Node3D] from group/children
-                  line = re.sub(
-                      r'(var\s+\w+\s*):\s*Array\[Node3D\](\s*=\s*(?:get_nodes_in_group|get_children)\b)',
-                      r'\1: Array\2', line)
-                  if 'Array[Node3D]' not in line or True:
-                      pass  # already replaced above if matched
-
-                  # Fix 3: var x := VARIANT_FUNC(
+                  # Fix 2: var x := VARIANT_FUNC(
                   m = re.match(r'^(\s*)var\s+(\w+)\s*:=\s*(.+)$', line)
                   if m:
                       indent, name, rhs = m.groups()
@@ -97,6 +88,83 @@ jobs:
               if len(fixes) > 20: print(f"  ... and {len(fixes)-20} more")
           PYEOF
 
+      # ── Blank-world guard: catch orphan .global_position before add_child ──
+      # This is the #1 cause of the game rendering only grass with no buildings.
+      # Pattern: Node3D/MeshInstance3D.new() assigned to a var, then
+      #          var.global_position = ... appears BEFORE add_child(var).
+      # Fix: convert to .position = ... (local transform is safe on orphan nodes).
+      - name: Guard - orphan global_position check
+        id: orphan_guard
+        run: |
+          python3 << 'PYEOF'
+          import re, pathlib, sys
+
+          ROOT = pathlib.Path("eldoria-godot/scripts")
+          total_fixes = 0
+
+          # Matches: var <name> := <SomeType>.new()
+          NEW_ASSIGN = re.compile(r'^\s*var\s+(\w+)\s*(?::\s*\w[\w\[\]]*\s*)?:?=\s*\w[\w\.]*\.new\(\)')
+          # Matches: <name>.global_position = ...
+          GLOBAL_POS  = re.compile(r'^(\s*)(\w+)(\.global_position\s*=\s*)(.+)$')
+          # Matches: add_child(<name>) or <name> being added
+          ADD_CHILD   = re.compile(r'\badd_child\s*\(')
+
+          NODE_TYPES = {
+              'Node3D', 'MeshInstance3D', 'CSGBox3D', 'CSGSphere3D', 'StaticBody3D',
+              'CollisionShape3D', 'OmniLight3D', 'SpotLight3D', 'DirectionalLight3D',
+              'GPUParticles3D', 'CPUParticles3D', 'AnimatedSprite3D', 'Label3D',
+              'AudioStreamPlayer3D', 'Area3D', 'RayCast3D', 'ShapeCast3D',
+          }
+
+          for gd in sorted(ROOT.rglob("*.gd")):
+              src = gd.read_text(errors='replace')
+              lines = src.splitlines()
+              file_fixes = 0
+
+              # Track which variable names were created via .new() but NOT yet add_child'd
+              # We use a sliding window within each function scope (conservative)
+              orphans = {}   # var_name -> line_index where it was created
+
+              new_lines = list(lines)
+              for i, line in enumerate(lines):
+                  # Track new() assignments
+                  m_new = NEW_ASSIGN.match(line)
+                  if m_new:
+                      vname = m_new.group(1)
+                      # Check if type is a Node type (look at rhs)
+                      if any(nt in line for nt in NODE_TYPES) or ':=' in line:
+                          orphans[vname] = i
+
+                  # If add_child seen, remove from orphan set
+                  if ADD_CHILD.search(line):
+                      # Find which var name is in the add_child call
+                      m_ac = re.search(r'add_child\s*\(\s*(\w+)', line)
+                      if m_ac:
+                          orphans.pop(m_ac.group(1), None)
+
+                  # Check for global_position on an orphan
+                  m_gp = GLOBAL_POS.match(line)
+                  if m_gp:
+                      indent, vname, gp_assign, rhs = m_gp.groups()
+                      if vname in orphans:
+                          # Convert to .position = (local transform — safe on orphan)
+                          new_lines[i] = f"{indent}{vname}.position = {rhs}  # guard: was global_position (orphan crash fix)"
+                          file_fixes += 1
+                          total_fixes += 1
+                          print(f"FIXED {gd.name}:{i+1} — {vname}.global_position -> .position (orphan)")
+
+                  # Reset orphan tracking at function boundaries
+                  if line.strip().startswith('func '):
+                      orphans = {}
+
+              if file_fixes:
+                  gd.write_text('\n'.join(new_lines))
+
+          print(f"orphan_fixes={total_fixes}")
+          if total_fixes == 0:
+              print("No orphan global_position issues found.")
+          PYEOF
+
       - name: Commit fixes if any
         run: |
           git config user.name  "gdscript-autofix[bot]"
@@ -106,7 +174,7 @@ jobs:
             echo "Nothing to fix."
           else
             COUNT=$(git diff --cached --numstat | wc -l)
-            git commit -m "fix: auto-fix GDScript type errors in $COUNT file(s) [autofix]"
+            git commit -m "fix: auto-fix GDScript errors in $COUNT file(s) [autofix]"
             for i in 1 2 3; do
               git pull --rebase && git push && echo "pushed" && break
               sleep 3
