@@ -10757,7 +10757,7 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> void:
 	var side: Vector3 = forward.rotated(Vector3.UP, PI * 0.5)
 	for s in [-1.0, 1.0]:
-		var p := gate + side * (bw_gate_width * 0.55 * s)
+		var p: Vector3 = gate + side * (bw_gate_width * 0.55 * float(s))
 		var tower := MeshInstance3D.new()
 		var bm    := BoxMesh.new()
 		bm.size = Vector3(2.2, 4.2, 2.2)
