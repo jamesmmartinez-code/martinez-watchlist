@@ -3,6 +3,10 @@ class_name NPC
 
 @export var npc_name: String = "Villager"
 @export var npc_role: String = "villager"
+# Animation profile to load alongside humanoid_base. Maps to humanoid_NPC.tres
+# (built from slot_mapping.json). "npc" = Farming_Pack activity animations.
+# Empty = no extra library (legacy NPCs untouched).
+@export var anim_profile: String = ""
 @export var dialogue: String = "Hail, traveler. Stay close to the village walls."
 # REFINE: mood-dependent variants by time-of-day (morning / midday / evening / night).
 # Falls back to single `dialogue` line above if this array is empty. WorldBuilder.gd
@@ -210,6 +214,23 @@ func _ready() -> void:
 					ap_resolved.remove_animation_library("humanoid")
 				ap_resolved.add_animation_library("humanoid", _lib)
 			if _inst: _inst.queue_free()
+	# Load role-specific activity animation library (e.g. Farming_Pack for NPCs with
+	# anim_profile="npc"). Graceful no-op if the .tres hasn't been built yet.
+	if ap_resolved != null and anim_profile != "":
+		var _activity_path := "res://assets/animations/humanoid_%s.tres" % anim_profile
+		if ResourceLoader.exists(_activity_path):
+			var _alib := load(_activity_path) as AnimationLibrary
+			if _alib != null:
+				if ap_resolved.has_animation_library("activity"):
+					ap_resolved.remove_animation_library("activity")
+				ap_resolved.add_animation_library("activity", _alib)
+				# Override idle with role-appropriate activity animation
+				var _role_idle := _pick_role_idle(npc_role)
+				if _role_idle != "" and ap_resolved.has_animation("activity/" + _role_idle):
+					_idle_anim_name = "activity/" + _role_idle
+				# Walk animation from activity library if available
+				if ap_resolved.has_animation("activity/walk"):
+					_walk_anim_name = "activity/walk"
 	if ap_resolved != null:
 		var names := ap_resolved.get_animation_list()
 		# Prefer common spellings in order of likelihood, then fall back to
@@ -519,6 +540,27 @@ func _fire_witness_bark() -> void:
 		if is_instance_valid(_lbl): _lbl.queue_free()
 		_bark_label = null
 	)
+
+# Returns the best activity/idle slot name for a given NPC role.
+# Maps npc_role strings to humanoid_npc.tres slot keys.
+func _pick_role_idle(role: String) -> String:
+	match role:
+		"farmer", "gardener":
+			return "dig"
+		"herbalist", "healer":
+			return "pick_fruit"
+		"merchant", "shopkeeper":
+			return "carry_box"
+		"stablemaster", "stable_hand":
+			return "carry_box"
+		"blacksmith", "smith":
+			return "dig"
+		"worker", "labourer":
+			return "watering"
+		"innkeeper", "tavernkeeper":
+			return "carry_box"
+		_:
+			return "idle"
 
 func _find_first_anim_player(n: Node) -> AnimationPlayer:
 	if n is AnimationPlayer:

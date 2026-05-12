@@ -2560,6 +2560,12 @@ func _make_npc(data: Dictionary) -> void:
 	npc.add_to_group("npcs")
 	npc.npc_name = data.name
 	npc.npc_role = data.role
+	# Wire activity animation profile for NPCs with physical roles (farming/craft/stable).
+	# "npc" maps to humanoid_npc.tres (Farming_Pack) — graceful no-op if not yet built.
+	var _farming_roles: PackedStringArray = PackedStringArray(["farmer", "gardener", "herbalist",
+		"stablemaster", "stable_hand", "worker", "labourer", "blacksmith", "smith"])
+	if data.role in _farming_roles:
+		npc.anim_profile = "npc"
 	npc.dialogue = data.line
 	# REFINE: feed mood-dependent variants if this NPC has them defined.
 	npc.dialogue_variants = PackedStringArray(data.get("lines", []))
@@ -2873,6 +2879,10 @@ func _build_enemies() -> void:
 		# already light up via the bandits-faction mapping in Enemy.gd.
 		_spawn_enemy("bandit_captain", captain_pos, "Bandit Captain", 130, 15, 120, 50,
 			Color(0.32, 0.18, 0.30), 2.6, 5.0)
+		# Capoeira fighter — rare enforcer guarding the bandit camp
+		var cap_fighter_pos: Vector3 = captain_pos + Vector3(4.0, 0, -3.0)
+		_spawn_enemy("capoeira_fighter", cap_fighter_pos, "Capoeira Enforcer", 90, 16, 85, 30,
+			Color(0.80, 0.60, 0.25), 3.0, 5.5)
 		# Player-facing feedback (Rule 2 iii): captain-arrival toast lands
 		# AFTER the regular hooded-figures toast so the kids hear the
 		# escalation as two beats. Distinct emoji (🗡️) and phrasing so
@@ -3988,6 +3998,9 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 
 	_spawn_enemy("crystal_guardian", caves.position + Vector3(0, 0, -16.0 * S),
 		"Crystal Guardian", 420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)
+	# Mutant guardian — flanks the crystal guardian; creature animations via Boss.glb
+	_spawn_enemy("mutant", caves.position + Vector3(8.0 * S, 0, -14.0 * S),
+		"Corrupted Mutant", 280, 22, 320, 80, Color(0.55, 0.35, 0.70), 1.6, 3.0)
 
 
 # Walk a freshly-instanced character GLB and rescale so its visible AABB is ~1.8m tall.

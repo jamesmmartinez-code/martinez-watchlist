@@ -1,7 +1,7 @@
 {
   "_doc": "Canonical-slot to source-FBX mapping for Realm of Eldoria humanoid animations. Drives scripts/dev/build_anim_library.gd. Paths are relative to eldoria-godot/assets/animations/source/. When the source FBX changes (e.g. James swaps in a better Mixamo pick), update this file and re-run the builder.",
-  "_version": 1,
-  "_updated": "2026-05-05",
+  "_version": 2,
+  "_updated": "2026-05-12",
 
   "humanoid_base": {
     "_purpose": "Shared library every humanoid loads. Picks are UNARMED / weapon-neutral so characters without weapons read correctly; hand-held weapon flair lives in the per-class overrides.",
@@ -23,23 +23,31 @@
   },
 
   "humanoid_pathfinder": {
-    "_purpose": "Alden's class. Bow-held variants of locomotion + draw/release.",
+    "_purpose": "Alden's class. Bow-held variants of locomotion + draw/release + strafing from Longbow_Locomotion_Pack.",
     "slots": {
-      "idle":      "Pro_Longbow_Pack/standing_idle_01.fbx",
-      "walk":      "Pro_Longbow_Pack/standing_walk_forward.fbx",
-      "run":       "Pro_Longbow_Pack/standing_run_forward.fbx",
-      "attack_1":  "Pro_Longbow_Pack/standing_aim_overdraw.fbx",
-      "attack_2":  "Pro_Longbow_Pack/standing_aim_recoil.fbx",
-      "hurt":      "Pro_Longbow_Pack/standing_react_small_from_headshot.fbx",
-      "die":       "Pro_Longbow_Pack/standing_death_forward_01.fbx",
-      "bow_draw":  "Pro_Longbow_Pack/standing_draw_arrow.fbx",
-      "bow_equip": "Pro_Longbow_Pack/standing_equip_bow.fbx",
-      "dodge":     "Pro_Longbow_Pack/standing_dodge_backward.fbx"
+      "idle":       "Pro_Longbow_Pack/standing_idle_01.fbx",
+      "walk":       "Pro_Longbow_Pack/standing_walk_forward.fbx",
+      "run":        "Pro_Longbow_Pack/standing_run_forward.fbx",
+      "walk_back":  "Longbow_Locomotion_Pack/standing_walk_back.fbx",
+      "walk_left":  "Longbow_Locomotion_Pack/standing_walk_left.fbx",
+      "walk_right": "Longbow_Locomotion_Pack/standing_walk_right.fbx",
+      "run_back":   "Longbow_Locomotion_Pack/standing_run_back.fbx",
+      "run_left":   "Longbow_Locomotion_Pack/standing_run_left.fbx",
+      "run_right":  "Longbow_Locomotion_Pack/standing_run_right.fbx",
+      "turn_left":  "Longbow_Locomotion_Pack/standing_turn_90_left.fbx",
+      "turn_right": "Longbow_Locomotion_Pack/standing_turn_90_right.fbx",
+      "attack_1":   "Pro_Longbow_Pack/standing_aim_overdraw.fbx",
+      "attack_2":   "Pro_Longbow_Pack/standing_aim_recoil.fbx",
+      "hurt":       "Pro_Longbow_Pack/standing_react_small_from_headshot.fbx",
+      "die":        "Pro_Longbow_Pack/standing_death_forward_01.fbx",
+      "bow_draw":   "Pro_Longbow_Pack/standing_draw_arrow.fbx",
+      "bow_equip":  "Pro_Longbow_Pack/standing_equip_bow.fbx",
+      "dodge":      "Pro_Longbow_Pack/standing_dodge_backward.fbx"
     }
   },
 
   "humanoid_vanguard": {
-    "_purpose": "Owen's class. Great-sword variants — heavier, more spectacle.",
+    "_purpose": "Owen's class. Great-sword + Action_Adventure dodge/roll/stealth/fall.",
     "slots": {
       "idle":       "Great_Sword_Pack/great_sword_idle.fbx",
       "walk":       "Great_Sword_Pack/great_sword_walk.fbx",
@@ -50,9 +58,140 @@
       "power_up":   "Great_Sword_Pack/great_sword_power_up.fbx",
       "block":      "Great_Sword_Pack/great_sword_blocking.fbx",
       "impact":     "Great_Sword_Pack/great_sword_impact.fbx",
-      "jump":       "Great_Sword_Pack/great_sword_jump.fbx",
+      "jump":       "Action_Adventure_Pack/jumping_up.fbx",
+      "fall":       "Action_Adventure_Pack/falling_idle.fbx",
+      "dodge":      "Action_Adventure_Pack/falling_to_roll.fbx",
+      "roll":       "Action_Adventure_Pack/falling_to_roll.fbx",
+      "hard_landing": "Action_Adventure_Pack/hard_landing.fbx",
+      "sneak_idle": "Action_Adventure_Pack/crouched_sneaking_left.fbx",
+      "sneak_left": "Action_Adventure_Pack/crouched_sneaking_left.fbx",
+      "sneak_right": "Action_Adventure_Pack/crouched_sneaking_right.fbx",
+      "cover":      "Action_Adventure_Pack/stand_to_cover.fbx",
       "die":        "Great_Sword_Pack/two_handed_sword_death.fbx",
       "draw_sword": "Great_Sword_Pack/draw_a_great_sword_1.fbx"
+    }
+  },
+
+  "humanoid_mage": {
+    "_purpose": "Future mage class (3rd hero). Lite_Magic_Pack attacks + Magic_Locomotion_Pack movement.",
+    "slots": {
+      "idle":       "Lite_Magic_Pack/standing_idle.fbx",
+      "idle_2":     "Lite_Magic_Pack/standing_idle_02.fbx",
+      "walk":       "Magic_Locomotion_Pack/Standing_Walk_Forward.fbx",
+      "run":        "Magic_Locomotion_Pack/Standing_Run_Forward.fbx",
+      "walk_back":  "Magic_Locomotion_Pack/Standing_Walk_Back.fbx",
+      "run_back":   "Magic_Locomotion_Pack/Standing_Run_Back.fbx",
+      "walk_left":  "Magic_Locomotion_Pack/Standing_Walk_Left.fbx",
+      "walk_right": "Magic_Locomotion_Pack/Standing_Walk_Right.fbx",
+      "run_left":   "Magic_Locomotion_Pack/Standing_Run_Left.fbx",
+      "run_right":  "Magic_Locomotion_Pack/Standing_Run_Right.fbx",
+      "turn_left":  "Magic_Locomotion_Pack/Standing_Turn_Left_90.fbx",
+      "turn_right": "Magic_Locomotion_Pack/Standing_Turn_Right_90.fbx",
+      "attack_1":   "Lite_Magic_Pack/Standing_1H_Magic_Attack_01.fbx",
+      "attack_2":   "Lite_Magic_Pack/Standing_2H_Magic_Area_Attack_02.fbx",
+      "jump":       "Magic_Locomotion_Pack/Standing_Jump.fbx",
+      "fall":       "Lite_Magic_Pack/Standing_React_Small_From_Front.fbx",
+      "die":        "Lite_Magic_Pack/Standing_React_Death_Backward.fbx",
+      "hurt":       "Lite_Magic_Pack/Standing_React_Large_From_Front.fbx"
+    }
+  },
+
+  "humanoid_knight": {
+    "_purpose": "Future knight/tank class. Pro_Sword_and_Shield_Pack — 51 animations.",
+    "slots": {
+      "idle":        "Pro_Sword_and_Shield_Pack/sword_and_shield_idle.fbx",
+      "idle_2":      "Pro_Sword_and_Shield_Pack/sword_and_shield_idle__2_.fbx",
+      "walk":        "Pro_Sword_and_Shield_Pack/sword_and_shield_walk.fbx",
+      "run":         "Pro_Sword_and_Shield_Pack/sword_and_shield_run.fbx",
+      "attack_1":    "Pro_Sword_and_Shield_Pack/sword_and_shield_attack.fbx",
+      "attack_2":    "Pro_Sword_and_Shield_Pack/sword_and_shield_attack__2_.fbx",
+      "attack_3":    "Pro_Sword_and_Shield_Pack/sword_and_shield_slash.fbx",
+      "attack_4":    "Pro_Sword_and_Shield_Pack/sword_and_shield_slash__2_.fbx",
+      "block":       "Pro_Sword_and_Shield_Pack/sword_and_shield_block.fbx",
+      "block_idle":  "Pro_Sword_and_Shield_Pack/sword_and_shield_block_idle.fbx",
+      "jump":        "Pro_Sword_and_Shield_Pack/sword_and_shield_jump.fbx",
+      "die":         "Pro_Sword_and_Shield_Pack/sword_and_shield_death.fbx",
+      "hurt":        "Pro_Sword_and_Shield_Pack/sword_and_shield_impact.fbx",
+      "power_up":    "Pro_Sword_and_Shield_Pack/sword_and_shield_power_up.fbx",
+      "draw_sword":  "Pro_Sword_and_Shield_Pack/draw_sword_1.fbx",
+      "sheath":      "Pro_Sword_and_Shield_Pack/sheath_sword_1.fbx",
+      "crouch":      "Pro_Sword_and_Shield_Pack/sword_and_shield_crouch.fbx",
+      "crouch_idle": "Pro_Sword_and_Shield_Pack/sword_and_shield_crouch_idle.fbx",
+      "kick":        "Pro_Sword_and_Shield_Pack/sword_and_shield_kick.fbx",
+      "turn":        "Pro_Sword_and_Shield_Pack/sword_and_shield_turn.fbx",
+      "strafe":      "Pro_Sword_and_Shield_Pack/sword_and_shield_strafe.fbx"
+    }
+  },
+
+  "humanoid_capoeira": {
+    "_purpose": "Capoeira fighter — unique enemy type or rare martial-arts NPC. 22 slots from Capoeira_Pack.",
+    "slots": {
+      "idle":         "Capoeira_Pack/capoeira.fbx",
+      "idle_2":       "Capoeira_Pack/capoeira__2_.fbx",
+      "idle_3":       "Capoeira_Pack/capoeira__3_.fbx",
+      "walk":         "Capoeira_Pack/ginga_forward.fbx",
+      "walk_back":    "Capoeira_Pack/ginga_backward.fbx",
+      "strafe_left":  "Capoeira_Pack/ginga_sideways_1.fbx",
+      "strafe_right": "Capoeira_Pack/ginga_sideways_2.fbx",
+      "dodge_1":      "Capoeira_Pack/esquiva_1.fbx",
+      "dodge_2":      "Capoeira_Pack/esquiva_2.fbx",
+      "dodge_3":      "Capoeira_Pack/esquiva_3.fbx",
+      "dodge_4":      "Capoeira_Pack/esquiva_4.fbx",
+      "dodge_5":      "Capoeira_Pack/esquiva_5.fbx",
+      "attack_1":     "Capoeira_Pack/bencao.fbx",
+      "attack_2":     "Capoeira_Pack/meia_lua_de_frente.fbx",
+      "attack_3":     "Capoeira_Pack/martelo_do_chau.fbx",
+      "attack_4":     "Capoeira_Pack/armada.fbx",
+      "attack_5":     "Capoeira_Pack/chapa-giratoria.fbx",
+      "combo_1":      "Capoeira_Pack/au.fbx",
+      "combo_2":      "Capoeira_Pack/armada_to_esquiva.fbx",
+      "kick_1":       "Capoeira_Pack/rasteira_1.fbx",
+      "kick_2":       "Capoeira_Pack/chapa_2.fbx",
+      "spin":         "Capoeira_Pack/meia_lua_de_compasso.fbx",
+      "flip":         "Capoeira_Pack/macaco_side.fbx"
+    }
+  },
+
+  "creature_mutant": {
+    "_purpose": "Mutant creature — used for Boss.glb-type enemies (big, heavy, slow). Creature_NPC_Pack + Creature_Pack.",
+    "slots": {
+      "idle":       "Creature_NPC_Pack/mutant_idle.fbx",
+      "idle_2":     "Creature_NPC_Pack/mutant_breathing_idle.fbx",
+      "walk":       "Creature_NPC_Pack/mutant_walking.fbx",
+      "run":        "Creature_NPC_Pack/mutant_run.fbx",
+      "attack_1":   "Creature_NPC_Pack/mutant_swiping.fbx",
+      "attack_2":   "Creature_Pack/mutant_punch.fbx",
+      "attack_3":   "Creature_Pack/jump_attack.fbx",
+      "jump":       "Creature_NPC_Pack/mutant_jumping.fbx",
+      "die":        "Creature_NPC_Pack/mutant_dying.fbx",
+      "roar":       "Creature_Pack/mutant_roaring.fbx",
+      "flex":       "Creature_NPC_Pack/mutant_flexing_muscles.fbx",
+      "turn_left":  "Creature_NPC_Pack/mutant_left_turn_45.fbx",
+      "turn_right": "Creature_NPC_Pack/mutant_right_turn_45.fbx"
+    }
+  },
+
+  "humanoid_npc": {
+    "_purpose": "Briarwood NPC activity animations — farmers, workers, merchants. Farming_Pack.",
+    "slots": {
+      "idle":             "Farming_Pack/holding_idle.fbx",
+      "idle_kneel":       "Farming_Pack/kneeling_idle.fbx",
+      "walk":             "Farming_Pack/holding_walk.fbx",
+      "turn_left":        "Farming_Pack/holding_turn_left.fbx",
+      "turn_right":       "Farming_Pack/holding_turn_right.fbx",
+      "dig":              "Farming_Pack/dig_and_plant_seeds.fbx",
+      "plant":            "Farming_Pack/plant_a_plant.fbx",
+      "plant_tree":       "Farming_Pack/plant_tree.fbx",
+      "pick_fruit":       "Farming_Pack/pick_fruit.fbx",
+      "pick_fruit_2":     "Farming_Pack/pick_fruit__2_.fbx",
+      "pull_plant":       "Farming_Pack/pull_plant.fbx",
+      "watering":         "Farming_Pack/watering.fbx",
+      "milk_cow":         "Farming_Pack/cow_milking.fbx",
+      "carry_box":        "Farming_Pack/box_idle.fbx",
+      "carry_walk":       "Farming_Pack/box_walk_arc.fbx",
+      "wheelbarrow_idle": "Farming_Pack/wheelbarrow_idle.fbx",
+      "wheelbarrow_walk": "Farming_Pack/wheelbarrow_walk.fbx",
+      "wheelbarrow_dump": "Farming_Pack/wheelbarrow_dump.fbx"
     }
   }
 }

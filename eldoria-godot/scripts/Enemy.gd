@@ -42,6 +42,11 @@ const KIND_MODEL_PATHS: Dictionary = {
 	"drifter":           "res://assets/models/enemies/goblin.glb",
 	"watcher":           "res://assets/models/enemies/skeleton.glb",
 	"reactive_scout":    "res://assets/models/enemies/goblin_scout.glb",
+	# Creature enemies — Boss.glb as mutant (big heavy melee); Fox.glb as beast
+	"mutant":            "res://assets/models/Boss.glb",
+	"fox":               "res://assets/models/Fox.glb",
+	# Capoeira fighter — CesiumMan placeholder until dedicated model ships
+	"capoeira_fighter":  "res://assets/models/CesiumMan.glb",
 }
 
 func _get_kind_model(kind: String) -> PackedScene:
@@ -307,6 +312,12 @@ func _spawn_model() -> void:
 			kind_mult = Vector3(1.10, 1.20, 1.10)
 		"crystal_guardian":
 			kind_mult = Vector3(1.55, 1.65, 1.55)
+		"mutant":
+			kind_mult = Vector3(1.15, 1.15, 1.15)
+		"capoeira_fighter":
+			kind_mult = Vector3(1.00, 1.00, 1.00)
+		"fox":
+			kind_mult = Vector3(0.90, 0.90, 0.90)
 	_model.scale = _model.scale * kind_mult
 	add_child(_model)
 	var _norm_target: float = _NORMALIZE_TARGET_BY_KIND.get(enemy_kind, 1.55)
@@ -439,7 +450,8 @@ func _play_model_idle_anim() -> void:
 		ap.stop()   # ensure nothing bad is still playing from a previous frame
 		# ── Priority 1: exact known-good idle names ───────────────────────
 		for n in ["IdleAnimation", "Idle", "idle", "ANIM_Idle", "Armature|Idle",
-				"humanoid/Idle", "humanoid/idle", "mixamo_com"]:
+				"humanoid/Idle", "humanoid/idle", "mixamo_com",
+				"mutant_idle", "MutantIdle", "CreatureIdle", "Armature|mutant_idle"]:
 			if ap.has_animation(n):
 				ap.play(n)
 				return
@@ -1192,6 +1204,11 @@ const _NORMALIZE_TARGET_BY_KIND := {
 	"reactive_scout":   1.20, # nimble and small — reads as fast/dangerous
 	# ── Quadrupeds ────────────────────────────────────────────────────────────
 	"wolf":             1.00, # SIZE_STANDARDS §1 mount-adjacent quadruped
+	"fox":              0.65, # fox-sized beast — noticeably smaller than wolf
+	# ── Creature / boss ───────────────────────────────────────────────────────
+	"mutant":           2.40, # imposing creature — bigger than bandit_captain
+	# ── Special fighters ──────────────────────────────────────────────────────
+	"capoeira_fighter": 1.55, # medium humanoid — same as bandit
 }
 
 # Normalize 3D model scale so it ends up ~target_height tall.

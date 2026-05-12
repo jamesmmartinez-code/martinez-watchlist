@@ -10,6 +10,9 @@ class_name Player
 @export var rotation_speed: float = 12.0
 @export var camera_pivot: Node3D
 @export var animation_player: AnimationPlayer
+# "vanguard" | "pathfinder" | "mage" | "knight" — controls which class animation
+# library (.tres) is loaded at _ready and which slot candidates _play_anim checks first.
+@export var player_class: String = "vanguard"
 
 # ── State machine ────────────────────────────────────────────────────────────
 # One authoritative state drives animations — no scattered if/else chains.
@@ -212,6 +215,10 @@ func _ready() -> void:
 	# Works regardless of model name (Hero, Soldier, CesiumMan, etc.).
 	if not animation_player:
 		animation_player = _find_animation_player(self)
+	# Load class-specific animation library (.tres) if it exists.
+	# Graceful no-op when the file hasn't been built — game still works via fallback names.
+	if animation_player:
+		call_deferred("_load_class_anim_library")
 	# Auto-play idle on first frame so character doesn't stand T-pose
 	if animation_player:
 		await get_tree().process_frame
@@ -1044,22 +1051,33 @@ func _spawn_crit_flash() -> void:
 func _play_anim(name: String) -> void:
 	if not animation_player:
 		return
-	# 2026-05-08: added humanoid/* library spellings so Hero.glb (Mixamo-retarget)
-	# finds its animations without falling back to wave/yes gestures.
+	# Class library prefix — animations loaded from humanoid_CLASSNAME.tres live in
+	# a named library "cls" so they're referenced as "cls/slot_name".
+	# Falls back gracefully if the library wasn't built/available.
+	var cp := "cls/"   # class library prefix
 	var candidates := {
-		"idle":     ["Idle", "idle", "ANIM_idle", "humanoid/Idle", "humanoid/idle"],
-		"walk":     ["Walk", "walk", "Walking", "ANIM_walk", "humanoid/Walk", "humanoid/walk"],
-		"run":      ["Run", "run", "Running", "ANIM_run", "humanoid/Run", "humanoid/run"],
-		"jump":     ["Jump", "jump", "JumpUp", "humanoid/Jump", "run", "Run"],   # fallback to run if no jump anim
-		"fall":     ["Fall", "fall", "Falling", "humanoid/Fall", "idle", "Idle"],
-		"land":     ["Land", "land", "Landing", "humanoid/Land", "idle", "Idle"],
-		"attack":   ["Attack", "Punch", "Slash", "humanoid/Attack"],
-		"attack_1": ["Attack1", "attack_1", "Slash1", "Attack", "attack", "humanoid/Attack"],
-		"attack_2": ["Attack2", "attack_2", "Slash2", "Punch", "Attack", "humanoid/Attack"],
-		"attack_3": ["Attack3", "attack_3", "Slash3", "Spin", "Attack", "humanoid/Attack"],
-		"die":      ["Death", "Die", "ANIM_death", "humanoid/Death"],
+		"idle":     [cp+"idle", "Idle", "idle", "ANIM_idle", "humanoid/Idle", "humanoid/idle"],
+		"walk":     [cp+"walk", "Walk", "walk", "Walking", "ANIM_walk", "humanoid/Walk", "humanoid/walk"],
+		"run":      [cp+"run", "Run", "run", "Running", "ANIM_run", "humanoid/Run", "humanoid/run"],
+		"jump":     [cp+"jump", "Jump", "jump", "JumpUp", "humanoid/Jump", "run", "Run"],
+		"fall":     [cp+"fall", "Fall", "fall", "Falling", "humanoid/Fall", "idle", "Idle"],
+		"land":     [cp+"hard_landing", "Land", "land", "Landing", "humanoid/Land", "idle", "Idle"],
+		"attack":   [cp+"attack_1", "Attack", "Punch", "Slash", "humanoid/Attack"],
+		"attack_1": [cp+"attack_1", "Attack1", "attack_1", "Slash1", "Attack", "attack", "humanoid/Attack"],
+		"attack_2": [cp+"attack_2", "Attack2", "attack_2", "Slash2", "Punch", "Attack", "humanoid/Attack"],
+		"attack_3": [cp+"attack_3", "Attack3", "attack_3", "Slash3", "Spin", "Attack", "humanoid/Attack"],
+		"die":      [cp+"die", "Death", "Die", "ANIM_death", "humanoid/Death"],
+		"dodge":    [cp+"dodge", cp+"roll", "dodge", "roll", "Dodge", "Roll"],
+		"roll":     [cp+"roll", cp+"dodge", "roll", "dodge"],
+		"block":    [cp+"block", "block", "Block", "humanoid/idle", "idle"],
+		"sneak":    [cp+"sneak_idle", cp+"sneak_left", "crouch", "Crouch", "idle", "Idle"],
+		"draw":     [cp+"draw_sword", cp+"bow_equip", "Draw", "draw", "idle"],
+		"bow_draw": [cp+"bow_draw", cp+"attack_1", "Draw", "draw"],
+		"roar":     [cp+"roar", cp+"flex", cp+"power_up", "Attack", "attack"],
+		"victory":  ["humanoid/victory", "victory", "Victory", cp+"idle", "idle"],
+		"wave":     ["humanoid/wave", "wave", "Wave", cp+"idle", "idle"],
 	}
-	var possible = candidates.get(name, [name])
+	var possible = candidates.get(name, [cp + name, name])
 	for c in possible:
 		if animation_player.has_animation(c):
 			if animation_player.current_animation != c:
@@ -1454,6 +1472,27 @@ func _find_animation_player(node: Node) -> AnimationPlayer:
 		if found:
 			return found
 	return null
+
+# ── Class animation library ──────────────────────────────────────────────────
+# Loads humanoid_CLASSNAME.tres (built by build_anim_library.gd from slot_mapping.json)
+# and adds it to the AnimationPlayer under the library name "cls" so every class-
+# specific slot is addressable as "cls/slot_name" in _play_anim() candidates.
+# Graceful no-op when the .tres hasn't been built yet — _play_anim() falls back
+# to the generic animation names that come embedded in the Hero.glb.
+func _load_class_anim_library() -> void:
+	if not animation_player:
+		return
+	if player_class.is_empty():
+		return
+	var lib_path := "res://assets/animations/humanoid_%s.tres" % player_class
+	if not ResourceLoader.exists(lib_path):
+		return
+	var lib := load(lib_path) as AnimationLibrary
+	if lib == null:
+		return
+	if animation_player.has_animation_library("cls"):
+		animation_player.remove_animation_library("cls")
+	animation_player.add_animation_library("cls", lib)
 
 
 # ════════════════════════════════════════════════════════════════════════
