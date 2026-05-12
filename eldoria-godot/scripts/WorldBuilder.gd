@@ -7200,13 +7200,13 @@ func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> v
 	# Stall row
 	for i in range(bw_market_stall_count):
 		var t  := float(i) - float(bw_market_stall_count) * 0.5
-		var p: float = market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
+		var p: Vector3 = market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
 		root.add_child(_make_bw_stall(p, -dir))
 
 	# Clutter scatter
 	var clutter_n := int(40.0 * bw_prop_density)
 	for i in range(clutter_n):
-		var p: float = market + side * rng.randf_range(-18.0, 18.0) \
+		var p: Vector3 = market + side * rng.randf_range(-18.0, 18.0) \
 					+ dir * rng.randf_range(-7.0, 10.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
@@ -7356,7 +7356,7 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 	# Yard clutter (log piles + barrels)
 	var yard_n := int(40.0 * bw_prop_density)
 	for i in range(yard_n):
-		var p: float = craft + side * rng.randf_range(-12.0, 12.0) \
+		var p: Vector3 = craft + side * rng.randf_range(-12.0, 12.0) \
 					+ dir * rng.randf_range(-5.0, 7.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
@@ -10366,7 +10366,7 @@ func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void
 		var p: Vector3 = plaza + Vector3(cos(ang), 0.0, sin(ang)) * 8.8
 		var facing: Vector3 = (plaza - p); facing.y = 0.0; facing = facing.normalized()
 		var rot    := Basis(Vector3.UP, atan2(facing.x, facing.z))
-		var xf: Vector3 = Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
+		var xf: Transform3D = Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
 
 		if bw_multimesh_enabled and bw_mm_benches:
 			_mm_add(root, _bw_get_bench_mesh(), _bw_mat_fence(), xf, 64)
@@ -10410,12 +10410,12 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 
 	# Carts parked near market
 	for i in range(count):
-		var p: float = market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
+		var p: Vector3 = market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
 		root.add_child(_make_bw_cart(p, -dir))
 
 	# Free-standing hanging signboards
 	for i in range(int(6 * bw_dressing_density)):
-		var p2: float = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
+		var p2: Vector3 = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
 		var post := Node3D.new()
 		post.global_position = p2
 		root.add_child(post)
@@ -10423,7 +10423,7 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 
 	# Extra clutter scatter over market area
 	for i in range(int(20 * bw_dressing_density)):
-		var p3: float = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
+		var p3: Vector3 = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
 		_bw_place_clutter(root, p3, rng)
 
 
@@ -10471,7 +10471,7 @@ func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, coun
 
 	# Yard clutter scatter
 	for i in range(count):
-		var p: float = craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
+		var p: Vector3 = craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
 		_bw_place_clutter(root, p, rng)
 
 	# Chopping block (log stump)
@@ -10570,11 +10570,11 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 	dir = dir.normalized()
 
 	var post_spacing := 1.6
-	var posts: float = int(ceil(len / post_spacing)) + 1
+	var posts: int = int(ceil(len / post_spacing)) + 1
 
 	for i in range(posts):
 		var p  := a + dir * (float(i) * post_spacing)
-		var xf: Vector3 = Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
+		var xf: Transform3D = Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 256)
 		else:
@@ -10591,7 +10591,7 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 	var yaw := atan2(b.x - a.x, b.z - a.z)
 	var rot := Basis(Vector3.UP, yaw)
 	for rail_y in [0.55, 1.05]:
-		var xf2: Vector3 = Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
+		var xf2: Transform3D = Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, rail_mesh, mat, xf2, 128)
 		else:
@@ -10608,7 +10608,7 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> void:
 	var mat  := _bw_mat_clutter()
 	var kind: float = rng.randf()
-	var rot: float = Basis(Vector3.UP, rng.randf_range(-PI, PI))
+	var rot: Basis = Basis(Vector3.UP, rng.randf_range(-PI, PI))
 
 	if bw_multimesh_enabled and bw_mm_clutter:
 		if kind < 0.45:
@@ -10736,7 +10736,7 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 			continue   # gate gap
 
 		var h: float = rng.randf_range(2.4, 3.4)
-		var xf: Vector3 = Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
+		var xf: Transform3D = Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
 								p + Vector3(0.0, h * 0.5, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 512)
@@ -10786,7 +10786,7 @@ func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zon
 		road_dir = road_dir.normalized()
 
 		# Pick a point along segment (avoid endpoints)
-		var mid: float = a.lerp(b, rng.randf_range(0.22, 0.78))
+		var mid: Vector3 = a.lerp(b, rng.randf_range(0.22, 0.78))
 
 		# Choose which side of road
 		var outward: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
@@ -10827,7 +10827,7 @@ func _build_bw_yards(root: Node3D, pts: Array[Vector3]) -> void:
 		var back: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
 
 		var p1 := mid + back * (bw_house_setback + 2.0)
-		var p2: float = p1 + road_dir * rng.randf_range(6.0, 10.0)
+		var p2: Vector3 = p1 + road_dir * rng.randf_range(6.0, 10.0)
 		_build_bw_fence_line(root, p1, p2)
 
 		if rng.randf() < 0.25:
