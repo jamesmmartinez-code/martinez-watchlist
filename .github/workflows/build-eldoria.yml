@@ -127,7 +127,15 @@ jobs:
         run: |
           cd eldoria-godot
           mkdir -p web-export
-          ~/godot/godot --headless --path . --export-release "Web" web-export/index.html 2>&1 | grep -v "^$" || true
+          # Capture ALL Godot output (including SCRIPT ERROR) to log + console
+          ~/godot/godot --headless --path . --export-release "Web" web-export/index.html 2>&1 | tee /tmp/godot_export.log || true
+          # Fail the build if Godot printed any SCRIPT ERROR lines
+          if grep -q "SCRIPT ERROR" /tmp/godot_export.log; then
+            echo "❌ Godot export produced SCRIPT ERROR(s):"
+            grep "SCRIPT ERROR" /tmp/godot_export.log
+            exit 1
+          fi
+          echo "✅ Export complete — no SCRIPT ERRORs"
 
       - name: Verify export produced index.html
         run: |
