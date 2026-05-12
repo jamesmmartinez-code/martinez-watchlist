@@ -1147,6 +1147,7 @@ func _build_world_sync() -> void:
 	_safe_call("_build_banners")
 	_safe_call("_build_npcs")
 	_safe_call("_build_grass_tufts", [220])
+	_safe_call("_build_far_world_scatter")
 	_safe_call("_build_well")
 	_safe_call("_build_pond")
 	_safe_call("_build_firefly_particles")
@@ -1236,6 +1237,7 @@ func _build_world_async() -> void:
 	await get_tree().process_frame
 	_safe_call_now("_build_npcs",        [])
 	_safe_call_now("_build_grass_tufts", [220])
+	_safe_call_now("_build_far_world_scatter", [])
 
 	# ── Water, particles, atmosphere ──────────────────────────────────────────
 	build_progress.emit("Water & FX", 0.54)
@@ -1338,17 +1340,32 @@ func _dlog(msg: String) -> void:
 # Main.tscn ground stays as a collider while we get a real PBR look.
 # ============================================================================
 func _build_ground_overlay() -> void:
+	# Near ground — full detail, 220x220 around the village core
 	var ground := MeshInstance3D.new()
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(220, 220)
 	pm.subdivide_width = 80
 	pm.subdivide_depth = 80
 	ground.mesh = pm
-	ground.material_override = MAT_GRASS(40)
-	ground.position.y = 0.01  # avoid z-fighting with the existing ground
+	ground.material_override = MAT_GRASS(22)  # UV 40→22: less aggressive tiling
+	ground.position.y = 0.01
 	ground.name = "GroundPBR"
 	ground.custom_aabb = AABB(Vector3(-150, -2, -150), Vector3(300, 4, 300))
 	add_child(ground)
+
+	# Far ground — covers the wide world out to 1200m to kill the black void
+	# Low-poly (32 subdivs), slightly lower Y to avoid z-fight with near quad
+	var far_ground := MeshInstance3D.new()
+	var fpm := PlaneMesh.new()
+	fpm.size = Vector2(1200, 1200)
+	fpm.subdivide_width = 32
+	fpm.subdivide_depth = 32
+	far_ground.mesh = fpm
+	far_ground.material_override = MAT_GRASS(60)  # coarser UV for the distance
+	far_ground.position.y = -0.01  # just under the near quad
+	far_ground.name = "GroundFar"
+	far_ground.custom_aabb = AABB(Vector3(-700, -3, -700), Vector3(1400, 6, 1400))
+	add_child(far_ground)
 
 # ============================================================================
 # Cobble paths between buildings — a few intersecting plane strips
@@ -2719,6 +2736,106 @@ const ENEMY_SCRIPT = preload("res://scripts/Enemy.gd")
 const BOSS_SCRIPT  = preload("res://scripts/Boss.gd")
 const PET_SCRIPT   = preload("res://scripts/Pet.gd")
 const CHEST_SCRIPT = preload("res://scripts/Chest.gd")
+
+
+# ============================================================================
+# Far-world scatter — trees, boulders and ground cover outside the village
+# to fill the vast empty ground and prevent the "flat black void" look.
+# Lightweight: uses only built-in meshes (no GLB loads) so it never stalls.
+# ============================================================================
+func _build_far_world_scatter() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 54321
+	var root := Node3D.new()
+	root.name = "FarWorldScatter"
+	add_child(root)
+
+	# ── Distant tree silhouettes (rings from 120m to 500m) ──────────────────
+	var tree_count := 280
+	for i in range(tree_count):
+		var angle := rng.randf() * TAU
+		var dist  := rng.randf_range(120.0, 480.0)
+		var pos   := Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
+		# Skip the briarwood zone and Nordic zone
+		if pos.distance_to(Vector3(0, 0, 0)) < 100.0:
+			continue
+		var tree := MeshInstance3D.new()
+		var h    := rng.randf_range(4.0, 10.0)
+		# Trunk
+		var trunk_m := CylinderMesh.new()
+		trunk_m.top_radius    = rng.randf_range(0.12, 0.22)
+		trunk_m.bottom_radius = rng.randf_range(0.18, 0.30)
+		trunk_m.height        = h * 0.55
+		var trunk := MeshInstance3D.new()
+		trunk.mesh = trunk_m
+		trunk.material_override = MAT_DARK_WOOD(0.5)
+		trunk.position.y = h * 0.55 * 0.5
+		root.add_child(trunk)
+		trunk.global_position = pos + Vector3(0, h * 0.55 * 0.5, 0)
+		# Canopy (sphere or cone alternating)
+		var canopy := MeshInstance3D.new()
+		if rng.randi() % 2 == 0:
+			var sm := SphereMesh.new()
+			sm.radius = rng.randf_range(1.4, 2.8)
+			sm.height = sm.radius * 2.0
+			canopy.mesh = sm
+		else:
+			var prm := PrismMesh.new()
+			prm.size = Vector3(rng.randf_range(2.2, 4.0), h * 0.6, rng.randf_range(2.2, 4.0))
+			canopy.mesh = prm
+		var cm := StandardMaterial3D.new()
+		# Vary green tones: deep forest, autumn hint, pine
+		var green_mix := rng.randf()
+		if green_mix < 0.6:
+			cm.albedo_color = Color(0.18 + rng.randf_range(0, 0.12), 0.38 + rng.randf_range(0, 0.15), 0.14)
+		elif green_mix < 0.8:
+			cm.albedo_color = Color(0.35, 0.30, 0.10)  # autumn brown
+		else:
+			cm.albedo_color = Color(0.12, 0.28, 0.18)  # dark pine
+		cm.roughness = 0.9
+		canopy.material_override = cm
+		canopy.position.y = h * 0.55 + h * 0.3
+		root.add_child(canopy)
+		canopy.global_position = pos + Vector3(0, h * 0.55 + h * 0.3, 0)
+
+	# ── Boulder clusters (100m to 350m) ────────────────────────────────────
+	for i in range(60):
+		var angle := rng.randf() * TAU
+		var dist  := rng.randf_range(100.0, 350.0)
+		var pos   := Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
+		var boulder := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		var s := rng.randf_range(0.8, 2.5)
+		sm.radius = s
+		sm.height = s * rng.randf_range(0.6, 1.0)
+		boulder.mesh = sm
+		boulder.material_override = MAT_ROCK(1.0)
+		boulder.scale = Vector3(
+			rng.randf_range(0.7, 1.3),
+			rng.randf_range(0.5, 0.9),
+			rng.randf_range(0.7, 1.3)
+		)
+		root.add_child(boulder)
+		boulder.global_position = pos + Vector3(0, s * 0.4, 0)
+
+	# ── Distant hill mounds (low spheres that break flat horizon) ───────────
+	for i in range(20):
+		var angle := rng.randf() * TAU
+		var dist  := rng.randf_range(200.0, 500.0)
+		var pos   := Vector3(cos(angle) * dist, -2.0, sin(angle) * dist)
+		var hill  := MeshInstance3D.new()
+		var sm    := SphereMesh.new()
+		sm.radius = rng.randf_range(15.0, 35.0)
+		sm.height = rng.randf_range(4.0, 10.0)
+		sm.rings  = 8
+		sm.radial_segments = 12
+		hill.mesh = sm
+		var hm := StandardMaterial3D.new()
+		hm.albedo_color = Color(0.28 + rng.randf_range(0, 0.1), 0.40 + rng.randf_range(0, 0.1), 0.20)
+		hm.roughness = 0.95
+		hill.material_override = hm
+		root.add_child(hill)
+		hill.global_position = pos
 
 func _build_enemies() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
