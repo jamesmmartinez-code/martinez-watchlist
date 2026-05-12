@@ -34,7 +34,7 @@ var _spawn_pos: Vector3
 
 # ── Visual nodes (built in _ready) ───────────────────────────────────────
 var _core_mesh: MeshInstance3D = null
-var _ring_nodes: Array[Node3D] = []
+var _ring_nodes: Array = []
 var _label: Label3D = null
 var _aura: OmniLight3D = null
 var _core_shader: ShaderMaterial = null
