@@ -761,7 +761,7 @@ func _physics_process(delta: float) -> void:
 func _face_target(dir: Vector3, delta: float) -> void:
 	if dir.length() < 0.001:
 		return
-	var target_basis: Vector3 = Basis.looking_at(dir.normalized(), Vector3.UP)
+	var target_basis: Basis = Basis.looking_at(dir.normalized(), Vector3.UP)
 	global_transform.basis = global_transform.basis.slerp(target_basis, 8.0 * delta)
 
 func _idle_drift(delta: float) -> void:
