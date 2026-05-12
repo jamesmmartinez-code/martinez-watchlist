@@ -62,6 +62,24 @@ for gd in sorted(ROOT.rglob("*.gd")):
         if re.match(r'\s*//', raw) and not re.match(r'\s*#', raw):
             violations.append((str(gd), lineno, "CPP-COMMENT", raw.rstrip()))
 
+# Pattern 3: var x := VARIANT_FUNC(...) — Variant inference error
+# These functions return Variant in GDScript 4 strict mode
+VARIANT_RETURNING = re.compile(
+    r'var\s+\w+\s*:=\s*(?:lerp|smoothstep|randf_range|randf|snapped|clamp|sqrt|fmod|'
+    r'floor|ceil|round|distance_to|dot|length|lerpf|inverse_lerp|wrapf|pingpong|'
+    r'randi_range|randi)\s*\('
+)
+
+for gd in sorted(ROOT.rglob("*.gd")):
+    lines = gd.read_text(errors="replace").split("\n")
+    for lineno, raw in enumerate(lines, 1):
+        stripped = raw.strip()
+        if stripped.startswith("#"):
+            continue
+        code = re.sub(r'#.*$', '', raw)
+        if VARIANT_RETURNING.search(code):
+            violations.append((str(gd), lineno, "VARIANT-INFER", raw.rstrip()))
+
 if violations:
     print(f"\n=== GDScript Lint: {len(violations)} violation(s) ===")
     for path, lineno, kind, line in violations:
