@@ -141,7 +141,7 @@ func _physics_process(delta: float) -> void:
 		_adapt_to_player()
 
 	if not _player:
-		var ps: Array[Node3D] = get_tree().get_nodes_in_group("player")
+		var ps: Array = get_tree().get_nodes_in_group("player")
 		if ps.size() > 0:
 			_player = ps[0]
 	if not _player:
