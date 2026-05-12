@@ -407,7 +407,8 @@ func _physics_process(delta: float) -> void:
 		# look_at guard: skip if direction is degenerate
 		var look_pos := global_position + direction
 		if global_position.distance_squared_to(look_pos) > 0.0001:
-			var target_basis := Basis.looking_at(direction, Vector3.UP)
+			# alden_pathfinder.glb faces +Z; looking_at makes -Z point at target, so negate direction
+			var target_basis := Basis.looking_at(-direction, Vector3.UP)
 			global_transform.basis = global_transform.basis.slerp(target_basis, rotation_speed * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0, current_speed * 4 * delta)
