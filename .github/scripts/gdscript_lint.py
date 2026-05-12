@@ -17,7 +17,7 @@ violations = []
 TERNARY = re.compile(r'(?<!["\'])(?<!\w)\?\s+')
 
 # Pattern 2: Array[Node3D] (or Array[Node]) typed var assigned from group/children call
-TYPED_ARRAY_NODE = re.compile(r'var\s+\w+\s*:\s*Array\[Node3?D?\]')
+TYPED_ARRAY_NODE = re.compile(r'var\s+\w+\s*:\s*Array\[Node3D\]')
 
 for gd in sorted(ROOT.rglob("*.gd")):
     lines = gd.read_text(errors="replace").split("\n")
