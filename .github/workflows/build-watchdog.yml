@@ -1,8 +1,14 @@
 name: Build Watchdog
 
-# Runs every 15 minutes.  If the current main HEAD has a Godot build
-# that is cancelled or failed (and nothing is in progress), it
-# retriggers Build Eldoria so the live game always stays current.
+# Runs every 15 minutes.
+# Checks THREE things and auto-heals each:
+#
+# 1. BUILD HEALTH — if current HEAD has no successful build, retriggers it.
+# 2. LIVE URL HEALTH — fetches the Worker URL; if it's serving a redirect
+#    instead of the real game, retriggers the build to re-sync R2.
+# 3. REPO PUSH HEALTH — checks that main has received a commit in the last
+#    4 hours. If completely stale (agents stopped pushing), fires an alert
+#    commit so the team knows activity has stopped.
 
 on:
   schedule:
@@ -10,60 +16,109 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write   # needed to trigger / cancel runs
-  contents: read
+  actions: write
+  contents: write
 
 jobs:
   watch:
     runs-on: ubuntu-latest
     steps:
-      - name: Check build status and retrigger if needed
+      - uses: actions/checkout@v4
+
+      - name: Check build + live URL + repo push health
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-
           REPO="${{ github.repository }}"
           WORKFLOW="build-eldoria.yml"
+          GAME_URL="https://eldoria-api.james-m-martinez.workers.dev/eldoria/"
+          NEEDS_BUILD=false
+          REASON=""
 
-          # ── Current HEAD SHA ──────────────────────────────────────────────
+          # ── 1. BUILD HEALTH ──────────────────────────────────────────────
           HEAD_SHA=$(gh api repos/$REPO/commits/main --jq '.sha')
           echo "HEAD: ${HEAD_SHA:0:8}"
 
-          # ── Check for in-progress build ───────────────────────────────────
           IN_PROGRESS=$(gh api \
             "repos/$REPO/actions/workflows/$WORKFLOW/runs?status=in_progress&per_page=1" \
             --jq '.total_count')
 
           if [ "$IN_PROGRESS" -gt 0 ]; then
-            echo "✅ Build already in progress — nothing to do."
+            echo "🔄 Build already in progress — skipping retrigger checks."
             exit 0
           fi
 
-          # ── Get the most recent run for current HEAD ─────────────────────
-          LAST=$(gh api \
+          LAST_CONCLUSION=$(gh api \
             "repos/$REPO/actions/workflows/$WORKFLOW/runs?head_sha=$HEAD_SHA&per_page=1" \
-            --jq '.workflow_runs[0] | {conclusion, status, id}' 2>/dev/null || echo '{}')
+            --jq '.workflow_runs[0].conclusion // "none"' 2>/dev/null || echo "none")
 
-          CONCLUSION=$(echo "$LAST" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('conclusion') or d.get('status') or 'none')")
-          RUN_ID=$(echo "$LAST" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))")
+          echo "Last build conclusion: $LAST_CONCLUSION"
 
-          echo "Last build for HEAD: $CONCLUSION (run $RUN_ID)"
-
-          case "$CONCLUSION" in
+          case "$LAST_CONCLUSION" in
             success)
-              echo "✅ Current HEAD has a successful build — nothing to do."
-              ;;
-            in_progress|queued|waiting)
-              echo "🔄 Build is running — nothing to do."
+              echo "✅ Build: current HEAD has a successful build."
               ;;
             cancelled|failure|timed_out|stale|none)
-              echo "⚠️  Build is $CONCLUSION — retriggering Build Eldoria..."
-              gh workflow run "$WORKFLOW" --repo "$REPO" --ref main
-              echo "✅ Build Eldoria retriggered."
-              ;;
-            *)
-              echo "ℹ️  Unknown conclusion '$CONCLUSION' — retriggering to be safe..."
-              gh workflow run "$WORKFLOW" --repo "$REPO" --ref main
+              NEEDS_BUILD=true
+              REASON="build is $LAST_CONCLUSION"
               ;;
           esac
+
+          # ── 2. LIVE URL HEALTH ───────────────────────────────────────────
+          if [ "$NEEDS_BUILD" = "false" ]; then
+            echo "Checking live URL..."
+            HTTP_CODE=$(curl -sS -o /tmp/game_response.txt -w "%{http_code}" \
+              --max-time 20 \
+              -H "Cache-Control: no-cache" \
+              -H "User-Agent: eldoria-watchdog/1.0" \
+              "$GAME_URL" || echo "000")
+
+            if [ "$HTTP_CODE" != "200" ]; then
+              NEEDS_BUILD=true
+              REASON="live URL returned HTTP $HTTP_CODE"
+            else
+              BODY_SIZE=$(wc -c < /tmp/game_response.txt)
+              if [ "$BODY_SIZE" -lt 2000 ]; then
+                NEEDS_BUILD=true
+                REASON="live URL response too small (${BODY_SIZE} bytes — probably redirect or error)"
+              elif grep -q 'location.replace\|http-equiv="refresh"\|Cloudflare server' /tmp/game_response.txt 2>/dev/null; then
+                NEEDS_BUILD=true
+                REASON="live URL is serving redirect page instead of game"
+              elif ! grep -q 'canvas\|index\.js' /tmp/game_response.txt 2>/dev/null; then
+                NEEDS_BUILD=true
+                REASON="live URL missing Godot game markers (canvas/index.js)"
+              else
+                echo "✅ Live URL: serving real game shell (${BODY_SIZE} bytes)."
+              fi
+            fi
+          fi
+
+          # ── 3. REPO PUSH HEALTH ─────────────────────────────────────────
+          LAST_COMMIT_TIME=$(gh api repos/$REPO/commits/main --jq '.commit.committer.date')
+          LAST_TS=$(date -d "$LAST_COMMIT_TIME" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_COMMIT_TIME" +%s 2>/dev/null || echo 0)
+          NOW_TS=$(date +%s)
+          AGE_HOURS=$(( (NOW_TS - LAST_TS) / 3600 ))
+          echo "Last commit: $LAST_COMMIT_TIME (${AGE_HOURS}h ago)"
+
+          if [ "$AGE_HOURS" -gt 4 ]; then
+            echo "⚠️  Repo has been quiet for ${AGE_HOURS}h — agents may have stopped."
+            # Write a health-check breadcrumb so there's a record, but don't retrigger build
+            # (stale repo != broken game; don't spam builds)
+            git config user.name "build-watchdog[bot]"
+            git config user.email "watchdog@eldoria"
+            echo "$(date -u +%Y-%m-%dT%H:%MZ) watchdog: repo quiet ${AGE_HOURS}h" >> .github/watchdog.log
+            git add .github/watchdog.log
+            git commit -m "watchdog: repo quiet ${AGE_HOURS}h — last commit was $LAST_COMMIT_TIME [autofix]" || true
+            git push || true
+          else
+            echo "✅ Repo push health: active (${AGE_HOURS}h since last commit)."
+          fi
+
+          # ── RETRIGGER IF NEEDED ─────────────────────────────────────────
+          if [ "$NEEDS_BUILD" = "true" ]; then
+            echo "⚠️  Retriggering build: $REASON"
+            gh workflow run "$WORKFLOW" --repo "$REPO" --ref main
+            echo "✅ Build Eldoria retriggered."
+          fi
