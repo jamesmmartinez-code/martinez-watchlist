@@ -144,13 +144,13 @@ var _trail_last_update: float = 0.0
 # so the world NEVER spawns empty.
 const TREE_VARIANTS: Array = [
 	{"path": "res://assets/models/trees/oak_tree.glb",  "weight": 0.45,
-	 "scale_min": 0.55, "scale_max": 0.95, "kind": "oak"},
+		"scale_min": 0.55, "scale_max": 0.95, "kind": "oak"},
 	{"path": "res://assets/models/trees/pine_tree.glb", "weight": 0.30,
-	 "scale_min": 0.60, "scale_max": 1.05, "kind": "pine"},
+		"scale_min": 0.60, "scale_max": 1.05, "kind": "pine"},
 	{"path": "res://assets/models/trees/bush.glb",      "weight": 0.20,
-	 "scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
+		"scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
 	{"path": "res://assets/models/trees/dead_tree.glb", "weight": 0.05,
-	 "scale_min": 0.50, "scale_max": 0.85, "kind": "dead"},
+		"scale_min": 0.50, "scale_max": 0.85, "kind": "dead"},
 ]
 # Sketchfab CC-BY boulder GLB used by `_scatter_rocks` in place of the lumpy
 # sphere primitives. Same fallback contract as TREE_VARIANTS above.
@@ -339,70 +339,70 @@ func MAT_LEAF(tint: Color) -> StandardMaterial3D:
 # strength is loud and mastery is quiet.
 const NPCS = [
 	{"name":"Elder Maeve",       "role":"quest",   "pos":Vector3(  6,  0,  3), "tint":Color(0.6,0.4,0.85),
-	 "line":"Trouble brews in the Whisperwood. Seek out the Goblin Warlord.",
-	 "lines":[
+		"line":"Trouble brews in the Whisperwood. Seek out the Goblin Warlord.",
+		"lines":[
 		"Ah, traveler. Trouble brews in the Whisperwood — seek out the Goblin Warlord.",
 		"You smell of pine. Good. Goblins do not. Mind the Warlord.",
 		"I sleep poorly when wolves howl. I hope your blade keeps mine quiet.",
 		"You should be inside. Even my whispers travel further after dark.",
-	 ],
-	 "warm_flag":"first_quest_done",
-	 "warm_lines":[
+		],
+		"warm_flag":"first_quest_done",
+		"warm_lines":[
 		"You came back. The forest sleeps lighter for it. Tea by the hearth?",
 		"Goblins still scratch our edges, but with you about, they keep their distance.",
 		"My old bones thank you — I sleep deeper since you cleared the wood.",
 		"Walk safe — though even the wolves walk softer since your last errand.",
-	 ],
-	 # COMPOUND (run 4): faction-pressure tier. Maeve gave the cleansing quest
-	 # and feels the Whisperwood as a fellow inhabitant. The faction tier only
-	 # fires when warm_flag (first_quest_done) is NOT set — i.e. the player
-	 # tackled Mara's bounty BEFORE Maeve's cleansing. In that path, ears for
-	 # Mara has already dropped goblin pressure to 0.85 and Maeve notices
-	 # (threshold 0.9 → triggers on any goblin-reduction quest pre-cleansing).
-	 # Once cleansing is done, warm_flag tier wins and personal warmth narrates.
-	 "warm_faction_id":"whisperwood_goblins",
-	 "warm_faction_below":0.9,
-	 "warm_faction_lines":[
+		],
+		# COMPOUND (run 4): faction-pressure tier. Maeve gave the cleansing quest
+		# and feels the Whisperwood as a fellow inhabitant. The faction tier only
+		# fires when warm_flag (first_quest_done) is NOT set — i.e. the player
+		# tackled Mara's bounty BEFORE Maeve's cleansing. In that path, ears for
+		# Mara has already dropped goblin pressure to 0.85 and Maeve notices
+		# (threshold 0.9 → triggers on any goblin-reduction quest pre-cleansing).
+		# Once cleansing is done, warm_flag tier wins and personal warmth narrates.
+		"warm_faction_id":"whisperwood_goblins",
+		"warm_faction_below":0.9,
+		"warm_faction_lines":[
 		"The Whisperwood breathes easier this dawn. Even the crows fly bolder.",
 		"You hear that midday hush? That's a forest with fewer wicked things in it.",
 		"The light slants through the trees and not a goblin lantern in sight — beautiful.",
 		"Owls again at last — they only sing when the wood is theirs again. Sleep well.",
-	 ],
-	 # COMPOUND (run 9 — JSON dialogue tree): opt Maeve into the JSON-tree
-	 # resolver. NPC.gd consults `data/dialogue/elder_maeve.json` first; on
-	 # miss (no matching predicate) it falls back to the variants above.
-	 # Lights up `low_health_player`, `boss_slain`, `after_first_quest_complete`,
-	 # plus seasonal hooks (`longnight_vigil`, `honeysong_eve`) the day a
-	 # festival/calendar system lands. Lines above are kept as fallback so
-	 # nothing regresses if the JSON ever fails to load.
-	 # COMPOUND (run 11 — schedule): morning at the well, midday at her hut,
-	 # evening at the hearth telling stories, night back at the hut door.
-	 "schedule":[Vector3( 0.6, 0,  5.0), Vector3( 6.0, 0,  3.0), Vector3( 0.8, 0, -1.6), Vector3( 6.0, 0,  3.0)],
-	 # COMPOUND (run 16 — Builder): visit-memory tier. After three quiet
-	 # hellos with no specific deed completed, Maeve speaks like she knows
-	 # you. Threshold 3 fires on the third visit (run 16 wiring includes
-	 # the triggering visit in the count). The four-bucket time-of-day
-	 # shape carries through; only the language shifts toward familiarity.
-	 # Note this tier sits below faction-pressure: if the Whisperwood
-	 # pressure has dropped, the faction-tier line wins (the world-state
-	 # lines are louder than the relationship cadence).
-	 "memory_visits_min":3,
-	 "memory_lines":[
+		],
+		# COMPOUND (run 9 — JSON dialogue tree): opt Maeve into the JSON-tree
+		# resolver. NPC.gd consults `data/dialogue/elder_maeve.json` first; on
+		# miss (no matching predicate) it falls back to the variants above.
+		# Lights up `low_health_player`, `boss_slain`, `after_first_quest_complete`,
+		# plus seasonal hooks (`longnight_vigil`, `honeysong_eve`) the day a
+		# festival/calendar system lands. Lines above are kept as fallback so
+		# nothing regresses if the JSON ever fails to load.
+		# COMPOUND (run 11 — schedule): morning at the well, midday at her hut,
+		# evening at the hearth telling stories, night back at the hut door.
+		"schedule":[Vector3( 0.6, 0,  5.0), Vector3( 6.0, 0,  3.0), Vector3( 0.8, 0, -1.6), Vector3( 6.0, 0,  3.0)],
+		# COMPOUND (run 16 — Builder): visit-memory tier. After three quiet
+		# hellos with no specific deed completed, Maeve speaks like she knows
+		# you. Threshold 3 fires on the third visit (run 16 wiring includes
+		# the triggering visit in the count). The four-bucket time-of-day
+		# shape carries through; only the language shifts toward familiarity.
+		# Note this tier sits below faction-pressure: if the Whisperwood
+		# pressure has dropped, the faction-tier line wins (the world-state
+		# lines are louder than the relationship cadence).
+		"memory_visits_min":3,
+		"memory_lines":[
 		"Three mornings now you've come by — I count. The kettle's on, dear.",
 		"You sit a while, hm? Even old Maeve enjoys company at midday.",
 		"You've a way of finding my doorstep at dusk. Sit — the bread's still warm.",
 		"Late again? My door knows your knock by now. Come in from the cold.",
-	 ],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Maeve mutters
-	 # to her herb bundles and the Whisperwood. Interval 28–42s: she speaks slowly.
-	 "bark_lines":[
+		],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Maeve mutters
+		# to her herb bundles and the Whisperwood. Interval 28–42s: she speaks slowly.
+		"bark_lines":[
 		"Whisperwood's listening today. Can you hear it?",
 		"These roots remember older names than ours.",
 		"A good healer knows when to let the wound breathe.",
 		"The crow flew north twice this morning. Mark that.",
 		"Mmm. Wolf-sage is blooming. Strange for this season.",
-	 ],
-	 "bark_min":28.0, "bark_max":42.0,
+		],
+		"bark_min":28.0, "bark_max":42.0,
 	# run-35: relationship tier lines (score >= 2).
 	"relationship_min":2,
 	"relationship_lines":[
@@ -411,187 +411,187 @@ const NPCS = [
    "Come for the company, stay for the herbs. Always welcome.",
    "I've watched folk give and take. You're the giving kind. Rare.",
 	],
-	 "defense_lines": [
+		"defense_lines": [
 		"Your blade rings true, child.",
 		"The spirits guided your arm.",
 		"Eldoria thanks you.",
-	 ],
-	 "use_json_dialogue":true},
+		],
+		"use_json_dialogue":true},
 	{"name":"Smith Edda",        "role":"smithy",  "pos":Vector3( -6,  0,  3), "tint":Color(0.7,0.25,0.18),
-	 "line":"Bring me ore and I'll forge you a blade.",
-	 "lines":[
+		"line":"Bring me ore and I'll forge you a blade.",
+		"lines":[
 		"Bring me ore. I forge best when the dew's still on the iron.",
 		"*hammer-clang* — Steel won't shape itself. Got ore, or just standing there?",
 		"Forge cools by sundown. Last orders, friend.",
 		"Coals are banked. Come back when you've slept.",
-	 ],
-	 # COMPOUND (run 9 — JSON dialogue tree): opt Edda into the JSON-tree
-	 # resolver. NPC.gd consults `data/dialogue/smith_edda.json` first; on
-	 # miss falls back to the four lines above. Lights up `low_health_player`,
-	 # `boss_alive`, `boss_slain`, `after_first_quest_complete`, plus seasonal
-	 # hooks (`longnight_vigil`, `spring_first_warm_day`).
-	 # COMPOUND (run 11 — schedule): tiny shifts around the forge — Edda is
-	 # the smithy and never strays far. Quenching trough at night.
-	 "schedule":[Vector3(-5.4, 0,  3.0), Vector3(-6.0, 0,  3.0), Vector3(-6.0, 0,  2.4), Vector3(-6.4, 0,  3.4)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Edda grumbles
-	 # at the forge and talks to her work. Interval 20–32s: she's industrious.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 9 — JSON dialogue tree): opt Edda into the JSON-tree
+		# resolver. NPC.gd consults `data/dialogue/smith_edda.json` first; on
+		# miss falls back to the four lines above. Lights up `low_health_player`,
+		# `boss_alive`, `boss_slain`, `after_first_quest_complete`, plus seasonal
+		# hooks (`longnight_vigil`, `spring_first_warm_day`).
+		# COMPOUND (run 11 — schedule): tiny shifts around the forge — Edda is
+		# the smithy and never strays far. Quenching trough at night.
+		"schedule":[Vector3(-5.4, 0,  3.0), Vector3(-6.0, 0,  3.0), Vector3(-6.0, 0,  2.4), Vector3(-6.4, 0,  3.4)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Edda grumbles
+		# at the forge and talks to her work. Interval 20–32s: she's industrious.
+		"bark_lines":[
 		"Iron remembers every strike. So does Edda.",
 		"Bellows need air — just like good steel needs time.",
 		"This blade'll hold. Unlike the last apprentice.",
 		"Sparks mean it's working. No sparks, start over.",
 		"Morning dew cooled my tongs. Nature's temper. I respect it.",
 		"A dull blade is just a heavy stick. Don't bring me heavy sticks.",
-	 ],
-	 "bark_min":20.0, "bark_max":32.0,
-	 "defense_lines": [
+		],
+		"bark_min":20.0, "bark_max":32.0,
+		"defense_lines": [
 		"Strong arm! My forge respects that.",
 		"I'll sharpen your blade free of charge.",
 		"Didn't think you had it in you.",
-	 ],
-	 "use_json_dialogue":true},
+		],
+		"use_json_dialogue":true},
 	{"name":"Mara the Merchant", "role":"shop",    "pos":Vector3(  3,  0, -5), "tint":Color(0.7,0.5,0.25),
-	 "line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
-	 "lines":[
+		"line":"There's a bounty on goblin raiders — bring me proof of six and I'll pay handsome.",
+		"lines":[
 		"Six goblin ears, that's the bounty. I keep tally; I never miscount. Never.",
 		"Trade me proof of six raiders and you'll walk out richer than you walked in.",
 		"Hurry — I count my coin twice before bed and I dislike being interrupted.",
 		"Shop's shut. Knock again at sunrise unless your purse has wings.",
-	 ],
-	 "warm_flag":"good_customer",
-	 "warm_lines":[
+		],
+		"warm_flag":"good_customer",
+		"warm_lines":[
 		"Word's out: Mara pays well. You set my ledger humming. Welcome back.",
 		"Six ears as promised — coin's heavy in your pouch and in mine. Trade well.",
 		"I'd shutter for the day, but for you I'll uncross my arms a moment longer.",
 		"Late again, eh? For my favorite buyer, the till's not quite shut.",
-	 ],
-	 # COMPOUND (run 11 — schedule): market stall during the day, drinks at
-	 # the inn at night. Closes the believable-merchant loop with Bram.
-	 "schedule":[Vector3( 2.5, 0,  0.0), Vector3( 2.5, 0,  0.0), Vector3( 3.0, 0, -5.0), Vector3( 8.6, 0, -2.0)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Mara counts
-	 # stock and mutters about coin. Interval 18–30s: a merchant never stops.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 11 — schedule): market stall during the day, drinks at
+		# the inn at night. Closes the believable-merchant loop with Bram.
+		"schedule":[Vector3( 2.5, 0,  0.0), Vector3( 2.5, 0,  0.0), Vector3( 3.0, 0, -5.0), Vector3( 8.6, 0, -2.0)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Mara counts
+		# stock and mutters about coin. Interval 18–30s: a merchant never stops.
+		"bark_lines":[
 		"Four potions, three salves, two satchels. Good. Good.",
 		"Someone always wants more and pays less. Someone named Everyone.",
 		"I did not carry this stock three valleys for BROWSING.",
 		"Hmm. Crystal shards are moving faster this week.",
 		"Counts right. Mara's counts always right.",
 		"If it gleams, it sells. If it stinks, it heals. Mara knows both.",
-	 ],
-	 "bark_min":18.0, "bark_max":30.0},
+		],
+		"bark_min":18.0, "bark_max":30.0},
 	{"name":"Herbalist Lyra",    "role":"alchemy", "pos":Vector3( -3,  0, -5), "tint":Color(0.4,0.7,0.35),
-	 "line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
-	 "lines":[
+		"line":"I need 4 wolf pelts for a healing salve. Bring them, and the salve is yours.",
+		"lines":[
 		"Four wolf pelts for a healing salve — wolves are bolder at dawn, mind.",
 		"Smell that? Marshmint. Brings me back to my mother's garden — long lost now.",
 		"Bring me pelts before the moss closes. It only opens by daylight.",
 		"Owls are louder than wolves tonight. Bad sign. Travel close to lanterns.",
-	 ],
-	 "warm_flag":"trusts_player",
-	 "warm_lines":[
+		],
+		"warm_flag":"trusts_player",
+		"warm_lines":[
 		"Your pelts cured well — I owe you the salve, and a stronger one besides.",
 		"Ask if you need a greater potion. For you, the moss opens a little longer.",
 		"The garden in my memory has one more bloom now. Yours, friend.",
 		"Owls still cry, but you've made my shelves richer. Sleep well.",
-	 ],
-	 # COMPOUND (run 3 follow-up): world-flag warmed tier. Fires when the
-	 # village knows the recipe (`lyra_potion_brew`) even if the player
-	 # personally hasn't pelted yet. Lower priority than `warm_flag` above.
-	 "warm_world_flag":"lyra_potion_brew",
-	 "warm_world_lines":[
+		],
+		# COMPOUND (run 3 follow-up): world-flag warmed tier. Fires when the
+		# village knows the recipe (`lyra_potion_brew`) even if the player
+		# personally hasn't pelted yet. Lower priority than `warm_flag` above.
+		"warm_world_flag":"lyra_potion_brew",
+		"warm_world_lines":[
 		"The greater salve is brewing — come back at dusk for the first batch.",
 		"Word of the salve has reached two villages. I'll need more pelts soon.",
 		"Lanterns are lit late. The mortar is loud. Good problems, these.",
 		"Even at this hour the kettle bubbles. Try a sip, on the house.",
-	 ],
-	 # COMPOUND (run 11): Lyra joins Maeve / Edda / Bram on the JSON-tree
-	 # resolver — fourth opt-in. `data/dialogue/herbalist_lyra.json` carries
-	 # default + tod x4 + low_health_player + boss_alive + boss_slain +
-	 # high_renown + warmed-tier hooks. With this flip plus the new
-	 # `World.player_renown` field landing in the same run, her `high_renown`
-	 # line ("Mara mentioned a name on her last circuit. So did Roan…")
-	 # becomes the FIRST renown-gated line to actually fire in-game. The
-	 # legacy `lines` / `warm_lines` / `warm_world_lines` arrays above stay
-	 # as the no-tree fallback so absolutely nothing regresses.
-	 # COMPOUND (run 11 — schedule): forages at the treeline at dawn (the
-	 # marshmint she eulogizes in her morning line is at the forest edge),
-	 # then back to her hut for the rest of the day.
-	 "schedule":[Vector3(-7.5, 0, -7.5), Vector3(-3.0, 0, -5.0), Vector3(-3.0, 0, -4.4), Vector3(-3.0, 0, -5.0)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Lyra hums and
-	 # talks to her plants. Interval 25–40s: she's contemplative.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 11): Lyra joins Maeve / Edda / Bram on the JSON-tree
+		# resolver — fourth opt-in. `data/dialogue/herbalist_lyra.json` carries
+		# default + tod x4 + low_health_player + boss_alive + boss_slain +
+		# high_renown + warmed-tier hooks. With this flip plus the new
+		# `World.player_renown` field landing in the same run, her `high_renown`
+		# line ("Mara mentioned a name on her last circuit. So did Roan…")
+		# becomes the FIRST renown-gated line to actually fire in-game. The
+		# legacy `lines` / `warm_lines` / `warm_world_lines` arrays above stay
+		# as the no-tree fallback so absolutely nothing regresses.
+		# COMPOUND (run 11 — schedule): forages at the treeline at dawn (the
+		# marshmint she eulogizes in her morning line is at the forest edge),
+		# then back to her hut for the rest of the day.
+		"schedule":[Vector3(-7.5, 0, -7.5), Vector3(-3.0, 0, -5.0), Vector3(-3.0, 0, -4.4), Vector3(-3.0, 0, -5.0)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Lyra hums and
+		# talks to her plants. Interval 25–40s: she's contemplative.
+		"bark_lines":[
 		"Feverfew dries best on the east wall. Mother was right.",
 		"Hmm. This batch smells of the deep wood. Strong.",
 		"Three pinches, not two. Always three.",
 		"The meadow iris is early this year. Rain's coming.",
 		"These roots won't grind themselves… actually, let me check.",
 		"Poultice, poultice, tincture, poultice. Busy season.",
-	 ],
-	 "bark_min":25.0, "bark_max":40.0,
-	 "use_json_dialogue":true},
+		],
+		"bark_min":25.0, "bark_max":40.0,
+		"use_json_dialogue":true},
 	{"name":"Innkeeper Bram",    "role":"inn",     "pos":Vector3( 10,  0, -2), "tint":Color(0.8,0.55,0.30),
-	 # COMPOUND (run 19 — Builder): swap the legacy "pull up a stool" line for
-	 # the Bram-issued bounty pitch. Bram's role `inn` was QUEST-BLANK in
-	 # WorldBuilder runs 1-18 — the Accept Quest button never appeared on his
-	 # dialogue panel because `_quest_for_role("inn")` returned `{}`. With
-	 # World.QUEST_CATALOG run-19 entry `wolf_heart_for_bram`, the resolver
-	 # now hits, and `line` is the offer text shown when the player opens
-	 # dialogue. Pattern matches Mara's ear bounty, Lyra's pelt fetch, Roan's
-	 # fang bounty, and Hala's wolf-form drill. Old "pull up a stool" line
-	 # preserved as `lines[0]` so it still cycles in the time-of-day pool.
-	 "line":"Wolves spoil the bards' songs. Bring me 3 wolf hearts and the deep barrel's yours.",
-	 "lines":[
+		# COMPOUND (run 19 — Builder): swap the legacy "pull up a stool" line for
+		# the Bram-issued bounty pitch. Bram's role `inn` was QUEST-BLANK in
+		# WorldBuilder runs 1-18 — the Accept Quest button never appeared on his
+		# dialogue panel because `_quest_for_role("inn")` returned `{}`. With
+		# World.QUEST_CATALOG run-19 entry `wolf_heart_for_bram`, the resolver
+		# now hits, and `line` is the offer text shown when the player opens
+		# dialogue. Pattern matches Mara's ear bounty, Lyra's pelt fetch, Roan's
+		# fang bounty, and Hala's wolf-form drill. Old "pull up a stool" line
+		# preserved as `lines[0]` so it still cycles in the time-of-day pool.
+		"line":"Wolves spoil the bards' songs. Bring me 3 wolf hearts and the deep barrel's yours.",
+		"lines":[
 		"*polishes a mug* — Stew's on. Pull up a stool, rest your bones.",
 		"Bards lie about half their songs. The other half are mine.",
 		"Best ale in three valleys. The other two valleys have no ale, mind.",
 		"Bed's warm. Fire's banked. Stay if you've nowhere safer.",
-	 ],
-	 # COMPOUND (run 19 — Builder): Bram's `warm_flag` tier — Tier 2 in
-	 # NPC.gd's dialogue stack, fires above his existing memory tier (Tier
-	 # 5, run 16). `nights_quiet` is set as the npc_flag on the
-	 # wolf_heart_for_bram consequence, so these lines unlock the moment
-	 # that quest turns in. Promotes Bram from a memory-only NPC (run 16)
-	 # to a full warm_flag + memory NPC — same dialogue depth as Maeve.
-	 # Bram's village role is the rumor exchange: when the wolves quiet,
-	 # he hears the SONG come back to the road first. Lines lean on the
-	 # bards-and-mead motif from his existing `lines` (THEME §7 "voice:
-	 # warm gravitas") so the warm tier reads as the SAME Bram, just
-	 # warmer — not a different character. Tier 2 (warm_flag) ranks above
-	 # tier 5 (memory) so once the quest is in, returning patrons read the
-	 # warm lines first; on warm_flag miss the memory tier still fires for
-	 # the cold-rep loop.
-	 "warm_flag":"nights_quiet",
-	 "warm_lines":[
+		],
+		# COMPOUND (run 19 — Builder): Bram's `warm_flag` tier — Tier 2 in
+		# NPC.gd's dialogue stack, fires above his existing memory tier (Tier
+		# 5, run 16). `nights_quiet` is set as the npc_flag on the
+		# wolf_heart_for_bram consequence, so these lines unlock the moment
+		# that quest turns in. Promotes Bram from a memory-only NPC (run 16)
+		# to a full warm_flag + memory NPC — same dialogue depth as Maeve.
+		# Bram's village role is the rumor exchange: when the wolves quiet,
+		# he hears the SONG come back to the road first. Lines lean on the
+		# bards-and-mead motif from his existing `lines` (THEME §7 "voice:
+		# warm gravitas") so the warm tier reads as the SAME Bram, just
+		# warmer — not a different character. Tier 2 (warm_flag) ranks above
+		# tier 5 (memory) so once the quest is in, returning patrons read the
+		# warm lines first; on warm_flag miss the memory tier still fires for
+		# the cold-rep loop.
+		"warm_flag":"nights_quiet",
+		"warm_lines":[
 		"Three hearts to the hearth — and the bards finished their set last night, first time in months.",
 		"My deep barrel's yours, friend. Pour heavy; the howls won't drown the lute now.",
 		"Fire's high and the door's open later these evenings. Your work — sit.",
 		"Even past midnight the singing carries to the road. Quiet enough now. Stay safe out there.",
-	 ],
-	 # COMPOUND (run 10 — third JSON opt-in): Bram joins Maeve & Edda on the
-	 # JSON-tree resolver. `data/dialogue/innkeeper_bram.json` carries 15 keys
-	 # including all four boss-state lines (the Long Lantern is the village's
-	 # rumor exchange; he learns of the Warlord before Edda sometimes), the
-	 # warmest `low_health_player` line in the village ("Sit. SIT. *guides you
-	 # to the bench* — No coin tonight"), and the `honeysong_eve` festival
-	 # hook. With Boss.gd's run-10 wire of `seen_warlord` / `warlord_dead`,
-	 # all THREE opted-in NPCs now speak distinct boss_alive AND boss_slain
-	 # lines on the same world tick — Maeve grieves the Whisperwood, Edda
-	 # grieves the saber she forged, Bram pours without being asked. The
-	 # variants above stay as the legacy fallback so nothing regresses.
-	 # COMPOUND (run 11 — schedule): sweeps the doorstep at dawn, peak
-	 # service in the evening when Mara joins him for a drink.
-	 "schedule":[Vector3( 9.4, 0, -1.0), Vector3(10.0, 0, -2.0), Vector3( 9.0, 0, -2.0), Vector3(10.0, 0, -2.5)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Bram talks to
-	 # himself about the inn, ale, and gossip. Interval 22–35s: publican rhythm.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 10 — third JSON opt-in): Bram joins Maeve & Edda on the
+		# JSON-tree resolver. `data/dialogue/innkeeper_bram.json` carries 15 keys
+		# including all four boss-state lines (the Long Lantern is the village's
+		# rumor exchange; he learns of the Warlord before Edda sometimes), the
+		# warmest `low_health_player` line in the village ("Sit. SIT. *guides you
+		# to the bench* — No coin tonight"), and the `honeysong_eve` festival
+		# hook. With Boss.gd's run-10 wire of `seen_warlord` / `warlord_dead`,
+		# all THREE opted-in NPCs now speak distinct boss_alive AND boss_slain
+		# lines on the same world tick — Maeve grieves the Whisperwood, Edda
+		# grieves the saber she forged, Bram pours without being asked. The
+		# variants above stay as the legacy fallback so nothing regresses.
+		# COMPOUND (run 11 — schedule): sweeps the doorstep at dawn, peak
+		# service in the evening when Mara joins him for a drink.
+		"schedule":[Vector3( 9.4, 0, -1.0), Vector3(10.0, 0, -2.0), Vector3( 9.0, 0, -2.0), Vector3(10.0, 0, -2.5)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Bram talks to
+		# himself about the inn, ale, and gossip. Interval 22–35s: publican rhythm.
+		"bark_lines":[
 		"Mug's clean. Mug's always clean. That's the standard.",
 		"Three valleys, three ales, one Bram. That's the legend.",
 		"Fire needs a log. Fire always needs a log.",
 		"Roan looked worried this morning. I'll pull him an extra.",
 		"Trade's good when the road's safe. Road's been good lately.",
 		"Maeve ordered chamomile again. Worried woman drinks chamomile.",
-	 ],
-	 "bark_min":22.0, "bark_max":35.0,
+		],
+		"bark_min":22.0, "bark_max":35.0,
 	# run-35: relationship tier lines (score >= 2).
 	"relationship_min":2,
 	"relationship_lines":[
@@ -600,254 +600,254 @@ const NPCS = [
    "Bram never forgets a kind gesture. Nor do his prices.",
    "A kind hand opens more doors than a full purse. You've both.",
 	],
-	 # COMPOUND (run 16 — Builder): visit-memory tier. Bram is the village
-	 # rumor-exchange — by the third pull-up he's calling you a regular.
-	 # Threshold 3 mirrors Maeve so cross-NPC pacing matches; tune individual
-	 # NPCs up or down as authored relationships tighten or loosen.
-	 "memory_visits_min":3,
-	 "memory_lines":[
+		# COMPOUND (run 16 — Builder): visit-memory tier. Bram is the village
+		# rumor-exchange — by the third pull-up he's calling you a regular.
+		# Threshold 3 mirrors Maeve so cross-NPC pacing matches; tune individual
+		# NPCs up or down as authored relationships tighten or loosen.
+		"memory_visits_min":3,
+		"memory_lines":[
 		"Same stool by the window again? Mug's already on its way, friend.",
 		"You're a regular now. I keep the second-best chair clear at midday.",
 		"Sundown brings my favorite drinker back. Stew's better tonight — try it.",
 		"Fire's low, but I'd never bank it before YOU walked in. Sit, sit.",
-	 ],
-	 "defense_lines": [
+		],
+		"defense_lines": [
 		"Drinks are on me tonight!",
 		"I've never seen fighting like that.",
 		"The whole inn saw what you did.",
-	 ],
-	 "use_json_dialogue":true},
+		],
+		"use_json_dialogue":true},
 	{"name":"Stablemaster Roan", "role":"stable",  "pos":Vector3(-10,  0, -2), "tint":Color(0.55,0.45,0.25),
-	 # COMPOUND (run 17): `line` becomes the bounty pitch now that Roan is a
-	 # questgiver (`wolf_fang_for_roan`, role `stable`). Pattern matches Mara's
-	 # ear bounty and Lyra's pelt fetch — `line` is the offer text shown when
-	 # the player accepts; `lines` remain the time-of-day greetings the player
-	 # hears between accepting and turning in.
-	 "line":"Wolves nip my mares again. Bring me 5 wolf fangs and the road's safer.",
-	 "lines":[
+		# COMPOUND (run 17): `line` becomes the bounty pitch now that Roan is a
+		# questgiver (`wolf_fang_for_roan`, role `stable`). Pattern matches Mara's
+		# ear bounty and Lyra's pelt fetch — `line` is the offer text shown when
+		# the player accepts; `lines` remain the time-of-day greetings the player
+		# hears between accepting and turning in.
+		"line":"Wolves nip my mares again. Bring me 5 wolf fangs and the road's safer.",
+		"lines":[
 		"Faster mounts, fewer ambushes. Pick your steed before sun's up.",
 		"I trust my horses more than most men. They've never lied to me.",
 		"Sun's down — saddle up only if your errand can't wait.",
 		"Riding by moonlight? Bold. Or fool. Or both. Take the gray mare.",
-	 ],
-	 # COMPOUND (run 17): Roan's `warm_flag` tier — Tier 2 in NPC.gd's
-	 # dialogue stack, fires above his existing run-8 faction-tier (Tier 4).
-	 # `first_bounty_done` is set as the npc_flag on the wolf_fang_for_roan
-	 # consequence, so these lines unlock the moment that quest turns in.
-	 # Promotes Roan from a faction-only NPC (run 8) to a full faction +
-	 # warm_flag NPC — same dialogue depth as Mara (`good_customer`) and
-	 # Lyra (`trusts_player`). Composes with run-6 wolf spawn density
-	 # (3 → 2 wolves) and run-7/8 adaptive pacing on the surviving pack.
-	 "warm_flag":"first_bounty_done",
-	 "warm_lines":[
+		],
+		# COMPOUND (run 17): Roan's `warm_flag` tier — Tier 2 in NPC.gd's
+		# dialogue stack, fires above his existing run-8 faction-tier (Tier 4).
+		# `first_bounty_done` is set as the npc_flag on the wolf_fang_for_roan
+		# consequence, so these lines unlock the moment that quest turns in.
+		# Promotes Roan from a faction-only NPC (run 8) to a full faction +
+		# warm_flag NPC — same dialogue depth as Mara (`good_customer`) and
+		# Lyra (`trusts_player`). Composes with run-6 wolf spawn density
+		# (3 → 2 wolves) and run-7/8 adaptive pacing on the surviving pack.
+		"warm_flag":"first_bounty_done",
+		"warm_lines":[
 		"Five fangs as promised — that bounty's coin is yours, and the road thanks you.",
 		"You proved you can ride hard and fight harder. Pick any saddle on the rack.",
 		"Pippin nuzzled me at sunset — first time since spring. Your work, friend.",
 		"The mares slept clean through the night. I owed you a tip; here's two.",
-	 ],
-	 # COMPOUND (run 21 — Builder): warm_world_flag tier (Tier 3 in NPC.gd's
-	 # dialogue stack, between Tier 2 warm_flag and Tier 4 warm_faction).
-	 # Reads `bandits_emergent` — the world flag set by World.update_bandit_
-	 # pressure() when the inverse-derived bandit boldness crosses 0.40.
-	 # Roan is the natural narrator for this tier: he's the road-traveler
-	 # who saddles the player every visit, and his existing Tier 4 already
-	 # speaks "fewer howls means fewer flinches on the road" — so when those
-	 # flinches drop AND opportunistic bandits creep in, Roan's voice is
-	 # what tells the player the road's NEW shape. Composes with the
-	 # existing 4-tier stack: warm_flag (first_bounty_done) wins on Roan's
-	 # first wolf bounty turn-in; warm_world_flag (bandits_emergent) wins
-	 # when the player has tamed enough of the woods that bandits surface;
-	 # warm_faction_id (dire_wolves < 0.5) wins as the wolves recede; legacy
-	 # `lines` time-of-day greetings run as default. Note these lines speak
-	 # to a threat that's EMERGING — they precede actual bandit enemies on
-	 # the map (the road-spawn pattern is the next Builder run's hook).
-	 # That ordering is intentional: dialogue plants the seed BEFORE the
-	 # first bandit ambush, so the player has narrative permission to
-	 # expect the encounter rather than being blindsided.
-	 "warm_world_flag":"bandits_emergent",
-	 "warm_world_lines":[
+		],
+		# COMPOUND (run 21 — Builder): warm_world_flag tier (Tier 3 in NPC.gd's
+		# dialogue stack, between Tier 2 warm_flag and Tier 4 warm_faction).
+		# Reads `bandits_emergent` — the world flag set by World.update_bandit_
+		# pressure() when the inverse-derived bandit boldness crosses 0.40.
+		# Roan is the natural narrator for this tier: he's the road-traveler
+		# who saddles the player every visit, and his existing Tier 4 already
+		# speaks "fewer howls means fewer flinches on the road" — so when those
+		# flinches drop AND opportunistic bandits creep in, Roan's voice is
+		# what tells the player the road's NEW shape. Composes with the
+		# existing 4-tier stack: warm_flag (first_bounty_done) wins on Roan's
+		# first wolf bounty turn-in; warm_world_flag (bandits_emergent) wins
+		# when the player has tamed enough of the woods that bandits surface;
+		# warm_faction_id (dire_wolves < 0.5) wins as the wolves recede; legacy
+		# `lines` time-of-day greetings run as default. Note these lines speak
+		# to a threat that's EMERGING — they precede actual bandit enemies on
+		# the map (the road-spawn pattern is the next Builder run's hook).
+		# That ordering is intentional: dialogue plants the seed BEFORE the
+		# first bandit ambush, so the player has narrative permission to
+		# expect the encounter rather than being blindsided.
+		"warm_world_flag":"bandits_emergent",
+		"warm_world_lines":[
 		"Mares are calm — too calm. Heard a saddle-bell on the south road last night that wasn't ours.",
 		"Three travelers came in light. Said they paid a 'toll' to a hooded fellow at the crossroads. We don't keep tollkeepers here, friend.",
 		"Quiet woods bring quieter trouble. Keep one eye on the brush when you ride out at dusk.",
 		"Wolves used to chase off the wrong sort. Now? Watch the leather-cloaked ones. They smell coin where coin used to be safe.",
-	 ],
-	 # COMPOUND (run 29 — Builder, Backlog #9): road-defense cleared tier.
-	 # warmed_world_flag fires ONLY when warm_world_flag (bandits_emergent)
-	 # is NOT active — so these lines play precisely when the road has been
-	 # actively defended (score >= 3 kills → bandit_road_cleared flag) but
-	 # bandits have NOT yet emerged at boldness >= 0.40. The player has
-	 # pre-empted the threat. THEME §1 consequence: Roan notices.
-	 # Four time-of-day bucket lines (morning/midday/evening/night) so
-	 # each visit gets a fresh voice. THEME §12: Roan's gratitude shifts
-	 # with the light — morning relief, midday confidence, evening hope,
-	 # night rest.
-	 "warmed_world_flag":"bandit_road_cleared",
-	 "warmed_world_lines":[
+		],
+		# COMPOUND (run 29 — Builder, Backlog #9): road-defense cleared tier.
+		# warmed_world_flag fires ONLY when warm_world_flag (bandits_emergent)
+		# is NOT active — so these lines play precisely when the road has been
+		# actively defended (score >= 3 kills → bandit_road_cleared flag) but
+		# bandits have NOT yet emerged at boldness >= 0.40. The player has
+		# pre-empted the threat. THEME §1 consequence: Roan notices.
+		# Four time-of-day bucket lines (morning/midday/evening/night) so
+		# each visit gets a fresh voice. THEME §12: Roan's gratitude shifts
+		# with the light — morning relief, midday confidence, evening hope,
+		# night rest.
+		"warmed_world_flag":"bandit_road_cleared",
+		"warmed_world_lines":[
 		"South road's been clean since you patrolled it. Pippin's been past the gate twice this morning.",
 		"Heard you put down more than a few on the road. The merchants ride easier. So do I.",
 		"The hooded ones haven't shown in days. That's your work, isn't it. Good work.",
 		"Quietest night in a fortnight. Mares slept straight through. Whatever you did on that road — keep it up.",
-	 ],
-	 # COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Originally
-	 # this comment claimed Roan had "no warm_flag and no warm_world_flag"
-	 # — that was true through run 16. Run 17 added warm_flag, run 21 added
-	 # warm_world_flag. Roan is now a 4-TIER NPC (memory + warm_flag +
-	 # warm_world_flag + faction-pressure) — the densest dialogue stack in
-	 # the village. The faction-pressure tier still smoke-tests the
-	 # 4-tier dialogue stack as the LOWEST-priority warm channel. Threshold 0.5 mirrors the run-6 wolf-spawn first
-	 # cliff (`pelt_for_lyra` drops `dire_wolves` 0.5 → 0.4 on completion),
-	 # so Roan starts speaking the moment any wolf-reducing quest ships.
-	 # Pairs with run-6 spawn density and run-7 adaptive cooldown — the
-	 # same scalar now drives Roan dialogue + wolf count + wolf pacing,
-	 # closing the FIVE-consumer compound on `dire_wolves` (NPC.gd reads
-	 # it twice — Maeve via `whisperwood_goblins`, Roan via this — and
-	 # WorldBuilder + Enemy.gd each read it once).
-	 "warm_faction_id":"dire_wolves",
-	 "warm_faction_below":0.5,
-	 "warm_faction_lines":[
+		],
+		# COMPOUND (run 8): faction-pressure tier on `dire_wolves`. Originally
+		# this comment claimed Roan had "no warm_flag and no warm_world_flag"
+		# — that was true through run 16. Run 17 added warm_flag, run 21 added
+		# warm_world_flag. Roan is now a 4-TIER NPC (memory + warm_flag +
+		# warm_world_flag + faction-pressure) — the densest dialogue stack in
+		# the village. The faction-pressure tier still smoke-tests the
+		# 4-tier dialogue stack as the LOWEST-priority warm channel. Threshold 0.5 mirrors the run-6 wolf-spawn first
+		# cliff (`pelt_for_lyra` drops `dire_wolves` 0.5 → 0.4 on completion),
+		# so Roan starts speaking the moment any wolf-reducing quest ships.
+		# Pairs with run-6 spawn density and run-7 adaptive cooldown — the
+		# same scalar now drives Roan dialogue + wolf count + wolf pacing,
+		# closing the FIVE-consumer compound on `dire_wolves` (NPC.gd reads
+		# it twice — Maeve via `whisperwood_goblins`, Roan via this — and
+		# WorldBuilder + Enemy.gd each read it once).
+		"warm_faction_id":"dire_wolves",
+		"warm_faction_below":0.5,
+		"warm_faction_lines":[
 		"The mares slept through the night, friend. First time in a season — that's your doing.",
 		"Look — Pippin's grazing past the fence again. He only does that when the woods are kind.",
 		"Saddle's lighter at dusk these days. Fewer howls means fewer flinches on the road.",
 		"Quiet enough to hear the owls now. The wolves used to drown them out. Ride safe.",
-	 ],
-	 # COMPOUND (run 11 — schedule): brushes a horse outside the stable in
-	 # the morning, leads the team in for the evening.
-	 "schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Roan talks to
-	 # his horses and the road. Interval 20–34s: stable work is constant.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 11 — schedule): brushes a horse outside the stable in
+		# the morning, leads the team in for the evening.
+		"schedule":[Vector3(-9.0, 0, -1.0), Vector3(-10.0, 0, -2.0), Vector3(-10.0, 0, -3.0), Vector3(-10.0, 0, -2.0)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Roan talks to
+		# his horses and the road. Interval 20–34s: stable work is constant.
+		"bark_lines":[
 		"Easy, Pippin. Easy. Road's still quiet.",
 		"Good mare. Good. You heard the wolves last night too, hm?",
 		"South road's dry. That'll be mud by sundown — felt the air.",
 		"Saddle this side, brush that side. Order matters.",
 		"Three travelers came through smelling of fear. I said nothing.",
 		"Horses know. Before men know, horses know.",
-	 ],
-	 "bark_min":20.0, "bark_max":34.0,
-	 "use_json_dialogue":true},
+		],
+		"bark_min":20.0, "bark_max":34.0,
+		"use_json_dialogue":true},
 	{"name":"Trainer Hala",      "role":"trainer", "pos":Vector3(  0,  0, -10), "tint":Color(1.0,0.65,0.20),
-	 # COMPOUND (run 18 — Builder): swap the legacy "spirit" koan for the
-	 # Hala-issued bounty pitch. Same role used to query World.QUEST_CATALOG
-	 # via `_quest_for_role("trainer")` → `wolf_form_with_hala`, so the
-	 # bounty drops onto the talk-line the moment the player opens dialogue.
-	 # Old spirit line preserved as `lines[0]` so it still cycles in the
-	 # generic-talk pool.
-	 "line":"Wolves still circle the road. Take down 4 — you'll learn the form by doing.",
-	 "lines":[
+		# COMPOUND (run 18 — Builder): swap the legacy "spirit" koan for the
+		# Hala-issued bounty pitch. Same role used to query World.QUEST_CATALOG
+		# via `_quest_for_role("trainer")` → `wolf_form_with_hala`, so the
+		# bounty drops onto the talk-line the moment the player opens dialogue.
+		# Old spirit line preserved as `lines[0]` so it still cycles in the
+		# generic-talk pool.
+		"line":"Wolves still circle the road. Take down 4 — you'll learn the form by doing.",
+		"lines":[
 		"Each level, your spirit grows. Pour it into what you trust.",
 		"Strength is loud. Mastery is quiet. Choose.",
 		"Tired? Train tired. The road won't ask if you slept.",
 		"Even shadow needs practice. Feet on the boards, breathe.",
-	 ],
-	 # COMPOUND (run 18 — Builder): warm_flag tier. After 4 wolves fall and
-	 # `wolf_form_taught` is set, Hala's tone shifts from "prove yourself"
-	 # to "I saw it in you" — the rarest flavor for a teacher who never
-	 # gushes. Tier 2 (warm_flag) ranks above tier 5 (memory) so once the
-	 # quest is in, returning trains read the warm lines first; on warm_flag
-	 # miss the memory tier still fires for the cold-rep loop.
-	 "warm_flag":"wolf_form_taught",
-	 "warm_lines":[
+		],
+		# COMPOUND (run 18 — Builder): warm_flag tier. After 4 wolves fall and
+		# `wolf_form_taught` is set, Hala's tone shifts from "prove yourself"
+		# to "I saw it in you" — the rarest flavor for a teacher who never
+		# gushes. Tier 2 (warm_flag) ranks above tier 5 (memory) so once the
+		# quest is in, returning trains read the warm lines first; on warm_flag
+		# miss the memory tier still fires for the cold-rep loop.
+		"warm_flag":"wolf_form_taught",
+		"warm_lines":[
 		"Form held. Few I've taught hold it under teeth. Few.",
 		"You moved like the trees today. Wolves can't read trees. Good.",
 		"Old Hala saw a hero today. Don't make me write it down.",
 		"Walk lighter, you. The forest hears it. Ride safe.",
-	 ],
-	 # COMPOUND (run 11 — schedule): never leaves the training field. Slight
-	 # position shifts at evening (lantern-side practice) and night (watch).
-	 "schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)],
-	 # REFINE: character — ambient barks THEME §12 MOTION & LIFE. Hala barks
-	 # drill counts and koans at the air. Interval 15–26s: a trainer never rests.
-	 "bark_lines":[
+		],
+		# COMPOUND (run 11 — schedule): never leaves the training field. Slight
+		# position shifts at evening (lantern-side practice) and night (watch).
+		"schedule":[Vector3( 0.0, 0, -10.0), Vector3( 0.0, 0, -10.0), Vector3(-1.0, 0, -10.0), Vector3( 1.0, 0,  -9.6)],
+		# REFINE: character — ambient barks THEME §12 MOTION & LIFE. Hala barks
+		# drill counts and koans at the air. Interval 15–26s: a trainer never rests.
+		"bark_lines":[
 		"One. Two. Three. HOLD. Again.",
 		"Footwork is thinking. Slow feet, slow mind.",
 		"You breathe out on the strike. Always out. Always.",
 		"Pivot on the ball. Never the heel. Ball.",
 		"A wolf doesn't telegraph. Neither should you.",
 		"AGAIN. From the hip, not the shoulder. AGAIN.",
-	 ],
-	 "bark_min":15.0, "bark_max":26.0,
-	 # COMPOUND (run 16 — Builder): visit-memory tier. Hala is THE skill
-	 # mentor — by the third session her tone shifts from generic koan to
-	 # named-student attention. Threshold 3, same as the others, so all
-	 # three memory-aware NPCs warm in the same visit cadence (a player
-	 # making the village rounds three times unlocks all three at once).
-	 "memory_visits_min":3,
-	 "memory_lines":[
+		],
+		"bark_min":15.0, "bark_max":26.0,
+		# COMPOUND (run 16 — Builder): visit-memory tier. Hala is THE skill
+		# mentor — by the third session her tone shifts from generic koan to
+		# named-student attention. Threshold 3, same as the others, so all
+		# three memory-aware NPCs warm in the same visit cadence (a player
+		# making the village rounds three times unlocks all three at once).
+		"memory_visits_min":3,
+		"memory_lines":[
 		"Back already, eh? Good. Drills don't care if you're tired — show me.",
 		"You've been here enough to know the form. Today: PRESSURE. Faster.",
 		"Last light's the best teacher. You came back for a reason — show it.",
 		"Past curfew, training under stars. I knew you for the type. Begin.",
-	 ],
-	 "use_json_dialogue":true},
+		],
+		"use_json_dialogue":true},
 	# THEME §4 — warrior.glb (CC-BY): armoured guard silhouette reads from 30m.
 	# North gate placement — first NPC the player sees. THEME §12: gate patrol schedule.
 	{"name":"Village Guard",    "role":"guard",   "pos":Vector3(  0,  0,  18), "tint":Color(0.55,0.55,0.65),
-	 "line":"Stay close to the village walls — the forest has ears tonight.",
-	 "lines":[
+		"line":"Stay close to the village walls — the forest has ears tonight.",
+		"lines":[
 		"Stay close to the village walls — the forest has ears tonight.",
 		"Gate's held since dawn. Your road look clear?",
 		"I count my rounds by lantern-lights. Seven lanterns, seven rounds.",
 		"Rest well, friend. I'll keep watch.",
-	 ],
-	 "warm_flag":"first_quest_done",
-	 "warm_lines":[
+		],
+		"warm_flag":"first_quest_done",
+		"warm_lines":[
 		"The wood's quieter since your errand. Makes my rounds easier. Thank you.",
 		"Fewer shadows at the treeline tonight. Word travels — so does gratitude.",
 		"You made the night shorter for all of us. Gate's yours to pass, always.",
 		"Seven lanterns, and none of them flickered last night. First time in weeks.",
-	 ],
-	 "schedule":[
+		],
+		"schedule":[
 		Vector3( 0.0, 0,  18.0),  # morning: north gate post
 		Vector3( 0.0, 0,  16.0),  # midday: patrol south
 		Vector3( 0.0, 0,  17.0),  # evening: mid-gate
 		Vector3( 0.0, 0,  18.5),  # night: outer gate
-	 ],
-	 "bark_lines":[
+		],
+		"bark_lines":[
 		"All clear on the north. For now.",
 		"Seven rounds since midnight. Still counting.",
 		"Wind's picking up from the Whisperwood. Watch the treeline.",
 		"Gate holds. Village sleeps. Guard stands. Order of things.",
 		"You hear that? … No. Good. That's the sound of a quiet night.",
-	 ],
-	 "bark_min":25.0, "bark_max":40.0},
+		],
+		"bark_min":25.0, "bark_max":40.0},
 	# THEME §4 — worker_girl.glb (CC-BY): farmer silhouette reads from 30m.
 	# East fields placement. THEME §12: field→market→home schedule. memory_visits_min=2.
 	{"name":"Farm Worker",      "role":"villager","pos":Vector3( 18,  0,  5), "tint":Color(0.6,0.5,0.30),
-	 "line":"The harvest's thin when the goblins raid our stores. Stay sharp.",
-	 "lines":[
+		"line":"The harvest's thin when the goblins raid our stores. Stay sharp.",
+		"lines":[
 		"The harvest's thin when the goblins raid our stores. Stay sharp.",
 		"Soil's good this season, if I can keep the pests away. Two-legged ones, mostly.",
 		"Evening already? The rows still need another pass.",
 		"No rest for the fields. They grow at night whether I watch or not.",
-	 ],
-	 "warm_flag":"first_quest_done",
-	 "warm_lines":[
+		],
+		"warm_flag":"first_quest_done",
+		"warm_lines":[
 		"I slept without nightmares last night. First time in months. Thank you.",
 		"The stores are fuller since you drove them off. We'll eat well this winter.",
 		"Children played past the fence today. They didn't used to do that.",
 		"Even the birds are louder now. Field feels alive again.",
-	 ],
-	 "memory_visits_min":2,
-	 "memory_lines":[
+		],
+		"memory_visits_min":2,
+		"memory_lines":[
 		"You pass this way often. The field thanks you for the company.",
 		"Back again? I'll save you the corner root — it's the sweetest.",
 		"Three visits now? Most folks don't notice the farmer. You do. Appreciated.",
 		"Come every day and I'll teach you which rows need turning. Honest work.",
-	 ],
-	 "schedule":[
+		],
+		"schedule":[
 		Vector3( 20.0, 0,  6.0),  # morning: east field work
 		Vector3( 14.0, 0,  2.0),  # midday: market
 		Vector3( 18.0, 0,  5.0),  # evening: field last check
 		Vector3( 16.0, 0,  3.0),  # night: home
-	 ],
-	 "bark_lines":[
+		],
+		"bark_lines":[
 		"These rows don't turn themselves.",
 		"Good soil is quiet soil. This soil's been too quiet lately.",
 		"Root vegetables first, then the greens. Always.",
 		"Rain's overdue. I've started counting clouds.",
 		"Harvest comes whether you're ready or not. I'm always ready.",
-	 ],
-	 "bark_min":20.0, "bark_max":35.0},
+		],
+		"bark_min":20.0, "bark_max":35.0},
 	# run-31 (Builder) — Wandering Herbalist uses maeve.glb (CC-BY, previously unused).
 	# THEME §12 MOTION & LIFE: she never stays in one spot — wide day-arc from
 	# the Whisperwood fringe at morning to the village well at midday and back.
@@ -856,43 +856,43 @@ const NPCS = [
 	# Compounds: NPC memory (memory_visits_min=2), relationship tier, ambient barks,
 	# and the cave_delver achievement (she's the one who tells you to go to the caves).
 	{"name":"Wandering Herbalist", "role":"alchemy", "pos":Vector3(-22, 0, -8),
-	 "tint":Color(0.55, 0.75, 0.45),
-	 "line":"The forest gives freely if you know how to listen. Most folk don't.",
-	 "lines":[
+		"tint":Color(0.55, 0.75, 0.45),
+		"line":"The forest gives freely if you know how to listen. Most folk don't.",
+		"lines":[
 		"The forest gives freely if you know how to listen. Most folk don't.",
 		"I've walked this edge since before the gate was built. It remembers me.",
 		"The Crystal Caves hum differently at dawn. Something is awake in there.",
 		"I trade in roots and restoratives. Not weapons. Never weapons.",
-	 ],
-	 "warm_flag":"first_quest_done",
-	 "warm_lines":[
+		],
+		"warm_flag":"first_quest_done",
+		"warm_lines":[
 		"Word travels fast in a small forest. They say you've been busy.",
 		"The wolves are quieter east of the stone. You did that, didn't you.",
 		"Here — a tincture of ironleaf. For the road ahead.",
 		"I've seen a dozen young wanderers pass through. You feel different.",
-	 ],
-	 "use_json_dialogue":false,
-	 "memory_visits_min":2,
-	 "memory_lines":[
+		],
+		"use_json_dialogue":false,
+		"memory_visits_min":2,
+		"memory_lines":[
 		"You seek me out. The forest likes you for that.",
 		"Third time we've met on this path. Fate or habit — both are good signs.",
 		"You come often. Take this dried moonsprig — it won't keep past full moon.",
 		"I've started leaving a mark on the birch when I've spoken with you.",
-	 ],
-	 "schedule":[
-		 Vector3(-30.0, 0, -18.0),  # morning: deep Whisperwood fringe
-		 Vector3(-14.0, 0,  -4.0),  # midday: near village well
-		 Vector3(-22.0, 0,  -8.0),  # evening: forest edge camp
-		 Vector3(-18.0, 0, -12.0),  # night: dark path near cave approach
-	 ],
-	 "bark_lines":[
+		],
+		"schedule":[
+			Vector3(-30.0, 0, -18.0),  # morning: deep Whisperwood fringe
+			Vector3(-14.0, 0,  -4.0),  # midday: near village well
+			Vector3(-22.0, 0,  -8.0),  # evening: forest edge camp
+			Vector3(-18.0, 0, -12.0),  # night: dark path near cave approach
+		],
+		"bark_lines":[
 		"Roots before bark. Always roots first.",
 		"The cave breathes differently today. Mind your step.",
 		"Moonsprig grows best where the light doesn't quite reach.",
 		"I count five wolf-paths through here. Down from twelve last month.",
 		"Speak quietly near the crystal formations. They carry sound.",
-	 ],
-	 "bark_min":18.0, "bark_max":32.0},
+		],
+		"bark_min":18.0, "bark_max":32.0},
 ]
 
 # ── Briarwood Hub exports (Briarwood Hub Builder v1) ─────────────────────────
@@ -1103,11 +1103,11 @@ const SHOP_POOLS := {
 
 const CRAFT_RECIPES := [
 	{"id":"craft_hp_potion_s","name":"Brew Health Potion (S)",
-	 "inputs":[{"id":"herb","qty":2}],"outputs":[{"id":"hp_potion_s","qty":1}]},
+		"inputs":[{"id":"herb","qty":2}],"outputs":[{"id":"hp_potion_s","qty":1}]},
 	{"id":"craft_mp_potion_s","name":"Brew Mana Potion (S)",
-	 "inputs":[{"id":"herb","qty":1},{"id":"rope","qty":1}],"outputs":[{"id":"mp_potion_s","qty":1}]},
+		"inputs":[{"id":"herb","qty":1},{"id":"rope","qty":1}],"outputs":[{"id":"mp_potion_s","qty":1}]},
 	{"id":"craft_iron_bundle","name":"Forge Iron Ingot",
-	 "inputs":[{"id":"wood","qty":2}],"outputs":[{"id":"iron_ingot","qty":1}]},
+		"inputs":[{"id":"wood","qty":2}],"outputs":[{"id":"iron_ingot","qty":1}]},
 ]
 
 func _ready() -> void:
@@ -1906,7 +1906,7 @@ func _hide_baked_blades(root: Node) -> void:
 # ============================================================================
 func _build_lanterns() -> void:
 	var positions = [Vector3(8, 0, 8), Vector3(-8, 0, 8), Vector3(8, 0, -8), Vector3(-8, 0, -8),
-					 Vector3(12, 0, 0), Vector3(-12, 0, 0), Vector3(0, 0, 12), Vector3(0, 0, -12)]
+						Vector3(12, 0, 0), Vector3(-12, 0, 0), Vector3(0, 0, 12), Vector3(0, 0, -12)]
 	for p in positions:
 		_make_lantern(p)
 
@@ -4600,7 +4600,7 @@ func _build_god_rays() -> void:
 # lock — the global sweep would keep trying to stretch the kid back to 1.80m.
 const SIZE_STANDARDS := {
 	"player":  [0.85, 0.18],   # kid-sized; [CANON-APPROVED: 2026-05-10] 1.10→0.85 (user: "still too big")
-	                           #   tol widened 0.10→0.18 so the body's capsule doesn't oscillate against the panic-key cap.
+								#   tol widened 0.10→0.18 so the body's capsule doesn't oscillate against the panic-key cap.
 	"npcs":    [1.65, 0.15],   # adult NPC; band [1.40, 1.90]
 	"pets":    [0.55, 0.25],   # fox/squirrel/owl; band [0.41, 0.69]
 	"enemies": [1.55, 0.25],   # medium default; small/elite per-kind below
@@ -4908,7 +4908,7 @@ func _build_nordic_fishing_village() -> void:
 	# Pier-arm stilt houses (one per branch that has room)
 	for i in range(mini(branch_bases.size(), branch_dirs.size())):  # FIX: minf→mini
 		var hpos := branch_bases[i] + branch_dirs[i] * _nrng.randf_range(8.0, 16.0) \
-		            + _nordic_side(branch_dirs[i]) * _nrng.randf_range(2.5, 4.5)
+					+ _nordic_side(branch_dirs[i]) * _nrng.randf_range(2.5, 4.5)
 		hpos.y   = NORDIC_WATER_Y + 0.15
 		_nordic_stilt_house(hpos, -branch_dirs[i], Vector2(6.5, 6.0))
 
@@ -5088,7 +5088,7 @@ func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void
 
 # ── MultiMesh batching helpers (Builder run 26 — perf pass) ─────────────────
 func _mm_key(mesh: Mesh, mat: Material) -> String:
-	return "%s|%s" % [str(mesh.get_rid()), str(mat.get_rid()) if mat != null else "null"]
+	return "%s|%s" % [str(mesh.get_rid()), mat != null ? str(mat.get_rid()) : "null"]
 
 func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserve: int = 64) -> void:
 	var key := _mm_key(mesh, mat)
@@ -5454,8 +5454,8 @@ func _nordic_shore_houses(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3
 		if abs(t * spacing - 18.0) < 7.0:
 			continue
 		var pos := origin + shore_dir * (t * spacing) \
-		           + pier_dir * _nrng.randf_range(4.0, 12.0) \
-		           + _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
+					+ pier_dir * _nrng.randf_range(4.0, 12.0) \
+					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
 		pos.y   = origin.y
 		var fp  := Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
 		_nordic_stilt_house(pos, -pier_dir, fp)
@@ -5517,8 +5517,8 @@ func _nordic_clutter(world_pos: Vector3) -> void:
 	else:
 		var bx := BoxMesh.new()
 		bx.size = Vector3(_nrng.randf_range(0.38, 0.70),
-		                  _nrng.randf_range(0.28, 0.52),
-		                  _nrng.randf_range(0.38, 0.70))
+							_nrng.randf_range(0.28, 0.52),
+							_nrng.randf_range(0.38, 0.70))
 		mi.mesh = bx
 		mi.material_override = MAT_WOOD(1.0)
 		mi.position.y = bx.size.y * 0.5
@@ -5564,8 +5564,8 @@ func _nordic_woodpile(world_pos: Vector3) -> void:
 	var mi := MeshInstance3D.new()
 	var bm := BoxMesh.new()
 	bm.size = Vector3(_nrng.randf_range(0.9, 1.8),
-	                  _nrng.randf_range(0.35, 0.65),
-	                  _nrng.randf_range(0.55, 1.1))
+						_nrng.randf_range(0.35, 0.65),
+						_nrng.randf_range(0.55, 1.1))
 	mi.mesh = bm
 	mi.material_override = MAT_DARK_WOOD(1.0)
 	mi.position.y = bm.size.y * 0.5
@@ -5576,7 +5576,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Fish racks
 	for i in range(10):
 		var z := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x := (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
+		var x := (_nrng.randf() < 0.5 ? -1.0 : 1.0) * _nrng.randf_range(3.0, 7.0)
 		var p := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_fish_rack(p, -pier_dir)
@@ -5584,7 +5584,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Clutter
 	for i in range(38):
 		var p := pier_start + pier_dir * _nrng.randf_range(2.0, NORDIC_PIER_LEN) \
-		         + pier_dir.rotated(Vector3.UP, PI * 0.5) * _nrng.randf_range(-6.0, 6.0)
+					+ pier_dir.rotated(Vector3.UP, PI * 0.5) * _nrng.randf_range(-6.0, 6.0)
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_clutter(p)
 
@@ -5599,7 +5599,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# Two boats alongside main pier
 	for i in range(2):
 		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
-		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
+		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((_nrng.randf() < 0.5 ? -1.0 : 1.0) * 4.5)
 		bp.y  = NORDIC_WATER_Y - 0.06
 		_nordic_boat(bp, -pier_dir)
 
@@ -5607,8 +5607,8 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 func _nordic_shore_dressing(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3) -> void:
 	for i in range(50):
 		var p := origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
-		         + pier_dir * _nrng.randf_range(3.0, 18.0) \
-		         + _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
+					+ pier_dir * _nrng.randf_range(3.0, 18.0) \
+					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
 		p.y   = origin.y
 		if _nrng.randf() < 0.40:
 			_nordic_woodpile(p)
@@ -5727,9 +5727,9 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 
 	# Signpost at start (Briarwood end) and 60% along road
 	_nordic_signpost(road_start + dir * 3.0 + side * 2.2, -dir,
-	                 "Northhaven Docks →", "← Briarwood Village")
+						"Northhaven Docks →", "← Briarwood Village")
 	_nordic_signpost(road_start + dir * (dist * 0.60) + side * 2.5, dir,
-	                 "← Briarwood", "Northhaven →")
+						"← Briarwood", "Northhaven →")
 
 # ── Road lantern post ─────────────────────────────────────────────────────────
 func _nordic_road_lantern(world_pos: Vector3) -> void:
@@ -6384,7 +6384,7 @@ func _boat_travel(player: Node3D) -> void:
 func _harbor_master_talk(player: Node3D) -> void:
 	var inv = player.get("inventory") if "inventory" in player else null
 	var has_fish := inv != null and inv.has_method("count_item") \
-	                and inv.count_item(nordic_fish_item_id) > 0
+					and inv.count_item(nordic_fish_item_id) > 0
 
 	if has_fish and inv and inv.has_method("consume_item"):
 		inv.consume_item(nordic_fish_item_id, 1)
@@ -6431,7 +6431,7 @@ func _ensure_boat_ui() -> void:
 	_boat_ui_panel.visible = false
 	_boat_ui_panel.size = Vector2(520, 260)
 	_boat_ui_panel.position = (get_viewport().get_visible_rect().size * 0.5) \
-	                          - (_boat_ui_panel.size * 0.5)
+								- (_boat_ui_panel.size * 0.5)
 	_boat_ui_layer.add_child(_boat_ui_panel)
 
 	var root := VBoxContainer.new()
@@ -7207,7 +7207,7 @@ func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> v
 	var clutter_n := int(40.0 * bw_prop_density)
 	for i in range(clutter_n):
 		var p := market + side * rng.randf_range(-18.0, 18.0) \
-		         + dir * rng.randf_range(-7.0, 10.0)
+					+ dir * rng.randf_range(-7.0, 10.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
 	# Market lanterns on a line
@@ -7357,7 +7357,7 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 	var yard_n := int(40.0 * bw_prop_density)
 	for i in range(yard_n):
 		var p := craft + side * rng.randf_range(-12.0, 12.0) \
-		         + dir * rng.randf_range(-5.0, 7.0)
+					+ dir * rng.randf_range(-5.0, 7.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
 	# Fence posts along craft yard front
@@ -7384,7 +7384,7 @@ func _build_bw_residential_ring(root: Node3D, plaza: Vector3, count: int) -> voi
 	var ring_r := 28.0
 	for i in range(count):
 		var ang := (TAU * float(i) / float(maxi(1, count))) \
-		           + rng.randf_range(-0.18, 0.18)
+					+ rng.randf_range(-0.18, 0.18)
 		var r   := rng.randf_range(ring_r * 0.85, ring_r * 1.15)
 		var p   := plaza + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
 		root.add_child(_make_bw_house(p))
@@ -7568,8 +7568,8 @@ func _make_bw_clutter(pos: Vector3, rng: RandomNumberGenerator) -> Node3D:
 	else:
 		var bx := BoxMesh.new()
 		bx.size = Vector3(rng.randf_range(0.38, 0.70),
-		                  rng.randf_range(0.28, 0.52),
-		                  rng.randf_range(0.38, 0.70))
+							rng.randf_range(0.28, 0.52),
+							rng.randf_range(0.38, 0.70))
 		mi.mesh = bx
 		mi.material_override = MAT_WOOD(1.0)
 		mi.position.y = bx.size.y * 0.5
@@ -7779,7 +7779,7 @@ func _ensure_questboard_ui() -> void:
 	_qb_panel.visible = false
 	_qb_panel.size = Vector2(760, 420)
 	_qb_panel.position = (get_viewport().get_visible_rect().size * 0.5) \
-	                     - (_qb_panel.size * 0.5)
+							- (_qb_panel.size * 0.5)
 	_qb_layer.add_child(_qb_panel)
 
 	var outer := HBoxContainer.new()
@@ -8849,7 +8849,7 @@ func _shop_refresh() -> void:
 
 	# ── For Sale list ─────────────────────────────────────────────────────────
 	var items: Array = _shop_daily_stock(_shop_kind) if shop_stock_rotation_enabled \
-	                   else SHOP_ITEMS.get(_shop_kind, [])
+						else SHOP_ITEMS.get(_shop_kind, [])
 	for it in items:
 		var id    := str(it.get("id", ""))
 		var price := int(it.get("price", 0))
@@ -10471,7 +10471,7 @@ func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, coun
 
 	# Fence line defining yard boundary
 	_build_bw_fence_line(root, craft + side * 8.0 + dir * -4.0,
-	                           craft + side * 8.0 + dir *  10.0)
+								craft + side * 8.0 + dir *  10.0)
 
 	# Yard clutter scatter
 	for i in range(count):
@@ -10509,12 +10509,12 @@ func _build_bw_residential_dressing(root: Node3D, plaza: Vector3, count: int) ->
 		# Laundry line (35% chance)
 		if rng.randf() < 0.35:
 			_build_bw_laundry_line(root, a + Vector3(0.0, 0.0, 2.0),
-			                             a + Vector3(3.5, 0.0, 2.5), rng)
+											a + Vector3(3.5, 0.0, 2.5), rng)
 
 		# Yard clutter (55% chance)
 		if rng.randf() < 0.55:
 			_bw_place_clutter(root, center + Vector3(rng.randf_range(-4.0, 4.0), 0.0,
-			                                         rng.randf_range(-4.0, 4.0)), rng)
+														rng.randf_range(-4.0, 4.0)), rng)
 
 
 func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNumberGenerator) -> void:
@@ -10555,8 +10555,8 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 		cl.mesh = cbm
 		var cm := StandardMaterial3D.new()
 		cm.albedo_color = Color(rng.randf_range(0.4, 1.0),
-		                        rng.randf_range(0.4, 1.0),
-		                        rng.randf_range(0.4, 1.0))
+								rng.randf_range(0.4, 1.0),
+								rng.randf_range(0.4, 1.0))
 		cl.material_override = cm
 		cl.global_position = cp
 		cl.rotation.y = rng.randf_range(-PI, PI)
@@ -10731,8 +10731,8 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 	for i in range(post_n):
 		var t := TAU * float(i) / float(post_n)
 		var p := center + Vector3(cos(t) * bw_palisade_radius_x,
-		                          0.0,
-		                          sin(t) * bw_palisade_radius_z)
+									0.0,
+									sin(t) * bw_palisade_radius_z)
 
 		var yaw      := atan2((p - center).x, (p - center).z)
 		var ang_diff := absf(wrapf(yaw - gate_yaw, -PI, PI))
@@ -10741,7 +10741,7 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 
 		var h  := rng.randf_range(2.4, 3.4)
 		var xf := Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
-		                      p + Vector3(0.0, h * 0.5, 0.0))
+								p + Vector3(0.0, h * 0.5, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 512)
 		else:
@@ -10889,7 +10889,7 @@ func _make_bw_house_variant(pos: Vector3, facing: Vector3, zone: String) -> Node
 		kind = "shopfront"
 	else:
 		var sum := bw_house_small_weight + bw_house_medium_weight \
-		         + bw_house_large_weight + bw_house_corner_weight
+					+ bw_house_large_weight + bw_house_corner_weight
 		var r := t * sum
 		if r < bw_house_small_weight:
 			kind = "small"
@@ -10972,7 +10972,7 @@ func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: 
 	# Optional chimney
 	if chimney and bw_chimney_enabled and rng.randf() < 0.70:
 		_bw_add_chimney(n, Vector3(w * 0.28, base_h + wall_h + 0.2, -d * 0.15),
-		                rng.randf_range(5.6, 7.0))
+						rng.randf_range(5.6, 7.0))
 
 	return n
 
