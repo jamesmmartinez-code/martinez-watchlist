@@ -122,7 +122,7 @@ func _instantiate_chunk(pos: Vector2i, packed: PackedScene) -> void:
 func _unload_chunk(pos: Vector2i) -> void:
 	if not loaded_chunks.has(pos):
 		return
-	var chunk := loaded_chunks[pos]
+	var chunk: Node = loaded_chunks[pos]
 	# Persist state before removal.
 	if is_instance_valid(GameBrain):
 		GameBrain.global_memory[pos] = _capture_chunk_state(chunk)
