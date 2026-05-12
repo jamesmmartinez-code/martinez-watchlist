@@ -5457,7 +5457,7 @@ func _nordic_shore_houses(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3
 					+ pier_dir * _nrng.randf_range(4.0, 12.0) \
 					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
 		pos.y   = origin.y
-		var fp: float = Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
+		var fp: Vector2 = Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
 		_nordic_stilt_house(pos, -pier_dir, fp)
 
 # ── Fish rack ─────────────────────────────────────────────────────────────────
@@ -5591,7 +5591,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 	# FIX: boats use NORDIC_BRANCH_T offsets to match actual branch positions
 	for i in range(branch_dirs.size()):
 		if _nrng.randf() < 0.75:
-			var bp: float = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(12.0, 20.0)
+			var bp: Vector3 = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(12.0, 20.0)
 			bp    += _nordic_side(branch_dirs[i]) * 4.2
 			bp.y  = NORDIC_WATER_Y - 0.06
 			_nordic_boat(bp, -branch_dirs[i])
@@ -5606,7 +5606,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 # ── Shore dressing ────────────────────────────────────────────────────────────
 func _nordic_shore_dressing(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3) -> void:
 	for i in range(50):
-		var p: float = origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
+		var p: Vector3 = origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
 					+ pier_dir * _nrng.randf_range(3.0, 18.0) \
 					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
 		p.y   = origin.y
@@ -6383,7 +6383,7 @@ func _boat_travel(player: Node3D) -> void:
 
 func _harbor_master_talk(player: Node3D) -> void:
 	var inv = player.get("inventory") if "inventory" in player else null
-	var has_fish := inv != null and inv.has_method("count_item") \
+	var has_fish: bool = inv != null and inv.has_method("count_item") \
 					and inv.count_item(nordic_fish_item_id) > 0
 
 	if has_fish and inv and inv.has_method("consume_item"):
