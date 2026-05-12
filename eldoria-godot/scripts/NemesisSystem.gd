@@ -56,7 +56,7 @@ func register_enemy(enemy: Node) -> void:
 	if nemeses.size() >= MAX_ACTIVE_NEMESES:
 		return   # at cap — don't track more until one is resolved
 
-	var id: float = "%d_%d" % [Time.get_ticks_msec(), randi()]
+	var id: String = "%d_%d" % [Time.get_ticks_msec(), randi()]
 	enemy.set_meta("nemesis_id", id)
 
 	var data := NemesisData.new()
@@ -245,8 +245,8 @@ const _NAME_TITLE: Array[String] = [
 ]
 
 func generate_name() -> String:
-	var first: float = _NAME_FIRST[randi() % _NAME_FIRST.size()]
-	var title: float = _NAME_TITLE[randi() % _NAME_TITLE.size()]
+	var first: String = _NAME_FIRST[randi() % _NAME_FIRST.size()]
+	var title: String = _NAME_TITLE[randi() % _NAME_TITLE.size()]
 	return first + " " + title
 
 # ==========================================================================
