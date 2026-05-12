@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Realm of Eldoria</title>
 		<style>
 html, body, #canvas {
@@ -15,7 +15,7 @@ body {
 	color: white;
 	background-color: black;
 	overflow: hidden;
-	touch-action: none;
+	
 }
 
 #canvas {
@@ -93,10 +93,9 @@ body {
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 
-	  <meta name="description" content="Realm of Eldoria — a 3D adventure game for kids. Explore, battle monsters, complete quests and level up your hero in a magical fantasy world.">
-</head>
+	</head>
 	<body>
-		<canvas id="canvas" tabindex="0" style="outline:none;">
+		<canvas id="canvas">
 			Your browser does not support the canvas tag.
 		</canvas>
 
@@ -110,70 +109,9 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		
-        <style>
-            /* Focus ring: absolutely-positioned overlay, GPU-composited opacity transition */
-            #focus-ring{
-                position:absolute;top:0;left:0;width:100%;height:100%;
-                pointer-events:none;z-index:10;
-                box-shadow:0 0 0 6px #ff4444 inset;
-                opacity:0;
-                transition:opacity 0.2s;
-                will-change:opacity;
-            }
-            body.unfocused #focus-ring{opacity:1;}
-            body.focused   #focus-ring{opacity:0;box-shadow:0 0 0 4px #44ff44 inset;}
-            #focus-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-                background:rgba(255,80,80,0.97);color:#1a0e00;padding:24px 38px;
-                border-radius:14px;font:bold 26px/1.3 system-ui,sans-serif;
-                border:4px solid #1a0e00;cursor:pointer;z-index:9999;display:none;
-                box-shadow:0 8px 28px rgba(0,0,0,0.7);text-align:center;
-                animation:focus-pulse 1s ease-in-out infinite;}
-            @keyframes focus-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
-            #focus-hint:hover{background:rgba(255,120,120,1);}
-        </style>
-        <div id="focus-ring"></div>
-        <div id="focus-hint">CLICK HERE TO PLAY<br><span style="font-size:16px;font-weight:normal;">(canvas needs keyboard focus for WASD)</span></div>
-        <script>
-        (function(){
-            const c=document.getElementById('canvas');
-            const hint=document.getElementById('focus-hint');
-            let focused=false;
-            function focusCanvas(){try{c.focus({preventScroll:true});}catch(e){}}
-            function checkFocus(){
-                const isFocused=(document.activeElement===c);
-                if(isFocused!==focused){
-                    focused=isFocused;
-                    document.body.classList.toggle('focused',focused);
-                    document.body.classList.toggle('unfocused',!focused);
-                    hint.style.display=focused?'none':'block';
-                    console.log('[Eldoria] focus state:',focused?'FOCUSED (WASD will work)':'NOT FOCUSED');
-                }
-            }
-            // AGGRESSIVE: refocus every 250ms for first 3s (covers Godot init reclaim)
-            let aggressive_count=0;
-            const aggressive=setInterval(()=>{
-                if(document.activeElement!==c) focusCanvas();
-                checkFocus();
-                if(++aggressive_count>=12){clearInterval(aggressive);}
-            },250);
-            // After 3s, drop to gentle 1s polling
-            setTimeout(()=>{setInterval(()=>{checkFocus();if(!focused)focusCanvas();},1000);},3000);
-            // Click anywhere -> focus canvas
-            document.addEventListener('click',(e)=>{if(document.activeElement!==c){focusCanvas();checkFocus();}});
-            hint.addEventListener('click',(e)=>{e.stopPropagation();focusCanvas();checkFocus();});
-            window.addEventListener('focus',()=>{focusCanvas();checkFocus();});
-            window.addEventListener('keydown',(e)=>{
-                if(!focused){focusCanvas();checkFocus();}
-                console.log('[Eldoria] keydown:',e.code,'focused:',document.activeElement===c);
-            },true);
-            console.log('[Eldoria] focus manager v3 (composited overlay) active');
-        })();
-        </script>
-
-        <script src="index.js"></script>
+		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":121928624,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":["libterrain.web.release.wasm32.wasm"],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":140199628,"index.wasm":1509558},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -273,7 +211,7 @@ const engine = new Engine(GODOT_CONFIG);
 			},
 		}).then(() => {
 			setStatusMode('hidden');
-		}).catch(displayFailureNotice);
+		}, displayFailureNotice);
 	}
 }());
 		</script>
