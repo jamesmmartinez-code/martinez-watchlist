@@ -1,0 +1,114 @@
+name: GDScript Auto-Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'eldoria-godot/scripts/**.gd'
+
+# Don't run if the push was itself from this workflow (loop guard)
+# We check commit message below too
+concurrency:
+  group: gdscript-autofix
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    # Skip if this commit was already an auto-fix (prevent loop)
+    if: "!contains(github.event.head_commit.message, '[autofix]')"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan and fix GDScript errors
+        id: fix
+        run: |
+          python3 << 'PYEOF'
+          import re, pathlib, sys
+
+          ROOT = pathlib.Path("eldoria-godot/scripts")
+          fixes = []
+
+          VARIANT_FUNCS = (
+              r'lerp|smoothstep|randf_range|randf|snapped|clamp|sqrt|fmod|floor|ceil|'
+              r'round|distance_to|dot|length|lerpf|inverse_lerp|wrapf|pingpong|randi_range|randi'
+          )
+          VECTOR3_HINTS = r'Vector3\s*\(|\.normalized\(\)|\.rotated\(|\.cross\(|\.lerp\('
+
+          def infer_type(rhs):
+              r = rhs.strip()
+              if re.search(VECTOR3_HINTS, r): return 'Vector3'
+              if re.search(rf'\b(?:{VARIANT_FUNCS})\s*\(', r): return 'float'
+              if re.search(r'\brandi(?:_range)?\s*\(', r): return 'int'
+              if re.search(r'\brandf\s*\(\)\s*[<>]|^(?:true|false)$', r): return 'bool'
+              return None
+
+          for gd in sorted(ROOT.rglob("*.gd")):
+              src = gd.read_text(errors='replace')
+              lines = src.split('\n')
+              changed = False
+              new_lines = []
+              for i, line in enumerate(lines, 1):
+                  stripped = line.strip()
+                  if stripped.startswith('#'):
+                      new_lines.append(line); continue
+                  code = re.sub(r'#.*$', '', line)
+
+                  # Fix 1: C-style ternary  (expr ? a : b) -> (a if expr else b)
+                  if ' ? ' in code and ' : ' in code:
+                      def fix_ternary(m):
+                          cond = m.group(1).strip()
+                          ta   = m.group(2).strip()
+                          fb   = m.group(3).strip()
+                          return f'({ta} if {cond} else {fb})'
+                      new = re.sub(r'\(([^()]+?)\s*\?\s*([^:()]+?)\s*:\s*([^()]+?)\)', fix_ternary, code)
+                      if new != code:
+                          line = line.replace(code, new); changed = True
+                          fixes.append(f"{gd.name}:{i} ternary")
+
+                  # Fix 2: Array[Node3D] from group/children
+                  line = re.sub(
+                      r'(var\s+\w+\s*):\s*Array\[Node3D\](\s*=\s*(?:get_nodes_in_group|get_children)\b)',
+                      r'\1: Array\2', line)
+                  if 'Array[Node3D]' not in line or True:
+                      pass  # already replaced above if matched
+
+                  # Fix 3: var x := VARIANT_FUNC(
+                  m = re.match(r'^(\s*)var\s+(\w+)\s*:=\s*(.+)$', line)
+                  if m:
+                      indent, name, rhs = m.groups()
+                      t = infer_type(rhs.strip())
+                      if t:
+                          line = f"{indent}var {name}: {t} = {rhs.strip()}"
+                          changed = True
+                          fixes.append(f"{gd.name}:{i} infer {name}={t}")
+
+                  new_lines.append(line)
+
+              if changed:
+                  gd.write_text('\n'.join(new_lines))
+
+          print(f"fixed={len(fixes)}")
+          if fixes:
+              for f in fixes[:20]: print(f"  {f}")
+              if len(fixes) > 20: print(f"  ... and {len(fixes)-20} more")
+          PYEOF
+
+      - name: Commit fixes if any
+        run: |
+          git config user.name  "gdscript-autofix[bot]"
+          git config user.email "gdscript-autofix@eldoria"
+          git add eldoria-godot/scripts/
+          if git diff --cached --quiet; then
+            echo "Nothing to fix."
+          else
+            COUNT=$(git diff --cached --numstat | wc -l)
+            git commit -m "fix: auto-fix GDScript type errors in $COUNT file(s) [autofix]"
+            for i in 1 2 3; do
+              git pull --rebase && git push && echo "pushed" && break
+              sleep 3
+            done
+          fi
