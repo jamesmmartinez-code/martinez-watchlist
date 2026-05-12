@@ -225,7 +225,7 @@ func _physics_process(delta: float) -> void:
 
 func _face_target(dir: Vector3, delta: float) -> void:
 	if dir.length() < 0.001: return
-	var target_basis: Vector3 = Basis.looking_at(dir.normalized(), Vector3.UP)
+	var target_basis: Basis = Basis.looking_at(dir.normalized(), Vector3.UP)
 	# REFINE: combat — boss feel: slerp gain 6.0→7.5 so the Warlord visibly LOCKS ONTO the player a beat before each telegraph fires. Pairs with the existing slam (0.9s) and charge (0.78s) windups — Alden now reads "he's looking at me" as the FIRST telegraph, then the colored ring/line as the second. Two layered warnings, same total wind-up, no new mechanic added. THEME §12 MOTION — the rotation itself becomes expressive intent rather than ambient drift.
 	global_transform.basis = global_transform.basis.slerp(target_basis, 7.5 * delta)
 
