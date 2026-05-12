@@ -247,15 +247,10 @@ ENDSCRIPT
             # The GitHub Pages redirect is written in the NEXT step ("Overwrite GH Pages"),
             # which runs AFTER this R2 sync, so no loop risk here.
             # DEFER pck-parts.json — uploaded last after all chunks are live.
-            # SKIP index.html — it is the GitHub Pages redirect, not the game. Worker reads game.html.
-            if [ "$name" = "index.html" ]; then
-              echo "  ⏭️  index.html (skipped — redirect page, not for R2)"
-              continue
-            fi
-            if [ "$name" = "pck-parts.json" ]; then
-              echo "  ⏳  pck-parts.json (deferred — uploading last)"
-              continue
-            fi
+            # index.html at this point is the REAL Godot game shell.
+            # Upload it as both index.html AND game.html in R2.
+            # (The redirect overwrites index.html on disk AFTER this step, not before.)
+            # Worker reads game.html so it always gets the game, never the redirect.
             mime=$(mime_for "$f")
             CODE=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" \
               -X PUT -H "Authorization: Bearer $CF_TOKEN" \
