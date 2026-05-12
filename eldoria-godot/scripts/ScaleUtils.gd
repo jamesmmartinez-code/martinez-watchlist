@@ -29,7 +29,7 @@ static func to_height(node: Node3D, target_height: float, retries: int = 0) -> v
 # ── Measure the combined AABB of all VisualInstance3D children ────────────────
 static func _measure(node: Node3D) -> AABB:
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in node.find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue

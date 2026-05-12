@@ -158,7 +158,7 @@ func _physics_process(delta: float) -> void:
 
 	var to_player := _player.global_position - global_position
 	to_player.y = 0
-	var dist := to_player.length()
+	var dist: float = to_player.length()
 	_next_attack_t -= delta
 
 	# Observe dodge direction while in melee range
@@ -171,7 +171,7 @@ func _physics_process(delta: float) -> void:
 		if _next_attack_t <= 0.0 and not _attack_pool.is_empty():
 			call(_attack_pool[randi() % _attack_pool.size()])
 	elif dist < aggro_range:
-		var dir := to_player.normalized()
+		var dir: Vector3 = to_player.normalized()
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
@@ -234,10 +234,10 @@ func _adapt_to_player() -> void:
 func _observe_dodge() -> void:
 	if not _player or not is_instance_valid(_player):
 		return
-	var pv := Vector3(_player.velocity.x, 0, _player.velocity.z)
+	var pv: Vector3 = Vector3(_player.velocity.x, 0, _player.velocity.z)
 	if pv.length() < 0.3:
 		return
-	var dot := pv.normalized().dot(global_transform.basis.x)
+	var dot: Vector3 = pv.normalized().dot(global_transform.basis.x)
 	if dot > 0.35:
 		_blackboard["dodge_right"] = _blackboard.get("dodge_right", 0) + 1
 	elif dot < -0.35:
@@ -248,7 +248,7 @@ func _ek_melee() -> void:
 	_next_attack_t = 1.3
 	if _player and _player.has_method("take_damage"):
 		_player.take_damage(damage)
-		var d := (_player.global_position - global_position).normalized()
+		var d: Vector3 = (_player.global_position - global_position).normalized()
 		_player.velocity += d * 5.0 + Vector3.UP * 2.0
 		if Juice.juice_enabled:
 			Juice.hit_stop_tier(damage)
@@ -286,7 +286,7 @@ func _ek_sweep() -> void:
 	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 4.5:
 			p.take_damage(int(damage * 1.2))
-			var d := (p.global_position - global_position).normalized()
+			var d: Vector3 = (p.global_position - global_position).normalized()
 			p.velocity += d * 6.0 + Vector3.UP * 3.0
 			if Juice.juice_enabled:
 				Juice.hit_stop_tier(int(damage * 1.2))

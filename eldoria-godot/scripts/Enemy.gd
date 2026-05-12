@@ -292,7 +292,7 @@ func _spawn_model() -> void:
 	# Actor-pack GLBs are cm-unit with root_scale=0.01 baked in; assigning an
 	# absolute scale like 0.85 inflated them to ~153 m, then _normalize clamped
 	# at 0.05 left them stuck at ~9 m.  These values are now *relative* factors.
-	var kind_mult := Vector3(1.0, 1.0, 1.0)
+	var kind_mult: Vector3 = Vector3(1.0, 1.0, 1.0)
 	match enemy_kind:
 		"goblin":
 			kind_mult = Vector3(0.85, 0.85, 0.85)
@@ -642,7 +642,7 @@ func _physics_process(delta: float) -> void:
 
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0
-	var dist := to_player.length()
+	var dist: float = to_player.length()
 
 	_attack_timer = max(0.0, _attack_timer - delta)
 
@@ -687,7 +687,7 @@ func _physics_process(delta: float) -> void:
 		var to_target := chase_pos - global_position
 		to_target.y = 0
 		if to_target.length() > 0.5:
-			var dir := to_target.normalized()
+			var dir: Vector3 = to_target.normalized()
 			velocity.x = dir.x * chase_speed
 			velocity.z = dir.z * chase_speed
 			_face_target(to_target, delta)
@@ -699,13 +699,13 @@ func _physics_process(delta: float) -> void:
 	elif action == "watcher_range":
 		_state = "chase"
 		# Strafe to keep ideal distance — advance if too far, retreat if too close
-		var dist_now := to_player.length()
+		var dist_now: float = to_player.length()
 		if dist_now > WATCHER_IDEAL_DIST + 1.5:
-			var dir := to_player.normalized()
+			var dir: Vector3 = to_player.normalized()
 			velocity.x = dir.x * move_speed
 			velocity.z = dir.z * move_speed
 		elif dist_now < WATCHER_IDEAL_DIST - 1.5:
-			var dir := -to_player.normalized()
+			var dir: Vector3 = -to_player.normalized()
 			velocity.x = dir.x * chase_speed
 			velocity.z = dir.z * chase_speed
 		else:
@@ -720,7 +720,7 @@ func _physics_process(delta: float) -> void:
 		var to_spawn := _spawn_pos - global_position
 		to_spawn.y = 0
 		if to_spawn.length() > 1.0:
-			var dir := to_spawn.normalized()
+			var dir: Vector3 = to_spawn.normalized()
 			velocity.x = dir.x * chase_speed
 			velocity.z = dir.z * chase_speed
 			_face_target(to_spawn, delta)
@@ -732,7 +732,7 @@ func _physics_process(delta: float) -> void:
 		if is_instance_valid(_faction_target) and _state == "wander":
 			var to_ft := _faction_target.global_position - global_position
 			to_ft.y = 0
-			var ft_dist := to_ft.length()
+			var ft_dist: float = to_ft.length()
 			if ft_dist <= attack_range:
 				# In range — attack the faction enemy
 				_state = "attack"
@@ -746,7 +746,7 @@ func _physics_process(delta: float) -> void:
 			elif ft_dist <= aggro_range * 1.2:
 				# Chase the faction enemy
 				_state = "chase"
-				var dir2 := to_ft.normalized()
+				var dir2: Vector3 = to_ft.normalized()
 				velocity.x = dir2.x * move_speed
 				velocity.z = dir2.z * move_speed
 				_face_target(to_ft, delta)
@@ -761,7 +761,7 @@ func _physics_process(delta: float) -> void:
 func _face_target(dir: Vector3, delta: float) -> void:
 	if dir.length() < 0.001:
 		return
-	var target_basis := Basis.looking_at(dir.normalized(), Vector3.UP)
+	var target_basis: Vector3 = Basis.looking_at(dir.normalized(), Vector3.UP)
 	global_transform.basis = global_transform.basis.slerp(target_basis, 8.0 * delta)
 
 func _idle_drift(delta: float) -> void:
@@ -774,15 +774,15 @@ func _idle_drift(delta: float) -> void:
 	if to_target.length() < 0.5:
 		velocity.x = 0; velocity.z = 0
 		return
-	var dir := to_target.normalized()
+	var dir: Vector3 = to_target.normalized()
 	velocity.x = dir.x * move_speed
 	velocity.z = dir.z * move_speed
 	_face_target(to_target, delta)
 
 func _pick_wander_target() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
-	var ang := rng.randf() * TAU
-	var dist := rng.randf_range(2.0, 7.0)
+	var ang: float = rng.randf() * TAU
+	var dist: float = rng.randf_range(2.0, 7.0)
 	_wander_target = _spawn_pos + Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 	_wander_timer = rng.randf_range(2.0, 5.0)
 
@@ -793,7 +793,7 @@ func _fire_watcher_bolt() -> void:
 	bolt.set_script(WATCHER_BOLT_SCRIPT)
 	bolt.global_position = global_position + Vector3(0, 1.0, 0)
 	get_tree().current_scene.add_child(bolt)
-	var dir := (_player.global_position + Vector3(0, 0.9, 0)) - bolt.global_position
+	var dir: Vector3 = (_player.global_position + Vector3(0, 0.9, 0)) - bolt.global_position
 	bolt.launch(dir.normalized(), damage, self)
 
 func _do_attack() -> void:
@@ -809,7 +809,7 @@ func _do_attack() -> void:
 			dmg = int(dmg * 1.40)
 		_player.take_damage(dmg, self)   # pass self so Player tracks _last_attacker for NemesisSystem
 		# ── Directional camera shove toward impact ────────────────────────────
-		var dir := (_player.global_position - global_position).normalized()
+		var dir: Vector3 = (_player.global_position - global_position).normalized()
 		if is_instance_valid(Juice):
 			Juice.directional_shake(dir, 0.10)
 		# REFINE: combat-feel — heavier knockback (3.0 → 4.5) for a more readable "hit" beat. Adds breathing space too.
@@ -1045,8 +1045,8 @@ func _check_line_of_sight() -> bool:
 	var space := get_world_3d().direct_space_state
 	if not space:
 		return false
-	var from := global_position + Vector3(0, 0.9, 0)
-	var to   := _player.global_position + Vector3(0, 0.9, 0)
+	var from: Vector3 = global_position + Vector3(0, 0.9, 0)
+	var to: Vector3 = _player.global_position + Vector3(0, 0.9, 0)
 	var q    := PhysicsRayQueryParameters3D.create(from, to)
 	q.collision_mask = 1   # world geometry only — ignores other enemies
 	q.exclude         = [get_rid()]
@@ -1106,7 +1106,7 @@ func _scan_faction_targets() -> void:
 			continue
 		if not FactionSystem.is_hostile(faction_id, cand_faction):
 			continue
-		var d := global_position.distance_to(candidate.global_position)
+		var d: float = global_position.distance_to(candidate.global_position)
 		if d < closest_dist:
 			closest_dist = d
 			_faction_target = candidate as Enemy
@@ -1203,7 +1203,7 @@ func _normalize_to_height(model: Node, target_height: float) -> void:
 	await get_tree().process_frame
 	if not is_instance_valid(model): return
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in model.find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue

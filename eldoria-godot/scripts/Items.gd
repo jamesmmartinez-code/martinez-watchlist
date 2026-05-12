@@ -530,7 +530,7 @@ static func _pick_weighted(table: Dictionary, rng: RandomNumberGenerator) -> Str
 	var total: int = 0
 	for k in table:
 		total += table[k].weight
-	var r := rng.randi_range(1, total)
+	var r: float = rng.randi_range(1, total)
 	var acc := 0
 	for k in table:
 		acc += table[k].weight
@@ -560,7 +560,7 @@ static func generate_affix_item(base_id: String, rng: RandomNumberGenerator) -> 
 	# instead of ~1-in-7, which is about one extra "wow" item per Owen's typical
 	# 25-item chest haul. Suffix-only band held flat — it's the silhouette that
 	# carries icon overlays (❄ 🔥 🐻) which Alden notices in the bag grid.
-	var roll := rng.randf()
+	var roll: float = rng.randf()
 	var prefix_name := ""
 	var suffix_name := ""
 	if roll < 0.56:
@@ -596,7 +596,7 @@ static func generate_affix_item(base_id: String, rng: RandomNumberGenerator) -> 
 		if mods.has("tint"):
 			item["color"] = mods.tint
 	# Generate a unique runtime id so multiple affix variants can co-exist
-	var stamp := str(rng.randi_range(1000, 9999))
+	var stamp: float = str(rng.randi_range(1000, 9999))
 	var slug := (prefix_name + "_" + suffix_name).replace(" ", "_").replace("of_the_", "").replace("of_", "")
 	item["base_id"] = base_id
 	item["runtime_id"] = "@%s#%s_%s" % [base_id, slug, stamp]

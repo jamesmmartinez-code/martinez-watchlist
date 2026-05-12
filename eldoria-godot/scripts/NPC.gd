@@ -639,7 +639,7 @@ func _lift_npc_to_ground() -> void:
 	# Correct approach: keep the root (and its collision shape) at y=0; only push the
 	# visual model child upward so the mesh sits on the ground.
 	var lowest: float = INF
-	var found := false
+	var found: bool = false
 	for v in find_children("*", "VisualInstance3D", true):
 		var vi := v as VisualInstance3D
 		if vi == null: continue

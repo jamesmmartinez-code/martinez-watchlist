@@ -56,7 +56,7 @@ func register_enemy(enemy: Node) -> void:
 	if nemeses.size() >= MAX_ACTIVE_NEMESES:
 		return   # at cap — don't track more until one is resolved
 
-	var id := "%d_%d" % [Time.get_ticks_msec(), randi()]
+	var id: float = "%d_%d" % [Time.get_ticks_msec(), randi()]
 	enemy.set_meta("nemesis_id", id)
 
 	var data := NemesisData.new()
@@ -211,7 +211,7 @@ func _do_respawn(data: NemesisData, near_pos: Vector3) -> void:
 	enemy.set("enemy_name", data.nemesis_name)
 
 	# Offset spawn 6-10m from last known position
-	var offset := Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
+	var offset: Vector3 = Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
 	scene.add_child(enemy)
 	enemy.global_position = near_pos + offset
 
@@ -245,8 +245,8 @@ const _NAME_TITLE: Array[String] = [
 ]
 
 func generate_name() -> String:
-	var first := _NAME_FIRST[randi() % _NAME_FIRST.size()]
-	var title := _NAME_TITLE[randi() % _NAME_TITLE.size()]
+	var first: float = _NAME_FIRST[randi() % _NAME_FIRST.size()]
+	var title: float = _NAME_TITLE[randi() % _NAME_TITLE.size()]
 	return first + " " + title
 
 # ==========================================================================

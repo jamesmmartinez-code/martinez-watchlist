@@ -80,9 +80,9 @@ func _physics_process(delta: float) -> void:
 		return
 	var to_p: Vector3 = _player.global_position - global_position
 	to_p.y = 0
-	var dist := to_p.length()
+	var dist: float = to_p.length()
 	if dist > follow_distance:
-		var dir := to_p.normalized()
+		var dir: Vector3 = to_p.normalized()
 		# REFINE: character — close-approach floor 1.5 → 1.7 m/s. The clamp's lower bound governs Ember's gait when (dist · 1.4) < floor — i.e. when Ember is just barely outside follow_distance and closing the last small gap. Old 1.5 m/s read as a hesitating shuffle at the gap-close beat; 1.7 m/s reads as a deliberate step. Still ~5× below the new max_speed 8.5, so sprint catch-up behaviour is unchanged. Pairs with the new tighter follow_distance 2.0 (the gap-close beat fires more often now that idle-distance is shorter).
 		var spd: float = clamp(dist * 1.4, 1.7, max_speed)
 		velocity.x = dir.x * spd
@@ -147,7 +147,7 @@ func _process(_delta: float) -> void:
 func _normalize_to_height(model: Node, target_height: float) -> void:
 	await get_tree().process_frame
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in model.find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue

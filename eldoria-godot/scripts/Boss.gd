@@ -197,7 +197,7 @@ func _physics_process(delta: float) -> void:
 
 	var to_player: Vector3 = _player.global_position - global_position
 	to_player.y = 0
-	var dist := to_player.length()
+	var dist: float = to_player.length()
 
 	_next_pattern_t -= delta
 
@@ -210,7 +210,7 @@ func _physics_process(delta: float) -> void:
 			call(_attack_pool[randi() % _attack_pool.size()])
 	elif dist < aggro_range:
 		_state = "chase"
-		var dir := to_player.normalized()
+		var dir: Vector3 = to_player.normalized()
 		velocity.x = dir.x * chase_speed
 		velocity.z = dir.z * chase_speed
 		_face_target(to_player, delta)
@@ -225,7 +225,7 @@ func _physics_process(delta: float) -> void:
 
 func _face_target(dir: Vector3, delta: float) -> void:
 	if dir.length() < 0.001: return
-	var target_basis := Basis.looking_at(dir.normalized(), Vector3.UP)
+	var target_basis: Vector3 = Basis.looking_at(dir.normalized(), Vector3.UP)
 	# REFINE: combat — boss feel: slerp gain 6.0→7.5 so the Warlord visibly LOCKS ONTO the player a beat before each telegraph fires. Pairs with the existing slam (0.9s) and charge (0.78s) windups — Alden now reads "he's looking at me" as the FIRST telegraph, then the colored ring/line as the second. Two layered warnings, same total wind-up, no new mechanic added. THEME §12 MOTION — the rotation itself becomes expressive intent rather than ambient drift.
 	global_transform.basis = global_transform.basis.slerp(target_basis, 7.5 * delta)
 
@@ -353,12 +353,12 @@ func _observe_player_dodge() -> void:
 	# attacks toward the weaker dodge side.  Stored in blackboard as raw counts.
 	if not _player or not is_instance_valid(_player):
 		return
-	var player_vel := Vector3(_player.velocity.x, 0, _player.velocity.z)
+	var player_vel: Vector3 = Vector3(_player.velocity.x, 0, _player.velocity.z)
 	if player_vel.length() < 0.3:
 		return
 	# Project player velocity onto boss right-axis
 	var right := global_transform.basis.x
-	var dot   := player_vel.normalized().dot(right)
+	var dot: Vector3 = player_vel.normalized().dot(right)
 	if dot > 0.35:
 		blackboard["dodge_right"] = blackboard.get("dodge_right", 0) + 1
 	elif dot < -0.35:
@@ -388,7 +388,7 @@ func _attack_enrage() -> void:
 		if _player.global_position.distance_to(global_position) < attack_range + 1.0:
 			if _player.has_method("take_damage"):
 				_player.take_damage(int(damage * 0.6))
-				var d := (_player.global_position - global_position).normalized()
+				var d: Vector3 = (_player.global_position - global_position).normalized()
 				_player.velocity += d * 3.5 + Vector3.UP * 1.2
 	# Short stagger after the burst — the window skilled players exploit
 	_open_vulnerability(VULN_WINDOW)
@@ -396,7 +396,7 @@ func _attack_enrage() -> void:
 func _summon_adds(count: int) -> void:
 	for i in count:
 		var ang := (float(i) / float(count)) * TAU
-		var pos := global_position + Vector3(cos(ang) * 4.0, 0, sin(ang) * 4.0)
+		var pos: Vector3 = global_position + Vector3(cos(ang) * 4.0, 0, sin(ang) * 4.0)
 		var add := CharacterBody3D.new()
 		add.set_script(ENEMY_SCRIPT)
 		add.position = pos + Vector3(0, 1.0, 0)
@@ -527,7 +527,7 @@ func _die(source: Node) -> void:
 func _normalize_to_height(model: Node, target_height: float) -> void:
 	await get_tree().process_frame
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in model.find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue

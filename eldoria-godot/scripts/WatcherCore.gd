@@ -246,28 +246,28 @@ func _physics_process(delta: float) -> void:
 	# Horizontal: orbit gently around player, drifting to stay at ideal range
 	var to_player := _player.global_position - global_position
 	to_player.y   = 0
-	var dist_xz   := to_player.length()
+	var dist_xz: float = to_player.length()
 	const IDEAL_DIST: float = 10.0
 	var horiz_speed := 3.5 + float(_phase) * 1.0
 	if dist_xz > IDEAL_DIST + 2.0:
 		# Drift closer
-		var dir := to_player.normalized()
+		var dir: Vector3 = to_player.normalized()
 		velocity.x = dir.x * horiz_speed
 		velocity.z = dir.z * horiz_speed
 	elif dist_xz < IDEAL_DIST - 2.0:
 		# Drift back
-		var dir := -to_player.normalized()
+		var dir: Vector3 = -to_player.normalized()
 		velocity.x = dir.x * horiz_speed
 		velocity.z = dir.z * horiz_speed
 	else:
 		# Lateral orbit strafe
-		var perp := Vector3(-to_player.normalized().z, 0.0, to_player.normalized().x)
+		var perp: Vector3 = Vector3(-to_player.normalized().z, 0.0, to_player.normalized().x)
 		velocity.x = perp.x * horiz_speed * 0.7
 		velocity.z = perp.z * horiz_speed * 0.7
 
 	# Face player
 	if to_player.length() > 0.1:
-		var tb := Basis.looking_at(to_player.normalized(), Vector3.UP)
+		var tb: Vector3 = Basis.looking_at(to_player.normalized(), Vector3.UP)
 		global_transform.basis = global_transform.basis.slerp(tb, 5.0 * delta)
 
 	# Attack timer
@@ -369,17 +369,17 @@ func _wc_volley() -> void:
 	# 3-bolt spread aimed at and ±18° from the player.
 	_attack_t = 2.5
 	if not _player: return
-	var base_dir := (_player.global_position + Vector3(0, 0.9, 0)) - (global_position + Vector3(0, 0.6, 0))
+	var base_dir: Vector3 = (_player.global_position + Vector3(0, 0.9, 0)) - (global_position + Vector3(0, 0.6, 0))
 	base_dir = base_dir.normalized()
 	for angle_deg in [-18.0, 0.0, 18.0]:
-		var fire_dir := base_dir.rotated(Vector3.UP, deg_to_rad(float(angle_deg)))
+		var fire_dir: Vector3 = base_dir.rotated(Vector3.UP, deg_to_rad(float(angle_deg)))
 		_fire_bolt_dir(fire_dir)
 		await get_tree().create_timer(0.12).timeout
 		if _state == "dead": return
 
 func _fire_bolt(target_world_pos: Vector3) -> void:
-	var origin := global_position + Vector3(0, 0.6, 0)
-	var dir    := (target_world_pos - origin).normalized()
+	var origin: Vector3 = global_position + Vector3(0, 0.6, 0)
+	var dir: Vector3 = (target_world_pos - origin).normalized()
 	_fire_bolt_dir(dir)
 
 func _fire_bolt_dir(dir: Vector3) -> void:
@@ -407,7 +407,7 @@ func _wc_slam() -> void:
 	_slam_phase = "descend"
 	var descend_t := 0.0
 	while descend_t < 0.55 and _state != "dead":
-		var down := Vector3(0, -1, 0)
+		var down: Vector3 = Vector3(0, -1, 0)
 		velocity.y = down.y * 22.0
 		move_and_slide()
 		if global_position.y <= (_spawn_pos.y + 0.5):
@@ -424,7 +424,7 @@ func _wc_slam() -> void:
 	for p: Node3D in get_tree().get_nodes_in_group("player"):
 		if p.global_position.distance_to(global_position) < 5.5:
 			p.take_damage(int(damage * 1.6))
-			var d := (p.global_position - global_position).normalized()
+			var d: Vector3 = (p.global_position - global_position).normalized()
 			p.velocity += d * 9.0 + Vector3.UP * 4.5
 	_open_vulnerability(VULN_WINDOW)
 	# Rise
@@ -451,7 +451,7 @@ func _wc_drone_spawn() -> void:
 	_say("drone")
 	for i: int in count:
 		var ang  := (float(i) / float(count)) * TAU
-		var pos  := global_position + Vector3(cos(ang) * 3.5, -2.0, sin(ang) * 3.5)
+		var pos: Vector3 = global_position + Vector3(cos(ang) * 3.5, -2.0, sin(ang) * 3.5)
 		var drone := CharacterBody3D.new()
 		drone.set_script(ENEMY_SCRIPT)
 		drone.set("enemy_kind",  "watcher")
@@ -483,8 +483,8 @@ func _wc_eye_beam() -> void:
 		ticks += 1
 		if not _player: break
 		# Update beam endpoint
-		var origin := global_position + Vector3(0, 0.5, 0)
-		var target  := _player.global_position + Vector3(0, 0.9, 0)
+		var origin: Vector3 = global_position + Vector3(0, 0.5, 0)
+		var target: Vector3 = _player.global_position + Vector3(0, 0.9, 0)
 		_update_beam_visual(beam_line, origin, target)
 		# Tiny tick damage
 		if _player.global_position.distance_to(global_position) < 20.0:
@@ -531,12 +531,12 @@ func _show_expanding_ring(segment_count: int, max_radius: float, dur: float) -> 
 		seg_mat.emission_energy_multiplier = 2.6
 		seg_mat.shading_mode              = BaseMaterial3D.SHADING_MODE_UNSHADED
 		seg_mi.material_override = seg_mat
-		var start_pos := global_position + Vector3(0, 0.06, 0)
+		var start_pos: Vector3 = global_position + Vector3(0, 0.06, 0)
 		seg_mi.position = start_pos
 		seg_mi.rotation.y = ang
 		get_tree().current_scene.add_child(seg_mi)
 		mats_and_meshes.append(seg_mi)
-		var dest := global_position + Vector3(cos(ang) * max_radius, 0.06, sin(ang) * max_radius)
+		var dest: Vector3 = global_position + Vector3(cos(ang) * max_radius, 0.06, sin(ang) * max_radius)
 		var tw   := create_tween()
 		tw.tween_property(seg_mi, "position", dest, dur).set_trans(Tween.TRANS_EXPO)
 		tw.tween_callback(seg_mi.queue_free)
@@ -577,7 +577,7 @@ func _update_beam_visual(line_mi: MeshInstance3D, origin: Vector3, target: Vecto
 	if not is_instance_valid(line_mi): return
 	var mid  := (origin + target) * 0.5
 	line_mi.position  = mid
-	var dir  := (target - origin).normalized()
+	var dir: Vector3 = (target - origin).normalized()
 	if dir.length() > 0.001:
 		line_mi.rotation.y = atan2(dir.x, dir.z)
 		line_mi.rotation.x = -asin(dir.y)

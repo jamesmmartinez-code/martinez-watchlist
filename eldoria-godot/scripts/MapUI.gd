@@ -136,7 +136,7 @@ func _on_map_updated() -> void:
 	# ── Named area badges ──────────────────────────────────────────────────
 	for area_name: String in MapSystem.all_areas.keys():
 		var entry   := MapSystem.all_areas[area_name]
-		var map_pos := _world_to_map(Vector3(entry["pos"]))
+		var map_pos: Vector3 = _world_to_map(Vector3(entry["pos"]))
 		var disc    := bool(entry.get("discovered", false))
 		var lbl := Label.new()
 		lbl.text = area_name if disc else "???"

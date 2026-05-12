@@ -63,7 +63,7 @@ func _inspect_under_mouse(mouse_pos: Vector2) -> void:
 	var parent3d: Node = node.get_parent()
 	if parent3d is Node3D:
 		var aabb := AABB()
-		var has := false
+		var has: bool = false
 		for v in (parent3d as Node3D).find_children("*", "VisualInstance3D", true):
 			var vi := v as VisualInstance3D
 			if vi == null: continue

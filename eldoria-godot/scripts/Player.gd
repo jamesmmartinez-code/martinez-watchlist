@@ -390,7 +390,7 @@ func _physics_process(delta: float) -> void:
 	# something is jamming us (collision wedge, frozen state).
 	# FIX: was doing y += 1.5 which accumulated and launched player into the sky.
 	# Now: raycast downward to find the actual floor and snap to it; fall back to SAFE_SPAWN.
-	var horiz_speed := Vector2(velocity.x, velocity.z).length()
+	var horiz_speed: float = Vector2(velocity.x, velocity.z).length()
 	last_position = global_position  # Physics: track position each frame for stuck-detection
 	if input_dir.length() > 0.1 and horiz_speed < 0.05:
 		_jam_timer += delta
@@ -464,8 +464,8 @@ func _do_floor_snap_unstick() -> void:
 	velocity = Vector3.ZERO
 	var space := get_world_3d().direct_space_state
 	# Cast from 2m above to 8m below current position to find the floor.
-	var origin := global_position + Vector3(0, 2.0, 0)
-	var target := global_position + Vector3(0, -8.0, 0)
+	var origin: Vector3 = global_position + Vector3(0, 2.0, 0)
+	var target: Vector3 = global_position + Vector3(0, -8.0, 0)
 	var query  := PhysicsRayQueryParameters3D.create(origin, target)
 	query.exclude   = [self]
 	query.collision_mask = 1   # terrain / static bodies only
@@ -512,9 +512,9 @@ func _find_free_spawn(desired: Vector3, max_tries: int = 24, radius_step: float 
 		# Golden-angle-ish spread; ring grows slowly so nearby spots are tried first.
 		var ring   := float(i / 6)
 		var angle  := float(i) * 1.7
-		var offset := Vector3(cos(angle), 0.0, sin(angle)) * ring * radius_step
+		var offset: Vector3 = Vector3(cos(angle), 0.0, sin(angle)) * ring * radius_step
 		# Lift rises with ring — clears sloped edges and terrain-mesh seams.
-		var lift   := Vector3(0, 0.5 + ring * 0.25, 0)
+		var lift: Vector3 = Vector3(0, 0.5 + ring * 0.25, 0)
 		var candidate := desired + offset
 		# Shape centre = candidate + capsule half-height (0.9) + lift.
 		params.transform = Transform3D(Basis.IDENTITY, candidate + Vector3(0, 0.9, 0) + lift)
@@ -755,7 +755,7 @@ func use_skill(idx: int) -> void:
 				continue
 			var to_enemy: Vector3 = enemy.global_position - global_position
 			to_enemy.y = 0
-			var dist := to_enemy.length()
+			var dist: float = to_enemy.length()
 			if dist > eff_range or dist < 0.001:
 				continue
 			if fwd.angle_to(to_enemy.normalized()) > arc_rad:
@@ -1005,7 +1005,7 @@ func _inferno_spread_extra(base_dmg: int) -> void:
 	var base_dir   := -global_transform.basis.z
 	base_dir.y = 0; base_dir = base_dir.normalized()
 	for angle_deg: float in [-22.0, 22.0]:
-		var spread_dir := base_dir.rotated(Vector3.UP, deg_to_rad(angle_deg))
+		var spread_dir: Vector3 = base_dir.rotated(Vector3.UP, deg_to_rad(angle_deg))
 		var fb := Area3D.new()
 		fb.set_script(FIREBALL_SCRIPT)
 		fb.global_position = global_position + Vector3(0, 1.0, 0)
@@ -1583,7 +1583,7 @@ func _normalize_player_model(target_height: float) -> void:
 				c.scale = Vector3.ONE
 			break
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue
@@ -1609,7 +1609,7 @@ func _force_hero_height_cap(cap: float) -> void:
 	# cap = 1.30m = SIZE_STANDARDS.md §1 hard cap for kid Player.
 	await get_tree().process_frame
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue
