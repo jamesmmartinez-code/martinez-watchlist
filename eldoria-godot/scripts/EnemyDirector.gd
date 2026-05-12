@@ -223,7 +223,7 @@ func _handle_spawning(delta: float) -> void:
 
 	# Spawn interval: 3.5 s at calm → 0.6 s at full chaos.
 	# CALM state enforces a slower floor to prevent drip-spawns.
-	var interval := lerpf(3.5, 0.6, intensity)
+	var interval: float = lerpf(3.5, 0.6, intensity)
 	if wave_state == WaveState.CALM:
 		interval = maxf(interval, 4.5)
 	_spawn_timer = interval

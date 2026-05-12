@@ -43,7 +43,7 @@ for gd in sorted(ROOT.rglob("*.gd")):
             violations.append((str(gd), lineno, "TYPED-ARRAY-NODE3D", raw.rstrip()))
 
         # 3. var := lerp() — Variant inference failure
-        if re.search(r'\bvar\s+\w+\s*:=\s*lerp\s*\(', code):
+        if re.search(r'\bvar\s+\w+\s*:=\s*lerpf?\s*\(', code):
             violations.append((str(gd), lineno, "LERP-TYPE-INFERENCE", raw.rstrip()))
 
         # 4. Autoload name used as default parameter value

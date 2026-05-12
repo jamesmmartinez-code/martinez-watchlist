@@ -259,12 +259,12 @@ func _update_environment() -> void:
 	_env.fog_light_color = fog_color
 
 	# ── Glow intensity — pulses with combat intensity ──────────────────────
-	var base_glow  := lerpf(0.65, 1.20, corruption * 0.5)
-	var fight_glow := lerpf(0.0, 0.40, intensity)
+	var base_glow: float = lerpf(0.65, 1.20, corruption * 0.5)
+	var fight_glow: float = lerpf(0.0, 0.40, intensity)
 	_env.glow_intensity = base_glow + fight_glow
 
 	# ── Ambient light — darker as corruption rises (enemies pop harder) ────
-	var ambient_e := lerpf(0.30, 0.12, corruption)
+	var ambient_e: float = lerpf(0.30, 0.12, corruption)
 	_env.ambient_light_energy = ambient_e
 
 	# ── Saturation down in apocalypse (desaturated horror look) ───────────
