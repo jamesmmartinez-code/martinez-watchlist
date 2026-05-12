@@ -6823,7 +6823,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 	out["well"] = well
 
 	# Quest board
-	var board: Vector3 = _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
+	var board: Node3D = _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
 	root.add_child(board)
 	out["quest_board"] = board
 
@@ -7609,7 +7609,7 @@ func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector
 
 	var hubs := [plaza, market, craft, gate]
 	for i in range(bw_npc_count):
-		var base: int = hubs[rng.randi() % hubs.size()]
+		var base: Vector3 = hubs[rng.randi() % hubs.size()]
 		var p: Vector3 = base + Vector3(rng.randf_range(-8.0, 8.0), 0.0, rng.randf_range(-8.0, 8.0))
 		var npc  := briarwood_npc_scene.instantiate() as Node3D
 		if npc == null:
@@ -7629,7 +7629,7 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 		_register_minimap_marker(qb, "Board", "❖")
 
 	# Training dummy at plaza edge
-	var dummy: Vector3 = _make_training_dummy(plaza + Vector3(-2.6, 0, 3.0))
+	var dummy: Node3D = _make_training_dummy(plaza + Vector3(-2.6, 0, 3.0))
 	_briarwood_root.add_child(dummy)
 	_register_interactable(dummy, "training_dummy")
 
@@ -8436,7 +8436,7 @@ func _build_briarwood_life() -> void:
 			continue
 		_bw_life_root.add_child(npc2)
 		npc2.name = "LifeVillager_%d" % i
-		var hub: float = plaza if rng.randf() < 0.55 else market
+		var hub: Vector3 = plaza if rng.randf() < 0.55 else market
 		npc2.global_position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
 		npc2.set_meta("life_role", "villager")
 		npc2.set_meta("life_home", npc2.global_position)
@@ -8794,7 +8794,7 @@ func _shop_daily_stock(kind: String) -> Array:
 func _shop_find_item_def(kind: String, id: String) -> Dictionary:
 	for it in SHOP_ITEMS.get(kind, []):
 		if str(it.get("id", "")) == id:
-			var out := it.duplicate()
+			var out: Dictionary = it.duplicate()
 			out["name"] = _item_name(id)
 			return out
 	return {}
@@ -9441,7 +9441,7 @@ func _build_inn_contents(root: Node3D) -> void:
 	root.add_child(_box_prop(Vector3(-6.5, 0, -5.0), Vector3(2.0, 1.6, 1.4), "Fireplace", MAT_STONE(2.0)))
 
 	# Bed — interactable
-	var bed: Vector3 = _box_prop(Vector3(6.0, 0, -4.5), Vector3(2.2, 0.7, 3.0), "Bed", MAT_ROOF(2.0))
+	var bed: Node3D = _box_prop(Vector3(6.0, 0, -4.5), Vector3(2.2, 0.7, 3.0), "Bed", MAT_ROOF(2.0))
 	root.add_child(bed)
 	_register_interactable(bed, "inn_bed")
 
@@ -9467,7 +9467,7 @@ func _build_shop_contents(root: Node3D) -> void:
 
 func _build_smith_contents(root: Node3D) -> void:
 	# Anvil — interactable (opens smith shop)
-	var anvil: Vector3 = _box_prop(Vector3(2.5, 0, 1.0), Vector3(1.4, 0.9, 1.0), "Anvil", MAT_STONE(2.0))
+	var anvil: Node3D = _box_prop(Vector3(2.5, 0, 1.0), Vector3(1.4, 0.9, 1.0), "Anvil", MAT_STONE(2.0))
 	root.add_child(anvil)
 	_register_interactable(anvil, "smith_shop")
 
