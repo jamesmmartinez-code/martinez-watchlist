@@ -9874,6 +9874,21 @@ func _run_mayor_intro() -> void:
 	await get_tree().create_timer(walk_dur + 0.1).timeout
 
 	# ── 5. Mayor greeting dialog ─────────────────────────────────────────────
+	# Lambdas hoisted to local vars — multi-statement func() inside nested
+	# dict/array causes GDScript "Unindent doesn't match" parse error.
+	var _dlg_intro_accept := func():
+		_try_toast("Mayor: Start at the Notice Board — it keeps the village's troubles sorted.")
+		_tutorial_step = 0
+		_tutorial_on_event("_intro_accept")
+	var _dlg_board_now := func():
+		_tutorial_step = 0
+		_show_quest_board_ui(player)
+		_tutorial_on_event("board")
+	var _dlg_skip_tour := func():
+		_tutorial_done = true
+		_clear_tutorial_trail()
+		_hide_tutorial_arrow()
+		_try_toast("Mayor: Fair enough. Briarwood's yours to explore.")
 	show_dialog(
 		player,
 		"Mayor Aldric",
@@ -9883,28 +9898,9 @@ func _run_mayor_intro() -> void:
 		+ "I'd feel better knowing you can handle yourself before I point " \
 		+ "you toward the harbor road.",
 		[
-			{
-				"label": "Got it — what do you need?",
-				"action": func():
-					_try_toast("Mayor: Start at the Notice Board — it keeps the village's troubles sorted.")
-					_tutorial_step = 0
-					_tutorial_on_event("_intro_accept")
-			},
-			{
-				"label": "Open Notice Board now",
-				"action": func():
-					_tutorial_step = 0
-					_show_quest_board_ui(player)
-					_tutorial_on_event("board")
-			},
-			{
-				"label": "I know Briarwood — skip the tour.",
-				"action": func():
-					_tutorial_done = true
-					_clear_tutorial_trail()
-					_hide_tutorial_arrow()
-					_try_toast("Mayor: Fair enough. Briarwood's yours to explore.")
-			},
+			{"label": "Got it — what do you need?",        "action": _dlg_intro_accept},
+			{"label": "Open Notice Board now",             "action": _dlg_board_now},
+			{"label": "I know Briarwood — skip the tour.", "action": _dlg_skip_tour},
 		]
 	)
 
