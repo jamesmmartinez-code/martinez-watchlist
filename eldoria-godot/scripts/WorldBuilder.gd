@@ -2755,10 +2755,10 @@ func _build_far_world_scatter() -> void:
 	# background forest silhouettes, not foreground giants.
 	var tree_count := 160
 	for i in range(tree_count):
-		var angle := rng.randf() * TAU
-		var dist  := rng.randf_range(180.0, 500.0)
-		var pos   := Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
-		var h     := rng.randf_range(4.0, 8.0)
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(180.0, 500.0)
+		var pos: Vector3 = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
+		var h: float = rng.randf_range(4.0, 8.0)
 		# Trunk — thin and tall
 		var trunk_m := CylinderMesh.new()
 		trunk_m.top_radius    = rng.randf_range(0.10, 0.18)
@@ -2781,7 +2781,7 @@ func _build_far_world_scatter() -> void:
 			prm.size = Vector3(rng.randf_range(1.2, 2.2), h * 0.55, rng.randf_range(1.2, 2.2))  # was 2.2-4.0
 			canopy.mesh = prm
 		var cm := StandardMaterial3D.new()
-		var green_mix := rng.randf()
+		var green_mix: float = rng.randf()
 		if green_mix < 0.6:
 			cm.albedo_color = Color(0.15 + rng.randf_range(0, 0.12), 0.32 + rng.randf_range(0, 0.14), 0.10)
 		elif green_mix < 0.8:
@@ -2795,12 +2795,12 @@ func _build_far_world_scatter() -> void:
 
 	# ── Boulder clusters (100m to 350m) ────────────────────────────────────
 	for i in range(60):
-		var angle := rng.randf() * TAU
-		var dist  := rng.randf_range(100.0, 350.0)
-		var pos   := Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(100.0, 350.0)
+		var pos: Vector3 = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
 		var boulder := MeshInstance3D.new()
 		var sm := SphereMesh.new()
-		var s := rng.randf_range(0.8, 2.5)
+		var s: float = rng.randf_range(0.8, 2.5)
 		sm.radius = s
 		sm.height = s * rng.randf_range(0.6, 1.0)
 		boulder.mesh = sm
@@ -2815,9 +2815,9 @@ func _build_far_world_scatter() -> void:
 
 	# ── Distant hill mounds (low spheres that break flat horizon) ───────────
 	for i in range(20):
-		var angle := rng.randf() * TAU
-		var dist  := rng.randf_range(200.0, 500.0)
-		var pos   := Vector3(cos(angle) * dist, -2.0, sin(angle) * dist)
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(200.0, 500.0)
+		var pos: Vector3 = Vector3(cos(angle) * dist, -2.0, sin(angle) * dist)
 		var hill  := MeshInstance3D.new()
 		var sm    := SphereMesh.new()
 		sm.radius = rng.randf_range(15.0, 35.0)
