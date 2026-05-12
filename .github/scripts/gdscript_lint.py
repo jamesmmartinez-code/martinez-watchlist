@@ -10,6 +10,11 @@ Patterns checked:
   4. Autoload in default param — func f(x = SomeAutoload.CONST)
   5. Mixed tabs/spaces       — leading whitespace contains both \t and space
   6. C++ comments            — // at start of non-string content
+  7. var x: Vector3 = Transform3D() — wrong type annotation
+  8. var x: float = Basis()         — Basis is not a float
+  9. var x: float = vec.lerp()      — lerp on Vector3 returns Vector3
+ 10. var x: float = vec + dir * ... — vector arithmetic stored as float
+ 11. Transform3D(float, Vector3)    — wrong constructor (needs Basis, Vector3)
 
 Exit 0 = clean. Exit 1 = violations found (CI blocks the push).
 """
@@ -61,6 +66,27 @@ for gd in sorted(ROOT.rglob("*.gd")):
         # 6. C++ style comment at line start (not inside string)
         if re.match(r'\s*//', raw) and not re.match(r'\s*#', raw):
             violations.append((str(gd), lineno, "CPP-COMMENT", raw.rstrip()))
+
+
+        # 7. var x: Vector3 = Transform3D(...) — wrong type annotation
+        if re.search(r'var\s+\w+\s*:\s*Vector3\s*=\s*Transform3D\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-T3D-AS-V3", raw.rstrip()))
+
+        # 8. var x: float = Basis(...) — Basis is not a float
+        if re.search(r'var\s+\w+\s*:\s*float\s*=\s*Basis\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-BASIS-AS-FLOAT", raw.rstrip()))
+
+        # 9. var x: float = <vec>.lerp(...) — lerp on Vector3 returns Vector3, not float
+        if re.search(r'var\s+\w+\s*:\s*float\s*=\s*\w+\.lerp\(', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-LERP-FLOAT", raw.rstrip()))
+
+        # 10. var x: (float|int) = <name> + <vector_component> * — vector arithmetic stored as float
+        if re.search(r'var\s+\w+\s*:\s*(float|int)\s*=\s*\w+\s*[\+\-]\s*(side|dir|road_dir|forward|back|outward|facing)\s*\*', code):
+            violations.append((str(gd), lineno, "TYPE-MISMATCH-VEC-AS-FLOAT", raw.rstrip()))
+
+        # 11. Transform3D(float, Vector3(...)) — wrong constructor (should be Transform3D(Basis, Vector3))
+        if re.search(r'Transform3D\(\s*[\d\w\.]+\s*,\s*Vector3\(', code) and 'Basis' not in code:
+            violations.append((str(gd), lineno, "T3D-WRONG-CONSTRUCTOR", raw.rstrip()))
 
 # Pattern 3: var x := VARIANT_FUNC(...) — Variant inference error
 # These functions return Variant in GDScript 4 strict mode
