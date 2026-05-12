@@ -1,0 +1,76 @@
+name: GDScript Lint + Auto-fix
+
+# Runs on every push that touches a .gd file.
+# Fast (~20s) — no Godot install required.
+#
+# Two-pass behaviour:
+#   Pass 1 — detect violations.
+#   Pass 2 — auto-fix anything deterministic (mixed indentation).
+#             Commits the fix back to the same branch automatically.
+#   Pass 3 — re-lint. If non-auto-fixable violations remain, fail CI.
+#
+# Violations that auto-fix handles:
+#   - Mixed tabs/spaces in leading whitespace (strip spaces after tabs)
+#
+# Violations that require human/agent fix (CI fails with instructions):
+#   - C-style ternary  ? :
+#   - var := lerp(...)  type inference
+#   - Autoload name as default function parameter
+#   - Array[Node3D] typed variable
+#   - C++ // comments
+
+on:
+  push:
+    paths:
+      - 'eldoria-godot/scripts/**/*.gd'
+      - 'eldoria-godot/addons/**/*.gd'
+      - '.github/scripts/gdscript_lint.py'
+      - '.github/scripts/gdscript_autofix.py'
+      - '.github/workflows/gdscript-lint.yml'
+  pull_request:
+    paths:
+      - 'eldoria-godot/scripts/**/*.gd'
+      - 'eldoria-godot/addons/**/*.gd'
+
+# One run per branch at a time; newer push cancels older.
+concurrency:
+  group: gdscript-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # needed to push auto-fix commits
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 1
+
+      - name: Pass 1 — lint
+        id: lint1
+        run: python3 .github/scripts/gdscript_lint.py
+        continue-on-error: true   # don't fail yet; try auto-fix first
+
+      - name: Pass 2 — auto-fix deterministic issues
+        if: steps.lint1.outcome == 'failure'
+        run: |
+          python3 .github/scripts/gdscript_autofix.py
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "autofix=none" >> "$GITHUB_ENV"
+          else
+            git commit -m "auto-fix: normalize GDScript indentation [gdscript-lint bot]"
+            git push
+            echo "autofix=committed" >> "$GITHUB_ENV"
+          fi
+
+      - name: Pass 3 — re-lint after auto-fix
+        if: steps.lint1.outcome == 'failure'
+        run: python3 .github/scripts/gdscript_lint.py
+        # This will fail CI if non-auto-fixable violations remain.
+        # On success (only mixed-indent was the problem), CI goes green.
