@@ -596,7 +596,7 @@ static func generate_affix_item(base_id: String, rng: RandomNumberGenerator) -> 
 		if mods.has("tint"):
 			item["color"] = mods.tint
 	# Generate a unique runtime id so multiple affix variants can co-exist
-	var stamp: float = str(rng.randi_range(1000, 9999))
+	var stamp: String = str(rng.randi_range(1000, 9999))
 	var slug := (prefix_name + "_" + suffix_name).replace(" ", "_").replace("of_the_", "").replace("of_", "")
 	item["base_id"] = base_id
 	item["runtime_id"] = "@%s#%s_%s" % [base_id, slug, stamp]
