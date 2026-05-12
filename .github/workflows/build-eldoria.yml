@@ -209,6 +209,11 @@ jobs:
             # The GitHub Pages redirect is written in the NEXT step ("Overwrite GH Pages"),
             # which runs AFTER this R2 sync, so no loop risk here.
             # DEFER pck-parts.json — uploaded last after all chunks are live.
+            # SKIP index.html — it is the GitHub Pages redirect, not the game. Worker reads game.html.
+            if [ "$name" = "index.html" ]; then
+              echo "  ⏭️  index.html (skipped — redirect page, not for R2)"
+              continue
+            fi
             if [ "$name" = "pck-parts.json" ]; then
               echo "  ⏳  pck-parts.json (deferred — uploading last)"
               continue
