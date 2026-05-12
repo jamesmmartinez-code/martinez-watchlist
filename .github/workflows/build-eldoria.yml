@@ -38,6 +38,76 @@ jobs:
         # Prevents giant-boot bug + brown-fog-soup bug from ever shipping.
         # Constraints live in eldoria-godot/qa/_visual_constraints.yaml.
 
+      - name: Blank-world audit (orphan global_position guard)
+        # Scans WorldBuilder.gd for Node3D.new() followed by .global_position
+        # before add_child — the #1 cause of blank worlds (silent async crash).
+        # Fails the build BEFORE Godot runs so we never ship a broken world.
+        run: |
+          python3 << 'PYEOF'
+          import re, pathlib, sys
+
+          GD = pathlib.Path("eldoria-godot/scripts/WorldBuilder.gd")
+          if not GD.exists():
+              print("WorldBuilder.gd not found — skipping audit")
+              sys.exit(0)
+
+          lines = GD.read_text(errors='replace').splitlines()
+
+          NODE_TYPES = {
+              'Node3D', 'MeshInstance3D', 'CSGBox3D', 'CSGSphere3D', 'StaticBody3D',
+              'CollisionShape3D', 'OmniLight3D', 'SpotLight3D', 'Area3D',
+              'GPUParticles3D', 'CPUParticles3D', 'AnimatedSprite3D', 'Label3D',
+          }
+
+          NEW_ASSIGN  = re.compile(r'^\s*var\s+(\w+)\s*(?::[^=]*)?\s*:?=\s*(\w[\w\.]*?)\.new\(\)')
+          GLOBAL_POS  = re.compile(r'^\s*(\w+)\.global_position\s*=')
+          ADD_CHILD   = re.compile(r'add_child\s*\(\s*(\w+)')
+
+          orphans = {}   # var_name -> line number
+          violations = []
+
+          for i, line in enumerate(lines, 1):
+              stripped = line.strip()
+              if stripped.startswith('#'):
+                  continue
+
+              # Reset at function boundaries
+              if stripped.startswith('func '):
+                  orphans = {}
+
+              # Track new() assignments for node types
+              m = NEW_ASSIGN.match(line)
+              if m:
+                  vname, typename = m.group(1), m.group(2).split('.')[-1]
+                  if any(nt in line for nt in NODE_TYPES) or '3D' in typename or 'Instance' in typename:
+                      orphans[vname] = i
+
+              # Remove from orphan set when add_child is called
+              m_ac = ADD_CHILD.search(line)
+              if m_ac:
+                  orphans.pop(m_ac.group(1), None)
+
+              # Flag global_position on orphan var
+              m_gp = GLOBAL_POS.match(line)
+              if m_gp:
+                  vname = m_gp.group(1)
+                  if vname in orphans:
+                      violations.append((i, vname, orphans[vname], line.strip()))
+
+          if violations:
+              print(f"\n❌ BLANK-WORLD BUG DETECTED: {len(violations)} orphan .global_position assignment(s)\n")
+              for lineno, vname, created_at, text in violations:
+                  print(f"  Line {lineno}: {text}")
+                  print(f"    ^ '{vname}' was created at line {created_at} but global_position is set before add_child()")
+              print("\nFix: call add_child() BEFORE setting global_position, or use .position instead.")
+              print("This would cause a silent async coroutine crash → blank world for players.")
+              sys.exit(1)
+          else:
+              print("✅ Blank-world audit passed — no orphan global_position assignments found.")
+          PYEOF
+
+
+
       - name: Cache Godot binary + export templates
         id: cache-godot
         uses: actions/cache@v4
