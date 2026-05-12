@@ -1193,6 +1193,16 @@ func _build_world_sync() -> void:
 # Each await gives the engine one full rendered frame + lets the browser event
 # loop breathe. Phases are grouped so each chunk runs in ~2–8 ms, keeping the
 # tab responsive. Progress signal drives the LoadingScene overlay.
+func _wb_crash_report(phase: String) -> void:
+	# Called after each await block. If _wb_last_builder is set, that builder crashed.
+	if _wb_last_builder != "":
+		var msg := "CRASH in " + _wb_last_builder + " (phase: " + phase + ")"
+		_dlog(msg)
+		if Engine.has_singleton("JavaScriptBridge"):
+			var js = Engine.get_singleton("JavaScriptBridge")
+			js.eval("window.WB_CRASH=" + JSON.stringify(msg) + "; var d=document.getElementById('wb-crash'); if(!d){d=document.createElement('div');d.id='wb-crash';d.style='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:#ff4444;font:bold 18px monospace;padding:24px 32px;border:3px solid #ff4444;border-radius:8px;z-index:99999;text-align:center;max-width:90vw;';document.body.appendChild(d);} d.innerText='⚠ WORLD BUILD CRASH\n' + " + JSON.stringify(msg) + ";")
+		_wb_last_builder = ""
+
 func _build_world_async() -> void:
 	_dlog("async build START")
 
@@ -1205,6 +1215,7 @@ func _build_world_async() -> void:
 	# ── Briarwood hub (heaviest single chunk) ─────────────────────────────────
 	build_progress.emit("Briarwood", 0.05)
 	await get_tree().process_frame
+	_wb_crash_report("Ground")
 	if briarwood_hub_enabled:
 		_safe_call_now("_build_briarwood_hub", [])
 	else:
@@ -1213,18 +1224,21 @@ func _build_world_async() -> void:
 	# ── Trees + rocks ─────────────────────────────────────────────────────────
 	build_progress.emit("Trees & Rocks", 0.22)
 	await get_tree().process_frame
+	_wb_crash_report("Briarwood")
 	_safe_call_now("_scatter_trees", [140])
 	_safe_call_now("_scatter_rocks", [36])
 
 	# ── Ground cover ──────────────────────────────────────────────────────────
 	build_progress.emit("Ground Cover", 0.30)
 	await get_tree().process_frame
+	_wb_crash_report("Trees+Rocks")
 	_safe_call_now("_scatter_ferns",     [48])
 	_safe_call_now("_scatter_mushrooms", [24])
 
 	# ── Village props ─────────────────────────────────────────────────────────
 	build_progress.emit("Village Props", 0.36)
 	await get_tree().process_frame
+	_wb_crash_report("GroundCover")
 	_safe_call_now("_build_village_barrels", [])
 	_safe_call_now("_build_mountain_ring",   [])
 	_safe_call_now("_build_market_stalls",   [])
@@ -1235,6 +1249,7 @@ func _build_world_async() -> void:
 	# ── NPCs + grass ──────────────────────────────────────────────────────────
 	build_progress.emit("Characters", 0.46)
 	await get_tree().process_frame
+	_wb_crash_report("VillageProps")
 	_safe_call_now("_build_npcs",        [])
 	_safe_call_now("_build_grass_tufts", [220])
 	_safe_call_now("_build_far_world_scatter", [])
@@ -1242,6 +1257,7 @@ func _build_world_async() -> void:
 	# ── Water, particles, atmosphere ──────────────────────────────────────────
 	build_progress.emit("Water & FX", 0.54)
 	await get_tree().process_frame
+	_wb_crash_report("Characters")
 	_safe_call_now("_build_well",              [])
 	_safe_call_now("_build_pond",              [])
 	_safe_call_now("_build_firefly_particles", [])
@@ -1255,6 +1271,7 @@ func _build_world_async() -> void:
 	# ── Creatures, loot, scale pass ───────────────────────────────────────────
 	build_progress.emit("Creatures & Loot", 0.64)
 	await get_tree().process_frame
+	_wb_crash_report("Water+FX")
 	_safe_call_now("_build_enemies",      [])
 	_safe_call_now("_build_pet",          [])
 	_safe_call_now("_build_stable_horse", [])
@@ -1264,6 +1281,7 @@ func _build_world_async() -> void:
 	# ── Home, weather, caves ──────────────────────────────────────────────────
 	build_progress.emit("Home & Weather", 0.72)
 	await get_tree().process_frame
+	_wb_crash_report("Creatures+Loot")
 	_safe_call_now("_build_player_home",    [])
 	_safe_call_now("_build_weather",        [])
 	_safe_call_now("_build_crystal_caves",  [Vector3(-50, 0, -40)])
@@ -1271,6 +1289,7 @@ func _build_world_async() -> void:
 	# ── Nordic district (second-heaviest chunk) ───────────────────────────────
 	build_progress.emit("Nordic District", 0.80)
 	await get_tree().process_frame
+	_wb_crash_report("Home+Weather")
 	_safe_call_now("_build_nordic_fishing_village", [])
 	_safe_call_now("_build_nordic_road",            [])
 	_safe_call_now("_build_nordic_ambient_audio",   [])
@@ -1280,6 +1299,7 @@ func _build_world_async() -> void:
 	# ── Game systems ──────────────────────────────────────────────────────────
 	build_progress.emit("Systems", 0.90)
 	await get_tree().process_frame
+	_wb_crash_report("Nordic")
 	if district_streaming_enabled:
 		_safe_call_now("_init_district_streaming", [])
 	if quest_marker_enabled:
@@ -1314,9 +1334,12 @@ func _safe_call(method_name: String, args: Array = []) -> void:
 		return
 	call_deferred("_safe_call_now", method_name, args)
 
+var _wb_last_builder: String = ""
 func _safe_call_now(method_name: String, args: Array) -> void:
+	_wb_last_builder = method_name
 	_dlog("-> " + method_name)
 	callv(method_name, args)
+	_wb_last_builder = ""
 	_dlog("OK  " + method_name)
 
 # _dlog: write to print() AND document.title AND window.WB_LOG so the
