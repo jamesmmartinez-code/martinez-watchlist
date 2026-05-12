@@ -10931,6 +10931,7 @@ func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zon
 		# Build house
 		var house := _bw_build_kind(kind, plot_center, facing, rng)
 		root.add_child(house)
+		house.global_position = plot_center  # set AFTER add_child — orphan global_position crashes
 
 		# Auto yard behind house
 		if bw_yard_fence_enabled:
@@ -11033,7 +11034,7 @@ func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: 
 		chimney: bool, porch: bool, rng: RandomNumberGenerator) -> Node3D:
 	var n := Node3D.new()
 	n.name = "BW_House"
-	n.global_position = pos
+	# NOTE: position + rotation set by caller AFTER add_child (global_position on orphan crashes)
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	var w      := footprint.x
