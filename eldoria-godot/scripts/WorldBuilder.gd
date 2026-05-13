@@ -7681,7 +7681,7 @@ func _make_bw_house(pos: Vector3) -> Node3D:
 
 func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
 	# Use KayKit forge GLB when available, fallback to procedural
-	var forge_glb := BUILDING_MODELS.get("forge")
+	var forge_glb: PackedScene = BUILDING_MODELS.get("forge")
 	if forge_glb:
 		var n := forge_glb.instantiate() as Node3D
 		if n:
@@ -11257,27 +11257,27 @@ func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 	# Try GLB building first — falls through to procedural if asset missing.
 	match kind:
 		"shopfront":
-			var glb := BUILDING_MODELS.get("shopfront")
+			var glb: PackedScene = BUILDING_MODELS.get("shopfront")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.2, 1.2, 1.2))
 			return _bw_build_shopfront(pos, facing, rng)
 		"large":
-			var glb := BUILDING_MODELS.get("house")
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
 			return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
 		"medium":
-			var glb := BUILDING_MODELS.get("house")
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
 			return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
 		"corner":
-			var glb := BUILDING_MODELS.get("house")
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.25, 1.25, 1.25))
 			return _bw_build_corner_house(pos, facing, rng)
 		_:   # small
-			var glb := BUILDING_MODELS.get("house")
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(0.9, 0.9, 0.9))
 			return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2, false, true,  rng)
