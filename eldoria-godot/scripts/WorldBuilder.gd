@@ -1449,7 +1449,7 @@ func _scatter_trees(count: int) -> void:
 	rng.randomize()
 	var spawn_count: int = mini(count, 100)  # cap to 100 — the playfield is ~70m wide
 	for i in spawn_count:
-		var ang := rng.randf() * TAU
+		var ang: float = rng.randf() * TAU
 		# Inner ring (40%) — village-edge trees at 24-40m. Outer ring (60%) —
 		# Whisperwood proper at 40-72m. The bias gives a sense of the forest
 		# pressing in without crowding the central plaza.
@@ -1458,7 +1458,7 @@ func _scatter_trees(count: int) -> void:
 			dist = rng.randf_range(24.0, 40.0)
 		else:
 			dist = rng.randf_range(40.0, 72.0)
-		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var pos: Vector3 = Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 		# THEME §13 — keep trunks clear of the cobble path network and the
 		# building footprints. The path network radiates from origin out to
 		# the village edge, so a small jitter prevents perfect alignment.
@@ -1484,15 +1484,15 @@ func _scatter_rocks(count: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in count:
-		var ang := rng.randf() * TAU
-		var dist := rng.randf_range(20, 70)
-		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var ang: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(20, 70)
+		var pos: Vector3 = Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 		# THEME §1 — try the Sketchfab CC-BY boulder GLB first; fall through to
 		# the legacy sphere-primitive path if the asset isn't loadable.
 		if _make_glb_boulder(pos, rng):
 			continue
 		# ─── Procedural fallback (legacy primitive path) ─────────────────────
-		var size := rng.randf_range(0.7, 1.8)
+		var size: float = rng.randf_range(0.7, 1.8)
 		var rock := MeshInstance3D.new()
 		var sm := SphereMesh.new()
 		sm.radius = size; sm.height = size * 1.4
@@ -1513,11 +1513,11 @@ func _build_mountain_ring() -> void:
 	rng.randomize()
 	# Inner ring
 	for i in 36:
-		var ang := (float(i) / 36.0) * TAU + rng.randf_range(-0.05, 0.05)
-		var r := 220.0 + rng.randf_range(-15, 15)  # 2026-05-06 [CANON-APPROVED: SIZE_STANDARDS.md §6 — was 90m, mountain ring must be 200m+]
-		var pos := Vector3(cos(ang) * r, 0, sin(ang) * r)
-		var h := rng.randf_range(20, 40)
-		var base_r := rng.randf_range(8, 14)
+		var ang: float = (float(i) / 36.0) * TAU + rng.randf_range(-0.05, 0.05)
+		var r: float = 220.0 + rng.randf_range(-15, 15)  # 2026-05-06 [CANON-APPROVED: SIZE_STANDARDS.md §6 — was 90m, mountain ring must be 200m+]
+		var pos: Vector3 = Vector3(cos(ang) * r, 0, sin(ang) * r)
+		var h: float = rng.randf_range(20, 40)
+		var base_r: float = rng.randf_range(8, 14)
 		var mt := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
 		cm.top_radius = 0.0
@@ -1544,11 +1544,11 @@ func _build_mountain_ring() -> void:
 			add_child(cap)
 	# Outer ring (taller, further)
 	for i in 28:
-		var ang := (float(i) / 28.0) * TAU + rng.randf_range(-0.1, 0.1)
-		var r := 320.0 + rng.randf_range(-25, 25)  # 2026-05-06 [CANON-APPROVED: outer ring pushed back from 160m to 320m so it reads as horizon]
-		var pos := Vector3(cos(ang) * r, 0, sin(ang) * r)
-		var h := rng.randf_range(45, 80)
-		var base_r := rng.randf_range(15, 25)
+		var ang: float = (float(i) / 28.0) * TAU + rng.randf_range(-0.1, 0.1)
+		var r: float = 320.0 + rng.randf_range(-25, 25)  # 2026-05-06 [CANON-APPROVED: outer ring pushed back from 160m to 320m so it reads as horizon]
+		var pos: Vector3 = Vector3(cos(ang) * r, 0, sin(ang) * r)
+		var h: float = rng.randf_range(45, 80)
+		var base_r: float = rng.randf_range(15, 25)
 		var mt := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
 		cm.top_radius = 0.0
@@ -1649,7 +1649,7 @@ func _make_stall(pos: Vector3) -> void:
 # Windmill
 # ============================================================================
 func _build_windmill() -> void:
-	var pos := Vector3(0, 0, 12)
+	var pos: Vector3 = Vector3(0, 0, 12)
 	var mill := Node3D.new()
 	mill.position = pos
 	mill.add_to_group("windmills")
@@ -2084,9 +2084,9 @@ func _build_pond() -> void:
 	# Reeds along edge
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 	for i in 24:
-		var ang := rng.randf() * TAU
-		var rx := cos(ang) * (3.5 + rng.randf() * 0.5)
-		var rz := sin(ang) * (2.5 + rng.randf() * 0.5)
+		var ang: float = rng.randf() * TAU
+		var rx: float = cos(ang) * (3.5 + rng.randf() * 0.5)
+		var rz: float = sin(ang) * (2.5 + rng.randf() * 0.5)
 		var reed := MeshInstance3D.new()
 		var rcm := CylinderMesh.new()
 		rcm.top_radius = 0.0; rcm.bottom_radius = 0.04
@@ -2613,7 +2613,7 @@ func _build_grass_tufts(count: int) -> void:
 	grass_mat.rim_enabled = true
 	grass_mat.rim = 0.5
 	for i in count:
-		var pos := Vector3(rng.randf_range(-60, 60), 0, rng.randf_range(-60, 60))
+		var pos: Vector3 = Vector3(rng.randf_range(-60, 60), 0, rng.randf_range(-60, 60))
 		if pos.length() < 4: continue
 		var tuft := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
@@ -3915,7 +3915,7 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 func _normalize_npc_scale(model: Node) -> void:
 	await get_tree().process_frame
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for c in model.find_children("*", "VisualInstance3D", true):
 		var v := c as VisualInstance3D
 		if not v: continue
@@ -4103,9 +4103,9 @@ func _scatter_ferns(count: int) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	for i in count:
-		var ang := rng.randf() * TAU
-		var dist := rng.randf_range(14, 60)
-		var pos := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var ang: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(14, 60)
+		var pos: Vector3 = Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 		var inst: Node = packed.instantiate()
 		if inst == null:
 			continue
@@ -4130,16 +4130,16 @@ func _scatter_mushrooms(count: int) -> void:
 	# more natural under tree canopies.
 	var pods: int = max(1, count / 3)
 	for pi in pods:
-		var ang := rng.randf() * TAU
-		var dist := rng.randf_range(16, 55)
-		var center := Vector3(cos(ang) * dist, 0, sin(ang) * dist)
+		var ang: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(16, 55)
+		var center: Vector3 = Vector3(cos(ang) * dist, 0, sin(ang) * dist)
 		var pod_size: int = rng.randi_range(2, 4)
 		for mushroom_idx in pod_size:
 			var inst: Node = packed.instantiate()
 			if inst == null:
 				continue
 			var holder := Node3D.new()
-			var off := Vector3(rng.randf_range(-0.6, 0.6), 0, rng.randf_range(-0.6, 0.6))
+			var off: Vector3 = Vector3(rng.randf_range(-0.6, 0.6), 0, rng.randf_range(-0.6, 0.6))
 			holder.position = center + off
 			holder.rotation.y = rng.randf() * TAU
 			holder.add_to_group("mushrooms")
@@ -4344,7 +4344,7 @@ func _make_glb_boulder(pos: Vector3, rng: RandomNumberGenerator) -> bool:
 
 func _measure_aabb(node: Node) -> AABB:
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for v in node.find_children("*", "VisualInstance3D", true):
 		var vi := v as VisualInstance3D
 		if not vi: continue
@@ -4539,7 +4539,7 @@ func _tolerance_for(body: Node) -> float:
 
 func _check_and_normalize(body: Node, target_height: float) -> void:
 	var aabb := AABB()
-	var has := false
+	var has: bool = false
 	for v in body.find_children("*", "VisualInstance3D", true):
 		var vi := v as VisualInstance3D
 		if not vi: continue
@@ -4772,8 +4772,8 @@ func _build_nordic_fishing_village() -> void:
 	water.name              = "NordicHarbour"
 	add_child(water)
 
-	var pier_dir  := Vector3(0, 0, -1)
-	var shore_dir := Vector3(1, 0,  0)
+	var pier_dir: Vector3 = Vector3(0, 0, -1)
+	var shore_dir: Vector3 = Vector3(1, 0,  0)
 
 	# Main pier
 	var pier_start := origin + pier_dir * 6.0
@@ -4791,11 +4791,11 @@ func _build_nordic_fishing_village() -> void:
 		var bd  : Vector3 = pier_dir.rotated(Vector3.UP, side * PI * 0.5)
 		branch_dirs.append(bd)
 		branch_bases.append(bp)
-		var bl := _nrng.randf_range(14.0, 22.0)
+		var bl: float = _nrng.randf_range(14.0, 22.0)
 		_nordic_pier_branch(bp, bd, bl)
 
 	# Landmarks
-	var lh_pos := origin + shore_dir * 18.0 + Vector3(0, 0, 6.0)
+	var lh_pos: Vector3 = origin + shore_dir * 18.0 + Vector3(0, 0, 6.0)
 	lh_pos.y   = origin.y
 	_nordic_longhouse(lh_pos, shore_dir)
 
@@ -4834,7 +4834,7 @@ func _build_nordic_fishing_village() -> void:
 # Road is split into its own _safe_call so a road crash never kills the village.
 func _build_nordic_road() -> void:
 	var origin := NORDIC_ORIGIN
-	var road_end := origin + Vector3(0, 0, 8)
+	var road_end: Vector3 = origin + Vector3(0, 0, 8)
 	_nordic_cobble_road(Vector3(0, 0, 12), road_end)
 	# Harbor gate arch sits at the road's northern terminus, facing south (dir = +Z)
 	_nordic_harbor_gate(road_end + Vector3(0, 0, 4), Vector3(0, 0, 1))
@@ -4899,7 +4899,7 @@ func _play_nordic_gull(audio_root: Node3D) -> void:
 
 	# Use _nrng for position scatter — consistent with the rest of Nordic
 	var origin := NORDIC_ORIGIN
-	var p := origin + Vector3(
+	var p: Vector3 = origin + Vector3(
 		_nrng.randf_range(-30.0, 30.0),
 		_nrng.randf_range(3.0, 10.0),
 		_nrng.randf_range(-20.0, 40.0)
@@ -4933,13 +4933,13 @@ func _play_nordic_gull(audio_root: Node3D) -> void:
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 func _nordic_side(dir: Vector3) -> Vector3:
-	var s := dir.rotated(Vector3.UP, PI * 0.5)
+	var s: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 	return s if _nrng.randf() < 0.5 else -s  # FIX: was randi()%2 (modulo bias)
 
 # ── Pier spine — with single batched collision body ──────────────────────────
 func _nordic_pier_spine(start: Vector3, dir: Vector3, length: float) -> void:
 	var seg_len := 3.0
-	var count   := int(ceil(length / seg_len))
+	var count: float = int(ceil(length / seg_len))
 	for i in range(count):
 		var seg_pos := start + dir * (float(i) * seg_len)
 		seg_pos.y   = start.y
@@ -4950,7 +4950,7 @@ func _nordic_pier_spine(start: Vector3, dir: Vector3, length: float) -> void:
 # ── Pier branch — with batched collision + end platform ──────────────────────
 func _nordic_pier_branch(start: Vector3, dir: Vector3, length: float) -> void:
 	var seg_len := 3.0
-	var count   := int(ceil(length / seg_len))
+	var count: float = int(ceil(length / seg_len))
 	for i in range(count):
 		var seg_pos := start + dir * (float(i) * seg_len)
 		seg_pos.y   = start.y
@@ -5046,7 +5046,7 @@ func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> N
 	# Posts — MultiMesh batch path; else branch preserved for per-node debugging
 	if _pier_post_mesh != null:
 		for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
-			var post_local := Vector3(sx, -1.5, seg_len * 0.18)
+			var post_local: Vector3 = Vector3(sx, -1.5, seg_len * 0.18)
 			var post_world := world_pos + seg_basis * post_local
 			_mm_add(seg.get_parent(), _pier_post_mesh, MAT_DARKPOST(),
 					Transform3D(Basis.IDENTITY, post_world))
@@ -5066,7 +5066,7 @@ func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> N
 	if _nrng.randf() < 0.70:
 		if _pier_rail_mesh != null:
 			for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
-				var rail_local := Vector3(sx, 1.0, seg_len * 0.5)
+				var rail_local: Vector3 = Vector3(sx, 1.0, seg_len * 0.5)
 				var rail_world := world_pos + seg_basis * rail_local
 				_mm_add(seg.get_parent(), _pier_rail_mesh, MAT_PLANK(1.0),
 						Transform3D(seg_basis, rail_world))
@@ -5093,8 +5093,8 @@ func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2
 	var w      := footprint.x
 	var d      := footprint.y
 	var wall_h := 3.0
-	var rpeak  := _nrng.randf_range(2.2, 3.0)
-	var deck_y := _nrng.randf_range(0.5, 1.6)
+	var rpeak: float = _nrng.randf_range(2.2, 3.0)
+	var deck_y: float = _nrng.randf_range(0.5, 1.6)
 	var stilt_h := deck_y + 0.25
 
 	for sx in [-w * 0.44, w * 0.44]:
@@ -5290,7 +5290,7 @@ func _nordic_smokehouse(world_pos: Vector3, facing: Vector3) -> void:
 	b.add_child(roof)
 
 	# FIX: chimney base pinned to wall top + small offset into roof
-	var ch_h := _nrng.randf_range(3.5, 5.2)
+	var ch_h: float = _nrng.randf_range(3.5, 5.2)
 	var ch   := MeshInstance3D.new()
 	var cm   := CylinderMesh.new()
 	cm.top_radius    = 0.38
@@ -5364,7 +5364,7 @@ func _nordic_shore_houses(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3
 					+ pier_dir * _nrng.randf_range(4.0, 12.0) \
 					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
 		pos.y   = origin.y
-		var fp  := Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
+		var fp: float = Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
 		_nordic_stilt_house(pos, -pier_dir, fp)
 
 # ── Fish rack ─────────────────────────────────────────────────────────────────
@@ -5482,15 +5482,15 @@ func _nordic_woodpile(world_pos: Vector3) -> void:
 func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: Array[Vector3], branch_bases: Array[Vector3]) -> void:
 	# Fish racks
 	for i in range(10):
-		var z := _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x := (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
-		var p := pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
+		var z: float = _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
+		var x: float = (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
+		var p: Vector3 = pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_fish_rack(p, -pier_dir)
 
 	# Clutter
 	for i in range(38):
-		var p := pier_start + pier_dir * _nrng.randf_range(2.0, NORDIC_PIER_LEN) \
+		var p: float = pier_start + pier_dir * _nrng.randf_range(2.0, NORDIC_PIER_LEN) \
 					+ pier_dir.rotated(Vector3.UP, PI * 0.5) * _nrng.randf_range(-6.0, 6.0)
 		p.y   = NORDIC_WATER_Y + 0.15
 		_nordic_clutter(p)
@@ -5505,7 +5505,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 
 	# Two boats alongside main pier
 	for i in range(2):
-		var bp := pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
+		var bp: float = pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
 		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
 		bp.y  = NORDIC_WATER_Y - 0.06
 		_nordic_boat(bp, -pier_dir)
@@ -5513,7 +5513,7 @@ func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: 
 # ── Shore dressing ────────────────────────────────────────────────────────────
 func _nordic_shore_dressing(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3) -> void:
 	for i in range(50):
-		var p := origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
+		var p: float = origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
 					+ pier_dir * _nrng.randf_range(3.0, 18.0) \
 					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
 		p.y   = origin.y
@@ -5592,11 +5592,11 @@ func _nordic_dock_npcs(origin: Vector3, pier_start: Vector3, pier_dir: Vector3, 
 func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 	var dir  := road_end - road_start
 	dir.y    = 0.0
-	var dist := dir.length()
+	var dist: float = dir.length()
 	if dist < 1.0:
 		return
 	dir = dir.normalized()
-	var side  := dir.rotated(Vector3.UP, PI * 0.5)
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 	var steps := int(dist / 2.2)
 	var p     := road_start
 
@@ -5607,7 +5607,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 	for i in range(steps + 1):
 		var t      := float(i) / float(maxi(1, steps))
 		# Gentle meander that fades to straight near both ends
-		var wobble := sin(t * PI * 3.0) * 1.1 + rng.randf_range(-0.3, 0.3)
+		var wobble: float = sin(t * PI * 3.0) * 1.1 + rng.randf_range(-0.3, 0.3)
 		# Widen near the Nordic plaza
 		var width: float = lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
 
@@ -5862,7 +5862,7 @@ func _scale_node_to_length(n: Node3D, target_len: float) -> void:
 ## Merge all VisualInstance3D AABBs in world-space and return the combined AABB.
 ## Returns an empty AABB if the node has no visual children.
 func _visual_aabb(n: Node3D) -> AABB:
-	var has := false
+	var has: bool = false
 	var out := AABB()
 	for v in n.find_children("*", "VisualInstance3D", true, false):
 		var vi := v as VisualInstance3D
@@ -6240,7 +6240,7 @@ func _handle_interaction(node: Node3D, player: Node3D) -> void:
 
 
 func _collect_fish(player: Node3D) -> void:
-	var did_item := false
+	var did_item: bool = false
 	var inv = player.get("inventory") if "inventory" in player else null
 	if inv and inv.has_method("add_item"):
 		inv.add_item(nordic_fish_item_id, nordic_fish_item_qty)
@@ -6453,7 +6453,7 @@ func _boat_ui_go(dest_id: String) -> void:
 		if _boat_ui_player.has_signal("stats_changed"):
 			_boat_ui_player.stats_changed.emit()
 
-	var target := Vector3(dest.get("pos", Vector3.ZERO))
+	var target: Vector3 = Vector3(dest.get("pos", Vector3.ZERO))
 	var label  := str(dest.get("name", dest_id))
 
 	# Lock player movement while traveling
@@ -6552,7 +6552,7 @@ func _tick_district_streaming() -> void:
 	if player == null:
 		return
 
-	var d := player.global_position.distance_to(NORDIC_ORIGIN)
+	var d: float = player.global_position.distance_to(NORDIC_ORIGIN)
 	if d <= nordic_stream_load_dist:
 		_ensure_district_loaded("nordic")
 	elif d >= nordic_stream_unload_dist:
@@ -6730,7 +6730,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 	out["well"] = well
 
 	# Quest board
-	var board := _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
+	var board: Vector3 = _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
 	root.add_child(board)
 	out["quest_board"] = board
 
@@ -6747,7 +6747,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 	# Lantern ring (10 posts around plaza)
 	for i in range(10):
 		var ang := TAU * float(i) / 10.0
-		var p := plaza + Vector3(cos(ang), 0, sin(ang)) * 10.0
+		var p: Vector3 = plaza + Vector3(cos(ang), 0, sin(ang)) * 10.0
 		root.add_child(_make_bw_lantern_post(p))
 
 	return out
@@ -7097,8 +7097,8 @@ func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> v
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1234
 
-	var dir  := (plaza - market); dir.y = 0.0; dir = dir.normalized()
-	var side := dir.rotated(Vector3.UP, PI * 0.5)
+	var dir: Vector3 = (plaza - market); dir.y = 0.0; dir = dir.normalized()
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 
 	# Inn frontage anchor — styled inn replaces the generic house
 	var inn_bldg := _make_bw_inn(market + dir * -6.0, -dir)
@@ -7107,13 +7107,13 @@ func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> v
 	# Stall row
 	for i in range(bw_market_stall_count):
 		var t  := float(i) - float(bw_market_stall_count) * 0.5
-		var p  := market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
+		var p: float = market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
 		root.add_child(_make_bw_stall(p, -dir))
 
 	# Clutter scatter
 	var clutter_n := int(40.0 * bw_prop_density)
 	for i in range(clutter_n):
-		var p := market + side * rng.randf_range(-18.0, 18.0) \
+		var p: float = market + side * rng.randf_range(-18.0, 18.0) \
 					+ dir * rng.randf_range(-7.0, 10.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
@@ -7241,8 +7241,8 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 5678
 
-	var dir  := (plaza - craft); dir.y = 0.0; dir = dir.normalized()
-	var side := dir.rotated(Vector3.UP, PI * 0.5)
+	var dir: Vector3 = (plaza - craft); dir.y = 0.0; dir = dir.normalized()
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 
 	# Smith building — styled smithy replaces the generic house + standalone chimney
 	var smithy := _make_bw_smithy(craft, -dir)
@@ -7263,7 +7263,7 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 	# Yard clutter (log piles + barrels)
 	var yard_n := int(40.0 * bw_prop_density)
 	for i in range(yard_n):
-		var p := craft + side * rng.randf_range(-12.0, 12.0) \
+		var p: float = craft + side * rng.randf_range(-12.0, 12.0) \
 					+ dir * rng.randf_range(-5.0, 7.0)
 		root.add_child(_make_bw_clutter(p, rng))
 
@@ -7292,8 +7292,8 @@ func _build_bw_residential_ring(root: Node3D, plaza: Vector3, count: int) -> voi
 	for i in range(count):
 		var ang := (TAU * float(i) / float(maxi(1, count))) \
 					+ rng.randf_range(-0.18, 0.18)
-		var r   := rng.randf_range(ring_r * 0.85, ring_r * 1.15)
-		var p   := plaza + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		var r: float = rng.randf_range(ring_r * 0.85, ring_r * 1.15)
+		var p: Vector3 = plaza + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
 		root.add_child(_make_bw_house(p))
 
 
@@ -7438,7 +7438,7 @@ func _build_bw_edge_read(root: Node3D, plaza: Vector3) -> void:
 	var post_count := 70
 	for i in range(post_count):
 		var ang := TAU * float(i) / float(post_count)
-		var p   := plaza + Vector3(cos(ang), 0, sin(ang)) * r
+		var p: Vector3 = plaza + Vector3(cos(ang), 0, sin(ang)) * r
 		var post := MeshInstance3D.new()
 		var cm := CylinderMesh.new()
 		cm.top_radius    = 0.12
@@ -7481,7 +7481,7 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 		_register_minimap_marker(qb, "Board", "❖")
 
 	# Training dummy at plaza edge
-	var dummy := _make_training_dummy(plaza + Vector3(-2.6, 0, 3.0))
+	var dummy: Vector3 = _make_training_dummy(plaza + Vector3(-2.6, 0, 3.0))
 	_briarwood_root.add_child(dummy)
 	_register_interactable(dummy, "training_dummy")
 
@@ -7986,8 +7986,8 @@ func _tick_quest_markers() -> void:
 	if not quest_marker_enabled:
 		return
 	var player := _get_player()
-	var has_quest := false
-	var ready := false
+	var has_quest: bool = false
+	var ready: bool = false
 	var active_kind := ""
 	var active_target := ""
 	var active_item := ""
@@ -8069,7 +8069,7 @@ func _set_marker(target: Node, enabled: bool, symbol: String, player: Node3D = n
 	label.visible = enabled
 
 	if enabled and player != null and target is Node3D:
-		var d := (player as Node3D).global_position.distance_to((target as Node3D).global_position)
+		var d: float = (player as Node3D).global_position.distance_to((target as Node3D).global_position)
 		var a := clampf(1.0 - (d / fade_dist), 0.15, 1.0)
 		var c := label.modulate
 		c.a = a
@@ -8130,7 +8130,7 @@ func _harbor_master_turnin(player: Node3D) -> void:
 		return
 	if "active_quest" in player and player.active_quest is Dictionary and player.active_quest.size() > 0:
 		var aq: Dictionary = player.active_quest
-		var ready := false
+		var ready: bool = false
 		if player.has_method("is_quest_ready_to_turn_in"):
 			ready = bool(player.call("is_quest_ready_to_turn_in"))
 		elif str(aq.get("kind","")) == "fetch":
@@ -8194,7 +8194,7 @@ func _tick_quest_hud() -> void:
 	var aq: Dictionary = player.active_quest
 
 	var kind := str(aq.get("kind", "kill"))
-	var ready := false
+	var ready: bool = false
 	if player.has_method("is_quest_ready_to_turn_in"):
 		ready = bool(player.call("is_quest_ready_to_turn_in"))
 	elif kind == "kill":
@@ -8288,7 +8288,7 @@ func _build_briarwood_life() -> void:
 			continue
 		_bw_life_root.add_child(npc2)
 		npc2.name = "LifeVillager_%d" % i
-		var hub := plaza if rng.randf() < 0.55 else market
+		var hub: float = plaza if rng.randf() < 0.55 else market
 		npc2.position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
 		npc2.set_meta("life_role", "villager")
 		npc2.set_meta("life_home", npc2.global_position)
@@ -8336,7 +8336,7 @@ func _tick_briarwood_life() -> void:
 				_try_play_anim(npc, "idle")
 				continue
 			var home: Vector3 = npc.get_meta("life_home", npc.global_position)
-			var target2 := home + Vector3(rng.randf_range(-6, 6), 0, rng.randf_range(-6, 6))
+			var target2: Vector3 = home + Vector3(rng.randf_range(-6, 6), 0, rng.randf_range(-6, 6))
 			npc.set_meta("life_idle_until", now + rng.randf_range(1.0, 3.0))
 			_npc_go_to(npc, target2)
 			_try_play_anim(npc, "walk")
@@ -8630,7 +8630,7 @@ func _shop_daily_stock(kind: String) -> Array:
 	var rng := _shop_rng(kind)
 	var shuffled := pool.duplicate()
 	for i in range(shuffled.size() - 1, 0, -1):
-		var j := rng.randi_range(0, i)
+		var j: float = rng.randi_range(0, i)
 		var tmp = shuffled[i]
 		shuffled[i] = shuffled[j]
 		shuffled[j] = tmp
@@ -9031,7 +9031,7 @@ func _craft_rebuild() -> void:
 		_craft_list.add_child(row)
 
 		var rname := str(r.get("name", "Recipe"))
-		var can_craft := true
+		var can_craft: bool = true
 		if inv != null and inv.has_method("count_item"):
 			for inp in r.get("inputs", []):
 				if int(inv.count_item(str(inp.get("id", "")))) < int(inp.get("qty", 1)):
@@ -9293,7 +9293,7 @@ func _build_inn_contents(root: Node3D) -> void:
 	root.add_child(_box_prop(Vector3(-6.5, 0, -5.0), Vector3(2.0, 1.6, 1.4), "Fireplace", MAT_STONE(2.0)))
 
 	# Bed — interactable
-	var bed := _box_prop(Vector3(6.0, 0, -4.5), Vector3(2.2, 0.7, 3.0), "Bed", MAT_ROOF(2.0))
+	var bed: Vector3 = _box_prop(Vector3(6.0, 0, -4.5), Vector3(2.2, 0.7, 3.0), "Bed", MAT_ROOF(2.0))
 	root.add_child(bed)
 	_register_interactable(bed, "inn_bed")
 
@@ -9319,7 +9319,7 @@ func _build_shop_contents(root: Node3D) -> void:
 
 func _build_smith_contents(root: Node3D) -> void:
 	# Anvil — interactable (opens smith shop)
-	var anvil := _box_prop(Vector3(2.5, 0, 1.0), Vector3(1.4, 0.9, 1.0), "Anvil", MAT_STONE(2.0))
+	var anvil: Vector3 = _box_prop(Vector3(2.5, 0, 1.0), Vector3(1.4, 0.9, 1.0), "Anvil", MAT_STONE(2.0))
 	root.add_child(anvil)
 	_register_interactable(anvil, "smith_shop")
 
@@ -9623,7 +9623,7 @@ func _tutorial_on_event(ev: String) -> void:
 			# Any event while on step 1 — check if kill quest is finished
 			var p := _get_player()
 			if p != null:
-				var ready := false
+				var ready: bool = false
 				if p.has_method("is_quest_ready_to_turn_in"):
 					ready = bool(p.call("is_quest_ready_to_turn_in"))
 				elif "active_quest" in p and p.active_quest is Dictionary:
@@ -9715,7 +9715,7 @@ func _run_mayor_intro() -> void:
 
 	# ── 4. Soft walk toward plaza (tween position, doesn't fight physics) ────
 	var plaza  := briarwood_origin + bw_plaza_offset
-	var target := Vector3(plaza.x, player.global_position.y, plaza.z - 2.0)
+	var target: Vector3 = Vector3(plaza.x, player.global_position.y, plaza.z - 2.0)
 	var start  := player.global_position
 	var walk_dur := 1.8
 	var tw := create_tween()
@@ -9922,7 +9922,7 @@ func _update_tutorial_arrow_visual(player: Node3D) -> void:
 		_arrow_root.rotation.y = atan2(to_player.x, to_player.z)
 
 	# Fade out when the player is very close (< 3 m) — avoids visual clutter
-	var dist := player.global_position.distance_to(_arrow_target.global_position)
+	var dist: float = player.global_position.distance_to(_arrow_target.global_position)
 	var alpha := clampf(remap(dist, 1.5, 5.0, 0.0, 1.0), 0.0, 1.0)
 	_arrow_root.modulate = Color(1, 1, 1, alpha)
 
@@ -10076,13 +10076,13 @@ func _tick_tutorial_trail(player: Node3D) -> void:
 	var end   := _arrow_target.global_position
 	var dir   := end - start
 	dir.y = 0.0
-	var dist  := dir.length()
+	var dist: float = dir.length()
 	if dist < 1.2:
 		return   # player is already right on top of the target
 	dir = dir.normalized()
 
 	# Side vector for organic jitter
-	var side := dir.rotated(Vector3.UP, PI * 0.5)
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 
 	var count := clampi(tutorial_trail_count, 4, 18)
 	var step  := clampf(tutorial_trail_step, 0.9, 3.0)
@@ -10213,10 +10213,10 @@ func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void
 
 	for i in range(count):
 		var ang    := TAU * float(i) / float(maxi(1, count))
-		var p      := plaza + Vector3(cos(ang), 0.0, sin(ang)) * 8.8
-		var facing := (plaza - p); facing.y = 0.0; facing = facing.normalized()
+		var p: Vector3 = plaza + Vector3(cos(ang), 0.0, sin(ang)) * 8.8
+		var facing: Vector3 = (plaza - p); facing.y = 0.0; facing = facing.normalized()
 		var rot    := Basis(Vector3.UP, atan2(facing.x, facing.z))
-		var xf     := Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
+		var xf: Vector3 = Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
 
 		if bw_multimesh_enabled and bw_mm_benches:
 			_mm_add(root, _bw_get_bench_mesh(), _bw_mat_fence(), xf, 64)
@@ -10225,7 +10225,7 @@ func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void
 
 	# Stone planters scattered across plaza
 	for i in range(int(4 * bw_dressing_density)):
-		var p2  := plaza + Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-6.0, 6.0))
+		var p2: Vector3 = plaza + Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-6.0, 6.0))
 		var pot := MeshInstance3D.new()
 		var cm  := CylinderMesh.new()
 		cm.top_radius    = 0.75
@@ -10255,17 +10255,17 @@ func _make_bw_bench_node(pos: Vector3, facing: Vector3) -> Node3D:
 func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, count: int) -> void:
 	var rng  := RandomNumberGenerator.new()
 	rng.randomize()
-	var dir  := (plaza - market); dir.y = 0.0; dir = dir.normalized()
-	var side := dir.rotated(Vector3.UP, PI * 0.5)
+	var dir: Vector3 = (plaza - market); dir.y = 0.0; dir = dir.normalized()
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 
 	# Carts parked near market
 	for i in range(count):
-		var p := market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
+		var p: float = market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
 		root.add_child(_make_bw_cart(p, -dir))
 
 	# Free-standing hanging signboards
 	for i in range(int(6 * bw_dressing_density)):
-		var p2 := market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
+		var p2: float = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
 		var post := Node3D.new()
 		post.position = p2
 		root.add_child(post)
@@ -10273,7 +10273,7 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 
 	# Extra clutter scatter over market area
 	for i in range(int(20 * bw_dressing_density)):
-		var p3 := market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
+		var p3: float = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
 		_bw_place_clutter(root, p3, rng)
 
 
@@ -10312,8 +10312,8 @@ func _make_bw_cart(pos: Vector3, facing: Vector3) -> Node3D:
 func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, count: int) -> void:
 	var rng  := RandomNumberGenerator.new()
 	rng.randomize()
-	var dir  := (plaza - craft); dir.y = 0.0; dir = dir.normalized()
-	var side := dir.rotated(Vector3.UP, PI * 0.5)
+	var dir: Vector3 = (plaza - craft); dir.y = 0.0; dir = dir.normalized()
+	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
 
 	# Fence line defining yard boundary
 	_build_bw_fence_line(root, craft + side * 8.0 + dir * -4.0,
@@ -10321,7 +10321,7 @@ func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, coun
 
 	# Yard clutter scatter
 	for i in range(count):
-		var p := craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
+		var p: float = craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
 		_bw_place_clutter(root, p, rng)
 
 	# Chopping block (log stump)
@@ -10345,11 +10345,11 @@ func _build_bw_residential_dressing(root: Node3D, plaza: Vector3, count: int) ->
 
 	for i in range(count):
 		var ang    := TAU * float(i) / float(maxi(1, count))
-		var center := plaza + Vector3(cos(ang), 0.0, sin(ang)) * ring_r
+		var center: Vector3 = plaza + Vector3(cos(ang), 0.0, sin(ang)) * ring_r
 
 		# Small yard fence segment
-		var a := center + Vector3(rng.randf_range(-3.0, 3.0), 0.0, rng.randf_range(-3.0, 3.0))
-		var b := a + Vector3(rng.randf_range(4.0, 8.0), 0.0, rng.randf_range(-2.0, 2.0))
+		var a: Vector3 = center + Vector3(rng.randf_range(-3.0, 3.0), 0.0, rng.randf_range(-3.0, 3.0))
+		var b: Vector3 = a + Vector3(rng.randf_range(4.0, 8.0), 0.0, rng.randf_range(-2.0, 2.0))
 		_build_bw_fence_line(root, a, b)
 
 		# Laundry line (35% chance)
@@ -10380,7 +10380,7 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 
 	# Horizontal line beam
 	var mid := (a + b) * 0.5
-	var len := Vector2(b.x - a.x, b.z - a.z).length()
+	var len: float = Vector2(b.x - a.x, b.z - a.z).length()
 	var line := MeshInstance3D.new()
 	var lbm  := BoxMesh.new()
 	lbm.size = Vector3(0.05, 0.05, len)
@@ -10391,10 +10391,10 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 	root.add_child(line)
 
 	# Cloth pieces hanging from line
-	var cloth_n := rng.randi_range(2, 5)
+	var cloth_n: float = rng.randi_range(2, 5)
 	for i in range(cloth_n):
 		var t   := float(i + 1) / float(cloth_n + 1)
-		var cp  := a.lerp(b, t) + Vector3(0.0, 1.55, 0.0)
+		var cp: Vector3 = a.lerp(b, t) + Vector3(0.0, 1.55, 0.0)
 		var cl  := MeshInstance3D.new()
 		var cbm := BoxMesh.new()
 		cbm.size = Vector3(0.35, 0.25, 0.03)
@@ -10414,17 +10414,17 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 	var mat := _bw_mat_fence()
 	var dir := b - a; dir.y = 0.0
-	var len := dir.length()
+	var len: float = dir.length()
 	if len < 0.5:
 		return
 	dir = dir.normalized()
 
 	var post_spacing := 1.6
-	var posts        := int(ceil(len / post_spacing)) + 1
+	var posts: float = int(ceil(len / post_spacing)) + 1
 
 	for i in range(posts):
 		var p  := a + dir * (float(i) * post_spacing)
-		var xf := Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
+		var xf: Vector3 = Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 256)
 		else:
@@ -10441,7 +10441,7 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 	var yaw := atan2(b.x - a.x, b.z - a.z)
 	var rot := Basis(Vector3.UP, yaw)
 	for rail_y in [0.55, 1.05]:
-		var xf2 := Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
+		var xf2: Vector3 = Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, rail_mesh, mat, xf2, 128)
 		else:
@@ -10457,8 +10457,8 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 
 func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> void:
 	var mat  := _bw_mat_clutter()
-	var kind := rng.randf()
-	var rot  := Basis(Vector3.UP, rng.randf_range(-PI, PI))
+	var kind: float = rng.randf()
+	var rot: float = Basis(Vector3.UP, rng.randf_range(-PI, PI))
 
 	if bw_multimesh_enabled and bw_mm_clutter:
 		if kind < 0.45:
@@ -10545,7 +10545,7 @@ func _bw_loop_points(center: Vector3, rx: float, rz: float, n: int) -> Array[Vec
 
 func _build_bw_cobble_strip(a: Vector3, b: Vector3, parent: Node3D) -> void:
 	var dir := b - a; dir.y = 0.0
-	var dist := dir.length()
+	var dist: float = dir.length()
 	if dist < 0.5:
 		return
 	dir = dir.normalized()
@@ -10569,24 +10569,24 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 	rng.seed = 7331
 
 	var mat       := _bw_mat_fence()
-	var gate_dir  := (gate - center); gate_dir.y = 0.0; gate_dir = gate_dir.normalized()
+	var gate_dir: Vector3 = (gate - center); gate_dir.y = 0.0; gate_dir = gate_dir.normalized()
 	var gate_yaw  := atan2(gate_dir.x, gate_dir.z)
 	var half_gap  := (bw_gate_width / maxf(1.0, bw_palisade_radius_z)) * 0.5
 
 	var post_n := 120
 	for i in range(post_n):
 		var t := TAU * float(i) / float(post_n)
-		var p := center + Vector3(cos(t) * bw_palisade_radius_x,
+		var p: Vector3 = center + Vector3(cos(t) * bw_palisade_radius_x,
 									0.0,
 									sin(t) * bw_palisade_radius_z)
 
 		var yaw      := atan2((p - center).x, (p - center).z)
-		var ang_diff := absf(wrapf(yaw - gate_yaw, -PI, PI))
+		var ang_diff: float = absf(wrapf(yaw - gate_yaw, -PI, PI))
 		if ang_diff < half_gap:
 			continue   # gate gap
 
-		var h  := rng.randf_range(2.4, 3.4)
-		var xf := Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
+		var h: float = rng.randf_range(2.4, 3.4)
+		var xf: Vector3 = Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
 								p + Vector3(0.0, h * 0.5, 0.0))
 		if bw_multimesh_enabled and bw_mm_fences:
 			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 512)
@@ -10605,7 +10605,7 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 
 
 func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> void:
-	var side := forward.rotated(Vector3.UP, PI * 0.5)
+	var side: Vector3 = forward.rotated(Vector3.UP, PI * 0.5)
 	for s in [-1.0, 1.0]:
 		var p: Vector3 = gate + side * (bw_gate_width * 0.55 * s)
 		var tower := MeshInstance3D.new()
@@ -10624,7 +10624,7 @@ func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zon
 	rng.randomize()
 
 	for i in range(count):
-		var idx := int(rng.randi_range(0, pts.size() - 2))
+		var idx: float = int(rng.randi_range(0, pts.size() - 2))
 		var a   := pts[idx]
 		var b   := pts[idx + 1]
 
@@ -10636,10 +10636,10 @@ func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zon
 		road_dir = road_dir.normalized()
 
 		# Pick a point along segment (avoid endpoints)
-		var mid := a.lerp(b, rng.randf_range(0.22, 0.78))
+		var mid: Vector3 = a.lerp(b, rng.randf_range(0.22, 0.78))
 
 		# Choose which side of road
-		var outward := road_dir.rotated(Vector3.UP, PI * 0.5)
+		var outward: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
 		if rng.randf() < 0.5:
 			outward = -outward
 
@@ -10673,11 +10673,11 @@ func _build_bw_yards(root: Node3D, pts: Array[Vector3]) -> void:
 		var a        := pts[i]
 		var b        := pts[i + 1]
 		var mid      := (a + b) * 0.5
-		var road_dir := (b - a); road_dir.y = 0.0; road_dir = road_dir.normalized()
-		var back     := road_dir.rotated(Vector3.UP, PI * 0.5)
+		var road_dir: Vector3 = (b - a); road_dir.y = 0.0; road_dir = road_dir.normalized()
+		var back: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
 
 		var p1 := mid + back * (bw_house_setback + 2.0)
-		var p2 := p1 + road_dir * rng.randf_range(6.0, 10.0)
+		var p2: float = p1 + road_dir * rng.randf_range(6.0, 10.0)
 		_build_bw_fence_line(root, p1, p2)
 
 		if rng.randf() < 0.25:
@@ -10700,9 +10700,9 @@ func _build_bw_farms(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
 	var base := gate + forward * 18.0
 
 	for i in range(4):
-		var fw := rng.randf_range(8.0, 14.0)
-		var fd := rng.randf_range(10.0, 16.0)
-		var p  := base + Vector3(rng.randf_range(-14.0, 14.0), 0.0, rng.randf_range(6.0, 18.0))
+		var fw: float = rng.randf_range(8.0, 14.0)
+		var fd: float = rng.randf_range(10.0, 16.0)
+		var p: Vector3 = base + Vector3(rng.randf_range(-14.0, 14.0), 0.0, rng.randf_range(6.0, 18.0))
 
 		var field := MeshInstance3D.new()
 		var bm    := BoxMesh.new()
@@ -10728,7 +10728,7 @@ func _make_bw_house_variant(pos: Vector3, facing: Vector3, zone: String) -> Node
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 
-	var t    := rng.randf()
+	var t: float = rng.randf()
 	var kind := "small"
 
 	if zone == "market" and t < bw_shopfront_weight_market:
@@ -10785,7 +10785,7 @@ func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: 
 
 	# Timber frame + gable roof
 	_bw_add_timber_frame(n, w, d, wall_h, base_h)
-	var pitch := rng.randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	var pitch: float = rng.randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
 	n.add_child(_bw_gable_roof(w * 1.10, d * 1.08, base_h + wall_h + 0.25, pitch, bw_roof_overhang))
 
 	# Collision
@@ -10809,10 +10809,10 @@ func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: 
 		n.add_child(pm)
 
 	# 2–4 warm windows on random sides
-	var win_count := rng.randi_range(2, 4)
+	var win_count: float = rng.randi_range(2, 4)
 	for _i in range(win_count):
-		var side := -1.0 if rng.randf() < 0.5 else 1.0
-		var z    := rng.randf_range(-d * 0.25, d * 0.25)
+		var side: float = -1.0 if rng.randf() < 0.5 else 1.0
+		var z: float = rng.randf_range(-d * 0.25, d * 0.25)
 		_bw_add_warm_window(n, Vector3(side * w * 0.44, base_h + 1.7, z), side, bw_window_energy_day)
 
 	# Optional chimney
@@ -10882,7 +10882,7 @@ func _bw_pick_house_kind(zone: String, rng: RandomNumberGenerator) -> String:
 	var w_corner := bw_house_corner_weight
 	var sum      := w_small + w_med + w_large + w_corner
 
-	var t := rng.randf() * sum
+	var t: float = rng.randf() * sum
 	if t < w_small:
 		return "small"
 	elif t < w_small + w_med:
@@ -10994,7 +10994,7 @@ func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
 		road_dir: Vector3, outward: Vector3, kind: String, zone: String,
 		rng: RandomNumberGenerator) -> void:
 	# Yard dimensions vary by house type
-	var yard_w := rng.randf_range(bw_yard_width_min, bw_yard_width_max)
+	var yard_w: float = rng.randf_range(bw_yard_width_min, bw_yard_width_max)
 	match kind:
 		"large":     yard_w *= 1.15
 		"small":     yard_w *= 0.90
@@ -11025,7 +11025,7 @@ func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
 
 	# Yard clutter
 	if rng.randf() < 0.65 and kind != "shopfront":
-		var clutter_p := yard_center + Vector3(
+		var clutter_p: Vector3 = yard_center + Vector3(
 			rng.randf_range(-half_w * 0.6, half_w * 0.6),
 			0.0,
 			rng.randf_range(-half_d * 0.6, half_d * 0.6))
@@ -11097,7 +11097,7 @@ func _build_world_zones() -> void:
 
 func _build_zone_road(from_pos: Vector3, to_pos: Vector3) -> void:
 	var dir   := (to_pos - from_pos)
-	var length := dir.length()
+	var length: float = dir.length()
 	var center := (from_pos + to_pos) * 0.5
 	var road := MeshInstance3D.new()
 	var pm   := PlaneMesh.new()
