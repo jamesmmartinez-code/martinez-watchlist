@@ -2965,9 +2965,9 @@ func _build_mid_world_pois() -> void:
 		rb.mesh = rbm
 		rb.material_override = MAT_STONE(1.0)
 		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
+		root.add_child(rb)
 		rb.global_position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
 		rb.rotation.y = randf_range(0, TAU)
-		root.add_child(rb)
 
 	# Torch glow at top — ruins feel inhabited by someone
 	var tw_light := OmniLight3D.new()
@@ -3207,9 +3207,9 @@ func _build_mid_world_pois() -> void:
 		rock.mesh = rsm
 		rock.material_override = MAT_ROCK(1.0)
 		var ra: float = float(ri) * TAU / 6.0
+		root.add_child(rock)
 		rock.global_position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
 		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
-		root.add_child(rock)
 
 	# Scattered bones (small white cylinders)
 	for bi2 in range(5):
@@ -3220,9 +3220,9 @@ func _build_mid_world_pois() -> void:
 		var bmat2 := StandardMaterial3D.new()
 		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
 		bone.material_override = bmat2
+		root.add_child(bone)
 		bone.global_position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
 		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
-		root.add_child(bone)
 
 	# Glowing amber eyes inside the den
 	var eye_light := OmniLight3D.new()
@@ -3335,8 +3335,8 @@ func _build_whisperwood_forest() -> void:
 			fmat.albedo_color = Color(0.15, 0.48 + rng.randf_range(0, 0.18), 0.12)
 			fmat.roughness = 0.95
 			fern.material_override = fmat
-			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
 			root.add_child(fern)
+			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
 		else:
 			# Mushroom
 			var mush := MeshInstance3D.new()
@@ -3353,8 +3353,8 @@ func _build_whisperwood_forest() -> void:
 			)
 			mmat.roughness = 0.7
 			mush.material_override = mmat
-			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
 			root.add_child(mush)
+			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
 
 	# ── Firefly cluster (soft green ambient glow inside the forest) ──────────
 	# Three OmniLights at different depths give the forest a magical inner glow.
@@ -3388,8 +3388,8 @@ func _build_whisperwood_forest() -> void:
 	fog_mat.roughness     = 1.0
 	fog_mat.cull_mode     = BaseMaterial3D.CULL_DISABLED
 	fog_plane.material_override = fog_mat
-	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
 	root.add_child(fog_plane)
+	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
 
 	_dlog("Whisperwood Forest built (%d trees)" % TREE_N)
 
