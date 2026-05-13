@@ -27,30 +27,36 @@ func _safe_load_glb(path: String) -> PackedScene:
 
 func _populate_npc_models() -> void:
 	NPC_MODELS = {
+		# ── Confirmed in repo (>100KB, real files) ────────────────────────
 		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
-		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/nordic-plate-armor-m.glb"),
-		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/dunestrider-m.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
+		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
 		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
 		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
-		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/nordic-plate-armor-f.glb"),
+		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
-		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/druid-f.glb"),
-		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/julius-caesar-m.glb"),
-		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/druid-m.glb"),
-		# Warlock spellcasters available for ambient NPC placement
-		"Warlock F":           _safe_load_glb("res://assets/models/npcs/warlock-f.glb"),
-		"Warlock M":           _safe_load_glb("res://assets/models/npcs/warlock-m.glb"),
-		"Ramesses":            _safe_load_glb("res://assets/models/npcs/ramesses-m.glb"),
+		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
+		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
+		# Warlocks reuse existing NPC GLBs (Actorcore packs not in repo yet)
+		"Warlock F":            _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
+		"Warlock M":            _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
+		"Noble Craftsman Alt":  _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
 	}
 
 func _populate_building_models() -> void:
-	# KayKit FBX buildings + new Sketchfab GLB buildings loaded lazily.
-	# Any missing asset → _safe_load_glb returns null → procedural BoxMesh fallback.
+	# CONFIRMED REAL FILES (verified 2026-05-13 against GitHub contents API):
+	# props/ — all FBX files present and >100KB (real assets, not LFS stubs)
+	# buildings/ — only these GLBs are real (>1MB): tavern_troll, medieval_town,
+	#              log_building, castle_wall_kit, castle_village, sea_keep, gothic_interior
+	# 133/134-byte files are broken Git LFS pointers — DO NOT load them.
+	# trees/ — oak_tree, pine_tree, bush, dead_tree all confirmed real.
 	const P  := "res://assets/models/props/"
 	const B  := "res://assets/models/buildings/"
+	const T  := "res://assets/models/trees/"
 	BUILDING_MODELS = {
-		# ── Originals (FBX KayKit kit) ────────────────────────────────────
+		# ── KayKit FBX props (all in props/, all confirmed real) ──────────
 		"house":        _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
 		"shopfront":    _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
 		"forge":        _safe_load_glb(P + "stylized_forge_station.fbx"),
@@ -61,13 +67,38 @@ func _populate_building_models() -> void:
 		"sign":         _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx"),
 		"chimney_a":    _safe_load_glb(P + "stylized_curved_pipe_chimney.fbx"),
 		"chimney_b":    _safe_load_glb(P + "stylized_straight_pipe_chimney.fbx"),
-		# ── New Sketchfab GLBs ────────────────────────────────────────────
-		"tavern":       _safe_load_glb(B + "tavern_troll.glb"),
-		"medieval_town":_safe_load_glb(B + "medieval_town.glb"),
-		"log_building": _safe_load_glb(B + "log_building.glb"),
-		"castle_wall":  _safe_load_glb(B + "castle_wall_kit.glb"),
-		"castle_village":_safe_load_glb(B + "castle_village.glb"),
-		"sea_keep":     _safe_load_glb(B + "sea_keep.glb"),
+		"staircase":    _safe_load_glb(P + "stylized_bifurcated_wood_staircase.fbx"),
+		"rocks_large":  _safe_load_glb(P + "stylized_edged_rocks_set.fbx"),
+		"rocks_small":  _safe_load_glb(P + "stylized_small_rocks_set.fbx"),
+		"flowers":      _safe_load_glb(P + "stylized_flower_clump.fbx"),
+		"vases":        _safe_load_glb(P + "stylized_rounded_vases_set.fbx"),
+		"forge_pot":    _safe_load_glb(P + "stylized_large_forge_pot.fbx"),
+		"cymbal":       _safe_load_glb(P + "stylized_standing_cymbal.fbx"),
+		"dock":         _safe_load_glb(P + "stylized_old_sea_dock.fbx"),
+		"rect_flag":    _safe_load_glb(P + "stylized_rectangle_flags_pole.fbx"),
+		# Props already in props/ as GLBs ─────────────────────────────────
+		"campfire":     _safe_load_glb(P + "campfire.glb"),
+		"lantern":      _safe_load_glb(P + "lantern.glb"),
+		"barrel":       _safe_load_glb(P + "wooden_barrel.glb"),
+		"chest":        _safe_load_glb(P + "chest.glb"),
+		"well":         _safe_load_glb(P + "stone_well.glb"),
+		"boulder":      _safe_load_glb(P + "boulder.glb"),
+		"fern":         _safe_load_glb(P + "fern.glb"),
+		"mushroom":     _safe_load_glb(P + "mushroom_red.glb"),
+		"windmill":     _safe_load_glb(P + "windmill.glb"),
+		# ── Sketchfab building GLBs (confirmed real, >1MB) ────────────────
+		"tavern":          _safe_load_glb(B + "tavern_troll.glb"),
+		"medieval_town":   _safe_load_glb(B + "medieval_town.glb"),
+		"log_building":    _safe_load_glb(B + "log_building.glb"),
+		"castle_wall":     _safe_load_glb(B + "castle_wall_kit.glb"),
+		"castle_village":  _safe_load_glb(B + "castle_village.glb"),
+		"sea_keep":        _safe_load_glb(B + "sea_keep.glb"),
+		"gothic_interior": _safe_load_glb(B + "gothic_interior.glb"),
+		# ── Real tree GLBs (trees/ dir, all confirmed) ────────────────────
+		"oak_tree":    _safe_load_glb(T + "oak_tree.glb"),
+		"pine_tree":   _safe_load_glb(T + "pine_tree.glb"),
+		"bush":        _safe_load_glb(T + "bush.glb"),
+		"dead_tree":   _safe_load_glb(T + "dead_tree.glb"),
 	}
 	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
 	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
@@ -2979,7 +3010,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 1. Ruined Watchtower (east, 95m) ────────────────────────────────────
 	# Collapsed medieval watchtower — broken top, vine-covered stones, chest inside.
-	var tw_pos: Vector3 = Vector3(95.0, 0.0, 30.0)
+	var tw_pos := Vector3(95.0, 0.0, 30.0)
 	var tw     := Node3D.new()
 	tw.name    = "RuinedWatchtower"
 	root.add_child(tw)
@@ -3020,7 +3051,7 @@ func _build_mid_world_pois() -> void:
 		rb.mesh = rbm
 		rb.material_override = MAT_STONE(1.0)
 		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
-		rb.position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
+		rb.global_position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
 		rb.rotation.y = randf_range(0, TAU)
 		root.add_child(rb)
 
@@ -3041,15 +3072,12 @@ func _build_mid_world_pois() -> void:
 	tw_body.add_child(tw_col); tw.add_child(tw_body)
 
 	# Loot chest at base — reward for exploring
-	# Loot chest — simple inline (no _make_loot_chest_primitive helper)
-	var _lc := StaticBody3D.new()
-	_lc.name = "LootChest"
-	root.add_child(_lc)
-	_lc.global_position = tw_pos + Vector3(1.8, 0.2, 1.8)
+	var chest_node: Node3D = _make_loot_chest_primitive(tw_pos + Vector3(1.8, 0.2, 1.8))
+	if chest_node: root.add_child(chest_node)
 
 	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
 	# Seven standing stones in a ring, glowing rune in the centre.
-	var sc_pos: Vector3 = Vector3(-80.0, 0.0, -70.0)
+	var sc_pos := Vector3(-80.0, 0.0, -70.0)
 	var sc     := Node3D.new()
 	sc.name    = "DruidStoneCircle"
 	root.add_child(sc)
@@ -3059,7 +3087,7 @@ func _build_mid_world_pois() -> void:
 	var circle_r    := 7.0
 	for i in range(stone_count):
 		var sang : float = TAU * float(i) / float(stone_count)
-		var spos: Vector3 = Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
+		var spos := Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
 		var stone := MeshInstance3D.new()
 		var sbm   := BoxMesh.new()
 		sbm.size = Vector3(
@@ -3109,7 +3137,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 3. Abandoned Caravan (north-east road, 75m) ──────────────────────────
 	# Overturned wagon, scattered crates, campfire embers — feels like a story.
-	var cv_pos: Vector3 = Vector3(60.0, 0.0, 75.0)
+	var cv_pos := Vector3(60.0, 0.0, 75.0)
 	var cv     := Node3D.new()
 	cv.name    = "AbandonedCaravan"
 	root.add_child(cv)
@@ -3168,7 +3196,7 @@ func _build_mid_world_pois() -> void:
 	# ── 4. Roadside Waypoint Shrine (north road to Nordic, 55m) ─────────────
 	# Stone marker with a small offering bowl — gives players a rest point
 	# on the long run to the Nordic village.
-	var ws_pos: Vector3 = Vector3(4.0, 0.0, 58.0)
+	var ws_pos := Vector3(4.0, 0.0, 58.0)
 	var ws     := Node3D.new()
 	ws.name    = "WaypointShrine"
 	root.add_child(ws)
@@ -3222,7 +3250,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 5. Ancient Standing Stones Arch (south, 90m) ─────────────────────────
 	# A dramatic natural arch of two leaning megaliths — a pure silhouette moment.
-	var arch_pos: Vector3 = Vector3(-15.0, 0.0, -95.0)
+	var arch_pos := Vector3(-15.0, 0.0, -95.0)
 	var ar       := Node3D.new()
 	ar.name      = "MegalithArch"
 	root.add_child(ar)
@@ -3250,7 +3278,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 6. Wolf Den (west tree-line, 70m) ────────────────────────────────────
 	# A rocky outcrop den with bones and glowing eyes — warns players of wolves.
-	var wd_pos: Vector3 = Vector3(-70.0, 0.0, 10.0)
+	var wd_pos := Vector3(-70.0, 0.0, 10.0)
 	var wd     := Node3D.new()
 	wd.name    = "WolfDen"
 	root.add_child(wd)
@@ -3260,12 +3288,12 @@ func _build_mid_world_pois() -> void:
 	for ri in range(6):
 		var rock := MeshInstance3D.new()
 		var rsm  := SphereMesh.new()
-		var rs: float = randf_range(0.8, 2.2)
+		var rs   := randf_range(0.8, 2.2)
 		rsm.radius = rs; rsm.height = rs * randf_range(0.5, 0.8)
 		rock.mesh = rsm
 		rock.material_override = MAT_ROCK(1.0)
 		var ra: float = float(ri) * TAU / 6.0
-		rock.position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
+		rock.global_position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
 		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
 		root.add_child(rock)
 
@@ -3278,7 +3306,7 @@ func _build_mid_world_pois() -> void:
 		var bmat2 := StandardMaterial3D.new()
 		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
 		bone.material_override = bmat2
-		bone.position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
+		bone.global_position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
 		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
 		root.add_child(bone)
 
@@ -3320,17 +3348,17 @@ func _build_whisperwood_forest() -> void:
 	for i in range(TREE_N):
 		var tx: float = WW_CX + rng.randf_range(-WW_W * 0.5, WW_W * 0.5)
 		var tz: float = WW_CZ + rng.randf_range(-WW_D * 0.5, WW_D * 0.5)
-		var pos: Vector3 = Vector3(tx, 0.0, tz)
+		var pos := Vector3(tx, 0.0, tz)
 
 		# Try GLB tree first
-		var placed: bool = false
+		var placed := false
 		if TREE_VARIANTS.size() > 0:
-			var pick_r: float = rng.randf()
+			var pick_r := rng.randf()
 			var cum    := 0.0
 			for tv in TREE_VARIANTS:
 				cum += float(tv["weight"])
 				if pick_r <= cum:
-					placed = _make_glb_tree(pos, rng)
+					placed = _make_glb_tree(pos, rng, tv)
 					break
 
 		if not placed:
@@ -3377,7 +3405,7 @@ func _build_whisperwood_forest() -> void:
 	for i in range(80):
 		var fx: float = WW_CX + rng.randf_range(-WW_W * 0.48, WW_W * 0.48)
 		var fz: float = WW_CZ + rng.randf_range(-WW_D * 0.48, WW_D * 0.48)
-		var fpos: Vector3 = Vector3(fx, 0.0, fz)
+		var fpos := Vector3(fx, 0.0, fz)
 
 		if rng.randf() < 0.6:
 			# Fern tuft
@@ -3393,7 +3421,7 @@ func _build_whisperwood_forest() -> void:
 			fmat.albedo_color = Color(0.15, 0.48 + rng.randf_range(0, 0.18), 0.12)
 			fmat.roughness = 0.95
 			fern.material_override = fmat
-			fern.position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
+			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
 			root.add_child(fern)
 		else:
 			# Mushroom
@@ -3411,7 +3439,7 @@ func _build_whisperwood_forest() -> void:
 			)
 			mmat.roughness = 0.7
 			mush.material_override = mmat
-			mush.position = fpos + Vector3(0, mcm.height * 0.5, 0)
+			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
 			root.add_child(mush)
 
 	# ── Firefly cluster (soft green ambient glow inside the forest) ──────────
@@ -3431,7 +3459,7 @@ func _build_whisperwood_forest() -> void:
 
 	# ── Goblin camp INSIDE the forest (not in open field) ────────────────────
 	# Placed 60m into the forest so players have to navigate trees to reach it.
-	var gc_pos: Vector3 = Vector3(WW_CX + 20.0, 0.0, WW_CZ - 15.0)
+	var gc_pos := Vector3(WW_CX + 20.0, 0.0, WW_CZ - 15.0)
 	_make_goblin_camp(gc_pos)
 
 	# ── Forest fog plane — a low ground-fog quad inside Whisperwood ──────────
@@ -3446,7 +3474,7 @@ func _build_whisperwood_forest() -> void:
 	fog_mat.roughness     = 1.0
 	fog_mat.cull_mode     = BaseMaterial3D.CULL_DISABLED
 	fog_plane.material_override = fog_mat
-	fog_plane.position = Vector3(WW_CX, 0.35, WW_CZ)
+	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
 	root.add_child(fog_plane)
 
 	_dlog("Whisperwood Forest built (%d trees)" % TREE_N)
@@ -3595,17 +3623,10 @@ func _build_terrain_hills() -> void:
 	]
 
 	for h in hills:
-		if h.size() < 4:
-			continue
-		# Extract elements so audits can verify safe access (h.size() >= 4 guaranteed above)
-		var h_x: float     = h[0]
-		var h_z: float     = h[1]
-		var h_radius: float = h[2]
-		var h_height: float = h[3]
 		var hill := MeshInstance3D.new()
 		var sm := SphereMesh.new()
-		sm.radius = h_radius
-		sm.height = h_height * 2.0
+		sm.radius = h[2]
+		sm.height = h[3] * 2.0
 		sm.rings  = 10
 		sm.radial_segments = 16
 		hill.mesh = sm
@@ -3620,10 +3641,10 @@ func _build_terrain_hills() -> void:
 		hm.roughness = 0.95
 		hill.material_override = hm
 		# Sink half the sphere underground so only the dome shows
-		hill.position = Vector3(h_x, -(h_height * 0.5), h_z)
+		hill.global_position = Vector3(h[0], -(h[3] * 0.5), h[1])
 		root.add_child(hill)
 
-		# Small rock cluster at hill foot (every other hill) — h.size() >= 4 guaranteed above
+		# Small rock cluster at hill foot (every other hill)
 		if rng.randi() % 2 == 0:
 			for _ri in range(3):
 				var rock := MeshInstance3D.new()
@@ -3633,10 +3654,10 @@ func _build_terrain_hills() -> void:
 				rock.mesh = rm
 				rock.material_override = MAT_ROCK(1.0)
 				var ang: float = rng.randf() * TAU
-				rock.position = Vector3(
-					h_x + cos(ang) * rng.randf_range(h_radius * 0.4, h_radius * 0.75),
+				rock.global_position = Vector3(
+					h[0] + cos(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75),
 					rs * 0.35,
-					h_z + sin(ang) * rng.randf_range(h_radius * 0.4, h_radius * 0.75)
+					h[1] + sin(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75)
 				)
 				root.add_child(rock)
 
@@ -3685,25 +3706,18 @@ func _build_far_castle_ruins() -> void:
 		[  12.0, 11.0, 16.0, true  ],  # back-right collapsed (half height)
 	]
 	for tc in tower_configs:
-		if tc.size() < 4:
-			continue
-		# Extract elements so audits can verify safe access (tc.size() >= 4 guaranteed above)
-		var tc_x: float        = tc[0]
-		var tc_height: float   = tc[1]
-		var tc_z: float        = tc[2]
-		var tc_collapsed: bool = tc[3]
 		var tower := MeshInstance3D.new()
 		var tm := CylinderMesh.new()
 		tm.top_radius    = 2.8
 		tm.bottom_radius = 3.2
-		tm.height        = tc_height
+		tm.height        = tc[1]
 		tower.mesh = tm; tower.material_override = mat_stone
-		tower.position = Vector3(tc_x, tc_height * 0.5, tc_z)
+		tower.position = Vector3(tc[0], tc[1] * 0.5, tc[2])
 		root.add_child(tower)
 		# Battlement ring on top of standing towers (tc[3] == true means collapsed)
-		var is_collapsed: bool = tc_collapsed
+		var is_collapsed: bool = tc[3]
 		if not is_collapsed:
-			var btl_h: float = tc_height
+			var btl_h: float = tc[1]
 			for bi in range(6):
 				var bang: float = (float(bi) / 6.0) * TAU
 				var cren := MeshInstance3D.new()
@@ -3711,9 +3725,9 @@ func _build_far_castle_ruins() -> void:
 				crm.size = Vector3(1.0, 1.4, 1.0)
 				cren.mesh = crm; cren.material_override = mat_stone
 				cren.position = Vector3(
-					tc_x + cos(bang) * 2.6,
+					tc[0] + cos(bang) * 2.6,
 					btl_h + 0.7,
-					tc_z + sin(bang) * 2.6
+					tc[2] + sin(bang) * 2.6
 				)
 				root.add_child(cren)
 
@@ -4428,8 +4442,8 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions: Array = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-			Vector3(14.0, 0, 4.0)]
+		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		                  Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
@@ -4493,7 +4507,7 @@ func _build_village_dressing_props() -> void:
 	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
 	if vases_glb:
 		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
-		Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
 			var n := Node3D.new()
 			n.name = "Vases"
 			n.position = p
@@ -4539,9 +4553,9 @@ func _build_village_dressing_props() -> void:
 		var rng3 := RandomNumberGenerator.new()
 		rng3.seed = 9988
 		for i in range(8):
-			var angle: float = i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
-			var dist: float = rng3.randf_range(55.0, 70.0)
-			var p: Vector3 = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			var angle := i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
+			var dist := rng3.randf_range(55.0, 70.0)
+			var p := Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 			var n := Node3D.new()
 			n.name = "EdgeRocks"
 			n.position = p
@@ -8435,7 +8449,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 		root.add_child(_make_bw_lantern_post(p))
 
 	# Bell Tower — civic landmark north-west of the plaza, visible from the gate
-	var bell_tower: Node3D = _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
+	var bell_tower := _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
 	root.add_child(bell_tower)
 	out["bell_tower"] = bell_tower
 
@@ -12518,7 +12532,7 @@ func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> voi
 		var bat_count := 8
 		for bi in range(bat_count):
 			var bang := TAU * float(bi) / float(bat_count)
-			var bpos: Vector3 = Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
+			var bpos := Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
 			var crenel := MeshInstance3D.new()
 			var cbm := BoxMesh.new()
 			cbm.size = Vector3(0.55, 1.0, 0.55)
