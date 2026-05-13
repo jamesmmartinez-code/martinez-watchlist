@@ -3365,7 +3365,7 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		var positions: Vector3 = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
 					Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
@@ -3476,9 +3476,9 @@ func _build_village_dressing_props() -> void:
 		var rng3 := RandomNumberGenerator.new()
 		rng3.seed = 9988
 		for i in range(8):
-			var angle := i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
-			var dist := rng3.randf_range(55.0, 70.0)
-			var p := Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			var angle: float = i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
+			var dist: float = rng3.randf_range(55.0, 70.0)
+			var p: Vector3 = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 			var n := Node3D.new()
 			n.name = "EdgeRocks"
 			n.position = p
