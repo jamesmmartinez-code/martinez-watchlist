@@ -60,6 +60,14 @@ func _populate_building_models() -> void:
 		"castle_wall":  _safe_load_glb(B + "castle_wall_kit.glb"),
 		"castle_village":_safe_load_glb(B + "castle_village.glb"),
 		"sea_keep":     _safe_load_glb(B + "sea_keep.glb"),
+		# ── World-zone scene GLBs (large complete environments) ──────────────────
+		"port_city":    _safe_load_glb(B + "port_city.glb"),
+		"farm_village": _safe_load_glb(B + "farm_village.glb"),
+		"fortress":     _safe_load_glb(B + "fortress.glb"),
+		"cathedral":    _safe_load_glb(B + "cathedral.glb"),
+		"hilltop_town": _safe_load_glb(B + "hilltop_town.glb"),
+		"gothic_interior": _safe_load_glb(B + "gothic_interior.glb"),
+		"modular_wall": _safe_load_glb(B + "modular_wall.glb"),
 	}
 	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
 	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
@@ -1199,6 +1207,8 @@ func _build_world_sync() -> void:
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
 	_safe_call("_build_nordic_fishing_village")
 	_safe_call("_build_nordic_road")
+	if world_zones_enabled:
+		_safe_call("_build_world_zones")
 	_safe_call("_build_nordic_ambient_audio")
 	if nordic_dock_life_enabled:
 		_safe_call("_build_nordic_dock_life")
@@ -1342,6 +1352,13 @@ func _build_world_async() -> void:
 	_safe_call_now("_build_nordic_fishing_village", [])
 	_safe_call_now("_build_nordic_road",            [])
 	_safe_call_now("_build_nordic_ambient_audio",   [])
+
+	# ── World Zones (distant explorable town/city scenes) ────────────────────
+	build_progress.emit("World Zones", 0.86)
+	await get_tree().process_frame
+	_wb_crash_report("Nordic")
+	if world_zones_enabled:
+		_safe_call_now("_build_world_zones", [])
 	if nordic_dock_life_enabled:
 		_safe_call_now("_build_nordic_dock_life", [])
 
@@ -3365,8 +3382,8 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions: Vector3 = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-					Vector3(14.0, 0, 4.0)]
+		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		                  Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
@@ -3430,7 +3447,7 @@ func _build_village_dressing_props() -> void:
 	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
 	if vases_glb:
 		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
-				Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
 			var n := Node3D.new()
 			n.name = "Vases"
 			n.position = p
@@ -3476,9 +3493,9 @@ func _build_village_dressing_props() -> void:
 		var rng3 := RandomNumberGenerator.new()
 		rng3.seed = 9988
 		for i in range(8):
-			var angle: float = i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
-			var dist: float = rng3.randf_range(55.0, 70.0)
-			var p: Vector3 = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			var angle := i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
+			var dist := rng3.randf_range(55.0, 70.0)
+			var p := Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 			var n := Node3D.new()
 			n.name = "EdgeRocks"
 			n.position = p
@@ -5335,6 +5352,18 @@ const BOAT_DESTS := [
 @export var nordic_stream_unload_dist: float = 240.0  # free when player beyond this range
 @export var nordic_stream_tick: float = 0.8           # seconds between proximity checks
 
+# ── World Zones (complete town/city scene GLBs) ──────────────────────────────
+@export var world_zones_enabled: bool = true
+@export var zone_port_city_enabled: bool = true      # Tidesong Port — south
+@export var zone_farm_village_enabled: bool = true   # Harvest Hollow — west
+@export var zone_fortress_enabled: bool = true       # Iron Bastion — north-east
+@export var zone_cathedral_enabled: bool = true      # Cathedral of the Sundering — east
+@export var zone_hilltop_enabled: bool = true        # Monteriggioni — north
+@export var zone_gothic_interior_enabled: bool = true # Undercroft dungeon — south-east
+@export var zone_street_lights_enabled: bool = true  # Street lamp clusters at zone gates
+@export var zone_modular_wall_enabled: bool = true   # Perimeter wall around Briarwood
+
+
 func MAT_WATER() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color        = Color(0.10, 0.28, 0.45, 0.82)
@@ -5359,6 +5388,194 @@ func MAT_DARKPOST() -> StandardMaterial3D:
 		"res://assets/textures/wood/wood_norm.jpg",
 		"",
 		Vector3(1, 1, 1), Color(0.22, 0.15, 0.10))
+
+# ============================================================================
+# WORLD ZONES — complete town/city scene GLBs placed as distinct explorable
+# locations spread across the map. Kids walk (or use the boat) to each one.
+#
+# Map layout (Briarwood = center 0,0,0):
+#   NORTH  (+Z)  Hilltop Town (Monteriggioni)    z=+280
+#   SOUTH  (-Z)  Port City (Tidesong)             z=-320
+#   WEST   (-X)  Farm Village (Harvest Hollow)    x=-260
+#   NE          Iron Bastion Fortress             x=+220, z=+180
+#   EAST   (+X)  Cathedral of the Sundering       x=+300
+#   SE          Gothic Undercroft Dungeon          x=+200, z=-200
+# ============================================================================
+func _build_world_zones() -> void:
+	const B := "res://assets/models/buildings/"
+
+	# Helper: place one complete-scene GLB at world position + scale + rotation.
+	# Returns the root Node3D (already add_child-ed) or null if GLB missing.
+	var _place_zone := func(
+			glb_key: String,
+			zone_name: String,
+			pos: Vector3,
+			scale_xyz: float,
+			rot_y_deg: float = 0.0) -> Node3D:
+		var glb: PackedScene = BUILDING_MODELS.get(glb_key)
+		if glb == null:
+			_dlog("[Zones] %s GLB not loaded — skip" % zone_name)
+			return null
+		var root := Node3D.new()
+		root.name = zone_name.replace(" ", "")
+		root.add_to_group("world_zones")
+		root.position = pos           # position AFTER add_child to avoid global_position abort
+		add_child(root)
+		root.position = pos           # set again after parenting (safe pattern)
+		root.rotation.y = deg_to_rad(rot_y_deg)
+		root.scale = Vector3(scale_xyz, scale_xyz, scale_xyz)
+		var inst := glb.instantiate() as Node3D
+		if inst:
+			root.add_child(inst)
+		_dlog("[Zones] placed %s at %s" % [zone_name, pos])
+		return root
+
+	# ── Tidesong Port (south, z=-320) ────────────────────────────────────────
+	if zone_port_city_enabled:
+		_place_zone.call("port_city", "TidesongPort",
+			Vector3(0.0, 0.0, -320.0), 0.018, 0.0)
+		_build_zone_road(Vector3(0, 0, 0), Vector3(0, 0, -320))
+		_build_zone_sign(Vector3(0, 0, -40), "⚓ Tidesong Port", Color(0.2, 0.4, 0.7))
+
+	# ── Harvest Hollow (farm village, west, x=-260) ──────────────────────────
+	if zone_farm_village_enabled:
+		_place_zone.call("farm_village", "HarvestHollow",
+			Vector3(-260.0, 0.0, 0.0), 0.016, 90.0)
+		_build_zone_road(Vector3(0, 0, 0), Vector3(-260, 0, 0))
+		_build_zone_sign(Vector3(-40, 0, 0), "🌾 Harvest Hollow", Color(0.6, 0.5, 0.2))
+
+	# ── Iron Bastion (fortress, NE, x=+220, z=+180) ──────────────────────────
+	if zone_fortress_enabled:
+		_place_zone.call("fortress", "IronBastion",
+			Vector3(220.0, 0.0, 180.0), 0.020, -45.0)
+		_build_zone_road(Vector3(0, 0, 0), Vector3(220, 0, 180))
+		_build_zone_sign(Vector3(35, 0, 28), "🏰 Iron Bastion", Color(0.4, 0.4, 0.4))
+
+	# ── Cathedral of the Sundering (east, x=+300) ────────────────────────────
+	if zone_cathedral_enabled:
+		_place_zone.call("cathedral", "CathedralSundering",
+			Vector3(300.0, 0.0, 0.0), 0.022, -90.0)
+		_build_zone_road(Vector3(0, 0, 0), Vector3(300, 0, 0))
+		_build_zone_sign(Vector3(48, 0, 0), "⛪ Cathedral of the Sundering", Color(0.7, 0.6, 0.3))
+
+	# ── Monteriggioni Hilltop Town (north, z=+280) ───────────────────────────
+	if zone_hilltop_enabled:
+		_place_zone.call("hilltop_town", "MonteriggionTown",
+			Vector3(0.0, 0.0, 280.0), 0.014, 180.0)
+		_build_zone_road(Vector3(0, 0, 0), Vector3(0, 0, 280))
+		_build_zone_sign(Vector3(0, 0, 45), "🏘 Monteriggion Heights", Color(0.5, 0.3, 0.2))
+
+	# ── Gothic Undercroft (SE dungeon, x=+200, z=-200) ───────────────────────
+	if zone_gothic_interior_enabled:
+		_place_zone.call("gothic_interior", "GothicUndercroft",
+			Vector3(200.0, -2.0, -200.0), 0.012, 135.0)
+		_build_zone_sign(Vector3(32, 0, -32), "💀 The Undercroft", Color(0.3, 0.1, 0.4))
+
+	# ── Street light clusters at each zone gate ──────────────────────────────
+	if zone_street_lights_enabled:
+		var light_glb: PackedScene = _safe_load_glb("res://assets/models/props/street_lights.glb")
+		if light_glb:
+			var gates: Array[Vector3] = [
+				Vector3(0, 0, -45), Vector3(-45, 0, 0),
+				Vector3(38, 0, 28), Vector3(50, 0, 0),
+				Vector3(0, 0, 48), Vector3(35, 0, -35),
+			]
+			for gate_pos in gates:
+				var lr := Node3D.new()
+				lr.name = "ZoneGateLights"
+				add_child(lr)
+				lr.position = gate_pos
+				lr.scale = Vector3(0.008, 0.008, 0.008)
+				var li := light_glb.instantiate() as Node3D
+				if li:
+					lr.add_child(li)
+
+	# ── Modular wall ring around Briarwood center ─────────────────────────────
+	if zone_modular_wall_enabled:
+		var wall_glb: PackedScene = BUILDING_MODELS.get("modular_wall")
+		if wall_glb:
+			# 8 wall sections in a ring at radius 55m, rotated to face outward
+			for i in range(8):
+				var angle: float = (float(i) / 8.0) * TAU
+				var wp := Node3D.new()
+				wp.name = "WallSection%d" % i
+				wp.add_to_group("buildings")
+				add_child(wp)
+				wp.position = Vector3(cos(angle) * 55.0, 0.0, sin(angle) * 55.0)
+				wp.rotation.y = angle + PI * 0.5
+				wp.scale = Vector3(0.015, 0.015, 0.015)
+				var wi := wall_glb.instantiate() as Node3D
+				if wi:
+					wp.add_child(wi)
+
+	_dlog("[Zones] _build_world_zones complete")
+
+
+# Place a dirt road connecting origin_pos → dest_pos (flat BoxMesh segments)
+func _build_zone_road(origin_pos: Vector3, dest_pos: Vector3) -> void:
+	var diff: Vector3 = dest_pos - origin_pos
+	var dist: float = diff.length()
+	if dist < 1.0:
+		return
+	var dir: Vector3 = diff.normalized()
+	var seg_len: float = 12.0
+	var seg_count: int = int(dist / seg_len)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.48, 0.38, 0.27)   # warm dirt
+	mat.roughness    = 0.92
+	for i in range(1, seg_count):
+		var seg_center: Vector3 = origin_pos + dir * (float(i) * seg_len + seg_len * 0.5)
+		var seg := MeshInstance3D.new()
+		var bm  := BoxMesh.new()
+		bm.size = Vector3(4.5, 0.05, seg_len + 0.2)
+		seg.mesh              = bm
+		seg.material_override = mat
+		seg.name              = "ZoneRoadSeg"
+		add_child(seg)
+		seg.position = Vector3(seg_center.x, 0.02, seg_center.z)
+		# Rotate segment to align with road direction
+		seg.rotation.y = atan2(dir.x, dir.z)
+
+
+# Floating zone sign post with label (kids can read where they're heading)
+func _build_zone_sign(pos: Vector3, label: String, col: Color) -> void:
+	# Post
+	var post := MeshInstance3D.new()
+	var pm   := CylinderMesh.new()
+	pm.top_radius    = 0.06
+	pm.bottom_radius = 0.07
+	pm.height        = 2.4
+	post.mesh = pm
+	var pm_mat := StandardMaterial3D.new()
+	pm_mat.albedo_color = Color(0.35, 0.22, 0.12)
+	post.material_override = pm_mat
+	add_child(post)
+	post.position = pos + Vector3(0, 1.2, 0)
+
+	# Sign board
+	var board := MeshInstance3D.new()
+	var bm    := BoxMesh.new()
+	bm.size   = Vector3(3.8, 0.55, 0.08)
+	board.mesh = bm
+	var bm_mat := StandardMaterial3D.new()
+	bm_mat.albedo_color = col.lightened(0.15)
+	bm_mat.emission_enabled = true
+	bm_mat.emission = col
+	bm_mat.emission_energy_multiplier = 0.4
+	board.material_override = bm_mat
+	add_child(board)
+	board.position = pos + Vector3(0, 2.55, 0)
+
+	# Label (3D text via Label3D)
+	var lbl := Label3D.new()
+	lbl.text       = label
+	lbl.font_size  = 18
+	lbl.modulate   = Color.WHITE
+	lbl.billboard  = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.no_depth_test = true
+	add_child(lbl)
+	lbl.position = pos + Vector3(0, 2.55, -0.06)
+
 
 # ── Entry point ─────────────────────────────────────────────────────────────
 func _build_nordic_fishing_village() -> void:
