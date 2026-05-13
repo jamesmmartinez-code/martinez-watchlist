@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Realm of Eldoria — World Map</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0b07; color: #d4c090; font-family: Georgia, serif; padding: 20px; }
+  h1 { text-align: center; font-size: 24px; color: #e8d090; letter-spacing: 3px; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #7a6840; font-size: 12px; margin-bottom: 24px; }
+  .layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+  .map-wrap { flex: 0 0 auto; }
+  .tables { flex: 1 1 380px; display: flex; flex-direction: column; gap: 18px; }
+
+  svg { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #1e1a0e; color: #c0a060; padding: 6px 8px; text-align: left; border-bottom: 1px solid #3a3020; font-size: 11px; letter-spacing: 1px; }
+  td { padding: 5px 8px; border-bottom: 1px solid #1e1a0e; vertical-align: top; }
+  tr:hover td { background: #1a1608; }
+  .section-title { color: #c0a060; font-size: 13px; letter-spacing: 2px; border-bottom: 1px solid #3a3020; padding-bottom: 4px; margin-bottom: 8px; }
+  .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; margin-right: 3px; }
+  .tag-glb  { background: #1a3020; color: #40c060; border: 1px solid #2a4030; }
+  .tag-fbx  { background: #1a2030; color: #4080c0; border: 1px solid #2a3040; }
+  .tag-proc { background: #2a1810; color: #c06030; border: 1px solid #3a2818; }
+  .tag-boss { background: #1a0820; color: #c040e0; border: 1px solid #2a1030; }
+  .dist { color: #7a6840; font-size: 11px; }
+  .file { color: #5a9060; font-size: 11px; font-family: monospace; }
+  .file-fbx { color: #5080b0; }
+  .file-proc { color: #a06040; font-style: italic; }
+  .enemy-name { color: #e07050; }
+  .npc-name { color: #90c080; }
+  .landmark { color: #c0a860; }
+  .hp { color: #e05050; font-size: 10px; }
+  .xp { color: #80c0e0; font-size: 10px; }
+  .updated { text-align: center; color: #4a4030; font-size: 10px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>⚔ REALM OF ELDORIA ⚔</h1>
+<p class="subtitle">World Map &amp; Asset Registry — Last updated: 2026-05-13 · Press <strong style="color:#c0a060">N</strong> in-game to open this map</p>
+
+<div class="layout">
+
+<!-- ═══ MAP SVG ═══ -->
+<div class="map-wrap">
+<svg width="540" height="540" viewBox="0 0 540 540" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a2010"/>
+      <stop offset="70%" stop-color="#1a1608"/>
+      <stop offset="100%" stop-color="#0d0b06"/>
+    </radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="sglow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Ground -->
+  <circle cx="270" cy="270" r="265" fill="url(#g1)"/>
+
+  <!-- Distance rings -->
+  <circle cx="270" cy="270" r="40"  fill="none" stroke="#2e2618" stroke-width="1" stroke-dasharray="3,5"/>
+  <circle cx="270" cy="270" r="90"  fill="none" stroke="#282214" stroke-width="1" stroke-dasharray="2,7"/>
+  <circle cx="270" cy="270" r="155" fill="none" stroke="#221e10" stroke-width="1" stroke-dasharray="2,9"/>
+  <circle cx="270" cy="270" r="220" fill="none" stroke="#1c180c" stroke-width="1" stroke-dasharray="2,11"/>
+
+  <!-- Ring labels -->
+  <text x="274" y="234" fill="#3e3428" font-size="8" font-family="Georgia">30m</text>
+  <text x="274" y="184" fill="#362e20" font-size="8" font-family="Georgia">80m</text>
+  <text x="274" y="119" fill="#2c2618" font-size="8" font-family="Georgia">160m</text>
+  <text x="274" y="54"  fill="#241e14" font-size="8" font-family="Georgia">260m</text>
+
+  <!-- Compass -->
+  <text x="270" y="18"  fill="#7a6840" font-size="10" text-anchor="middle" font-family="Georgia" font-style="italic">N</text>
+  <text x="270" y="530" fill="#7a6840" font-size="10" text-anchor="middle" font-family="Georgia" font-style="italic">S</text>
+  <text x="12"  y="274" fill="#7a6840" font-size="10" text-anchor="middle" font-family="Georgia" font-style="italic">W</text>
+  <text x="528" y="274" fill="#7a6840" font-size="10" text-anchor="middle" font-family="Georgia" font-style="italic">E</text>
+
+  <!-- Roads -->
+  <line x1="270" y1="250" x2="270" y2="28"  stroke="#5a4e30" stroke-width="2.5" stroke-dasharray="7,4" opacity="0.6"/>
+  <line x1="285" y1="270" x2="480" y2="258" stroke="#5a4e30" stroke-width="2"   stroke-dasharray="5,4" opacity="0.4"/>
+  <line x1="255" y1="270" x2="90"  y2="252" stroke="#5a4e30" stroke-width="2"   stroke-dasharray="5,4" opacity="0.35"/>
+
+  <!-- Terrain hills -->
+  <ellipse cx="370" cy="175" rx="16" ry="9"  fill="#243016" opacity="0.7"/>
+  <ellipse cx="210" cy="178" rx="14" ry="8"  fill="#243016" opacity="0.7"/>
+  <ellipse cx="382" cy="232" rx="18" ry="10" fill="#243016" opacity="0.6"/>
+  <ellipse cx="158" cy="235" rx="16" ry="9"  fill="#243016" opacity="0.6"/>
+  <ellipse cx="330" cy="368" rx="16" ry="8"  fill="#243016" opacity="0.55"/>
+  <ellipse cx="388" cy="344" rx="18" ry="9"  fill="#243016" opacity="0.55"/>
+  <ellipse cx="270" cy="130" rx="28" ry="13" fill="#283a18" opacity="0.7"/><!-- big N hill -->
+  <ellipse cx="420" cy="270" rx="22" ry="11" fill="#243016" opacity="0.5"/>
+  <ellipse cx="116" cy="260" rx="19" ry="9"  fill="#243016" opacity="0.5"/>
+
+  <!-- Whisperwood Forest -->
+  <ellipse cx="108" cy="218" rx="68" ry="52" fill="#182a10" opacity="0.9"/>
+  <g fill="#243818" opacity="0.9">
+    <circle cx="80"  cy="205" r="6"/><circle cx="96"  cy="192" r="7"/><circle cx="114" cy="199" r="8"/>
+    <circle cx="130" cy="188" r="6"/><circle cx="92"  cy="222" r="7"/><circle cx="110" cy="230" r="6"/>
+    <circle cx="128" cy="218" r="8"/><circle cx="144" cy="208" r="6"/><circle cx="72"  cy="224" r="5"/>
+    <circle cx="98"  cy="240" r="6"/><circle cx="116" cy="237" r="7"/><circle cx="138" cy="228" r="5"/>
+  </g>
+  <circle cx="108" cy="220" r="22" fill="#30e060" opacity="0.05" filter="url(#sglow)"/>
+  <!-- Goblin camp in forest -->
+  <circle cx="126" cy="228" r="6"  fill="#c04010" opacity="0.85"/>
+  <text x="126" y="244" fill="#e05020" font-size="8" text-anchor="middle" font-family="Georgia">⚔ Goblins</text>
+  <text x="106" y="180" fill="#3a6828" font-size="10" text-anchor="middle" font-weight="bold" font-family="Georgia">Whisperwood</text>
+  <text x="106" y="190" fill="#2a5020" font-size="8"  text-anchor="middle" font-family="Georgia">oak_tree.glb · pine_tree.glb</text>
+
+  <!-- Crystal Caves entrance (SW, ~65m) -->
+  <rect x="209" y="221" width="7" height="16" rx="1" fill="#201830" stroke="#4040b0" stroke-width="1.5"/>
+  <rect x="220" y="221" width="7" height="16" rx="1" fill="#201830" stroke="#4040b0" stroke-width="1.5"/>
+  <rect x="207" y="218" width="22" height="6"  rx="1" fill="#282898"/>
+  <circle cx="218" cy="217" r="10" fill="#3050ff" opacity="0.2" filter="url(#sglow)"/>
+  <circle cx="218" cy="217" r="4"  fill="#4060ff" opacity="0.8" filter="url(#glow)"/>
+  <text x="218" y="248" fill="#5060c0" font-size="9"  text-anchor="middle" font-weight="bold" font-family="Georgia">Cave Entrance</text>
+  <text x="218" y="258" fill="#3040a0" font-size="7.5" text-anchor="middle" font-family="Georgia">procedural arch</text>
+
+  <!-- Druid Stone Circle (~115m SW) -->
+  <circle cx="155" cy="312" r="11" fill="none" stroke="#306038" stroke-width="1.5"/>
+  <g fill="#385228">
+    <rect x="149" y="300" width="3" height="7" rx="1"/>
+    <rect x="159" y="300" width="3" height="7" rx="1"/>
+    <rect x="165" y="308" width="3" height="7" rx="1"/>
+    <rect x="145" y="309" width="3" height="7" rx="1"/>
+    <rect x="152" y="319" width="3" height="7" rx="1"/>
+    <rect x="163" y="319" width="3" height="7" rx="1"/>
+  </g>
+  <circle cx="156" cy="313" r="8" fill="#18c040" opacity="0.12" filter="url(#sglow)"/>
+  <text x="156" y="330" fill="#3a8048" font-size="8.5" text-anchor="middle" font-family="Georgia">Druid Circle</text>
+
+  <!-- Ruined Watchtower (NE ~95m) -->
+  <rect x="348" y="206" width="12" height="19" rx="2" fill="#302a20" stroke="#5a5038" stroke-width="1.5"/>
+  <rect x="346" y="204" width="16" height="4" rx="1" fill="#4a4030"/>
+  <rect x="347" y="201" width="3" height="6" fill="#4a4030"/>
+  <rect x="356" y="201" width="3" height="6" fill="#4a4030"/>
+  <circle cx="354" cy="200" r="4" fill="#d07018" opacity="0.5" filter="url(#glow)"/>
+  <text x="354" y="234" fill="#9a8050" font-size="8.5" text-anchor="middle" font-family="Georgia">Ruined Tower</text>
+  <text x="354" y="244" fill="#5a5030" font-size="7.5" text-anchor="middle" font-family="Georgia">procedural</text>
+
+  <!-- Abandoned Caravan (~75m SE) -->
+  <rect x="342" y="308" width="16" height="9" rx="3" fill="#4a3018" stroke="#7a5030" stroke-width="1"/>
+  <circle cx="345" cy="318" r="3" fill="#2a1808" stroke="#5a4020" stroke-width="1"/>
+  <circle cx="356" cy="318" r="3" fill="#2a1808" stroke="#5a4020" stroke-width="1"/>
+  <circle cx="340" cy="312" r="3" fill="#c07018" opacity="0.5" filter="url(#glow)"/>
+  <text x="350" y="330" fill="#907838" font-size="8.5" text-anchor="middle" font-family="Georgia">Caravan</text>
+
+  <!-- Waypoint Shrine (on N road, ~60m) -->
+  <polygon points="270,224 266,235 274,235" fill="#b09050" stroke="#d0b060" stroke-width="1"/>
+  <rect x="268" y="235" width="4" height="5" fill="#7a6030"/>
+  <circle cx="270" cy="222" r="5" fill="#ffc040" opacity="0.5" filter="url(#glow)"/>
+  <text x="270" y="248" fill="#b09050" font-size="8"  text-anchor="middle" font-family="Georgia">Shrine</text>
+  <text x="270" y="257" fill="#5a4820" font-size="7.5" text-anchor="middle" font-family="Georgia">procedural</text>
+
+  <!-- Megalith Arch (south ~100m) -->
+  <line x1="262" y1="365" x2="262" y2="377" stroke="#5a4a38" stroke-width="4"/>
+  <line x1="272" y1="367" x2="272" y2="379" stroke="#5a4a38" stroke-width="4"/>
+  <line x1="259" y1="365" x2="276" y2="365" stroke="#5a4a38" stroke-width="3.5"/>
+  <text x="267" y="390" fill="#7a6a48" font-size="8.5" text-anchor="middle" font-family="Georgia">Megalith Arch</text>
+
+  <!-- Wolf Den (west ~65m) -->
+  <circle cx="200" cy="268" r="8" fill="#3a2010" stroke="#6a4018" stroke-width="1.5"/>
+  <circle cx="200" cy="268" r="3" fill="#ff7010" opacity="0.6" filter="url(#glow)"/>
+  <text x="200" y="284" fill="#b05018" font-size="8.5" text-anchor="middle" font-family="Georgia">Wolf Den</text>
+
+  <!-- ═══ BRIARWOOD HUB ═══ -->
+  <ellipse cx="270" cy="270" rx="38" ry="35" fill="#241e14" opacity="0.95"/>
+  <ellipse cx="270" cy="270" rx="38" ry="35" fill="none" stroke="#7a5e38" stroke-width="2.5" opacity="0.85"/>
+
+  <!-- Town Hall (N inside) -->
+  <rect x="260" y="240" width="20" height="14" rx="2" fill="#4e3e24" stroke="#7a6030" stroke-width="1.5"/>
+  <polygon points="256,242 270,232 284,242" fill="#6a2818" opacity="0.95"/>
+  <!-- Bell Tower (NW) -->
+  <rect x="245" y="252" width="8" height="16" rx="1" fill="#3e3428" stroke="#6a5838" stroke-width="1.5"/>
+  <polygon points="243,252 249,244 255,252" fill="#5a2818"/>
+  <circle cx="249" cy="243" r="3" fill="#d8b830" opacity="0.9" filter="url(#glow)"/>
+  <!-- Forge (W) -->
+  <rect x="244" y="268" width="10" height="9" rx="1" fill="#3e2208" stroke="#7a3818" stroke-width="1"/>
+  <circle cx="249" cy="267" r="3" fill="#ff5010" opacity="0.4" filter="url(#glow)"/>
+  <!-- Market stalls (E) -->
+  <rect x="286" y="260" width="13" height="10" rx="2" fill="#4a3018" stroke="#7a5028" stroke-width="1"/>
+  <!-- Craft district (W) -->
+  <rect x="244" y="260" width="11" height="9" rx="2" fill="#303018" stroke="#585828" stroke-width="1"/>
+  <!-- Houses ring -->
+  <circle cx="274" cy="288" r="5" fill="#3e3018" stroke="#6a5030" stroke-width="1"/>
+  <circle cx="258" cy="286" r="4" fill="#3e3018" stroke="#6a5030" stroke-width="1"/>
+  <circle cx="282" cy="274" r="4" fill="#3e3018" stroke="#6a5030" stroke-width="1"/>
+  <circle cx="258" cy="274" r="4" fill="#3e3018" stroke="#6a5030" stroke-width="1"/>
+  <!-- Flag pole -->
+  <line x1="272" y1="268" x2="272" y2="258" stroke="#b09050" stroke-width="1.5"/>
+  <polygon points="272,258 278,260 272,263" fill="#b02818"/>
+  <!-- Gate S -->
+  <rect x="263" y="302" width="14" height="5" rx="1" fill="#4a3e28" stroke="#8a7040" stroke-width="2"/>
+  <!-- Gate towers -->
+  <rect x="258" y="299" width="7" height="10" rx="1" fill="#3e3428" stroke="#686040" stroke-width="1.5"/>
+  <rect x="275" y="299" width="7" height="10" rx="1" fill="#3e3428" stroke="#686040" stroke-width="1.5"/>
+  <circle cx="261" cy="298" r="2.5" fill="#ff7010" opacity="0.7" filter="url(#glow)"/>
+  <circle cx="279" cy="298" r="2.5" fill="#ff7010" opacity="0.7" filter="url(#glow)"/>
+
+  <text x="270" y="270" fill="#e8d080" font-size="11" text-anchor="middle" font-weight="bold" font-style="italic" font-family="Georgia">Briarwood</text>
+
+  <!-- Asset labels -->
+  <text x="270" y="278" fill="#6a5830" font-size="7" text-anchor="middle" font-family="monospace">house_mound.fbx · bell_tower.fbx</text>
+
+  <!-- ═══ MID-WORLD ENEMY ZONES ═══ -->
+  <!-- Barbarians N road 110m -->
+  <circle cx="270" cy="160" r="9" fill="#7a1808" opacity="0.8"/>
+  <text x="270" y="155" fill="#d02818" font-size="11" text-anchor="middle">⚔</text>
+  <text x="270" y="148" fill="#b02010" font-size="8.5" text-anchor="middle" font-family="Georgia">Barbarians</text>
+  <text x="270" y="140" fill="#601010" font-size="7.5" text-anchor="middle" font-family="Georgia">bandit.glb</text>
+
+  <!-- Untamed E 80m -->
+  <circle cx="374" cy="265" r="9" fill="#603010" opacity="0.8"/>
+  <text x="374" y="260" fill="#c04818" font-size="11" text-anchor="middle">🐾</text>
+  <text x="386" y="275" fill="#a04018" font-size="8.5" text-anchor="middle" font-family="Georgia">Untamed</text>
+  <text x="386" y="285" fill="#604020" font-size="7.5" text-anchor="middle" font-family="Georgia">goblin.glb</text>
+
+  <!-- Wolves -->
+  <circle cx="300" cy="300" r="6" fill="#3a2808" opacity="0.9"/>
+  <text x="300" y="296" fill="#b06020" font-size="9" text-anchor="middle">🐺</text>
+  <text x="300" y="310" fill="#804018" font-size="7.5" text-anchor="middle" font-family="Georgia">wolf.glb</text>
+  <circle cx="234" cy="234" r="6" fill="#3a2808" opacity="0.9"/>
+  <text x="234" y="230" fill="#b06020" font-size="9" text-anchor="middle">🐺</text>
+
+  <!-- Goblin camps (3) -->
+  <circle cx="300" cy="246" r="5" fill="#3e2808" opacity="0.8"/>
+  <text x="300" y="242" fill="#b04018" font-size="8" text-anchor="middle">👺</text>
+  <circle cx="240" cy="258" r="5" fill="#3e2808" opacity="0.8"/>
+  <text x="240" y="254" fill="#b04018" font-size="8" text-anchor="middle">👺</text>
+  <circle cx="298" cy="228" r="5" fill="#3e2808" opacity="0.8"/>
+  <text x="298" y="224" fill="#b04018" font-size="8" text-anchor="middle">👺</text>
+
+  <!-- ═══ CASTLE GUARDS + IMPERATOR (NW 130-160m) ═══ -->
+  <circle cx="175" cy="178" r="9" fill="#221e38" opacity="0.9"/>
+  <text x="175" y="173" fill="#7080c0" font-size="11" text-anchor="middle">🛡</text>
+  <text x="175" y="165" fill="#5060a0" font-size="8"  text-anchor="middle" font-family="Georgia">Guards</text>
+  <text x="175" y="157" fill="#303068" font-size="7.5" text-anchor="middle" font-family="Georgia">bandit.glb</text>
+  <circle cx="156" cy="158" r="8" fill="#2a1c38" opacity="0.9"/>
+  <text x="156" y="153" fill="#b080d0" font-size="10" text-anchor="middle">👑</text>
+  <text x="148" y="145" fill="#8060b0" font-size="8"  text-anchor="middle" font-family="Georgia">Imperator</text>
+  <text x="148" y="136" fill="#501880" font-size="7.5" text-anchor="middle" font-family="Georgia">bandit.glb</text>
+
+  <!-- ═══ FAR CASTLE RUINS (NNW ~260m) ═══ -->
+  <g opacity="0.9">
+    <rect x="166" y="55"  width="18" height="34" rx="2" fill="#28231a" stroke="#4e4838" stroke-width="1.5"/>
+    <rect x="164" y="51"  width="4"  height="7"  rx="1" fill="#322c22"/>
+    <rect x="170" y="51"  width="4"  height="7"  rx="1" fill="#322c22"/>
+    <rect x="177" y="51"  width="4"  height="7"  rx="1" fill="#322c22"/>
+    <rect x="152" y="62"  width="12" height="26" rx="2" fill="#221e18" stroke="#3e3830" stroke-width="1"/>
+    <rect x="150" y="58"  width="4"  height="6"  rx="1" fill="#302a20"/>
+    <rect x="156" y="58"  width="4"  height="6"  rx="1" fill="#302a20"/>
+    <rect x="186" y="66"  width="11" height="20" rx="2" fill="#1e1a14" stroke="#363028" stroke-width="1"/>
+    <rect x="166" y="70"  width="5"  height="16" fill="#221e16"/>
+    <rect x="181" y="72"  width="5"  height="13" fill="#1e1a14"/>
+    <ellipse cx="200" cy="88" rx="7" ry="3" fill="#28241c" opacity="0.6"/>
+    <circle cx="175" cy="74" r="10" fill="#88a030" opacity="0.08" filter="url(#sglow)"/>
+    <line x1="148" y1="92" x2="148" y2="82" stroke="#221e14" stroke-width="2"/>
+    <line x1="196" y1="92" x2="196" y2="82" stroke="#221e14" stroke-width="2"/>
+    <line x1="208" y1="90" x2="208" y2="82" stroke="#221e14" stroke-width="2"/>
+  </g>
+  <text x="178" y="104" fill="#7a6848" font-size="9" text-anchor="middle" font-style="italic" font-family="Georgia">Ruined Castle</text>
+  <text x="178" y="113" fill="#4a4030" font-size="7.5" text-anchor="middle" font-family="Georgia">procedural geometry</text>
+
+  <!-- Lord of Darkness inside castle -->
+  <circle cx="175" cy="72" r="7" fill="#100818" opacity="0.95"/>
+  <text x="175" y="68" fill="#8030c0" font-size="9" text-anchor="middle">☠</text>
+  <text x="175" y="50" fill="#5020a0" font-size="8"  text-anchor="middle" font-family="Georgia">Lord of Darkness</text>
+  <text x="175" y="42" fill="#300860" font-size="7.5" text-anchor="middle" font-family="Georgia">Boss.glb</text>
+
+  <!-- Armor of the Void flanking -->
+  <circle cx="192" cy="78" r="5" fill="#080414" opacity="0.9"/>
+  <text x="192" y="74" fill="#6020a0" font-size="8" text-anchor="middle">⛓</text>
+  <circle cx="158" cy="76" r="5" fill="#080414" opacity="0.9"/>
+  <text x="158" y="72" fill="#6020a0" font-size="8" text-anchor="middle">⛓</text>
+
+  <!-- ═══ NORDIC VILLAGE (far N) ═══ -->
+  <ellipse cx="270" cy="36" rx="22" ry="15" fill="#181428" stroke="#4050a0" stroke-width="1.5" opacity="0.85"/>
+  <rect x="260" y="29" width="10" height="9" rx="2" fill="#282040" stroke="#484880" stroke-width="1"/>
+  <polygon points="258,29 265,22 272,29" fill="#4a2818" opacity="0.95"/>
+  <rect x="274" y="30" width="9"  height="8" rx="2" fill="#282040" stroke="#484880" stroke-width="1"/>
+  <polygon points="272,30 278,24 284,30" fill="#4a2818" opacity="0.95"/>
+  <text x="270" y="22" fill="#7080c0" font-size="9"  text-anchor="middle" font-weight="bold" font-family="Georgia">Nordic Village</text>
+  <text x="270" y="14" fill="#404880" font-size="7.5" text-anchor="middle" font-family="Georgia">log_building.glb</text>
+
+  <!-- Far world tree silhouettes -->
+  <g fill="#182810" opacity="0.55">
+    <ellipse cx="420" cy="130" rx="10" ry="16"/><ellipse cx="435" cy="142" rx="9" ry="14"/>
+    <ellipse cx="450" cy="128" rx="9" ry="15"/><ellipse cx="466" cy="150" rx="8" ry="13"/>
+    <ellipse cx="108" cy="132" rx="10" ry="15"/><ellipse cx="94"  cy="146" rx="9" ry="14"/>
+    <ellipse cx="420" cy="400" rx="10" ry="15"/><ellipse cx="440" cy="412" rx="8" ry="13"/>
+    <ellipse cx="108" cy="400" rx="10" ry="15"/><ellipse cx="92"  cy="412" rx="8" ry="13"/>
+    <ellipse cx="270" cy="480" rx="11" ry="16"/><ellipse cx="288" cy="492" rx="9" ry="14"/>
+    <ellipse cx="252" cy="490" rx="9" ry="15"/>
+  </g>
+
+  <!-- ═══ LEGEND ═══ -->
+  <rect x="350" y="375" width="180" height="152" rx="5" fill="#100e08" stroke="#2e2818" stroke-width="1"/>
+  <text x="440" y="392" fill="#b09850" font-size="10" text-anchor="middle" font-weight="bold" font-family="Georgia">Legend</text>
+  <rect x="360" y="400" width="10" height="9"  rx="1" fill="#4e3e24" stroke="#7a6030" stroke-width="1"/>
+  <text x="376" y="408" fill="#a08850" font-size="8" font-family="Georgia">Building (FBX/GLB)</text>
+  <ellipse cx="365" cy="422" rx="10" ry="7" fill="#182a10"/>
+  <text x="376" y="426" fill="#3a6828" font-size="8" font-family="Georgia">Forest Zone</text>
+  <circle cx="365" cy="439" r="5" fill="#7a1808" opacity="0.8"/>
+  <text x="376" y="443" fill="#b02818" font-size="8" font-family="Georgia">Enemy Spawn</text>
+  <rect x="360" y="450" width="10" height="13" rx="1" fill="#201830" stroke="#4040b0" stroke-width="1.5"/>
+  <text x="376" y="460" fill="#4050b0" font-size="8" font-family="Georgia">Dungeon Entrance</text>
+  <rect x="360" y="466" width="10" height="11" rx="1" fill="#28231a" stroke="#4e4838" stroke-width="1.5"/>
+  <text x="376" y="475" fill="#7a6848" font-size="8" font-family="Georgia">Castle Ruins</text>
+  <ellipse cx="365" cy="490" rx="12" ry="7" fill="#243016"/>
+  <text x="376" y="493" fill="#3a5018" font-size="8" font-family="Georgia">Terrain Hill</text>
+  <line x1="360" y1="508" x2="372" y2="508" stroke="#5a4e30" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="376" y="512" fill="#7a6838" font-size="8" font-family="Georgia">Road</text>
+
+  <!-- Riverside Dock (SE ~95m) -->
+  <rect x="378" y="330" width="24" height="4" rx="1" fill="#3a2e1a" stroke="#6a5830" stroke-width="1"/>
+  <rect x="378" y="334" width="5"  height="10" rx="1" fill="#3a2e1a" stroke="#6a5830" stroke-width="1"/>
+  <rect x="397" y="334" width="5"  height="10" rx="1" fill="#3a2e1a" stroke="#6a5830" stroke-width="1"/>
+  <ellipse cx="390" cy="348" rx="14" ry="4" fill="#102030" opacity="0.5"/>
+  <text x="390" y="360" fill="#5080a0" font-size="8" text-anchor="middle" font-family="Georgia">Riverside Dock</text>
+  <text x="390" y="369" fill="#304860" font-size="7" text-anchor="middle" font-family="Georgia">stylized_old_sea_dock.fbx</text>
+
+  <!-- Hermit's Hut (NW ~110m) -->
+  <rect x="181" y="144" width="9" height="8" rx="1" fill="#2e2616" stroke="#5a4a2e" stroke-width="1"/>
+  <polygon points="179,144 185,138 191,144" fill="#3a2010" opacity="0.9"/>
+  <circle cx="181" cy="143" r="3" fill="#ff6010" opacity="0.45" filter="url(#glow)"/>
+  <text x="186" y="160" fill="#7a6438" font-size="8" text-anchor="middle" font-family="Georgia">Hermit's Hut</text>
+  <text x="186" y="168" fill="#4a3e22" font-size="7" text-anchor="middle" font-family="Georgia">house_mound.fbx</text>
+
+  <!-- Title bar -->
+  <rect x="0" y="520" width="540" height="20" fill="#0a0806" opacity="0.8"/>
+  <text x="270" y="533" fill="#c0a050" font-size="11" text-anchor="middle" font-style="italic" font-family="Georgia">Realm of Eldoria — build 2026-05-13 · N key opens map in-game</text>
+</svg>
+</div>
+
+<!-- ═══ ASSET TABLES ═══ -->
+<div class="tables">
+
+  <!-- BUILDINGS -->
+  <div>
+    <div class="section-title">🏘 BUILDINGS &amp; STRUCTURES</div>
+    <table>
+      <tr><th>Structure</th><th>Location</th><th>Asset File</th><th>Type</th></tr>
+      <tr><td class="landmark">Town Hall</td><td class="dist">Briarwood centre-N</td><td class="file file-fbx">stylized_bell_island_house_mound.fbx</td><td><span class="tag tag-fbx">FBX</span></td></tr>
+      <tr><td class="landmark">Bell Tower</td><td class="dist">Briarwood NW plaza</td><td class="file file-fbx">stylized_bell_tower.fbx</td><td><span class="tag tag-fbx">FBX</span></td></tr>
+      <tr><td class="landmark">Blacksmith Forge</td><td class="dist">Briarwood W</td><td class="file file-fbx">stylized_forge_station.fbx</td><td><span class="tag tag-fbx">FBX</span></td></tr>
+      <tr><td class="landmark">Market Stalls (×2)</td><td class="dist">Briarwood E district</td><td class="file file-fbx">stylized_wood_kiosk.fbx</td><td><span class="tag tag-fbx">FBX</span></td></tr>
+      <tr><td class="landmark">Village Houses</td><td class="dist">Briarwood ring</td><td class="file file-fbx">stylized_bell_island_house_mound.fbx</td><td><span class="tag tag-fbx">FBX</span></td></tr>
+      <tr><td class="landmark">Palisade Gates (×2)</td><td class="dist">Briarwood S gate</td><td class="file file-proc">procedural stone + portcullis</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Tavern (Drunk Troll)</td><td class="dist">Briarwood NW</td><td class="file file-glb">tavern_troll.glb</td><td><span class="tag tag-glb">GLB</span></td></tr>
+      <tr><td class="landmark">Nordic Village</td><td class="dist">260m north</td><td class="file file-glb">log_building.glb</td><td><span class="tag tag-glb">GLB</span></td></tr>
+      <tr><td class="landmark">Far Castle Ruins</td><td class="dist">260m NNW</td><td class="file file-proc">procedural BoxMesh+CylinderMesh</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Crystal Cave Entrance</td><td class="dist">65m SW surface</td><td class="file file-proc">procedural stone arch pillars</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Ruined Watchtower</td><td class="dist">95m NE</td><td class="file file-proc">procedural cylinders</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Druid Stone Circle</td><td class="dist">115m SW</td><td class="file file-proc">procedural cylinders (×7 stones)</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Megalith Arch</td><td class="dist">100m south</td><td class="file file-proc">procedural leaning megaliths</td><td><span class="tag tag-proc">PROC</span></td></tr>
+      <tr><td class="landmark">Abandoned Caravan</td><td class="dist">75m SE</td><td class="file file-proc">procedural wagon + wheels</td><td><span class="tag tag-proc">PROC</span></td></tr>
+    </table>
+  </div>
+
+  <!-- PROPS -->
+  <div>
+    <div class="section-title">🪵 PROPS &amp; ENVIRONMENT</div>
+    <table>
+      <tr><th>Prop</th><th>Used In</th><th>Asset File</th></tr>
+      <tr><td class="landmark">Oak Trees</td><td class="dist">Village ring, Whisperwood</td><td class="file file-glb">trees/oak_tree.glb</td></tr>
+      <tr><td class="landmark">Pine Trees</td><td class="dist">Village ring, far scatter</td><td class="file file-glb">trees/pine_tree.glb</td></tr>
+      <tr><td class="landmark">Bush</td><td class="dist">Forest floor scatter</td><td class="file file-glb">trees/bush.glb</td></tr>
+      <tr><td class="landmark">Dead Tree</td><td class="dist">Castle ruins base</td><td class="file file-glb">trees/dead_tree.glb</td></tr>
+      <tr><td class="landmark">Campfire</td><td class="dist">Goblin camps, village</td><td class="file file-glb">props/campfire.glb</td></tr>
+      <tr><td class="landmark">Lanterns</td><td class="dist">Gate towers, streets</td><td class="file file-glb">props/lantern.glb</td></tr>
+      <tr><td class="landmark">Barrels</td><td class="dist">Village dressing</td><td class="file file-glb">props/wooden_barrel.glb</td></tr>
+      <tr><td class="landmark">Loot Chests</td><td class="dist">Watchtower, dungeon</td><td class="file file-glb">props/chest.glb</td></tr>
+      <tr><td class="landmark">Stone Well</td><td class="dist">Village square</td><td class="file file-glb">props/stone_well.glb</td></tr>
+      <tr><td class="landmark">Boulder clusters</td><td class="dist">Mid-world scatter</td><td class="file file-glb">props/boulder.glb</td></tr>
+      <tr><td class="landmark">Ferns</td><td class="dist">Whisperwood floor</td><td class="file file-glb">props/fern.glb</td></tr>
+      <tr><td class="landmark">Mushrooms</td><td class="dist">Whisperwood floor</td><td class="file file-glb">props/mushroom_red.glb</td></tr>
+      <tr><td class="landmark">Windmill</td><td class="dist">Village outskirts</td><td class="file file-glb">props/windmill.glb</td></tr>
+      <tr><td class="landmark">Flag Poles</td><td class="dist">Town square, gate</td><td class="file file-fbx">stylized_multi_flags_pole.fbx</td></tr>
+      <tr><td class="landmark">Fence sections</td><td class="dist">Village perimeter</td><td class="file file-fbx">stylized_regular_fence_set.fbx</td></tr>
+      <tr><td class="landmark">Chimneys</td><td class="dist">House rooftops</td><td class="file file-fbx">stylized_curved_pipe_chimney.fbx</td></tr>
+      <tr><td class="landmark">Wooden Sign</td><td class="dist">Village gate crossroads</td><td class="file file-fbx">stylized_bell_island_wooden_sign.fbx</td></tr>
+      <tr><td class="landmark">Forge Pot</td><td class="dist">Blacksmith yard</td><td class="file file-fbx">stylized_large_forge_pot.fbx</td></tr>
+    </table>
+  </div>
+
+  <!-- NPCS -->
+  <div>
+    <div class="section-title">🧍 NPCs</div>
+    <table>
+      <tr><th>Name</th><th>Role</th><th>Asset File</th></tr>
+      <tr><td class="npc-name">Elder Maeve</td><td>Quest giver</td><td class="file file-glb">npcs/elder_maeve.glb</td></tr>
+      <tr><td class="npc-name">Smith Edda</td><td>Blacksmith</td><td class="file file-glb">npcs/smith_edda.glb</td></tr>
+      <tr><td class="npc-name">Herbalist Lyra</td><td>Herbalist shop</td><td class="file file-glb">npcs/herbalist_lyra.glb</td></tr>
+      <tr><td class="npc-name">Innkeeper Bram</td><td>Inn keeper</td><td class="file file-glb">npcs/innkeeper_bram.glb</td></tr>
+      <tr><td class="npc-name">Stablemaster Roan</td><td>Stable NPC</td><td class="file file-glb">npcs/stablemaster_roan.glb</td></tr>
+      <tr><td class="npc-name">Trainer Hala</td><td>Skills trainer</td><td class="file file-glb">npcs/trainer_hala.glb</td></tr>
+      <tr><td class="npc-name">Mara the Merchant</td><td>Merchant</td><td class="file file-glb">npcs/mushroom_merchant.glb</td></tr>
+      <tr><td class="npc-name">Village Guard</td><td>Guard patrol</td><td class="file file-glb">npcs/warrior.glb</td></tr>
+      <tr><td class="npc-name">Farm Worker</td><td>Villager</td><td class="file file-glb">npcs/worker_girl.glb</td></tr>
+      <tr><td class="npc-name">Noble Craftsman</td><td>Artisan</td><td class="file file-glb">npcs/noble_craftsman.glb</td></tr>
+      <tr><td class="npc-name">Wandering Herbalist</td><td>Roaming NPC</td><td class="file file-glb">npcs/maeve.glb</td></tr>
+      <tr><td class="npc-name">Warlock F</td><td>Mystic / shrine</td><td class="file file-glb">npcs/trainer_hala.glb <span style="color:#5a4030">(temp)</span></td></tr>
+      <tr><td class="npc-name">Warlock M</td><td>Vendor / market</td><td class="file file-glb">npcs/smith_edda.glb <span style="color:#5a4030">(temp)</span></td></tr>
+    </table>
+  </div>
+
+  <!-- ENEMIES -->
+  <div>
+    <div class="section-title">⚔ ENEMIES</div>
+    <table>
+      <tr><th>Enemy</th><th>Location</th><th>Asset File</th><th>HP / XP</th></tr>
+      <tr><td class="enemy-name">Goblin Scout</td><td class="dist">Whisperwood 35–60m</td><td class="file file-glb">enemies/goblin.glb</td><td><span class="hp">28hp</span> <span class="xp">18xp</span></td></tr>
+      <tr><td class="enemy-name">Goblin Brute</td><td class="dist">Camp boss</td><td class="file file-glb">enemies/goblin.glb</td><td><span class="hp">95hp</span> <span class="xp">36xp</span></td></tr>
+      <tr><td class="enemy-name">Dire Wolf</td><td class="dist">Village edge 15–50m</td><td class="file file-glb">enemies/wolf.glb</td><td><span class="hp">52hp</span> <span class="xp">28xp</span></td></tr>
+      <tr><td class="enemy-name">Bandit Ambusher</td><td class="dist">South road ~55m</td><td class="file file-glb">enemies/bandit.glb</td><td><span class="hp">42hp</span> <span class="xp">24xp</span></td></tr>
+      <tr><td class="enemy-name">Bandit Captain</td><td class="dist">South camp boss</td><td class="file file-glb">enemies/bandit.glb</td><td><span class="hp">130hp</span> <span class="xp">120xp</span></td></tr>
+      <tr><td class="enemy-name">Barbarian Raider</td><td class="dist">N road 105–118m</td><td class="file file-glb">enemies/bandit.glb <span style="color:#5a4030">(temp)</span></td><td><span class="hp">75hp</span> <span class="xp">42xp</span></td></tr>
+      <tr><td class="enemy-name">Untamed Beast</td><td class="dist">E scrubland 78–90m</td><td class="file file-glb">enemies/goblin.glb <span style="color:#5a4030">(temp)</span></td><td><span class="hp">60hp</span> <span class="xp">35xp</span></td></tr>
+      <tr><td class="enemy-name">Restless Skeleton</td><td class="dist">Crystal Caves</td><td class="file file-glb">enemies/skeleton.glb</td><td><span class="hp">36hp</span> <span class="xp">24xp</span></td></tr>
+      <tr><td class="enemy-name">Crystal Elemental</td><td class="dist">Crystal Caves</td><td class="file file-glb">enemies/crystal_elemental.glb</td><td><span class="hp">70hp</span> <span class="xp">55xp</span></td></tr>
+      <tr><td class="enemy-name">Crystal Guardian</td><td class="dist">Cave boss room</td><td class="file file-proc">procedural (no GLB)</td><td><span class="hp">420hp</span> <span class="xp">480xp</span></td></tr>
+      <tr><td class="enemy-name">Fallen Castle Guard</td><td class="dist">NW ruins 130–140m</td><td class="file file-glb">enemies/bandit.glb <span style="color:#5a4030">(temp)</span></td><td><span class="hp">90hp</span> <span class="xp">55xp</span></td></tr>
+      <tr><td class="enemy-name">Imperator Rex</td><td class="dist">NW ruins 160m</td><td class="file file-glb">enemies/bandit.glb <span style="color:#5a4030">(temp)</span></td><td><span class="hp">200hp</span> <span class="xp">160xp</span></td></tr>
+      <tr><td class="enemy-name">Roman Legionary</td><td class="dist">NW ruins 155m</td><td class="file file-glb">enemies/bandit.glb <span style="color:#5a4030">(temp)</span></td><td><span class="hp">65hp</span> <span class="xp">40xp</span></td></tr>
+      <tr><td class="enemy-name">Armor of the Void</td><td class="dist">Castle depths 215m</td><td class="file file-glb" style="color:#b060c0">Boss.glb</td><td><span class="hp">380hp</span> <span class="xp">450xp</span></td></tr>
+      <tr><td class="enemy-name">Lord of Darkness</td><td class="dist">Castle depths 220m</td><td class="file file-glb" style="color:#b060c0">Boss.glb</td><td><span class="hp">650hp</span> <span class="xp">800xp</span></td></tr>
+      <tr><td class="enemy-name">Prowler Dragon</td><td class="dist">Far wilderness 65m</td><td class="file file-glb">enemies/prowler_dragon.glb</td><td><span class="hp">850hp</span> <span class="xp">1200xp</span></td></tr>
+    </table>
+  </div>
+
+  <!-- PENDING ASSETS -->
+  <div>
+    <div class="section-title">⚠ ASSETS NEEDED IN REPO</div>
+    <table>
+      <tr><th>Asset</th><th>Local File</th><th>Needed For</th></tr>
+      <tr><td style="color:#e08040">Barbarian-m</td><td class="file">barbarian-m.glb</td><td>Barbarian Raiders (N road)</td></tr>
+      <tr><td style="color:#e08040">Armor of the Void</td><td class="file">armor-of-the-void-m.glb</td><td>Castle depths boss</td></tr>
+      <tr><td style="color:#e08040">Lord of Darkness</td><td class="file">lord-of-darkness-m.glb</td><td>Castle final boss</td></tr>
+      <tr><td style="color:#e08040">Untamed-m</td><td class="file">untamed-m.glb</td><td>Eastern scrubland</td></tr>
+      <tr><td style="color:#e08040">Castle Guard-m</td><td class="file">castle-guard-m.glb</td><td>NW ruins guards</td></tr>
+      <tr><td style="color:#e08040">Imperator-m</td><td class="file">imperator-m.glb</td><td>NW ruins commander</td></tr>
+      <tr><td style="color:#e08040">Roman Soldier-m</td><td class="file">roman-soldier-m.glb</td><td>NW ruins legionaries</td></tr>
+      <tr><td style="color:#e08040">Warlock F/M</td><td class="file">warlock-f.glb · warlock-m.glb</td><td>Briarwood ambient NPCs</td></tr>
+      <tr><td style="color:#e08040">Nordic Plate M/F</td><td class="file">nordic-plate-armor-m/f.glb</td><td>Smith Edda, Trainer Hala</td></tr>
+      <tr><td style="color:#e08040">Druid M/F</td><td class="file">druid-m.glb · druid-f.glb</td><td>Farm Worker, Herbalist</td></tr>
+      <tr><td style="color:#e08040">Dunestrider-m</td><td class="file">dunestrider-m.glb</td><td>Mara the Merchant</td></tr>
+    </table>
+    <p style="color:#5a4020; font-size:11px; margin-top:8px; font-style:italic;">
+      These GLBs are in your local <code style="color:#7a6040">/Realm of Eldoria/eldoria-godot/assets/</code> folder but not yet pushed to GitHub. Push them to <code style="color:#7a6040">martinez-watchlist/eldoria-godot/assets/models/enemies/</code> and <code style="color:#7a6040">…/npcs/</code> and the temporary (temp) mappings will automatically resolve.
+    </p>
+  </div>
+
+</div><!-- end tables -->
+</div><!-- end layout -->
+
+<p class="updated">World Map · Realm of Eldoria · Generated 2026-05-13 · Update this file after each session</p>
+
+</body>
+</html>
