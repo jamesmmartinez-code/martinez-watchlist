@@ -47,16 +47,24 @@ const KIND_MODEL_PATHS: Dictionary = {
 	"fox":               "res://assets/models/Fox.glb",
 	# Capoeira fighter — CesiumMan placeholder until dedicated model ships
 	"capoeira_fighter":  "res://assets/models/CesiumMan.glb",
-	# ── Actorcore GLBs — wired 2026-05-13 ───────────────────────────────────
-	# All in assets/models/enemies/. Degrade gracefully (load() returns null
-	# → fallback to CesiumMan placeholder) if file not found in export.
-	"barbarian":         "res://assets/models/enemies/barbarian-m.glb",
-	"armor_void":        "res://assets/models/enemies/armor-of-the-void-m.glb",
-	"lord_darkness":     "res://assets/models/enemies/lord-of-darkness-m.glb",
-	"untamed":           "res://assets/models/enemies/untamed-m.glb",
-	"castle_guard":      "res://assets/models/enemies/castle-guard-m.glb",
-	"imperator":         "res://assets/models/enemies/imperator-m.glb",
-	"roman_soldier":     "res://assets/models/enemies/roman-soldier-m.glb",
+	# ── Extended enemy kinds — reuse confirmed GLBs until Actorcore packs
+	# are pushed to the repo. Actorcore FBX files are in the local project
+	# folder but NOT yet in martinez-watchlist. Mapping confirmed 2026-05-13:
+	# barbarian → bandit.glb (melee human, similar silhouette)
+	# armor_void → Boss.glb (heavy armored)
+	# lord_darkness → Boss.glb (boss tier)
+	# untamed → goblin.glb (feral creature fallback)
+	# castle_guard → bandit.glb (armored human)
+	# imperator → bandit.glb (commander human)
+	# roman_soldier → bandit.glb (foot soldier human)
+	# Update these paths when Actorcore GLBs are pushed to enemies/.
+	"barbarian":         "res://assets/models/enemies/bandit.glb",
+	"armor_void":        "res://assets/models/Boss.glb",
+	"lord_darkness":     "res://assets/models/Boss.glb",
+	"untamed":           "res://assets/models/enemies/goblin.glb",
+	"castle_guard":      "res://assets/models/enemies/bandit.glb",
+	"imperator":         "res://assets/models/enemies/bandit.glb",
+	"roman_soldier":     "res://assets/models/enemies/bandit.glb",
 }
 
 func _get_kind_model(kind: String) -> PackedScene:
