@@ -1,0 +1,27 @@
+name: Eldoria - Generate BGM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gen-music:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Generate village theme BGM via Worker
+        run: |
+          set -e
+          echo "Calling Worker music endpoint..."
+          HTTP_CODE=$(curl -s -o /tmp/music_response.json -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"prompt":"peaceful medieval fantasy village, gentle lute flute, instrumental, loopable","key":"village_theme"}' \
+            "https://eldoria-api.james-m-martinez.workers.dev/api/generate-music")
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response:"
+          cat /tmp/music_response.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "FAILED: HTTP $HTTP_CODE"
+            exit 1
+          fi
+          echo "Done!"
