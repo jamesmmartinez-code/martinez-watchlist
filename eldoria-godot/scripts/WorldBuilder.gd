@@ -28,7 +28,7 @@ func _safe_load_glb(path: String) -> PackedScene:
 func _populate_npc_models() -> void:
 	NPC_MODELS = {
 		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
-		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
 		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
 		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
@@ -36,21 +36,30 @@ func _populate_npc_models() -> void:
 		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
 		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
 		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 	}
 
 func _populate_building_models() -> void:
-	# Stylized KayKit FBX buildings — loaded lazily with safe fallback.
-	# If a file fails to import in CI, _safe_load_glb() returns null and
-	# _bw_build_kind() falls through to procedural BoxMesh — world still loads.
-	const P := "res://assets/models/props/"
+	# KayKit FBX buildings + new Sketchfab GLB buildings loaded lazily.
+	# Any missing asset → _safe_load_glb returns null → procedural BoxMesh fallback.
+	const P  := "res://assets/models/props/"
+	const B  := "res://assets/models/buildings/"
 	BUILDING_MODELS = {
-		"house":      _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
-		"shopfront":  _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
-		"forge":      _safe_load_glb(P + "stylized_forge_station.fbx"),
-		"bell_tower": _safe_load_glb(P + "stylized_bell_tower.fbx"),
-		"porch":      _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
-		"flag_pole":  _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
+		# ── Originals (FBX KayKit kit) ────────────────────────────────────
+		"house":        _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
+		"shopfront":    _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
+		"forge":        _safe_load_glb(P + "stylized_forge_station.fbx"),
+		"bell_tower":   _safe_load_glb(P + "stylized_bell_tower.fbx"),
+		"porch":        _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
+		"flag_pole":    _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
+		# ── New Sketchfab GLBs ────────────────────────────────────────────
+		"tavern":       _safe_load_glb(B + "tavern_troll.glb"),
+		"medieval_town":_safe_load_glb(B + "medieval_town.glb"),
+		"log_building": _safe_load_glb(B + "log_building.glb"),
+		"castle_wall":  _safe_load_glb(B + "castle_wall_kit.glb"),
+		"castle_village":_safe_load_glb(B + "castle_village.glb"),
+		"sea_keep":     _safe_load_glb(B + "sea_keep.glb"),
 	}
 	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
 	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
@@ -1180,6 +1189,9 @@ func _build_world_sync() -> void:
 	_safe_call("_build_pet")
 	_safe_call("_build_stable_horse")
 	_safe_call("_build_loot_chests")
+	_safe_call("_build_tavern")
+	_safe_call("_build_dragon_boss")
+	_safe_call("_build_world_props_new")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")
 	_safe_call("_build_weather")
@@ -1306,8 +1318,11 @@ func _build_world_async() -> void:
 	_wb_crash_report("Water+FX")
 	_safe_call_now("_build_enemies",      [])
 	_safe_call_now("_build_pet",          [])
-	_safe_call_now("_build_stable_horse", [])
-	_safe_call_now("_build_loot_chests",  [])
+	_safe_call_now("_build_stable_horse",     [])
+	_safe_call_now("_build_loot_chests",      [])
+	_safe_call_now("_build_tavern",           [])
+	_safe_call_now("_build_dragon_boss",      [])
+	_safe_call_now("_build_world_props_new",  [])
 	call_deferred("_global_scale_sweep")
 
 	# ── Home, weather, caves ──────────────────────────────────────────────────
@@ -1854,7 +1869,7 @@ func _build_windmill() -> void:
 			hub_y = 7.2
 			hub_z = 1.5
 			# Hide baked blades via a one-shot timer (0.1s) so GLB is fully rendered.
-			var _t: SceneTreeTimer = get_tree().create_timer(0.1)
+			var _t := get_tree().create_timer(0.1)
 			_t.timeout.connect(func(): _hide_baked_blades(mill_inst))
 
 	if not mill_used_glb:
@@ -3197,6 +3212,148 @@ func _build_pet() -> void:
 # ============================================================================
 const HORSE_GLB: PackedScene = preload("res://assets/models/Horse.glb")
 
+# ── Tavern — Drunk Troll Tavern GLB placed at village centre-north ──────────
+func _build_tavern() -> void:
+	var glb: PackedScene = BUILDING_MODELS.get("tavern")
+	if glb == null:
+		_dlog("[WorldBuilder] tavern GLB not loaded — skip")
+		return
+	var tavern := Node3D.new()
+	tavern.name = "DrunkTrollTavern"
+	tavern.add_to_group("buildings")
+	# North-west of plaza, clear of other buildings
+	tavern.position = Vector3(-16.0, 0.0, 14.0)
+	tavern.rotation.y = deg_to_rad(180)
+	# Drunk Troll Tavern GLB units appear to be metres at ~1:100 scale
+	tavern.scale = Vector3(0.022, 0.022, 0.022)
+	add_child(tavern)
+	var inst := glb.instantiate() as Node3D
+	if inst:
+		tavern.add_child(inst)
+	# Collision box
+	var body := StaticBody3D.new()
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(9.0, 6.0, 9.0)
+	col.shape = box
+	col.position.y = 3.0
+	body.add_child(col)
+	tavern.add_child(body)
+	# Nameplate
+	var label := Label3D.new()
+	label.text = "The Drunk Troll"
+	label.font_size = 28
+	label.outline_size = 6
+	label.outline_modulate = Color(0, 0, 0)
+	label.modulate = Color(1.0, 0.86, 0.46)
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = Vector3(0, 7.0, 0)
+	tavern.add_child(label)
+	_dlog("tavern placed at %s" % str(tavern.position))
+
+# ── Dragon boss — Prowler Dragon, lurks east of the mountains ───────────────
+func _build_dragon_boss() -> void:
+	var dragon_glb: PackedScene = _safe_load_glb("res://assets/models/enemies/prowler_dragon.glb")
+	if dragon_glb == null:
+		_dlog("[WorldBuilder] dragon GLB not loaded — skip")
+		return
+	var dragon := Node3D.new()
+	dragon.name = "ProwlerDragon"
+	dragon.add_to_group("enemies")
+	dragon.add_to_group("scenery")  # passive until player approaches
+	# Place well beyond the mountains, south-east
+	dragon.position = Vector3(65.0, 0.0, -55.0)
+	dragon.rotation.y = deg_to_rad(225)
+	# Prowler dragon is ~1m native — scale to ~8m at the shoulder
+	dragon.scale = Vector3(8.0, 8.0, 8.0)
+	add_child(dragon)
+	var inst := dragon_glb.instantiate() as Node3D
+	if inst:
+		dragon.add_child(inst)
+		# Play any available idle animation
+		_play_anim_recursive(inst, ["Idle", "idle", "Fly", "fly", "Stand", "stand"])
+	# Spawn as a powerful enemy NPC near dragon
+	_spawn_enemy("dragon", Vector3(65.0, 0.0, -55.0),
+		"Prowler Dragon", 800, 45, 500, 120,
+		Color(0.7, 0.15, 0.15), 1.5, 3.0)
+	_dlog("dragon boss placed")
+
+func _play_anim_recursive(node: Node, names: Array) -> void:
+	if node is AnimationPlayer:
+		for n in names:
+			if node.has_animation(n):
+				node.play(n)
+				return
+		if node.get_animation_list().size() > 0:
+			node.play(node.get_animation_list()[0])
+	for c in node.get_children():
+		_play_anim_recursive(c, names)
+
+# ── Armored horse + viking boat as world dressing props ─────────────────────
+func _build_world_props_new() -> void:
+	# Armored horse — near the blacksmith / training grounds
+	var horse_glb: PackedScene = _safe_load_glb("res://assets/models/props/armored_horse.glb")
+	if horse_glb:
+		var ah := Node3D.new()
+		ah.name = "ArmoredHorse"
+		ah.add_to_group("scenery")
+		ah.position = Vector3(12.0, 0.0, 8.0)
+		ah.rotation.y = deg_to_rad(30)
+		ah.scale = Vector3(0.012, 0.012, 0.012)
+		add_child(ah)
+		var inst := horse_glb.instantiate() as Node3D
+		if inst:
+			ah.add_child(inst)
+		var lbl := Label3D.new()
+		lbl.text = "War Charger"
+		lbl.font_size = 20
+		lbl.outline_size = 4
+		lbl.modulate = Color(1.0, 0.86, 0.46)
+		lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		lbl.position = Vector3(0, 2.0, 0)
+		ah.add_child(lbl)
+
+	# Viking boat — near the sea dock / river edge
+	var boat_glb: PackedScene = _safe_load_glb("res://assets/models/props/viking_boat.glb")
+	if boat_glb:
+		var boat := Node3D.new()
+		boat.name = "VikingBoat"
+		boat.add_to_group("scenery")
+		boat.position = Vector3(-35.0, 0.0, 30.0)
+		boat.rotation.y = deg_to_rad(90)
+		boat.scale = Vector3(0.015, 0.015, 0.015)
+		add_child(boat)
+		var inst2 := boat_glb.instantiate() as Node3D
+		if inst2:
+			boat.add_child(inst2)
+
+	# Castle garden — decorative feature near the keep / east side
+	var garden_glb: PackedScene = _safe_load_glb("res://assets/models/props/castle_garden.glb")
+	if garden_glb:
+		var garden := Node3D.new()
+		garden.name = "CastleGarden"
+		garden.add_to_group("scenery")
+		garden.position = Vector3(30.0, 0.0, -20.0)
+		garden.scale = Vector3(0.010, 0.010, 0.010)
+		add_child(garden)
+		var inst3 := garden_glb.instantiate() as Node3D
+		if inst3:
+			garden.add_child(inst3)
+
+	# Treasure chest — visible loot prop near the market
+	var chest_glb: PackedScene = _safe_load_glb("res://assets/models/props/chest.glb")
+	if chest_glb:
+		var chest := Node3D.new()
+		chest.name = "TreasureChestProp"
+		chest.add_to_group("scenery")
+		chest.position = Vector3(8.0, 0.0, 4.0)
+		chest.rotation.y = deg_to_rad(45)
+		chest.scale = Vector3(0.015, 0.015, 0.015)
+		add_child(chest)
+		var inst4 := chest_glb.instantiate() as Node3D
+		if inst4:
+			chest.add_child(inst4)
+
 func _build_stable_horse() -> void:
 	var horse_root := Node3D.new()
 	horse_root.name = "Pippin"
@@ -4213,7 +4370,7 @@ func _global_scale_sweep() -> void:
 	# Anything outside band gets uniformly scaled to the target on the next tick.
 	while is_inside_tree():
 		await get_tree().create_timer(0.5).timeout
-		var root: Node = get_tree().current_scene
+		var root := get_tree().current_scene
 		if not root:
 			continue
 		# Character bodies (player + enemies + NPCs) — strict canon.
@@ -5918,7 +6075,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 func _nordic_road_lantern(world_pos: Vector3) -> void:
 	# Try the existing lantern GLB first (same fallback contract as village)
 	if ResourceLoader.exists(LANTERN_GLB_PATH):
-		var sc: Resource = load(LANTERN_GLB_PATH)
+		var sc := load(LANTERN_GLB_PATH)
 		if sc is PackedScene:
 			var inst: Node3D = (sc as PackedScene).instantiate()
 			add_child(inst)
@@ -6407,7 +6564,7 @@ func _tick_nordic_interactions() -> void:
 
 
 func _get_player() -> Node3D:
-	var players: Array = get_tree().get_nodes_in_group("player")
+	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and players[0] is Node3D:
 		return players[0] as Node3D
 	return null
@@ -6836,7 +6993,7 @@ func _tick_district_streaming() -> void:
 
 
 func _get_player_for_streaming() -> Node3D:
-	var players: Array = get_tree().get_nodes_in_group("player")
+	var players := get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and players[0] is Node3D:
 		return players[0] as Node3D
 	return null
@@ -8380,7 +8537,7 @@ func _tick_quest_markers() -> void:
 
 
 func _find_first_interactable_kind(kind: String) -> Node3D:
-	var nodes: Array = get_tree().get_nodes_in_group("world_interactables")
+	var nodes := get_tree().get_nodes_in_group("world_interactables")
 	for n in nodes:
 		if n is Node3D and str(n.get_meta("interactable_kind", "")) == kind:
 			return n as Node3D
@@ -9477,7 +9634,7 @@ func _tick_town_schedule() -> void:
 
 
 func _apply_briarwood_lighting(night: bool) -> void:
-	var root: Node = _briarwood_root if _briarwood_root and is_instance_valid(_briarwood_root) else get_tree().current_scene
+	var root := _briarwood_root if _briarwood_root and is_instance_valid(_briarwood_root) else get_tree().current_scene
 	if root == null:
 		return
 	for l in root.find_children("*Lantern*", "Node3D", true, false):
@@ -11262,12 +11419,19 @@ func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 				return _place_building_glb(glb, pos, facing, Vector3(1.2, 1.2, 1.2))
 			return _bw_build_shopfront(pos, facing, rng)
 		"large":
-			var glb: PackedScene = BUILDING_MODELS.get("house")
+			# Rotate between log_building and castle_village for variety
+			var glb: PackedScene = BUILDING_MODELS.get("log_building")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(0.018, 0.018, 0.018))
+			glb = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
 			return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
 		"medium":
-			var glb: PackedScene = BUILDING_MODELS.get("house")
+			var glb: PackedScene = BUILDING_MODELS.get("medieval_town")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(0.012, 0.012, 0.012))
+			glb = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
 			return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
