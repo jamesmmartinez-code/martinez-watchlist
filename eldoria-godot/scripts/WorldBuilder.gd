@@ -3072,8 +3072,12 @@ func _build_mid_world_pois() -> void:
 	tw_body.add_child(tw_col); tw.add_child(tw_body)
 
 	# Loot chest at base — reward for exploring
-	var chest_node: Node3D = _make_loot_chest_primitive(tw_pos + Vector3(1.8, 0.2, 1.8))
-	if chest_node: root.add_child(chest_node)
+	# Inline chest — _make_loot_chest_primitive removed; build directly
+	var chest_node := StaticBody3D.new()
+	chest_node.set_script(CHEST_SCRIPT)
+	chest_node.position = tw_pos + Vector3(1.8, 0.2, 1.8)
+	chest_node.rotation.y = randf_range(-PI, PI) * 0.3
+	root.add_child(chest_node)
 
 	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
 	# Seven standing stones in a ring, glowing rune in the centre.
@@ -3358,7 +3362,7 @@ func _build_whisperwood_forest() -> void:
 			for tv in TREE_VARIANTS:
 				cum += float(tv["weight"])
 				if pick_r <= cum:
-					placed = _make_glb_tree(pos, rng, tv)
+					placed = _make_glb_tree(pos, rng)  # variant ignored
 					break
 
 		if not placed:
@@ -3659,7 +3663,7 @@ func _build_terrain_hills() -> void:
 				rock.material_override = MAT_ROCK(1.0)
 				var ang: float = rng.randf() * TAU
 				# h guaranteed size>=4 from outer guard
-				var _h_sz := h.size()
+				var _h_sz: int = h.size()
 				rock.position = Vector3(
 					h[0] + cos(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75),
 					rs * 0.35,
@@ -3734,7 +3738,7 @@ func _build_far_castle_ruins() -> void:
 				crm.size = Vector3(1.0, 1.4, 1.0)
 				cren.mesh = crm; cren.material_override = mat_stone
 				# tc guaranteed size>=4 from outer guard
-				var _tc_sz := tc.size()
+				var _tc_sz: int = tc.size()
 				cren.position = Vector3(
 					tc[0] + cos(bang) * 2.6,
 					btl_h + 0.7,
@@ -4453,7 +4457,7 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions: Vector3 = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		var positions: Array = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
 		Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
