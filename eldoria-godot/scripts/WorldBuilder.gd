@@ -2649,8 +2649,8 @@ func _build_enemies() -> void:
 	var camp_size: Dictionary = _goblin_camp_size(goblin_pressure)
 	var scout_count: int = int(camp_size.get("scouts", 4))
 	var brute_count: int = int(camp_size.get("brutes", 1))
-	assert(scout_count >= 0 and scout_count <= 4, "scout_count out of contract")
-	assert(brute_count >= 0 and brute_count <= 1, "brute_count out of contract")
+	if scout_count < 0: push_error("[WB] scout_count negative"); return
+	if brute_count < 0: push_error("[WB] brute_count negative"); return
 
 	# Three goblin camps in the Whisperwood (outside the village)
 	var camp_centers = [
@@ -2697,7 +2697,7 @@ func _build_enemies() -> void:
 		wolf_pressure = float(world_node.faction_pressure("dire_wolves"))
 	var pack_size: Dictionary = _wolf_pack_size(wolf_pressure)
 	var wolf_count: int = int(pack_size.get("count", 4))
-	assert(wolf_count >= 0 and wolf_count <= 4, "wolf_count out of contract")
+	if wolf_count < 0: push_error("[WB] wolf_count negative"); return
 
 	# Stable position list — fewer wolves means we drop the LAST entries first
 	# so positions 0..wolf_count remain consistent across saves. Empty patches
@@ -2738,7 +2738,7 @@ func _build_enemies() -> void:
 		bandit_pressure = float(world_node.faction_pressure("bandits"))
 	var bandit_pop: Dictionary = _bandit_camp_size(bandit_pressure)
 	var bandit_count: int = int(bandit_pop.get("count", 0))
-	assert(bandit_count >= 0 and bandit_count <= 4, "bandit_count out of contract")
+	if bandit_count < 0: push_error("[WB] bandit_count negative"); return
 
 	# South road bandit camp — past the path-network terminus at z=-12, far
 	# enough south that the silhouette of the camp doesn't bleed into the
@@ -4863,7 +4863,7 @@ func _build_nordic_ambient_audio() -> void:
 		waves.unit_size     = 1.0
 		waves.volume_db     = sfx_waves_volume_db
 		waves.autoplay      = true
-		waves.global_position = origin + Vector3(0, 0, -20)  # over the water
+		waves.position = origin + Vector3(0, 0, -20)  # over the water
 		root.add_child(waves)
 
 	# Dock creak — tighter radius, right at the pier head where ropes + posts are
@@ -4875,7 +4875,7 @@ func _build_nordic_ambient_audio() -> void:
 		creak.unit_size     = 1.0
 		creak.volume_db     = sfx_creak_volume_db
 		creak.autoplay      = true
-		creak.global_position = origin + Vector3(0, 0.15, 6)  # pier start
+		creak.position = origin + Vector3(0, 0.15, 6)  # pier start
 		root.add_child(creak)
 
 	# Gulls — random one-shots on a timer, scattered across the harbour airspace
@@ -4909,7 +4909,7 @@ func _play_nordic_gull(audio_root: Node3D) -> void:
 	gull.max_distance = 140.0
 	gull.volume_db   = _nrng.randf_range(-14.0, -7.0)
 	gull.pitch_scale = _nrng.randf_range(0.88, 1.14)
-	gull.global_position = p
+	gull.position = p
 	audio_root.add_child(gull)
 	gull.play()
 
@@ -4959,7 +4959,7 @@ func _nordic_pier_branch(start: Vector3, dir: Vector3, length: float) -> void:
 	var plat_root := Node3D.new()
 	plat_root.name = "PierEndPlat"
 	add_child(plat_root)
-	plat_root.global_position = start + dir * (length + 1.6)
+	plat_root.position = start + dir * (length + 1.6)
 	plat_root.global_position.y = start.y
 	plat_root.rotation.y = atan2(dir.x, dir.z)
 	var plat  := MeshInstance3D.new()
@@ -4983,7 +4983,7 @@ func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void
 	var body := StaticBody3D.new()
 	body.name = "PierCollision"
 	add_child(body)
-	body.global_position = mid
+	body.position = mid
 	body.global_position.y = start.y
 	body.rotation.y = atan2(dir.x, dir.z)
 	var col   := CollisionShape3D.new()
@@ -5028,7 +5028,7 @@ func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> N
 	var seg := Node3D.new()
 	seg.name = "PierSeg"
 	add_child(seg)
-	seg.global_position = world_pos
+	seg.position = world_pos
 	seg.rotation.y = atan2(dir.x, dir.z)
 
 	var deck := MeshInstance3D.new()
@@ -5086,7 +5086,7 @@ func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2
 	var house  := Node3D.new()
 	house.name = "NordicHouse"
 	add_child(house)
-	house.global_position = world_pos
+	house.position = world_pos
 	house.rotation.y = atan2(facing.x, facing.z)
 
 	var w      := footprint.x
@@ -5184,7 +5184,7 @@ func _nordic_longhouse(world_pos: Vector3, facing: Vector3) -> void:
 	var b     := Node3D.new()
 	b.name    = "NordicLonghouse"
 	add_child(b)
-	b.global_position = world_pos
+	b.position = world_pos
 	b.rotation.y = atan2(facing.x, facing.z)
 
 	var w := 8.0; var d := 20.0; var wh := 4.2
@@ -5257,7 +5257,7 @@ func _nordic_smokehouse(world_pos: Vector3, facing: Vector3) -> void:
 	var b     := Node3D.new()
 	b.name    = "NordicSmokehouse"
 	add_child(b)
-	b.global_position = world_pos
+	b.position = world_pos
 	b.rotation.y = atan2(facing.x, facing.z)
 
 	var w := 5.5; var d := 5.5; var wh := 3.0
@@ -5314,7 +5314,7 @@ func _nordic_beacon(world_pos: Vector3) -> void:
 	var b     := Node3D.new()
 	b.name    = "NordicBeacon"
 	add_child(b)
-	b.global_position = world_pos
+	b.position = world_pos
 
 	var tower := MeshInstance3D.new()
 	var cm    := CylinderMesh.new()
@@ -5371,7 +5371,7 @@ func _nordic_fish_rack(world_pos: Vector3, facing: Vector3) -> void:
 	var n     := Node3D.new()
 	n.name    = "FishRack"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	for sx in [-1.1, 1.1]:
@@ -5400,7 +5400,7 @@ func _nordic_fish_rack(world_pos: Vector3, facing: Vector3) -> void:
 func _nordic_clutter(world_pos: Vector3) -> void:
 	var n := Node3D.new()
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = _nrng.randf_range(-PI, PI)
 
 	# GLB fast-path: use wooden_barrel.glb when wired in the Inspector.
@@ -5435,7 +5435,7 @@ func _nordic_boat(world_pos: Vector3, facing: Vector3) -> void:
 	var n := Node3D.new()
 	n.name = "NordicBoat"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	var hull := MeshInstance3D.new()
@@ -5464,7 +5464,7 @@ func _nordic_woodpile(world_pos: Vector3) -> void:
 	var n  := Node3D.new()
 	n.name = "Woodpile"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = _nrng.randf_range(-PI, PI)
 
 	var mi := MeshInstance3D.new()
@@ -5615,7 +5615,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 		bm.size    = Vector3(width, 0.16, 2.3)
 		seg.mesh   = bm
 		seg.material_override = MAT_PATH(3.0)
-		seg.global_position = p + side * wobble + Vector3(0, 0.02, 0)
+		seg.position = p + side * wobble + Vector3(0, 0.02, 0)
 		seg.rotation.y = atan2(dir.x, dir.z)
 		seg.name   = "RoadSeg"
 		add_child(seg)
@@ -5645,13 +5645,13 @@ func _nordic_road_lantern(world_pos: Vector3) -> void:
 		if sc is PackedScene:
 			var inst: Node3D = (sc as PackedScene).instantiate()
 			add_child(inst)
-			inst.global_position = world_pos
+			inst.position = world_pos
 			return
 	# Primitive fallback
 	var n    := Node3D.new()
 	n.name   = "RoadLantern"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	var post := MeshInstance3D.new()
 	var cm   := CylinderMesh.new()
 	cm.top_radius    = 0.05
@@ -5685,7 +5685,7 @@ func _nordic_road_prop(world_pos: Vector3) -> void:
 	var n  := Node3D.new()
 	n.name = "RoadProp"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = _nrng.randf_range(-PI, PI)
 	# Rune stone — tall thin boulder with a carved-looking dark face
 	var mi := MeshInstance3D.new()
@@ -5712,7 +5712,7 @@ func _nordic_signpost(world_pos: Vector3, facing: Vector3, top_text: String, bot
 	var n  := Node3D.new()
 	n.name = "Signpost"
 	add_child(n)
-	n.global_position = world_pos
+	n.position = world_pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	# Post
@@ -5759,7 +5759,7 @@ func _nordic_harbor_gate(world_pos: Vector3, facing: Vector3) -> void:
 	var root := Node3D.new()
 	root.name = "HarborGate"
 	add_child(root)
-	root.global_position = world_pos
+	root.position = world_pos
 	root.rotation.y = atan2(facing.x, facing.z)
 
 	var post_h   : float = 4.2
@@ -5953,7 +5953,7 @@ func _spawn_dock_npc(parent: Node3D, role: String, pos: Vector3) -> Node3D:
 
 	parent.add_child(npc)
 	npc.name = "DockNPC_%s" % role
-	npc.global_position = pos
+	npc.position = pos
 	npc.set_meta("dock_role", role)
 
 	if has_method("_scale_node_to_height"):
@@ -6282,7 +6282,7 @@ func _boat_travel(player: Node3D) -> void:
 	if boat_ui_enabled:
 		_show_boat_travel_ui(player)
 	else:
-		player.global_position = boat_dest_briarwood + Vector3(0, 0.02, 0)
+		player.position = boat_dest_briarwood + Vector3(0, 0.02, 0)
 		_try_toast("Boat ride… Briarwood!")
 		_call_world_sfx("boat")
 
@@ -6663,7 +6663,7 @@ func _ensure_destination_loaded(dest_id: String) -> void:
 func _teleport_player_to(target: Vector3, player: Node3D) -> void:
 	if player == null or not is_instance_valid(player):
 		return
-	player.global_position = target + Vector3(0, 0.02, 0)
+	player.position = target + Vector3(0, 0.02, 0)
 	if player.has_method("set_cinematic_lock"):
 		player.call("set_cinematic_lock", false)
 
@@ -6677,7 +6677,7 @@ func _build_briarwood_hub() -> void:
 
 	_briarwood_root = Node3D.new()
 	_briarwood_root.name = "BriarwoodHub"
-	_briarwood_root.global_position = briarwood_origin
+	_briarwood_root.position = briarwood_origin
 	add_child(_briarwood_root)
 
 	var plaza    := briarwood_origin + bw_plaza_offset
@@ -6724,7 +6724,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 	wm.height        = 0.9
 	well.mesh = wm
 	well.material_override = MAT_STONE(2.0)
-	well.global_position = plaza + Vector3(0, 0.45, 0)
+	well.position = plaza + Vector3(0, 0.45, 0)
 	root.add_child(well)
 	out["well"] = well
 
@@ -6900,7 +6900,7 @@ func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void
 func _make_bw_townhall(pos: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "TownHall"
-	n.global_position = pos
+	n.position = pos
 
 	const W      := 10.0
 	const D      := 20.0
@@ -6978,7 +6978,7 @@ func _make_bw_townhall(pos: Vector3) -> Node3D:
 func _make_bw_shrine(pos: Vector3) -> Node3D:
 	var shrine := Node3D.new()
 	shrine.name = "Shrine"
-	shrine.global_position = pos
+	shrine.position = pos
 
 	var base := MeshInstance3D.new()
 	var bm := BoxMesh.new()
@@ -7019,7 +7019,7 @@ func _make_bw_shrine(pos: Vector3) -> Node3D:
 func _make_bw_quest_board(pos: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "QuestBoard"
-	n.global_position = pos
+	n.position = pos
 
 	var post := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
@@ -7086,7 +7086,7 @@ func _make_bw_lantern_post(pos: Vector3) -> Node3D:
 	light.position.y   = 3.1
 	n.add_child(light)
 
-	n.global_position = pos
+	n.position = pos
 	return n
 
 
@@ -7126,7 +7126,7 @@ func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> v
 func _make_bw_inn(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
 	var n := Node3D.new()
 	n.name = "Inn"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	const W      := 11.0
@@ -7189,7 +7189,7 @@ func _make_bw_inn(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
 
 func _make_bw_stall(pos: Vector3, facing: Vector3) -> Node3D:
 	var stall := Node3D.new()
-	stall.global_position = pos
+	stall.position = pos
 	stall.rotation.y = atan2(facing.x, facing.z)
 
 	var counter := MeshInstance3D.new()
@@ -7252,7 +7252,7 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 	smoke_light.light_color  = Color(1.0, 0.55, 0.2)
 	smoke_light.light_energy = 1.2
 	smoke_light.omni_range   = 8.0
-	smoke_light.global_position = craft + Vector3(2.2, 8.0, -1.6)
+	smoke_light.position = craft + Vector3(2.2, 8.0, -1.6)
 	root.add_child(smoke_light)
 
 	# Two more buildings along craft row
@@ -7277,7 +7277,7 @@ func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
 		fcm.height        = 1.2
 		fp.mesh = fcm
 		fp.material_override = MAT_DARK_WOOD(0.5)
-		fp.global_position = p + Vector3(0, 0.6, 0)
+		fp.position = p + Vector3(0, 0.6, 0)
 		root.add_child(fp)
 
 
@@ -7303,7 +7303,7 @@ func _make_bw_house(pos: Vector3) -> Node3D:
 	const HOUSE_PATH := "res://assets/models/buildings/stylized_bell_island_house_mound.fbx"
 	var house := Node3D.new()
 	house.add_to_group("buildings")
-	house.global_position = pos
+	house.position = pos
 	# Slight random yaw so the ring doesn't look drilled
 	house.rotation.y = randf_range(-PI, PI)
 
@@ -7351,7 +7351,7 @@ func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3
 	const FORGE_PATH := "res://assets/models/buildings/stylized_forge_station.fbx"
 	var n := Node3D.new()
 	n.name = "Smithy"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 	n.add_to_group("buildings")
 
@@ -7403,7 +7403,7 @@ func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3
 
 func _make_bw_clutter(pos: Vector3, rng: RandomNumberGenerator) -> Node3D:
 	var n := Node3D.new()
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = rng.randf_range(-PI, PI)
 	n.add_to_group("village_barrels")
 
@@ -7445,7 +7445,7 @@ func _build_bw_edge_read(root: Node3D, plaza: Vector3) -> void:
 		cm.height        = rng.randf_range(2.2, 3.2)
 		post.mesh = cm
 		post.material_override = MAT_DARK_WOOD(0.5)
-		post.global_position = p + Vector3(0, cm.height * 0.5, 0)
+		post.position = p + Vector3(0, cm.height * 0.5, 0)
 		root.add_child(post)
 
 
@@ -7465,7 +7465,7 @@ func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector
 		var npc  := briarwood_npc_scene.instantiate() as Node3D
 		if npc == null:
 			continue
-		npc.global_position = p
+		npc.position = p
 		npc.rotation.y = rng.randf_range(-PI, PI)
 		root.add_child(npc)
 
@@ -7487,7 +7487,7 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 	# Inn marker (frontage of the anchor building near market)
 	var inn_marker := Node3D.new()
 	inn_marker.name = "InnMarker"
-	inn_marker.global_position = market + Vector3(0, 0, -6)
+	inn_marker.position = market + Vector3(0, 0, -6)
 	_briarwood_root.add_child(inn_marker)
 	_register_interactable(inn_marker, "inn")
 	_register_minimap_marker(inn_marker, "Inn", "🏠")
@@ -7495,7 +7495,7 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 	# Smith marker
 	var smith_marker := Node3D.new()
 	smith_marker.name = "SmithMarker"
-	smith_marker.global_position = craft + Vector3(0, 0, 1.5)
+	smith_marker.position = craft + Vector3(0, 0, 1.5)
 	_briarwood_root.add_child(smith_marker)
 	_register_interactable(smith_marker, "smith_shop")
 	_register_minimap_marker(smith_marker, "Smith", "⚒")
@@ -7503,40 +7503,40 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 	# Merchant marker (market stall area)
 	var merchant_marker := Node3D.new()
 	merchant_marker.name = "MerchantMarker"
-	merchant_marker.global_position = market + Vector3(4.0, 0, 2.0)
+	merchant_marker.position = market + Vector3(4.0, 0, 2.0)
 	_briarwood_root.add_child(merchant_marker)
 	_register_interactable(merchant_marker, "merchant_shop")
 
 	# Alchemy bench / crafting marker (near market)
 	var bench := Node3D.new()
 	bench.name = "AlchemyBench"
-	bench.global_position = market + Vector3(-6.0, 0, 3.0)
+	bench.position = market + Vector3(-6.0, 0, 3.0)
 	_briarwood_root.add_child(bench)
 	_register_interactable(bench, "crafting")
 
 	# Door markers — interior portals (Phase 17)
 	var door_inn := Node3D.new()
 	door_inn.name = "DoorInn"
-	door_inn.global_position = inn_marker.global_position + Vector3(0, 0, 1.5)
+	door_inn.position = inn_marker.global_position + Vector3(0, 0, 1.5)
 	_briarwood_root.add_child(door_inn)
 	_register_interactable(door_inn, "enter_inn")
 
 	var door_shop := Node3D.new()
 	door_shop.name = "DoorShop"
-	door_shop.global_position = merchant_marker.global_position + Vector3(0, 0, 1.5)
+	door_shop.position = merchant_marker.global_position + Vector3(0, 0, 1.5)
 	_briarwood_root.add_child(door_shop)
 	_register_interactable(door_shop, "enter_shop")
 
 	var door_smith := Node3D.new()
 	door_smith.name = "DoorSmith"
-	door_smith.global_position = smith_marker.global_position + Vector3(0, 0, 1.5)
+	door_smith.position = smith_marker.global_position + Vector3(0, 0, 1.5)
 	_briarwood_root.add_child(door_smith)
 	_register_interactable(door_smith, "enter_smith")
 
 	# Boat road marker (points travellers toward Nordic harbor)
 	var boat_marker := Node3D.new()
 	boat_marker.name = "BoatRoadMarker"
-	boat_marker.global_position = briarwood_origin + bw_gate_offset + Vector3(0, 0, -8)
+	boat_marker.position = briarwood_origin + bw_gate_offset + Vector3(0, 0, -8)
 	_briarwood_root.add_child(boat_marker)
 	_register_minimap_marker(boat_marker, "Boat → Nordic", "⛵")
 
@@ -7544,7 +7544,7 @@ func _register_bw_interactions(civic: Dictionary, plaza: Vector3, market: Vector
 func _make_training_dummy(pos: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "TrainingDummy"
-	n.global_position = pos
+	n.position = pos
 
 	var pole := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
@@ -7950,7 +7950,7 @@ func _spawn_named_giver(root: Node3D, display_name: String, pos: Vector3, kind: 
 		npc = mi
 	npc.name = display_name.replace(" ", "_")
 	root.add_child(npc)
-	npc.global_position = pos
+	npc.position = pos
 
 	# Floating name tag
 	var label := Label3D.new()
@@ -8268,7 +8268,7 @@ func _build_briarwood_life() -> void:
 			continue
 		_bw_life_root.add_child(npc)
 		npc.name = "LifeGuard_%d" % i
-		npc.global_position = gate + Vector3(rng.randf_range(-2, 2), 0, rng.randf_range(-2, 2))
+		npc.position = gate + Vector3(rng.randf_range(-2, 2), 0, rng.randf_range(-2, 2))
 		npc.set_meta("life_role", "guard")
 		npc.set_meta("life_route", [
 			gate   + Vector3(-1, 0,  0),
@@ -8288,7 +8288,7 @@ func _build_briarwood_life() -> void:
 		_bw_life_root.add_child(npc2)
 		npc2.name = "LifeVillager_%d" % i
 		var hub := plaza if rng.randf() < 0.55 else market
-		npc2.global_position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
+		npc2.position = hub + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
 		npc2.set_meta("life_role", "villager")
 		npc2.set_meta("life_home", npc2.global_position)
 		npc2.set_meta("life_idle_until", 0.0)
@@ -8377,14 +8377,14 @@ func _add_loop_3d(parent: Node3D, node_name: String, stream: AudioStream, pos: V
 	p.autoplay = true
 	p.max_distance = max_dist
 	p.volume_db = vol_db
-	p.global_position = pos
+	p.position = pos
 	parent.add_child(p)
 
 
 func _make_smoke_stack(pos: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "SmokeStack"
-	n.global_position = pos
+	n.position = pos
 
 	var gpu := GPUParticles3D.new()
 	gpu.amount = 60
@@ -8417,7 +8417,7 @@ func _make_smoke_stack(pos: Vector3) -> Node3D:
 func _make_flag_sway(pos: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "TownHallFlag"
-	n.global_position = pos
+	n.position = pos
 
 	# Pole
 	var pole := MeshInstance3D.new()
@@ -9205,9 +9205,9 @@ func _enter_interior(player: Node3D, kind: String) -> void:
 
 	var spawn := _interior_root.find_child("Spawn", true, false)
 	if spawn and spawn is Node3D:
-		player.global_position = (spawn as Node3D).global_position + Vector3(0, 0.02, 0)
+		player.position = (spawn as Node3D).global_position + Vector3(0, 0.02, 0)
 	else:
-		player.global_position = _interior_root.global_position + Vector3(0, 0.02, 0)
+		player.position = _interior_root.global_position + Vector3(0, 0.02, 0)
 
 	_interior_register_points()
 	_interior_audio_enter(kind)
@@ -9227,7 +9227,7 @@ func _exit_interior(player: Node3D) -> void:
 		_interior_root.queue_free()
 	_interior_root = null
 	_interior_kind = ""
-	player.global_position = _exterior_return_pos + Vector3(0, 0.02, 0)
+	player.position = _exterior_return_pos + Vector3(0, 0.02, 0)
 	_interior_audio_exit()
 	_transition_fade(false, transition_fade_time)
 	_try_toast("Back outside.")
@@ -9912,7 +9912,7 @@ func _update_tutorial_arrow_visual(player: Node3D) -> void:
 	# Hover above the target + sinusoidal bob
 	var t   := Time.get_ticks_msec() / 1000.0
 	var bob := sin(t * 2.6) * 0.18
-	_arrow_root.global_position = _arrow_target.global_position + Vector3(0, 3.2 + bob, 0)
+	_arrow_root.position = _arrow_target.global_position + Vector3(0, 3.2 + bob, 0)
 
 	# Rotate toward player (cosmetic orientation only)
 	var to_player := player.global_position - _arrow_root.global_position
@@ -10105,7 +10105,7 @@ func _tick_tutorial_trail(player: Node3D) -> void:
 
 func _make_sparkle_pip(pos: Vector3, size: float) -> Node3D:
 	var n := Node3D.new()
-	n.global_position = pos
+	n.position = pos
 
 	var gpu := GPUParticles3D.new()
 	gpu.amount        = 10
@@ -10232,14 +10232,14 @@ func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void
 		cm.height        = 0.55
 		pot.mesh = cm
 		pot.material_override = _bw_mat_stone()
-		pot.global_position = p2 + Vector3(0.0, 0.28, 0.0)
+		pot.position = p2 + Vector3(0.0, 0.28, 0.0)
 		root.add_child(pot)
 
 
 func _make_bw_bench_node(pos: Vector3, facing: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "Bench"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 	var m := MeshInstance3D.new()
 	m.mesh = _bw_get_bench_mesh()
@@ -10266,7 +10266,7 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 	for i in range(int(6 * bw_dressing_density)):
 		var p2 := market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
 		var post := Node3D.new()
-		post.global_position = p2
+		post.position = p2
 		root.add_child(post)
 		_bw_add_signboard(post, Vector3.ZERO, "MARKET" if rng.randf() < 0.5 else "GOODS")
 
@@ -10279,7 +10279,7 @@ func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, co
 func _make_bw_cart(pos: Vector3, facing: Vector3) -> Node3D:
 	var n := Node3D.new()
 	n.name = "Cart"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	var bed := MeshInstance3D.new()
@@ -10331,7 +10331,7 @@ func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, coun
 	bcm.height        = 0.55
 	block.mesh = bcm
 	block.material_override = _bw_mat_fence()
-	block.global_position = craft + Vector3(5.0, 0.28, 6.0)
+	block.position = craft + Vector3(5.0, 0.28, 6.0)
 	root.add_child(block)
 
 
@@ -10374,7 +10374,7 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 		pcm.height        = 1.9
 		post.mesh = pcm
 		post.material_override = mat
-		post.global_position = p + Vector3(0.0, 0.95, 0.0)
+		post.position = p + Vector3(0.0, 0.95, 0.0)
 		root.add_child(post)
 
 	# Horizontal line beam
@@ -10385,7 +10385,7 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 	lbm.size = Vector3(0.05, 0.05, len)
 	line.mesh = lbm
 	line.material_override = mat
-	line.global_position = mid + Vector3(0.0, 1.65, 0.0)
+	line.position = mid + Vector3(0.0, 1.65, 0.0)
 	line.rotation.y = atan2(b.x - a.x, b.z - a.z)
 	root.add_child(line)
 
@@ -10403,7 +10403,7 @@ func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNum
 								rng.randf_range(0.4, 1.0),
 								rng.randf_range(0.4, 1.0))
 		cl.material_override = cm
-		cl.global_position = cp
+		cl.position = cp
 		cl.rotation.y = rng.randf_range(-PI, PI)
 		root.add_child(cl)
 
@@ -10430,7 +10430,7 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 			var post := MeshInstance3D.new()
 			post.mesh = _bw_get_fence_post_mesh()
 			post.material_override = mat
-			post.global_position = p + Vector3(0.0, 0.78, 0.0)
+			post.position = p + Vector3(0.0, 0.78, 0.0)
 			root.add_child(post)
 
 	# Two rails spanning the whole segment
@@ -10447,7 +10447,7 @@ func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
 			var rail := MeshInstance3D.new()
 			rail.mesh = rail_mesh
 			rail.material_override = mat
-			rail.global_position = mid + Vector3(0.0, rail_y, 0.0)
+			rail.position = mid + Vector3(0.0, rail_y, 0.0)
 			rail.rotation.y = yaw
 			root.add_child(rail)
 
@@ -10472,13 +10472,13 @@ func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> 
 	var m := MeshInstance3D.new()
 	if kind < 0.45:
 		m.mesh = _bw_get_barrel_mesh()
-		m.global_position = p + Vector3(0.0, 0.40, 0.0)
+		m.position = p + Vector3(0.0, 0.40, 0.0)
 	elif kind < 0.80:
 		m.mesh = _bw_get_crate_mesh()
-		m.global_position = p + Vector3(0.0, 0.225, 0.0)
+		m.position = p + Vector3(0.0, 0.225, 0.0)
 	else:
 		m.mesh = _bw_get_woodpile_mesh()
-		m.global_position = p + Vector3(0.0, 0.275, 0.0)
+		m.position = p + Vector3(0.0, 0.275, 0.0)
 	m.material_override = mat
 	m.rotation.y = rng.randf_range(-PI, PI)
 	root.add_child(m)
@@ -10489,7 +10489,7 @@ func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> 
 func _build_bw_gate_dressing(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
 	# Signpost beside the gate arch
 	var sp := Node3D.new()
-	sp.global_position = gate + Vector3(2.4, 0.0, 1.4)
+	sp.position = gate + Vector3(2.4, 0.0, 1.4)
 	root.add_child(sp)
 	_bw_add_signboard(sp, Vector3.ZERO, "BRIARWOOD")
 
@@ -10556,7 +10556,7 @@ func _build_bw_cobble_strip(a: Vector3, b: Vector3, parent: Node3D) -> void:
 		bm.size = Vector3(3.0, 0.12, 2.1)
 		seg.mesh = bm
 		seg.material_override = MAT_PATH(3.0)
-		seg.global_position = p + Vector3(0.0, 0.02, 0.0)
+		seg.position = p + Vector3(0.0, 0.02, 0.0)
 		seg.rotation.y = atan2(dir.x, dir.z)
 		parent.add_child(seg)
 
@@ -10597,7 +10597,7 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 			pcm.height        = h
 			post.mesh = pcm
 			post.material_override = mat
-			post.global_position = p + Vector3(0.0, h * 0.5, 0.0)
+			post.position = p + Vector3(0.0, h * 0.5, 0.0)
 			root.add_child(post)
 
 	_build_bw_gate_towers(root, gate, gate_dir)
@@ -10611,7 +10611,7 @@ func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> voi
 		var bm    := BoxMesh.new()
 		bm.size = Vector3(2.2, 4.2, 2.2)
 		tower.mesh = bm
-		tower.global_position = p + Vector3(0.0, 2.1, 0.0)
+		tower.position = p + Vector3(0.0, 2.1, 0.0)
 		tower.material_override = _bw_mat_stone()
 		root.add_child(tower)
 
@@ -10710,7 +10710,7 @@ func _build_bw_farms(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
 		var fm := StandardMaterial3D.new()
 		fm.albedo_color = Color(0.22, 0.35, 0.16)
 		field.material_override = fm
-		field.global_position = p + Vector3(0.0, 0.04, 0.0)
+		field.position = p + Vector3(0.0, 0.04, 0.0)
 		root.add_child(field)
 
 		# Fence along front edge
@@ -10757,7 +10757,7 @@ func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: 
 		chimney: bool, porch: bool, rng: RandomNumberGenerator) -> Node3D:
 	var n := Node3D.new()
 	n.name = "BW_House"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 
 	var w      := footprint.x
@@ -10911,7 +10911,7 @@ func _bw_build_glb_house(pos: Vector3, facing: Vector3,
 		model_scale: float) -> Node3D:
 	var n := Node3D.new()
 	n.name = "BW_GLBHouse"
-	n.global_position = pos
+	n.position = pos
 	n.rotation.y = atan2(facing.x, facing.z)
 	n.add_to_group("buildings")
 
