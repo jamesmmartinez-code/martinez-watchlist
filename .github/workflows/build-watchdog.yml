@@ -3,7 +3,10 @@ name: Build Watchdog
 # Runs every 15 minutes.
 # Checks THREE things and auto-heals each:
 #
-# 1. BUILD HEALTH — if current HEAD has no successful build, retriggers it.
+# 1. BUILD HEALTH — if current HEAD has a successful or in-progress build,
+#    or if HEAD only changed non-source files (deploy commits, docs, etc.),
+#    no retrigger is needed. Only retrigger on actual failure/missing build
+#    for commits that touch eldoria-godot/**.
 # 2. LIVE URL HEALTH — fetches the Worker URL; if it's serving a redirect
 #    instead of the real game, retriggers the build to re-sync R2.
 # 3. REPO PUSH HEALTH — checks that main has received a commit in the last
@@ -24,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Check build + live URL + repo push health
         env:
@@ -46,7 +51,7 @@ jobs:
             --jq '.total_count')
 
           if [ "$IN_PROGRESS" -gt 0 ]; then
-            echo "🔄 Build already in progress — skipping retrigger checks."
+            echo "\U0001F504 Build already in progress — skipping retrigger checks."
             exit 0
           fi
 
@@ -58,9 +63,22 @@ jobs:
 
           case "$LAST_CONCLUSION" in
             success)
-              echo "✅ Build: current HEAD has a successful build."
+              echo "\u2705 Build: current HEAD has a successful build."
               ;;
-            cancelled|failure|timed_out|stale|none)
+            none)
+              # HEAD commit may be a deploy/doc-only commit that skips the build path filter.
+              # Check if HEAD actually touched source files that would trigger the build.
+              TOUCHED_SOURCE=$(gh api "repos/$REPO/commits/$HEAD_SHA" \
+                --jq '[.files[].filename | select(startswith("eldoria-godot/") or (. == ".github/workflows/build-eldoria.yml"))] | length')
+              echo "Source files touched in HEAD: $TOUCHED_SOURCE"
+              if [ "$TOUCHED_SOURCE" -gt 0 ]; then
+                NEEDS_BUILD=true
+                REASON="build is missing for HEAD commit that touches source"
+              else
+                echo "\u2705 Build: HEAD is a deploy/doc commit — no source change, no build needed."
+              fi
+              ;;
+            cancelled|failure|timed_out|stale)
               NEEDS_BUILD=true
               REASON="build is $LAST_CONCLUSION"
               ;;
@@ -90,7 +108,7 @@ jobs:
                 NEEDS_BUILD=true
                 REASON="live URL missing Godot game markers (canvas/index.js)"
               else
-                echo "✅ Live URL: serving real game shell (${BODY_SIZE} bytes)."
+                echo "\u2705 Live URL: serving real game shell (${BODY_SIZE} bytes)."
               fi
             fi
           fi
@@ -103,9 +121,7 @@ jobs:
           echo "Last commit: $LAST_COMMIT_TIME (${AGE_HOURS}h ago)"
 
           if [ "$AGE_HOURS" -gt 4 ]; then
-            echo "⚠️  Repo has been quiet for ${AGE_HOURS}h — agents may have stopped."
-            # Write a health-check breadcrumb so there's a record, but don't retrigger build
-            # (stale repo != broken game; don't spam builds)
+            echo "\u26A0\uFE0F  Repo has been quiet for ${AGE_HOURS}h — agents may have stopped."
             git config user.name "build-watchdog[bot]"
             git config user.email "watchdog@eldoria"
             echo "$(date -u +%Y-%m-%dT%H:%MZ) watchdog: repo quiet ${AGE_HOURS}h" >> .github/watchdog.log
@@ -113,12 +129,12 @@ jobs:
             git commit -m "watchdog: repo quiet ${AGE_HOURS}h — last commit was $LAST_COMMIT_TIME [autofix]" || true
             git push || true
           else
-            echo "✅ Repo push health: active (${AGE_HOURS}h since last commit)."
+            echo "\u2705 Repo push health: active (${AGE_HOURS}h since last commit)."
           fi
 
           # ── RETRIGGER IF NEEDED ─────────────────────────────────────────
           if [ "$NEEDS_BUILD" = "true" ]; then
-            echo "⚠️  Retriggering build: $REASON"
+            echo "\u26A0\uFE0F  Retriggering build: $REASON"
             gh workflow run "$WORKFLOW" --repo "$REPO" --ref main
-            echo "✅ Build Eldoria retriggered."
+            echo "\u2705 Build Eldoria retriggered."
           fi
