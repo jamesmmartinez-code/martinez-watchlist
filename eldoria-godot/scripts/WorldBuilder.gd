@@ -3010,7 +3010,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 1. Ruined Watchtower (east, 95m) ────────────────────────────────────
 	# Collapsed medieval watchtower — broken top, vine-covered stones, chest inside.
-	var tw_pos := Vector3(95.0, 0.0, 30.0)
+	var tw_pos: Vector3 = Vector3(95.0, 0.0, 30.0)
 	var tw     := Node3D.new()
 	tw.name    = "RuinedWatchtower"
 	root.add_child(tw)
@@ -3077,7 +3077,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
 	# Seven standing stones in a ring, glowing rune in the centre.
-	var sc_pos := Vector3(-80.0, 0.0, -70.0)
+	var sc_pos: Vector3 = Vector3(-80.0, 0.0, -70.0)
 	var sc     := Node3D.new()
 	sc.name    = "DruidStoneCircle"
 	root.add_child(sc)
@@ -3087,7 +3087,7 @@ func _build_mid_world_pois() -> void:
 	var circle_r    := 7.0
 	for i in range(stone_count):
 		var sang : float = TAU * float(i) / float(stone_count)
-		var spos := Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
+		var spos: Vector3 = Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
 		var stone := MeshInstance3D.new()
 		var sbm   := BoxMesh.new()
 		sbm.size = Vector3(
@@ -3137,7 +3137,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 3. Abandoned Caravan (north-east road, 75m) ──────────────────────────
 	# Overturned wagon, scattered crates, campfire embers — feels like a story.
-	var cv_pos := Vector3(60.0, 0.0, 75.0)
+	var cv_pos: Vector3 = Vector3(60.0, 0.0, 75.0)
 	var cv     := Node3D.new()
 	cv.name    = "AbandonedCaravan"
 	root.add_child(cv)
@@ -3196,7 +3196,7 @@ func _build_mid_world_pois() -> void:
 	# ── 4. Roadside Waypoint Shrine (north road to Nordic, 55m) ─────────────
 	# Stone marker with a small offering bowl — gives players a rest point
 	# on the long run to the Nordic village.
-	var ws_pos := Vector3(4.0, 0.0, 58.0)
+	var ws_pos: Vector3 = Vector3(4.0, 0.0, 58.0)
 	var ws     := Node3D.new()
 	ws.name    = "WaypointShrine"
 	root.add_child(ws)
@@ -3250,7 +3250,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 5. Ancient Standing Stones Arch (south, 90m) ─────────────────────────
 	# A dramatic natural arch of two leaning megaliths — a pure silhouette moment.
-	var arch_pos := Vector3(-15.0, 0.0, -95.0)
+	var arch_pos: Vector3 = Vector3(-15.0, 0.0, -95.0)
 	var ar       := Node3D.new()
 	ar.name      = "MegalithArch"
 	root.add_child(ar)
@@ -3278,7 +3278,7 @@ func _build_mid_world_pois() -> void:
 
 	# ── 6. Wolf Den (west tree-line, 70m) ────────────────────────────────────
 	# A rocky outcrop den with bones and glowing eyes — warns players of wolves.
-	var wd_pos := Vector3(-70.0, 0.0, 10.0)
+	var wd_pos: Vector3 = Vector3(-70.0, 0.0, 10.0)
 	var wd     := Node3D.new()
 	wd.name    = "WolfDen"
 	root.add_child(wd)
@@ -3348,12 +3348,12 @@ func _build_whisperwood_forest() -> void:
 	for i in range(TREE_N):
 		var tx: float = WW_CX + rng.randf_range(-WW_W * 0.5, WW_W * 0.5)
 		var tz: float = WW_CZ + rng.randf_range(-WW_D * 0.5, WW_D * 0.5)
-		var pos := Vector3(tx, 0.0, tz)
+		var pos: Vector3 = Vector3(tx, 0.0, tz)
 
 		# Try GLB tree first
-		var placed := false
+		var placed: bool = false
 		if TREE_VARIANTS.size() > 0:
-			var pick_r := rng.randf()
+			var pick_r: float = rng.randf()
 			var cum    := 0.0
 			for tv in TREE_VARIANTS:
 				cum += float(tv["weight"])
@@ -3405,7 +3405,7 @@ func _build_whisperwood_forest() -> void:
 	for i in range(80):
 		var fx: float = WW_CX + rng.randf_range(-WW_W * 0.48, WW_W * 0.48)
 		var fz: float = WW_CZ + rng.randf_range(-WW_D * 0.48, WW_D * 0.48)
-		var fpos := Vector3(fx, 0.0, fz)
+		var fpos: Vector3 = Vector3(fx, 0.0, fz)
 
 		if rng.randf() < 0.6:
 			# Fern tuft
@@ -3459,7 +3459,7 @@ func _build_whisperwood_forest() -> void:
 
 	# ── Goblin camp INSIDE the forest (not in open field) ────────────────────
 	# Placed 60m into the forest so players have to navigate trees to reach it.
-	var gc_pos := Vector3(WW_CX + 20.0, 0.0, WW_CZ - 15.0)
+	var gc_pos: Vector3 = Vector3(WW_CX + 20.0, 0.0, WW_CZ - 15.0)
 	_make_goblin_camp(gc_pos)
 
 	# ── Forest fog plane — a low ground-fog quad inside Whisperwood ──────────
@@ -4453,7 +4453,7 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		var positions: Vector3 = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
 		Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
@@ -4564,9 +4564,9 @@ func _build_village_dressing_props() -> void:
 		var rng3 := RandomNumberGenerator.new()
 		rng3.seed = 9988
 		for i in range(8):
-			var angle := i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
-			var dist := rng3.randf_range(55.0, 70.0)
-			var p := Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			var angle: float = i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
+			var dist: float = rng3.randf_range(55.0, 70.0)
+			var p: Vector3 = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 			var n := Node3D.new()
 			n.name = "EdgeRocks"
 			n.position = p
@@ -8460,7 +8460,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 		root.add_child(_make_bw_lantern_post(p))
 
 	# Bell Tower — civic landmark north-west of the plaza, visible from the gate
-	var bell_tower := _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
+	var bell_tower: Vector3 = _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
 	root.add_child(bell_tower)
 	out["bell_tower"] = bell_tower
 
@@ -12543,7 +12543,7 @@ func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> voi
 		var bat_count := 8
 		for bi in range(bat_count):
 			var bang := TAU * float(bi) / float(bat_count)
-			var bpos := Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
+			var bpos: Vector3 = Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
 			var crenel := MeshInstance3D.new()
 			var cbm := BoxMesh.new()
 			cbm.size = Vector3(0.55, 1.0, 0.55)
