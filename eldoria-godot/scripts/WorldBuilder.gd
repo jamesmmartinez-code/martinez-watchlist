@@ -926,12 +926,12 @@ const NPCS = [
 @export var briarwood_hub_enabled: bool = true
 @export var briarwood_origin: Vector3 = Vector3(0, 0, 0)
 
-@export var bw_plaza_offset: Vector3     = Vector3(0,   0, 14)
-@export var bw_gate_offset: Vector3      = Vector3(0,   0, -6)
-@export var bw_market_offset: Vector3    = Vector3(8,   0, 18)
-@export var bw_craft_offset: Vector3     = Vector3(-12, 0, 18)
-@export var bw_shrine_offset: Vector3    = Vector3(-6,  0, 10)
-@export var bw_townhall_offset: Vector3  = Vector3(0,   0, 22)
+@export var bw_plaza_offset: Vector3     = Vector3(0,   0, 20)
+@export var bw_gate_offset: Vector3      = Vector3(0,   0, -8)
+@export var bw_market_offset: Vector3    = Vector3(30,  0, 24)
+@export var bw_craft_offset: Vector3     = Vector3(-30, 0, 24)
+@export var bw_shrine_offset: Vector3    = Vector3(-10, 0, 14)
+@export var bw_townhall_offset: Vector3  = Vector3(0,   0, 42)
 
 @export var bw_house_count: int = 28
 @export var bw_market_stall_count: int = 14
@@ -974,8 +974,8 @@ const NPCS = [
 @export var bw_mm_clutter: bool = true
 # Phase 24 — Real village layout
 @export var bw_real_village_enabled: bool = true
-@export var bw_palisade_radius_x: float = 52.0
-@export var bw_palisade_radius_z: float = 44.0
+@export var bw_palisade_radius_x: float = 72.0
+@export var bw_palisade_radius_z: float = 60.0
 @export var bw_gate_width: float = 9.0
 @export var bw_inner_loop_scale: float = 0.70
 @export var bw_house_setback: float = 6.5
@@ -1176,6 +1176,8 @@ func _build_world_sync() -> void:
 	_safe_call("_build_npcs")
 	_safe_call("_build_grass_tufts", [220])
 	_safe_call("_build_far_world_scatter")
+	_safe_call("_build_mid_world_pois")
+	_safe_call("_build_whisperwood_forest")
 	_safe_call("_build_well")
 	_safe_call("_build_pond")
 	_safe_call("_build_firefly_particles")
@@ -1298,6 +1300,8 @@ func _build_world_async() -> void:
 	_safe_call_now("_build_npcs",        [])
 	_safe_call_now("_build_grass_tufts", [220])
 	_safe_call_now("_build_far_world_scatter", [])
+	_safe_call_now("_build_mid_world_pois",   [])
+	_safe_call_now("_build_whisperwood_forest", [])
 
 	# ── Water, particles, atmosphere ──────────────────────────────────────────
 	build_progress.emit("Water & FX", 0.54)
@@ -2907,6 +2911,489 @@ func _build_far_world_scatter() -> void:
 		root.add_child(hill)
 		hill.global_position = pos
 
+# ============================================================================
+# MID-WORLD POIs — fills the 60–160m dead zone around Briarwood
+# Six distinct landmarks that give players destinations to discover in every
+# direction.  All are primitive-based for zero-asset-dependency.
+# ============================================================================
+
+func _build_mid_world_pois() -> void:
+	var root := Node3D.new()
+	root.name = "MidWorldPOIs"
+	add_child(root)
+
+	# ── 1. Ruined Watchtower (east, 95m) ────────────────────────────────────
+	# Collapsed medieval watchtower — broken top, vine-covered stones, chest inside.
+	var tw_pos := Vector3(95.0, 0.0, 30.0)
+	var tw     := Node3D.new()
+	tw.name    = "RuinedWatchtower"
+	root.add_child(tw)
+	tw.global_position = tw_pos
+
+	# Main shaft (broken — shorter than a full tower)
+	var tw_shaft := MeshInstance3D.new()
+	var tw_cm    := CylinderMesh.new()
+	tw_cm.top_radius    = 1.5
+	tw_cm.bottom_radius = 2.0
+	tw_cm.height        = 8.0
+	tw_shaft.mesh = tw_cm
+	tw_shaft.material_override = MAT_STONE(2.0)
+	tw_shaft.position.y = 4.0
+	tw.add_child(tw_shaft)
+
+	# Broken top — angled BoxMesh chunks to read as crumbled masonry
+	for i in range(5):
+		var chunk := MeshInstance3D.new()
+		var cbm   := BoxMesh.new()
+		cbm.size = Vector3(
+			1.0 + float(i) * 0.3,
+			0.6 + float(i) * 0.2,
+			0.8 + float(i) * 0.25
+		)
+		chunk.mesh = cbm
+		chunk.material_override = MAT_STONE(1.5)
+		var ang: float = float(i) * 1.25
+		chunk.position = Vector3(cos(ang) * 1.2, 8.0 + float(i) * 0.3, sin(ang) * 1.2)
+		chunk.rotation = Vector3(randf_range(-0.3, 0.3), ang, randf_range(-0.2, 0.2))
+		tw.add_child(chunk)
+
+	# Scatter rubble at base
+	for i in range(8):
+		var rb := MeshInstance3D.new()
+		var rbm := BoxMesh.new()
+		rbm.size = Vector3(randf_range(0.3, 0.8), randf_range(0.2, 0.5), randf_range(0.3, 0.8))
+		rb.mesh = rbm
+		rb.material_override = MAT_STONE(1.0)
+		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
+		rb.global_position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
+		rb.rotation.y = randf_range(0, TAU)
+		root.add_child(rb)
+
+	# Torch glow at top — ruins feel inhabited by someone
+	var tw_light := OmniLight3D.new()
+	tw_light.light_color  = Color(1.0, 0.65, 0.25)
+	tw_light.light_energy = 1.8
+	tw_light.omni_range   = 20.0
+	tw_light.position     = tw_pos + Vector3(0, 9.0, 0)
+	root.add_child(tw_light)
+
+	# Collision
+	var tw_body := StaticBody3D.new()
+	var tw_col  := CollisionShape3D.new()
+	var tw_cyl  := CylinderShape3D.new()
+	tw_cyl.radius = 2.0; tw_cyl.height = 8.0
+	tw_col.shape = tw_cyl; tw_col.position.y = 4.0
+	tw_body.add_child(tw_col); tw.add_child(tw_body)
+
+	# Loot chest at base — reward for exploring
+	var chest_node: Node3D = _make_loot_chest_primitive(tw_pos + Vector3(1.8, 0.2, 1.8))
+	if chest_node: root.add_child(chest_node)
+
+	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
+	# Seven standing stones in a ring, glowing rune in the centre.
+	var sc_pos := Vector3(-80.0, 0.0, -70.0)
+	var sc     := Node3D.new()
+	sc.name    = "DruidStoneCircle"
+	root.add_child(sc)
+	sc.global_position = sc_pos
+
+	var stone_count := 7
+	var circle_r    := 7.0
+	for i in range(stone_count):
+		var sang : float = TAU * float(i) / float(stone_count)
+		var spos := Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
+		var stone := MeshInstance3D.new()
+		var sbm   := BoxMesh.new()
+		sbm.size = Vector3(
+			0.6 + sin(float(i)) * 0.3,
+			2.4 + sin(float(i) * 1.7) * 0.8,
+			0.5 + cos(float(i)) * 0.2
+		)
+		stone.mesh = sbm
+		stone.material_override = MAT_ROCK(1.5)
+		stone.position = spos + Vector3(0, sbm.size.y * 0.5, 0)
+		stone.rotation.y = sang + randf_range(-0.2, 0.2)
+		stone.rotation.z = randf_range(-0.06, 0.06)
+		sc.add_child(stone)
+
+		# Rune glow — faint green emission on face of each stone
+		var rune := MeshInstance3D.new()
+		var rqm  := QuadMesh.new()
+		rqm.size = Vector2(0.3, 0.5)
+		rune.mesh = rqm
+		var rm   := StandardMaterial3D.new()
+		rm.albedo_color = Color(0.3, 1.0, 0.5, 0.8)
+		rm.emission_enabled = true
+		rm.emission = Color(0.2, 1.0, 0.4)
+		rm.emission_energy_multiplier = 1.2
+		rm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		rune.material_override = rm
+		rune.position = spos + Vector3(0, sbm.size.y * 0.55, sin(sang + PI) * 0.3)
+		rune.rotation.y = sang + PI
+		sc.add_child(rune)
+
+	# Central altar slab
+	var altar := MeshInstance3D.new()
+	var abm   := BoxMesh.new()
+	abm.size  = Vector3(1.8, 0.35, 1.2)
+	altar.mesh = abm
+	altar.material_override = MAT_STONE(2.0)
+	altar.position.y = 0.18
+	sc.add_child(altar)
+
+	# Pulsing centre light (green-teal druid magic)
+	var sc_light := OmniLight3D.new()
+	sc_light.light_color  = Color(0.35, 1.0, 0.55)
+	sc_light.light_energy = 1.5
+	sc_light.omni_range   = 18.0
+	sc_light.position     = Vector3(0, 1.0, 0)
+	sc.add_child(sc_light)
+
+	# ── 3. Abandoned Caravan (north-east road, 75m) ──────────────────────────
+	# Overturned wagon, scattered crates, campfire embers — feels like a story.
+	var cv_pos := Vector3(60.0, 0.0, 75.0)
+	var cv     := Node3D.new()
+	cv.name    = "AbandonedCaravan"
+	root.add_child(cv)
+	cv.global_position = cv_pos
+
+	# Wagon body — long box, slightly tilted
+	var wagon := MeshInstance3D.new()
+	var wbm   := BoxMesh.new()
+	wbm.size  = Vector3(2.0, 1.2, 4.5)
+	wagon.mesh = wbm
+	wagon.material_override = MAT_DARK_WOOD(1.5)
+	wagon.position = Vector3(0, 0.6, 0)
+	wagon.rotation = Vector3(0.0, 0.35, 0.18)  # tilted/overturned
+	cv.add_child(wagon)
+
+	# Wheels (2 visible, lying flat)
+	for wi in range(2):
+		var wheel := MeshInstance3D.new()
+		var wcm   := CylinderMesh.new()
+		wcm.top_radius = 0.65; wcm.bottom_radius = 0.65; wcm.height = 0.18
+		wheel.mesh = wcm
+		wheel.material_override = MAT_DARK_WOOD(1.0)
+		wheel.position = Vector3(float(wi) * 2.2 - 1.1, 0.1, 1.5)
+		wheel.rotation.x = PI * 0.5
+		cv.add_child(wheel)
+
+	# Scattered crates
+	for ci in range(4):
+		var crate := MeshInstance3D.new()
+		var cbm2  := BoxMesh.new()
+		cbm2.size = Vector3(0.7, 0.6, 0.7)
+		crate.mesh = cbm2
+		crate.material_override = MAT_WOOD(1.0)
+		var ca: float = float(ci) * 1.5
+		crate.position = Vector3(cos(ca) * 2.5, 0.3, sin(ca) * 2.5 + 1.0)
+		crate.rotation.y = ca
+		cv.add_child(crate)
+
+	# Cold campfire remnant
+	var fire_ring := MeshInstance3D.new()
+	var frm       := CylinderMesh.new()
+	frm.top_radius = 0.45; frm.bottom_radius = 0.55; frm.height = 0.08
+	fire_ring.mesh = frm
+	fire_ring.material_override = MAT_STONE(1.0)
+	fire_ring.position = Vector3(-2.5, 0.04, -1.5)
+	cv.add_child(fire_ring)
+
+	# Faint ember glow (just barely alive)
+	var ember := OmniLight3D.new()
+	ember.light_color  = Color(1.0, 0.4, 0.1)
+	ember.light_energy = 0.6
+	ember.omni_range   = 5.0
+	ember.position     = cv_pos + Vector3(-2.5, 0.3, -1.5)
+	root.add_child(ember)
+
+	# ── 4. Roadside Waypoint Shrine (north road to Nordic, 55m) ─────────────
+	# Stone marker with a small offering bowl — gives players a rest point
+	# on the long run to the Nordic village.
+	var ws_pos := Vector3(4.0, 0.0, 58.0)
+	var ws     := Node3D.new()
+	ws.name    = "WaypointShrine"
+	root.add_child(ws)
+	ws.global_position = ws_pos
+
+	# Stone obelisk
+	var ob := MeshInstance3D.new()
+	var om := BoxMesh.new()
+	om.size = Vector3(0.5, 3.5, 0.5)
+	ob.mesh = om
+	ob.material_override = MAT_STONE(2.0)
+	ob.position.y = 1.75
+	ws.add_child(ob)
+
+	# Cap stone (slightly wider)
+	var obc := MeshInstance3D.new()
+	var ocm2 := BoxMesh.new()
+	ocm2.size = Vector3(0.75, 0.35, 0.75)
+	obc.mesh = ocm2
+	obc.material_override = MAT_STONE(2.0)
+	obc.position.y = 3.68
+	ws.add_child(obc)
+
+	# Offering bowl (small disc on a plinth)
+	var plinth := MeshInstance3D.new()
+	var plm    := CylinderMesh.new()
+	plm.top_radius = 0.35; plm.bottom_radius = 0.4; plm.height = 0.55
+	plinth.mesh = plm
+	plinth.material_override = MAT_STONE(1.5)
+	plinth.position = Vector3(0.6, 0.28, 0.0)
+	ws.add_child(plinth)
+
+	var bowl := MeshInstance3D.new()
+	var blm  := SphereMesh.new()
+	blm.radius = 0.22; blm.height = 0.22
+	bowl.mesh = blm
+	var bwm := StandardMaterial3D.new()
+	bwm.albedo_color = Color(0.65, 0.50, 0.20)
+	bwm.metallic = 0.6; bwm.roughness = 0.3
+	bowl.material_override = bwm
+	bowl.position = Vector3(0.6, 0.6, 0.0)
+	ws.add_child(bowl)
+
+	# Soft golden shrine glow
+	var ws_light := OmniLight3D.new()
+	ws_light.light_color  = Color(1.0, 0.88, 0.55)
+	ws_light.light_energy = 1.0
+	ws_light.omni_range   = 10.0
+	ws_light.position     = Vector3(0, 2.5, 0)
+	ws.add_child(ws_light)
+
+	# ── 5. Ancient Standing Stones Arch (south, 90m) ─────────────────────────
+	# A dramatic natural arch of two leaning megaliths — a pure silhouette moment.
+	var arch_pos := Vector3(-15.0, 0.0, -95.0)
+	var ar       := Node3D.new()
+	ar.name      = "MegalithArch"
+	root.add_child(ar)
+	ar.global_position = arch_pos
+
+	for si in range(2):
+		var lean_sign := 1.0 if si == 0 else -1.0
+		var stn := MeshInstance3D.new()
+		var scm2 := BoxMesh.new()
+		scm2.size = Vector3(1.0, 7.0, 1.2)
+		stn.mesh = scm2
+		stn.material_override = MAT_ROCK(1.5)
+		stn.position = Vector3(float(si) * 4.0 - 2.0, 3.5, 0.0)
+		stn.rotation.z = lean_sign * 0.14  # lean inward
+		ar.add_child(stn)
+
+	# Capstone resting on top
+	var capstone := MeshInstance3D.new()
+	var csm      := BoxMesh.new()
+	csm.size     = Vector3(5.5, 0.8, 1.4)
+	capstone.mesh = csm
+	capstone.material_override = MAT_ROCK(1.5)
+	capstone.position = Vector3(0, 7.2, 0)
+	ar.add_child(capstone)
+
+	# ── 6. Wolf Den (west tree-line, 70m) ────────────────────────────────────
+	# A rocky outcrop den with bones and glowing eyes — warns players of wolves.
+	var wd_pos := Vector3(-70.0, 0.0, 10.0)
+	var wd     := Node3D.new()
+	wd.name    = "WolfDen"
+	root.add_child(wd)
+	wd.global_position = wd_pos
+
+	# Rock pile entrance
+	for ri in range(6):
+		var rock := MeshInstance3D.new()
+		var rsm  := SphereMesh.new()
+		var rs   := randf_range(0.8, 2.2)
+		rsm.radius = rs; rsm.height = rs * randf_range(0.5, 0.8)
+		rock.mesh = rsm
+		rock.material_override = MAT_ROCK(1.0)
+		var ra: float = float(ri) * TAU / 6.0
+		rock.global_position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
+		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
+		root.add_child(rock)
+
+	# Scattered bones (small white cylinders)
+	for bi2 in range(5):
+		var bone := MeshInstance3D.new()
+		var bcm  := CylinderMesh.new()
+		bcm.top_radius = 0.05; bcm.bottom_radius = 0.06; bcm.height = randf_range(0.3, 0.7)
+		bone.mesh = bcm
+		var bmat2 := StandardMaterial3D.new()
+		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
+		bone.material_override = bmat2
+		bone.global_position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
+		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
+		root.add_child(bone)
+
+	# Glowing amber eyes inside the den
+	var eye_light := OmniLight3D.new()
+	eye_light.light_color  = Color(1.0, 0.50, 0.05)
+	eye_light.light_energy = 1.2
+	eye_light.omni_range   = 8.0
+	eye_light.position     = wd_pos + Vector3(0, 0.8, 0)
+	root.add_child(eye_light)
+
+	_dlog("Mid-world POIs built (6 landmarks)")
+
+
+# ============================================================================
+# WHISPERWOOD FOREST — dense tree zone 60–120m west of Briarwood
+# The forest that NPCs constantly reference in dialogue.  Uses GLB trees
+# where available, procedural fallback always fires.  Includes ambient
+# fog tint, firefly cluster, and places the goblin camp INSIDE the forest
+# so players actually have to venture in to complete quests.
+# ============================================================================
+
+func _build_whisperwood_forest() -> void:
+	var root := Node3D.new()
+	root.name = "WhisperwoodForest"
+	add_child(root)
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 9182
+
+	# Forest bounds: roughly 120m wide × 80m deep, centred 90m west
+	const WW_CX   : float = -90.0
+	const WW_CZ   : float = 0.0
+	const WW_W    : float = 120.0
+	const WW_D    : float = 80.0
+	const TREE_N  : int   = 220   # dense — Whisperwood should feel dark and thick
+
+	# ── Tree canopy ───────────────────────────────────────────────────────────
+	for i in range(TREE_N):
+		var tx: float = WW_CX + rng.randf_range(-WW_W * 0.5, WW_W * 0.5)
+		var tz: float = WW_CZ + rng.randf_range(-WW_D * 0.5, WW_D * 0.5)
+		var pos := Vector3(tx, 0.0, tz)
+
+		# Try GLB tree first
+		var placed := false
+		if TREE_VARIANTS.size() > 0:
+			var pick_r := rng.randf()
+			var cum    := 0.0
+			for tv in TREE_VARIANTS:
+				cum += float(tv["weight"])
+				if pick_r <= cum:
+					placed = _make_glb_tree(pos, rng, tv)
+					break
+
+		if not placed:
+			# Procedural fallback — darker, taller trees for the forest feel
+			var h: float = rng.randf_range(6.0, 12.0)
+			var tr := Node3D.new()
+			root.add_child(tr)
+			tr.global_position = pos
+
+			var trunk := MeshInstance3D.new()
+			var tcm   := CylinderMesh.new()
+			tcm.top_radius    = rng.randf_range(0.14, 0.22)
+			tcm.bottom_radius = rng.randf_range(0.18, 0.30)
+			tcm.height        = h * 0.55
+			trunk.mesh = tcm
+			trunk.material_override = MAT_BARK(1.0)
+			trunk.position.y = h * 0.55 * 0.5
+			tr.add_child(trunk)
+
+			var canopy := MeshInstance3D.new()
+			# Oaks = sphere, pines = cone — vary by position for natural look
+			if rng.randf() < 0.55:
+				var sm2 := SphereMesh.new()
+				sm2.radius = rng.randf_range(1.8, 3.2)
+				sm2.height = sm2.radius * 2.0
+				canopy.mesh = sm2
+			else:
+				var prm2 := PrismMesh.new()
+				prm2.size = Vector3(rng.randf_range(2.2, 3.8), h * 0.55, rng.randf_range(2.2, 3.8))
+				canopy.mesh = prm2
+			var cm2 := StandardMaterial3D.new()
+			# Dark forest greens — much richer than the open-field scatter trees
+			cm2.albedo_color = Color(
+				0.08 + rng.randf_range(0, 0.08),
+				0.25 + rng.randf_range(0, 0.14),
+				0.08 + rng.randf_range(0, 0.06)
+			)
+			cm2.roughness = 0.95
+			canopy.material_override = cm2
+			canopy.position.y = h * 0.55 + h * 0.28
+			tr.add_child(canopy)
+
+	# ── Forest floor — ferns and mushrooms clustered inside ──────────────────
+	for i in range(80):
+		var fx: float = WW_CX + rng.randf_range(-WW_W * 0.48, WW_W * 0.48)
+		var fz: float = WW_CZ + rng.randf_range(-WW_D * 0.48, WW_D * 0.48)
+		var fpos := Vector3(fx, 0.0, fz)
+
+		if rng.randf() < 0.6:
+			# Fern tuft
+			var fern := MeshInstance3D.new()
+			var fbm  := BoxMesh.new()
+			fbm.size = Vector3(
+				rng.randf_range(0.6, 1.2),
+				rng.randf_range(0.3, 0.6),
+				rng.randf_range(0.6, 1.2)
+			)
+			fern.mesh = fbm
+			var fmat := StandardMaterial3D.new()
+			fmat.albedo_color = Color(0.15, 0.48 + rng.randf_range(0, 0.18), 0.12)
+			fmat.roughness = 0.95
+			fern.material_override = fmat
+			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
+			root.add_child(fern)
+		else:
+			# Mushroom
+			var mush := MeshInstance3D.new()
+			var mcm  := CylinderMesh.new()
+			mcm.top_radius = rng.randf_range(0.12, 0.28)
+			mcm.bottom_radius = 0.04
+			mcm.height = rng.randf_range(0.2, 0.45)
+			mush.mesh = mcm
+			var mmat := StandardMaterial3D.new()
+			mmat.albedo_color = Color(
+				0.6 + rng.randf_range(0, 0.35),
+				0.1 + rng.randf_range(0, 0.15),
+				0.05
+			)
+			mmat.roughness = 0.7
+			mush.material_override = mmat
+			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
+			root.add_child(mush)
+
+	# ── Firefly cluster (soft green ambient glow inside the forest) ──────────
+	# Three OmniLights at different depths give the forest a magical inner glow.
+	var ff_positions := [
+		Vector3(WW_CX - 10.0, 1.5, WW_CZ + 5.0),
+		Vector3(WW_CX + 15.0, 2.0, WW_CZ - 8.0),
+		Vector3(WW_CX,        1.2, WW_CZ + 20.0),
+	]
+	for fp in ff_positions:
+		var ff_light := OmniLight3D.new()
+		ff_light.light_color  = Color(0.40, 1.0, 0.55)
+		ff_light.light_energy = 0.8
+		ff_light.omni_range   = 22.0
+		ff_light.position     = fp
+		root.add_child(ff_light)
+
+	# ── Goblin camp INSIDE the forest (not in open field) ────────────────────
+	# Placed 60m into the forest so players have to navigate trees to reach it.
+	var gc_pos := Vector3(WW_CX + 20.0, 0.0, WW_CZ - 15.0)
+	_make_goblin_camp(gc_pos)
+
+	# ── Forest fog plane — a low ground-fog quad inside Whisperwood ──────────
+	# Thin semi-transparent plane at y=0.3 reads as ground mist under trees.
+	var fog_plane := MeshInstance3D.new()
+	var fpm       := PlaneMesh.new()
+	fpm.size      = Vector2(WW_W * 0.9, WW_D * 0.9)
+	fog_plane.mesh = fpm
+	var fog_mat   := StandardMaterial3D.new()
+	fog_mat.albedo_color  = Color(0.55, 0.72, 0.55, 0.18)
+	fog_mat.transparency  = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fog_mat.roughness     = 1.0
+	fog_mat.cull_mode     = BaseMaterial3D.CULL_DISABLED
+	fog_plane.material_override = fog_mat
+	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
+	root.add_child(fog_plane)
+
+	_dlog("Whisperwood Forest built (%d trees)" % TREE_N)
+
+
 func _build_enemies() -> void:
 	var rng := RandomNumberGenerator.new(); rng.randomize()
 
@@ -3366,7 +3853,7 @@ func _build_village_dressing_props() -> void:
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
 		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-		Vector3(14.0, 0, 4.0)]
+		                  Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
@@ -3430,7 +3917,7 @@ func _build_village_dressing_props() -> void:
 	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
 	if vases_glb:
 		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
-		Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
 			var n := Node3D.new()
 			n.name = "Vases"
 			n.position = p
@@ -11408,16 +11895,124 @@ func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
 
 
 func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> void:
+	# ── Upgraded gate: two flanking stone towers + portcullis arch + battlements ──
 	var side: Vector3 = forward.rotated(Vector3.UP, PI * 0.5)
+	var rot_y := atan2(forward.x, forward.z)
+
 	for s in [-1.0, 1.0]:
-		var p: Vector3 = gate + side * (bw_gate_width * 0.55 * float(s))
-		var tower := MeshInstance3D.new()
-		var bm    := BoxMesh.new()
-		bm.size = Vector3(2.2, 4.2, 2.2)
-		tower.mesh = bm
-		root.add_child(tower)
-		tower.global_position = p + Vector3(0.0, 2.1, 0.0)
-		tower.material_override = _bw_mat_stone()
+		var p: Vector3 = gate + side * (bw_gate_width * 0.6 * float(s))
+		var t := Node3D.new()
+		t.name = "GateTower"
+		root.add_child(t)
+		t.global_position = p
+
+		# Main tower shaft — stone, 10m tall
+		var shaft := MeshInstance3D.new()
+		var scm   := CylinderMesh.new()
+		scm.top_radius    = 1.8
+		scm.bottom_radius = 2.2
+		scm.height        = 10.0
+		shaft.mesh = scm
+		shaft.material_override = _bw_mat_stone()
+		shaft.position.y = 5.0
+		t.add_child(shaft)
+
+		# Battlement ring — dark wood crenellations on top
+		var bat_count := 8
+		for bi in range(bat_count):
+			var bang := TAU * float(bi) / float(bat_count)
+			var bpos := Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
+			var crenel := MeshInstance3D.new()
+			var cbm := BoxMesh.new()
+			cbm.size = Vector3(0.55, 1.0, 0.55)
+			crenel.mesh = cbm
+			crenel.material_override = _bw_mat_stone()
+			crenel.position = bpos
+			t.add_child(crenel)
+
+		# Cap (conical stone roof)
+		var cap := MeshInstance3D.new()
+		var cpm := CylinderMesh.new()
+		cpm.top_radius    = 0.05
+		cpm.bottom_radius = 2.0
+		cpm.height        = 3.0
+		cap.mesh = cpm
+		cap.material_override = _bw_mat_roof()
+		cap.position.y = 11.5
+		t.add_child(cap)
+
+		# Torch bracket light on each tower
+		var torch_light := OmniLight3D.new()
+		torch_light.light_color  = Color(1.0, 0.72, 0.35)
+		torch_light.light_energy = 2.0
+		torch_light.omni_range   = 18.0
+		torch_light.position     = Vector3(float(s) * -1.5, 6.0, 1.8)
+		t.add_child(torch_light)
+
+		# Collision
+		var body := StaticBody3D.new()
+		var col  := CollisionShape3D.new()
+		var cyl  := CylinderShape3D.new()
+		cyl.radius = 2.2
+		cyl.height = 10.0
+		col.shape  = cyl
+		col.position.y = 5.0
+		body.add_child(col)
+		t.add_child(body)
+
+	# ── Portcullis arch spanning the gate gap ─────────────────────────────────
+	var arch := Node3D.new()
+	arch.name = "GateArch"
+	root.add_child(arch)
+	arch.global_position = gate
+	arch.rotation.y = rot_y
+
+	# Left pillar
+	var lp := MeshInstance3D.new()
+	var lbm := BoxMesh.new()
+	lbm.size = Vector3(1.4, 8.0, 1.4)
+	lp.mesh = lbm
+	lp.material_override = _bw_mat_stone()
+	lp.position = Vector3(-(bw_gate_width * 0.5), 4.0, 0.0)
+	arch.add_child(lp)
+
+	# Right pillar
+	var rp := MeshInstance3D.new()
+	var rbm := BoxMesh.new()
+	rbm.size = Vector3(1.4, 8.0, 1.4)
+	rp.mesh = rbm
+	rp.material_override = _bw_mat_stone()
+	rp.position = Vector3(bw_gate_width * 0.5, 4.0, 0.0)
+	arch.add_child(rp)
+
+	# Lintel (cross beam over the gate)
+	var lintel := MeshInstance3D.new()
+	var lim := BoxMesh.new()
+	lim.size = Vector3(bw_gate_width + 2.8, 1.4, 1.4)
+	lintel.mesh = lim
+	lintel.material_override = _bw_mat_stone()
+	lintel.position = Vector3(0.0, 8.0, 0.0)
+	arch.add_child(lintel)
+
+	# Portcullis bars (dark wood grid — visual only)
+	var bar_count := 5
+	for bi in range(bar_count):
+		var bx: float = lerp(-(bw_gate_width * 0.5) + 1.0, (bw_gate_width * 0.5) - 1.0, float(bi) / float(bar_count - 1))
+		var bar := MeshInstance3D.new()
+		var bbm := BoxMesh.new()
+		bbm.size = Vector3(0.18, 7.0, 0.18)
+		bar.mesh = bbm
+		bar.material_override = _bw_mat_darkwood()
+		bar.position = Vector3(bx, 4.0, 0.0)
+		arch.add_child(bar)
+
+	# Gate lantern hanging from lintel centre
+	var gate_light := OmniLight3D.new()
+	gate_light.light_color  = Color(1.0, 0.82, 0.42)
+	gate_light.light_energy = 2.8
+	gate_light.omni_range   = 22.0
+	gate_light.position     = Vector3(0.0, 7.0, 0.0)
+	arch.add_child(gate_light)
 
 
 # ── Houses along loop roads ───────────────────────────────────────────────────
