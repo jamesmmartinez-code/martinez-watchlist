@@ -1192,6 +1192,7 @@ func _build_world_sync() -> void:
 	_safe_call("_build_tavern")
 	_safe_call("_build_dragon_boss")
 	_safe_call("_build_world_props_new")
+	_safe_call("_build_village_dressing_props")
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")
 	_safe_call("_build_weather")
@@ -1320,9 +1321,10 @@ func _build_world_async() -> void:
 	_safe_call_now("_build_pet",          [])
 	_safe_call_now("_build_stable_horse",     [])
 	_safe_call_now("_build_loot_chests",      [])
-	_safe_call_now("_build_tavern",           [])
-	_safe_call_now("_build_dragon_boss",      [])
-	_safe_call_now("_build_world_props_new",  [])
+	_safe_call_now("_build_tavern",                  [])
+	_safe_call_now("_build_dragon_boss",             [])
+	_safe_call_now("_build_world_props_new",         [])
+	_safe_call_now("_build_village_dressing_props",  [])
 	call_deferred("_global_scale_sweep")
 
 	# ── Home, weather, caves ──────────────────────────────────────────────────
@@ -3353,6 +3355,186 @@ func _build_world_props_new() -> void:
 		var inst4 := chest_glb.instantiate() as Node3D
 		if inst4:
 			chest.add_child(inst4)
+
+# ── Village dressing props — wires the remaining unwired KayKit FBX props ───
+# Placed as scattered one-off props around the village. Every load is guarded
+# by _safe_load_glb so a missing import silently skips that prop; world always loads.
+func _build_village_dressing_props() -> void:
+	const P := "res://assets/models/buildings/"
+
+	# ── Wooden signs near market and entrance ────────────────────────────────
+	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
+	if sign_glb:
+		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+		                  Vector3(14.0, 0, 4.0)]
+		for p in positions:
+			var n := Node3D.new()
+			n.name = "WoodenSign"
+			n.position = p
+			n.rotation.y = randf_range(0, TAU)
+			n.scale = Vector3(1.2, 1.2, 1.2)
+			add_child(n)
+			var inst := sign_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Flower clumps — scattered around plaza and paths ─────────────────────
+	var flower_glb := _safe_load_glb(P + "stylized_flower_clump.fbx")
+	if flower_glb:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 1337
+		var flower_spots := [
+			Vector3(3.0, 0, 12.0), Vector3(-3.0, 0, 12.0),
+			Vector3(8.0, 0, 0.0),  Vector3(-8.0, 0, 0.0),
+			Vector3(2.0, 0, -5.0), Vector3(-2.0, 0, -5.0),
+			Vector3(5.0, 0, 5.0),  Vector3(-5.0, 0, 5.0),
+		]
+		for p in flower_spots:
+			var n := Node3D.new()
+			n.name = "FlowerClump"
+			n.position = p + Vector3(rng.randf_range(-0.5, 0.5), 0, rng.randf_range(-0.5, 0.5))
+			n.rotation.y = rng.randf() * TAU
+			n.scale = Vector3(1.1, 1.1, 1.1)
+			add_child(n)
+			var inst := flower_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Regular fence sections — along the market perimeter ──────────────────
+	var fence_glb := _safe_load_glb(P + "stylized_regular_fence_set.fbx")
+	if fence_glb:
+		var fence_spots := [
+			Vector3(18.0, 0, 0.0), Vector3(18.0, 0, 4.0), Vector3(18.0, 0, -4.0),
+			Vector3(-18.0, 0, 0.0), Vector3(-18.0, 0, 4.0), Vector3(-18.0, 0, -4.0),
+		]
+		for p in fence_spots:
+			var n := Node3D.new()
+			n.name = "FenceSection"
+			n.position = p
+			n.scale = Vector3(1.0, 1.0, 1.0)
+			add_child(n)
+			var inst := fence_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Rectangle flag poles — flanking the village gate ─────────────────────
+	var rflag_glb := _safe_load_glb(P + "stylized_rectangle_flags_pole.fbx")
+	if rflag_glb:
+		for p in [Vector3(6.0, 0, 20.0), Vector3(-6.0, 0, 20.0)]:
+			var n := Node3D.new()
+			n.name = "FlagPole"
+			n.position = p
+			n.scale = Vector3(1.2, 1.2, 1.2)
+			add_child(n)
+			var inst := rflag_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Rounded vases — decorating the inn porch / market area ───────────────
+	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
+	if vases_glb:
+		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
+		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+			var n := Node3D.new()
+			n.name = "Vases"
+			n.position = p
+			n.scale = Vector3(0.9, 0.9, 0.9)
+			add_child(n)
+			var inst := vases_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Large forge pot — outside the smithy ─────────────────────────────────
+	var pot_glb := _safe_load_glb(P + "stylized_large_forge_pot.fbx")
+	if pot_glb:
+		var n := Node3D.new()
+		n.name = "ForgePot"
+		n.position = Vector3(10.5, 0, 0.5)
+		n.scale = Vector3(1.0, 1.0, 1.0)
+		add_child(n)
+		var inst := pot_glb.instantiate() as Node3D
+		if inst: n.add_child(inst)
+
+	# ── Small rocks set — along paths and near mountain base ─────────────────
+	var rocks_glb := _safe_load_glb(P + "stylized_small_rocks_set.fbx")
+	if rocks_glb:
+		var rng2 := RandomNumberGenerator.new()
+		rng2.seed = 7654
+		var rock_spots := [
+			Vector3(22.0, 0, -8.0), Vector3(-22.0, 0, -8.0),
+			Vector3(15.0, 0, 18.0), Vector3(-15.0, 0, 18.0),
+			Vector3(12.0, 0, -15.0), Vector3(-12.0, 0, -15.0),
+		]
+		for p in rock_spots:
+			var n := Node3D.new()
+			n.name = "RockSet"
+			n.position = p + Vector3(rng2.randf_range(-1, 1), 0, rng2.randf_range(-1, 1))
+			n.rotation.y = rng2.randf() * TAU
+			n.scale = Vector3(1.3, 1.3, 1.3)
+			add_child(n)
+			var inst := rocks_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Edged rocks set — base of the mountain ring ──────────────────────────
+	var erocks_glb := _safe_load_glb(P + "stylized_edged_rocks_set.fbx")
+	if erocks_glb:
+		var rng3 := RandomNumberGenerator.new()
+		rng3.seed = 9988
+		for i in range(8):
+			var angle := i * TAU / 8.0 + rng3.randf_range(-0.2, 0.2)
+			var dist := rng3.randf_range(55.0, 70.0)
+			var p := Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			var n := Node3D.new()
+			n.name = "EdgeRocks"
+			n.position = p
+			n.rotation.y = rng3.randf() * TAU
+			n.scale = Vector3(1.5, 1.5, 1.5)
+			add_child(n)
+			var inst := erocks_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	# ── Old sea dock — near the viking boat / river edge ─────────────────────
+	var dock_glb := _safe_load_glb(P + "stylized_old_sea_dock.fbx")
+	if dock_glb:
+		var n := Node3D.new()
+		n.name = "SeaDock"
+		n.position = Vector3(-38.0, 0, 32.0)
+		n.rotation.y = deg_to_rad(90)
+		n.scale = Vector3(1.2, 1.2, 1.2)
+		add_child(n)
+		var inst := dock_glb.instantiate() as Node3D
+		if inst: n.add_child(inst)
+
+	# ── Bifurcated wood staircase — leading up to the inn entrance ───────────
+	var stair_glb := _safe_load_glb(P + "stylized_bifurcated_wood_staircase.fbx")
+	if stair_glb:
+		var n := Node3D.new()
+		n.name = "InnStaircase"
+		n.position = Vector3(10.0, 0, -1.0)
+		n.scale = Vector3(1.0, 1.0, 1.0)
+		add_child(n)
+		var inst := stair_glb.instantiate() as Node3D
+		if inst: n.add_child(inst)
+
+	# ── Straight pipe chimney — topping the smithy ───────────────────────────
+	var chimney_glb := _safe_load_glb(P + "stylized_straight_pipe_chimney.fbx")
+	if chimney_glb:
+		var n := Node3D.new()
+		n.name = "SmithyChimney"
+		n.position = Vector3(10.0, 3.5, 0.0)
+		n.scale = Vector3(1.0, 1.0, 1.0)
+		add_child(n)
+		var inst := chimney_glb.instantiate() as Node3D
+		if inst: n.add_child(inst)
+
+	# ── Curved pipe chimney — on the bakery / house variant ──────────────────
+	var ccchimney_glb := _safe_load_glb(P + "stylized_curved_pipe_chimney.fbx")
+	if ccchimney_glb:
+		for p in [Vector3(6.0, 3.5, 6.0), Vector3(-6.0, 3.5, 6.0)]:
+			var n := Node3D.new()
+			n.name = "HouseChimney"
+			n.position = p
+			n.scale = Vector3(1.0, 1.0, 1.0)
+			add_child(n)
+			var inst := ccchimney_glb.instantiate() as Node3D
+			if inst: n.add_child(inst)
+
+	_dlog("village dressing props placed")
 
 func _build_stable_horse() -> void:
 	var horse_root := Node3D.new()
