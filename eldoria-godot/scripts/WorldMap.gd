@@ -22,7 +22,7 @@ class_name WorldMap
 const W: float = 760.0
 const H: float = 540.0
 const PAD: float = 28.0
-const RANGE_M: float = 80.0   # ±80m world radius covered by the map face
+const RANGE_M: float = 280.0  # ±280m world radius — covers far castle at 260m
 
 const COL_PARCHMENT: Color = Color(0.851, 0.788, 0.608)  # REFINE: visual — §3 sepia exact #D9C99B (was 0.872/0.808/0.624)
 const COL_PARCHMENT_LIGHT: Color = Color(0.94, 0.86, 0.62)  # REFINE: visual — converge with UITheme PARCHMENT_CREAM (was 0.93/0.87/0.69)
@@ -35,21 +35,33 @@ const COL_PLAYER_STAR: Color = Color(1.00, 0.88, 0.50)  # REFINE: visual — pul
 # Region polygons — outlines of named zones in WORLD XZ. Drawn first as
 # soft watercolor washes underneath the landmarks.  THEME §8 tints.
 const REGIONS: Array = [
+	# ── Inner Briarwood Village ─────────────────────────────────────────
 	{"name": "Briarwood",
-	"color": Color(1.00, 0.85, 0.42, 0.22),  # REFINE: visual — §3 #FFD86B exact + warmer alpha 0.18→0.22
+	"color": Color(1.00, 0.85, 0.42, 0.22),
 	"poly": [Vector2(-22, -22), Vector2(22, -22), Vector2(22, 22), Vector2(-22, 22)]},
+	# ── Whisperwood forests (flanking) ──────────────────────────────────
 	{"name": "Whisperwood",
 	"color": Color(0.290, 0.439, 0.220, 0.22),
-	"poly": [Vector2(-65, -55), Vector2(-22, -55), Vector2(-22, 55), Vector2(-65, 55)]},
+	"poly": [Vector2(-120, -100), Vector2(-22, -100), Vector2(-22, 100), Vector2(-120, 100)]},
 	{"name": "Whisperwood (East)",
 	"color": Color(0.290, 0.439, 0.220, 0.18),
-	"poly": [Vector2(22, -55), Vector2(65, -55), Vector2(65, 55), Vector2(22, 55)]},
+	"poly": [Vector2(22, -100), Vector2(120, -100), Vector2(120, 100), Vector2(22, 100)]},
+	# ── Crystal Caves region ─────────────────────────────────────────────
 	{"name": "Crystal Caves",
-	"color": Color(0.396, 0.875, 0.898, 0.24),  # REFINE: visual — alpha 0.20→0.24, converges with Crystal-Caves polish run (cooler/darker cave reads from map too)
-	"poly": [Vector2(-65, -55), Vector2(-32, -55), Vector2(-32, -28), Vector2(-65, -28)]},
+	"color": Color(0.396, 0.875, 0.898, 0.24),
+	"poly": [Vector2(-80, -75), Vector2(-35, -75), Vector2(-35, -30), Vector2(-80, -30)]},
+	# ── Mountain Pass ─────────────────────────────────────────────────────
 	{"name": "Mountain Pass",
 	"color": Color(0.482, 0.525, 0.576, 0.30),
-	"poly": [Vector2(-65, -78), Vector2(65, -78), Vector2(65, -55), Vector2(-65, -55)]},
+	"poly": [Vector2(-120, -140), Vector2(120, -140), Vector2(120, -100), Vector2(-120, -100)]},
+	# ── Blighted Ruins (far north — castle + boss zone) ───────────────────
+	{"name": "Blighted Ruins",
+	"color": Color(0.25, 0.12, 0.32, 0.28),
+	"poly": [Vector2(-160, -280), Vector2(-20, -280), Vector2(-20, -160), Vector2(-160, -160)]},
+	# ── Wastelands (far east enemy fields) ───────────────────────────────
+	{"name": "The Wastelands",
+	"color": Color(0.55, 0.38, 0.18, 0.18),
+	"poly": [Vector2(50, -50), Vector2(200, -50), Vector2(200, 100), Vector2(50, 100)]},
 ]
 
 var title_label: Label = null
@@ -100,7 +112,7 @@ func _ready() -> void:
 	add_child(title_label)
 
 	hint_label = Label.new()
-	hint_label.text = "[ N ] close   ·   gold = you   ·   ❖ Crystal Caves   ·   ☠ Boss"
+	hint_label.text = "[ N ] close   ·   ★ = you   ·   ❖ = cave   ·   ☠ = boss   ·   △ = enemy camp   ·   ✦ = shrine"
 	hint_label.add_theme_color_override("font_color", Color(0.30, 0.22, 0.15))
 	hint_label.add_theme_font_size_override("font_size", 15)  # REFINE: visual — hint 14→15 for Alden 9yo back-of-screen reading
 	hint_label.position = Vector2(PAD, H - 28)
@@ -143,9 +155,11 @@ func _refresh_stats() -> void:
 		return
 	var to_cave: Vector3 = Vector3(-50, 0, -40) - p.global_position
 	var to_village: Vector3 = Vector3.ZERO - p.global_position
-	stats_label.text = "to Briarwood : %d m\nto Crystal Cave : %d m" % [
+	var to_castle: Vector3 = Vector3(-80, 0, -260) - p.global_position
+	stats_label.text = "Briarwood : %dm   Crystal Caves : %dm\nRuined Castle : %dm" % [
 		int(round(Vector2(to_village.x, to_village.z).length())),
 		int(round(Vector2(to_cave.x, to_cave.z).length())),
+		int(round(Vector2(to_castle.x, to_castle.z).length())),
 	]
 
 func _draw() -> void:
