@@ -3677,14 +3677,15 @@ func _build_far_castle_ruins() -> void:
 	for tc in tower_configs:
 		var tower := MeshInstance3D.new()
 		var tm := CylinderMesh.new()
-		tm.top_radius    = tc[3] as bool ? 2.8 : 2.8
+		tm.top_radius    = 2.8
 		tm.bottom_radius = 3.2
 		tm.height        = tc[1]
 		tower.mesh = tm; tower.material_override = mat_stone
 		tower.position = Vector3(tc[0], tc[1] * 0.5, tc[2])
 		root.add_child(tower)
-		# Battlement ring on top of standing towers
-		if not (tc[3] as bool):
+		# Battlement ring on top of standing towers (tc[3] == true means collapsed)
+		var is_collapsed: bool = tc[3]
+		if not is_collapsed:
 			var btl_h: float = tc[1]
 			for bi in range(6):
 				var bang: float = (float(bi) / 6.0) * TAU
