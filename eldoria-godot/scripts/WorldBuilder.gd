@@ -28,16 +28,20 @@ func _safe_load_glb(path: String) -> PackedScene:
 func _populate_npc_models() -> void:
 	NPC_MODELS = {
 		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
-		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
-		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/nordic-plate-armor-m.glb"),
+		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/dunestrider-m.glb"),
 		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
 		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
 		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
-		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
+		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/nordic-plate-armor-f.glb"),
 		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
-		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
-		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
-		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
+		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/druid-f.glb"),
+		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/julius-caesar-m.glb"),
+		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/druid-m.glb"),
+		# Warlock spellcasters available for ambient NPC placement
+		"Warlock F":           _safe_load_glb("res://assets/models/npcs/warlock-f.glb"),
+		"Warlock M":           _safe_load_glb("res://assets/models/npcs/warlock-m.glb"),
+		"Ramesses":            _safe_load_glb("res://assets/models/npcs/ramesses-m.glb"),
 	}
 
 func _populate_building_models() -> void:
@@ -53,6 +57,10 @@ func _populate_building_models() -> void:
 		"bell_tower":   _safe_load_glb(P + "stylized_bell_tower.fbx"),
 		"porch":        _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
 		"flag_pole":    _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
+		"fence":        _safe_load_glb(P + "stylized_regular_fence_set.fbx"),
+		"sign":         _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx"),
+		"chimney_a":    _safe_load_glb(P + "stylized_curved_pipe_chimney.fbx"),
+		"chimney_b":    _safe_load_glb(P + "stylized_straight_pipe_chimney.fbx"),
 		# ── New Sketchfab GLBs ────────────────────────────────────────────
 		"tavern":       _safe_load_glb(B + "tavern_troll.glb"),
 		"medieval_town":_safe_load_glb(B + "medieval_town.glb"),
@@ -76,6 +84,10 @@ const NPC_SCALES := {
 	"Village Guard":        Vector3(1.05, 1.05, 1.05),
 	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
 	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
+	# Actorcore NPCs — same native unit scale as the existing Actorcore set
+	"Warlock F":            Vector3(1.05, 1.05, 1.05),
+	"Warlock M":            Vector3(1.05, 1.05, 1.05),
+	"Noble Craftsman":      Vector3(1.05, 1.05, 1.05),
 }
 @export var npc_script: Script = preload("res://scripts/NPC.gd")
 
@@ -920,6 +932,41 @@ const NPCS = [
 		"Speak quietly near the crystal formations. They carry sound.",
 		],
 		"bark_min":18.0, "bark_max":32.0},
+
+	# ── Warlock F — stationed near the shrine district ───────────────────────
+	{"name":"Warlock F", "role":"mystic", "pos":Vector3(-10, 0, 14),
+		"tint":Color(0.65, 0.40, 0.90),
+		"line":"The old words still have power. If you know how to ask.",
+		"lines":[
+		"The old words still have power. If you know how to ask.",
+		"I sense residual magic around you. You've been near the caves.",
+		"Magic isn't a weapon. It's a conversation with the world.",
+		"The shrine draws me here each dawn. Old habit. Old faith.",
+		],
+		"schedule":[
+			Vector3(-14.0, 0, 10.0),
+			Vector3(-10.0, 0, 14.0),
+			Vector3( -6.0, 0, 18.0),
+			Vector3(-10.0, 0, 14.0),
+		],
+		"bark_min":22.0, "bark_max":40.0},
+
+	# ── Warlock M — wanders near the market ──────────────────────────────────
+	{"name":"Warlock M", "role":"vendor", "pos":Vector3(32, 0, 24),
+		"tint":Color(0.40, 0.35, 0.80),
+		"line":"Rare components. Rare prices. Worth every coin.",
+		"lines":[
+		"Rare components. Rare prices. Worth every coin.",
+		"I don't haggle. The runes set the price, not me.",
+		"You need spell components? I'm the only source this side of the Rift.",
+		],
+		"schedule":[
+			Vector3(28.0, 0, 22.0),
+			Vector3(32.0, 0, 24.0),
+			Vector3(36.0, 0, 20.0),
+			Vector3(32.0, 0, 24.0),
+		],
+		"bark_min":20.0, "bark_max":38.0},
 ]
 
 # ── Briarwood Hub exports (Briarwood Hub Builder v1) ─────────────────────────
@@ -1178,6 +1225,10 @@ func _build_world_sync() -> void:
 	_safe_call("_build_far_world_scatter")
 	_safe_call("_build_mid_world_pois")
 	_safe_call("_build_whisperwood_forest")
+	_safe_call("_build_caves_surface_entrance")
+	_safe_call("_build_terrain_hills")
+	_safe_call("_build_far_castle_ruins")
+	_safe_call("_build_village_props")
 	_safe_call("_build_well")
 	_safe_call("_build_pond")
 	_safe_call("_build_firefly_particles")
@@ -1302,6 +1353,10 @@ func _build_world_async() -> void:
 	_safe_call_now("_build_far_world_scatter", [])
 	_safe_call_now("_build_mid_world_pois",   [])
 	_safe_call_now("_build_whisperwood_forest", [])
+	_safe_call_now("_build_caves_surface_entrance", [])
+	_safe_call_now("_build_terrain_hills",    [])
+	_safe_call_now("_build_far_castle_ruins", [])
+	_safe_call_now("_build_village_props",    [])
 
 	# ── Water, particles, atmosphere ──────────────────────────────────────────
 	build_progress.emit("Water & FX", 0.54)
@@ -2965,9 +3020,9 @@ func _build_mid_world_pois() -> void:
 		rb.mesh = rbm
 		rb.material_override = MAT_STONE(1.0)
 		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
-		root.add_child(rb)
 		rb.global_position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
 		rb.rotation.y = randf_range(0, TAU)
+		root.add_child(rb)
 
 	# Torch glow at top — ruins feel inhabited by someone
 	var tw_light := OmniLight3D.new()
@@ -3207,9 +3262,9 @@ func _build_mid_world_pois() -> void:
 		rock.mesh = rsm
 		rock.material_override = MAT_ROCK(1.0)
 		var ra: float = float(ri) * TAU / 6.0
-		root.add_child(rock)
 		rock.global_position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
 		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
+		root.add_child(rock)
 
 	# Scattered bones (small white cylinders)
 	for bi2 in range(5):
@@ -3220,9 +3275,9 @@ func _build_mid_world_pois() -> void:
 		var bmat2 := StandardMaterial3D.new()
 		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
 		bone.material_override = bmat2
-		root.add_child(bone)
 		bone.global_position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
 		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
+		root.add_child(bone)
 
 	# Glowing amber eyes inside the den
 	var eye_light := OmniLight3D.new()
@@ -3335,8 +3390,8 @@ func _build_whisperwood_forest() -> void:
 			fmat.albedo_color = Color(0.15, 0.48 + rng.randf_range(0, 0.18), 0.12)
 			fmat.roughness = 0.95
 			fern.material_override = fmat
-			root.add_child(fern)
 			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
+			root.add_child(fern)
 		else:
 			# Mushroom
 			var mush := MeshInstance3D.new()
@@ -3353,8 +3408,8 @@ func _build_whisperwood_forest() -> void:
 			)
 			mmat.roughness = 0.7
 			mush.material_override = mmat
-			root.add_child(mush)
 			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
+			root.add_child(mush)
 
 	# ── Firefly cluster (soft green ambient glow inside the forest) ──────────
 	# Three OmniLights at different depths give the forest a magical inner glow.
@@ -3388,10 +3443,464 @@ func _build_whisperwood_forest() -> void:
 	fog_mat.roughness     = 1.0
 	fog_mat.cull_mode     = BaseMaterial3D.CULL_DISABLED
 	fog_plane.material_override = fog_mat
-	root.add_child(fog_plane)
 	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
+	root.add_child(fog_plane)
 
 	_dlog("Whisperwood Forest built (%d trees)" % TREE_N)
+
+
+# ============================================================================
+# CRYSTAL CAVES SURFACE ENTRANCE — dramatic overworld landmark
+# A massive stone arch marks the dungeon mouth at Vector3(-50,0,-40).
+# Built separately from _build_crystal_caves so it exists even when the
+# full cave interior is chunked-deferred.  Visible from Briarwood gate.
+# ============================================================================
+func _build_caves_surface_entrance() -> void:
+	var root := Node3D.new()
+	root.name = "CavesSurfaceEntrance"
+	root.position = Vector3(-50.0, 0.0, -40.0)
+	add_child(root)
+
+	# ── Two massive stone pillars flanking the cave mouth ──────────────────
+	for sx in [-4.2, 4.2]:
+		var pillar := MeshInstance3D.new()
+		var pm := CylinderMesh.new()
+		pm.top_radius    = 1.2
+		pm.bottom_radius = 1.6
+		pm.height        = 9.0
+		pillar.mesh = pm
+		pillar.material_override = MAT_STONE(1.0)
+		pillar.position = Vector3(sx, 4.5, 0.0)
+		root.add_child(pillar)
+		# Pillar cap — flat disc
+		var cap := MeshInstance3D.new()
+		var capm := CylinderMesh.new()
+		capm.top_radius = 1.8; capm.bottom_radius = 1.8; capm.height = 0.5
+		cap.mesh = capm
+		cap.material_override = MAT_STONE(1.2)
+		cap.position = Vector3(sx, 9.25, 0.0)
+		root.add_child(cap)
+
+	# ── Stone lintel bridging the two pillars ──────────────────────────────
+	var lintel := MeshInstance3D.new()
+	var lm := BoxMesh.new()
+	lm.size = Vector3(11.0, 1.4, 1.6)
+	lintel.mesh = lm
+	lintel.material_override = MAT_STONE(1.1)
+	lintel.position = Vector3(0.0, 9.7, 0.0)
+	root.add_child(lintel)
+
+	# ── Carved rune keystone (central glowing block above lintel) ──────────
+	var rune := MeshInstance3D.new()
+	var runm := BoxMesh.new()
+	runm.size = Vector3(2.2, 1.8, 1.2)
+	rune.mesh = runm
+	var rune_mat := StandardMaterial3D.new()
+	rune_mat.albedo_color     = Color(0.08, 0.06, 0.18)
+	rune_mat.emission_enabled = true
+	rune_mat.emission         = Color(0.30, 0.55, 1.00) * 1.8
+	rune_mat.roughness        = 0.7
+	rune.material_override = rune_mat
+	rune.position = Vector3(0.0, 11.0, 0.0)
+	root.add_child(rune)
+
+	# ── Blue rune glow OmniLight ───────────────────────────────────────────
+	var glow := OmniLight3D.new()
+	glow.light_color   = Color(0.40, 0.65, 1.00)
+	glow.light_energy  = 3.2
+	glow.omni_range    = 28.0
+	glow.position      = Vector3(0.0, 10.0, 2.0)
+	root.add_child(glow)
+
+	# ── Side boulder piles — frame the entrance naturally ─────────────────
+	var rng := RandomNumberGenerator.new(); rng.seed = 7891
+	for side in [-1, 1]:
+		for i in range(4):
+			var b := MeshInstance3D.new()
+			var bm := SphereMesh.new()
+			var s: float = rng.randf_range(0.6, 1.8)
+			bm.radius = s; bm.height = s * rng.randf_range(0.6, 1.0)
+			b.mesh = bm
+			b.material_override = MAT_ROCK(1.0)
+			b.position = Vector3(
+				side * rng.randf_range(5.5, 9.0),
+				s * 0.45,
+				rng.randf_range(-3.0, 3.5)
+			)
+			root.add_child(b)
+
+	# ── Warning sign — a leaning wooden stake with red glow ───────────────
+	var stake := MeshInstance3D.new()
+	var sm2 := CylinderMesh.new()
+	sm2.top_radius = 0.06; sm2.bottom_radius = 0.08; sm2.height = 2.2
+	stake.mesh = sm2
+	stake.material_override = MAT_DARK_WOOD(1.0)
+	stake.position = Vector3(5.8, 1.1, 1.5)
+	stake.rotation.z = deg_to_rad(-18.0)
+	root.add_child(stake)
+	var sign_board := MeshInstance3D.new()
+	var sbm := BoxMesh.new()
+	sbm.size = Vector3(1.4, 0.7, 0.12)
+	sign_board.mesh = sbm
+	var sign_mat := StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.40, 0.24, 0.12)
+	sign_mat.roughness = 0.9
+	sign_board.material_override = sign_mat
+	sign_board.position = Vector3(5.8, 2.2, 1.5)
+	root.add_child(sign_board)
+
+	# ── Collision — two pillar bodies ─────────────────────────────────────
+	for sx in [-4.2, 4.2]:
+		var body := StaticBody3D.new()
+		var coll := CollisionShape3D.new()
+		var shape := CylinderShape3D.new()
+		shape.radius = 1.6; shape.height = 9.0
+		coll.shape = shape
+		body.add_child(coll)
+		body.position = Vector3(sx, 4.5, 0.0)
+		root.add_child(body)
+
+	_dlog("Crystal Caves surface entrance built")
+
+
+# ============================================================================
+# TERRAIN ELEVATION — rolling hills break the flat plane
+# Low squashed spheres placed across the mid-world zone (40–160m) give the
+# landscape a gentle undulation.  No collision needed — purely visual
+# dressing that also helps hide pop-in at chunk boundaries.
+# ============================================================================
+func _build_terrain_hills() -> void:
+	var root := Node3D.new()
+	root.name = "TerrainHills"
+	add_child(root)
+	var rng := RandomNumberGenerator.new(); rng.seed = 11223
+
+	# Hill placements: (x, z, radius, height) — hand-tuned so nothing clips
+	# into Briarwood (keep |x|+|z| > 30) or the cave entrance (-50, -40).
+	var hills: Array = [
+		[  70.0,  45.0,  22.0, 4.5 ],
+		[ -60.0,  55.0,  18.0, 3.8 ],
+		[  85.0, -30.0,  25.0, 5.2 ],
+		[ -95.0, -20.0,  20.0, 4.0 ],
+		[  40.0, -80.0,  16.0, 3.2 ],
+		[ -30.0, -100.0, 24.0, 5.8 ],
+		[  120.0, 10.0,  30.0, 6.5 ],
+		[ -110.0, 60.0,  26.0, 5.0 ],
+		[  55.0,  130.0, 20.0, 4.2 ],
+		[ -75.0, -130.0, 28.0, 6.0 ],
+		[  10.0,  160.0, 35.0, 7.0 ],  # big hill on road to Nordic village
+	]
+
+	for h in hills:
+		var hill := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = h[2]
+		sm.height = h[3] * 2.0
+		sm.rings  = 10
+		sm.radial_segments = 16
+		hill.mesh = sm
+		var hm := StandardMaterial3D.new()
+		# Slight color variation — some greener, some more golden-brown
+		var green_bias: float = rng.randf_range(0.0, 0.15)
+		hm.albedo_color = Color(
+			0.24 + rng.randf_range(0.0, 0.08),
+			0.38 + green_bias,
+			0.16 + rng.randf_range(0.0, 0.06)
+		)
+		hm.roughness = 0.95
+		hill.material_override = hm
+		# Sink half the sphere underground so only the dome shows
+		hill.global_position = Vector3(h[0], -(h[3] * 0.5), h[1])
+		root.add_child(hill)
+
+		# Small rock cluster at hill foot (every other hill)
+		if rng.randi() % 2 == 0:
+			for _ri in range(3):
+				var rock := MeshInstance3D.new()
+				var rm := SphereMesh.new()
+				var rs: float = rng.randf_range(0.4, 1.1)
+				rm.radius = rs; rm.height = rs * rng.randf_range(0.55, 0.9)
+				rock.mesh = rm
+				rock.material_override = MAT_ROCK(1.0)
+				var ang: float = rng.randf() * TAU
+				rock.global_position = Vector3(
+					h[0] + cos(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75),
+					rs * 0.35,
+					h[1] + sin(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75)
+				)
+				root.add_child(rock)
+
+	_dlog("Terrain hills built (%d mounds)" % hills.size())
+
+
+# ============================================================================
+# FAR-WORLD RUINED CASTLE — horizon silhouette wow factor
+# A partially collapsed castle at ~280m north provides a dramatic landmark
+# visible across the entire world.  All procedural — no asset dependency.
+# ============================================================================
+func _build_far_castle_ruins() -> void:
+	var root := Node3D.new()
+	root.name = "FarCastleRuins"
+	# Place NNW so it reads well from Briarwood gate looking outward
+	root.position = Vector3(-80.0, 0.0, -260.0)
+	add_child(root)
+
+	var mat_stone  := MAT_STONE(1.0)
+	var mat_dark   := MAT_DARK_WOOD(0.6)
+
+	# ── Helper to add a box block ─────────────────────────────────────────
+	# (inner func-equivalent using a lambda-style approach)
+
+	# ── Main keep — tall rectangular tower ────────────────────────────────
+	var keep := MeshInstance3D.new()
+	var km := BoxMesh.new()
+	km.size = Vector3(12.0, 30.0, 12.0)
+	keep.mesh = km; keep.material_override = mat_stone
+	keep.position = Vector3(0.0, 15.0, 0.0)
+	root.add_child(keep)
+
+	# Ruined top — angled slash cap (BoxMesh rotated to look broken)
+	var keep_top := MeshInstance3D.new()
+	var ktm := BoxMesh.new()
+	ktm.size = Vector3(12.5, 4.0, 6.5)
+	keep_top.mesh = ktm; keep_top.material_override = mat_stone
+	keep_top.position = Vector3(0.5, 30.5, 2.5)
+	keep_top.rotation.z = deg_to_rad(14.0)
+	root.add_child(keep_top)
+
+	# ── Flanking towers (two standing, one half-collapsed) ────────────────
+	var tower_configs: Array = [
+		[  14.0, 22.0,  0.0, false ],  # right standing
+		[ -14.0, 18.0,  0.0, false ],  # left standing (slightly shorter)
+		[  12.0, 11.0, 16.0, true  ],  # back-right collapsed (half height)
+	]
+	for tc in tower_configs:
+		var tower := MeshInstance3D.new()
+		var tm := CylinderMesh.new()
+		tm.top_radius    = tc[3] as bool ? 2.8 : 2.8
+		tm.bottom_radius = 3.2
+		tm.height        = tc[1]
+		tower.mesh = tm; tower.material_override = mat_stone
+		tower.position = Vector3(tc[0], tc[1] * 0.5, tc[2])
+		root.add_child(tower)
+		# Battlement ring on top of standing towers
+		if not (tc[3] as bool):
+			var btl_h: float = tc[1]
+			for bi in range(6):
+				var bang: float = (float(bi) / 6.0) * TAU
+				var cren := MeshInstance3D.new()
+				var crm := BoxMesh.new()
+				crm.size = Vector3(1.0, 1.4, 1.0)
+				cren.mesh = crm; cren.material_override = mat_stone
+				cren.position = Vector3(
+					tc[0] + cos(bang) * 2.6,
+					btl_h + 0.7,
+					tc[2] + sin(bang) * 2.6
+				)
+				root.add_child(cren)
+
+	# ── Curtain wall connecting keep to flanking towers ───────────────────
+	# Left wall segment
+	var wall_l := MeshInstance3D.new()
+	var wlm := BoxMesh.new()
+	wlm.size = Vector3(3.0, 14.0, 14.0)
+	wall_l.mesh = wlm; wall_l.material_override = mat_stone
+	wall_l.position = Vector3(-8.5, 7.0, 0.0)
+	root.add_child(wall_l)
+	# Right wall segment (partially collapsed — shorter)
+	var wall_r := MeshInstance3D.new()
+	var wrm := BoxMesh.new()
+	wrm.size = Vector3(3.0, 9.0, 14.0)
+	wall_r.mesh = wrm; wall_r.material_override = mat_stone
+	wall_r.position = Vector3(8.5, 4.5, 0.0)
+	root.add_child(wall_r)
+
+	# ── Rubble pile at the collapsed corner ───────────────────────────────
+	var rng := RandomNumberGenerator.new(); rng.seed = 55667
+	for _ri in range(12):
+		var rub := MeshInstance3D.new()
+		var rm := SphereMesh.new()
+		var rs: float = rng.randf_range(0.5, 2.2)
+		rm.radius = rs; rm.height = rs * rng.randf_range(0.5, 0.9)
+		rub.mesh = rm; rub.material_override = mat_stone
+		rub.scale = Vector3(rng.randf_range(0.7,1.4), rng.randf_range(0.4,0.8), rng.randf_range(0.7,1.4))
+		rub.position = Vector3(
+			rng.randf_range(6.0, 18.0),
+			rs * 0.3,
+			rng.randf_range(8.0, 20.0)
+		)
+		root.add_child(rub)
+
+	# ── Eerie OmniLight inside the keep (ghost glow) ──────────────────────
+	var haunt := OmniLight3D.new()
+	haunt.light_color  = Color(0.75, 0.85, 0.50)
+	haunt.light_energy = 2.0
+	haunt.omni_range   = 40.0
+	haunt.position     = Vector3(0.0, 8.0, 0.0)
+	root.add_child(haunt)
+
+	# ── A few dead trees at the base ──────────────────────────────────────
+	for ti in range(5):
+		var ang: float = (float(ti) / 5.0) * TAU + 0.4
+		var dist: float = rng.randf_range(15.0, 28.0)
+		var trunk2 := MeshInstance3D.new()
+		var tm2 := CylinderMesh.new()
+		var th: float = rng.randf_range(6.0, 11.0)
+		tm2.top_radius = 0.08; tm2.bottom_radius = 0.18; tm2.height = th
+		trunk2.mesh = tm2
+		var dead_mat := StandardMaterial3D.new()
+		dead_mat.albedo_color = Color(0.22, 0.18, 0.14)
+		dead_mat.roughness = 0.98
+		trunk2.material_override = dead_mat
+		trunk2.position = Vector3(cos(ang)*dist, th*0.5, sin(ang)*dist)
+		root.add_child(trunk2)
+
+	_dlog("Far castle ruins built")
+
+
+# ============================================================================
+# VILLAGE PROPS — fence perimeter, flag poles, chimney stacks, signs
+# Wires the unwired FBX assets from BUILDING_MODELS.  All have procedural
+# fallbacks so a missing GLB never crashes the build.
+# ============================================================================
+func _build_village_props() -> void:
+	var root := Node3D.new()
+	root.name = "VillageProps"
+	add_child(root)
+
+	# ── Palisade fence sections around the village perimeter ──────────────
+	# Use the fence FBX if loaded, otherwise thin BoxMesh posts.
+	var fence_glb: PackedScene = BUILDING_MODELS.get("fence", null)
+	var fence_angles: int = 24  # fence posts around a circle
+	var fence_r: float = 32.0   # inside the palisade, ring village houses
+	for fi in range(fence_angles):
+		var ang: float = (float(fi) / float(fence_angles)) * TAU
+		var fpos: Vector3 = Vector3(cos(ang) * fence_r, 0.0, sin(ang) * fence_r)
+		if fence_glb:
+			var fi2 := fence_glb.instantiate() as Node3D
+			if fi2:
+				fi2.scale = Vector3(0.018, 0.018, 0.018)
+				fi2.rotation.y = ang + PI * 0.5
+				fi2.position = fpos
+				root.add_child(fi2)
+				continue
+		# Fallback — wooden post
+		var post := MeshInstance3D.new()
+		var pm2 := CylinderMesh.new()
+		pm2.top_radius = 0.12; pm2.bottom_radius = 0.14; pm2.height = 2.0
+		post.mesh = pm2; post.material_override = MAT_DARK_WOOD(1.0)
+		post.position = fpos + Vector3(0.0, 1.0, 0.0)
+		root.add_child(post)
+
+	# ── Flag poles — town square and gate ─────────────────────────────────
+	var flag_glb: PackedScene = BUILDING_MODELS.get("flag_pole", null)
+	var flag_spots: Array = [
+		Vector3(0.0, 0.0, 12.0),    # town square center
+		Vector3(6.0, 0.0, 12.0),    # square east
+		Vector3(0.0, 0.0, -8.0),    # near gate
+	]
+	for fspot in flag_spots:
+		if flag_glb:
+			var fi2 := flag_glb.instantiate() as Node3D
+			if fi2:
+				fi2.scale = Vector3(0.022, 0.022, 0.022)
+				fi2.position = fspot
+				root.add_child(fi2)
+				continue
+		# Fallback — wooden pole with coloured banner
+		var pole := MeshInstance3D.new()
+		var polm := CylinderMesh.new()
+		polm.top_radius = 0.06; polm.bottom_radius = 0.08; polm.height = 7.0
+		pole.mesh = polm; pole.material_override = MAT_DARK_WOOD(1.0)
+		pole.position = fspot + Vector3(0.0, 3.5, 0.0)
+		root.add_child(pole)
+		# Banner
+		var banner := MeshInstance3D.new()
+		var banm := BoxMesh.new()
+		banm.size = Vector3(1.6, 2.2, 0.05)
+		banner.mesh = banm
+		var ban_mat := StandardMaterial3D.new()
+		ban_mat.albedo_color = Color(0.65, 0.12, 0.08)  # deep red banner
+		ban_mat.roughness = 0.85
+		banner.material_override = ban_mat
+		banner.position = fspot + Vector3(0.8, 6.5, 0.0)
+		root.add_child(banner)
+
+	# ── Chimney stacks on houses — smoke-pipe scatter ─────────────────────
+	# Three chimney positions atop existing house footprints
+	var chimney_spots: Array = [
+		Vector3(-8.0, 4.5, 8.0),
+		Vector3( 8.0, 4.5, 8.0),
+		Vector3(-5.0, 4.5, 20.0),
+		Vector3( 6.0, 4.5, 22.0),
+		Vector3(-14.0, 4.5, 14.0),
+	]
+	for cspot in chimney_spots:
+		var chimney := MeshInstance3D.new()
+		var chm := CylinderMesh.new()
+		chm.top_radius = 0.28; chm.bottom_radius = 0.32; chm.height = 2.5
+		chimney.mesh = chm
+		var chmat := StandardMaterial3D.new()
+		chmat.albedo_color = Color(0.38, 0.28, 0.22)
+		chmat.roughness = 0.9
+		chimney.material_override = chmat
+		chimney.position = cspot
+		root.add_child(chimney)
+		# Chimney cap ring
+		var cap2 := MeshInstance3D.new()
+		var capm2 := CylinderMesh.new()
+		capm2.top_radius = 0.38; capm2.bottom_radius = 0.38; capm2.height = 0.18
+		cap2.mesh = capm2; cap2.material_override = chmat
+		cap2.position = cspot + Vector3(0.0, 1.3, 0.0)
+		root.add_child(cap2)
+
+	# ── Wooden crossroads sign at village gate ────────────────────────────
+	var sign_post := MeshInstance3D.new()
+	var spm := CylinderMesh.new()
+	spm.top_radius = 0.08; spm.bottom_radius = 0.10; spm.height = 3.2
+	sign_post.mesh = spm; sign_post.material_override = MAT_DARK_WOOD(1.0)
+	sign_post.position = Vector3(3.5, 1.6, -10.0)
+	root.add_child(sign_post)
+	# Two crossbar signs
+	for yi in [2.4, 1.8]:
+		var arm := MeshInstance3D.new()
+		var armm := BoxMesh.new()
+		armm.size = Vector3(2.4, 0.22, 0.14)
+		arm.mesh = armm
+		var arm_mat := StandardMaterial3D.new()
+		arm_mat.albedo_color = Color(0.42, 0.28, 0.16)
+		arm_mat.roughness = 0.88
+		arm.material_override = arm_mat
+		arm.position = Vector3(3.5, yi, -10.0)
+		arm.rotation.y = deg_to_rad(30.0 if yi > 2.0 else -20.0)
+		root.add_child(arm)
+
+	# ── Decorative vases at market stall fronts ───────────────────────────
+	var rng := RandomNumberGenerator.new(); rng.seed = 33441
+	var vase_spots: Array = [
+		Vector3(28.0, 0.0, 20.0), Vector3(30.0, 0.0, 22.0),
+		Vector3(32.0, 0.0, 20.0), Vector3(-28.0, 0.0, 20.0),
+		Vector3(-30.0, 0.0, 22.0),
+	]
+	for vspot in vase_spots:
+		var vase := MeshInstance3D.new()
+		var vm := CylinderMesh.new()
+		vm.top_radius    = rng.randf_range(0.15, 0.30)
+		vm.bottom_radius = rng.randf_range(0.08, 0.16)
+		vm.height        = rng.randf_range(0.4, 0.7)
+		vase.mesh = vm
+		var vmat := StandardMaterial3D.new()
+		vmat.albedo_color = Color(
+			rng.randf_range(0.5, 0.8),
+			rng.randf_range(0.3, 0.6),
+			rng.randf_range(0.1, 0.3)
+		)
+		vmat.roughness = 0.6; vmat.metallic = 0.0
+		vase.material_override = vmat
+		vase.position = vspot + Vector3(0.0, vm.height * 0.5, 0.0)
+		root.add_child(vase)
+
+	_dlog("Village props built (fences, flags, chimneys, signs, vases)")
 
 
 func _build_enemies() -> void:
@@ -3567,6 +4076,55 @@ func _build_enemies() -> void:
 
 	# Goblin Warlord — boss in the deepest part of the Whisperwood
 	_build_boss_arena(Vector3(60, 0, 60))
+
+	# ── Actorcore enemy GLBs — wired 2026-05-13 ────────────────────────────
+	# Placed at distinct locations so each zone has a clear identity.
+	# Barbarians: mid-road ambush zone (north road, 110m out)
+	var barbarian_spots: Array = [
+		Vector3(  8.0, 0, 110.0), Vector3( -6.0, 0, 118.0),
+		Vector3( 12.0, 0, 105.0),
+	]
+	for bp in barbarian_spots:
+		_spawn_enemy("barbarian", bp, "Barbarian Raider", 75, 14, 42, 12,
+			Color(0.70, 0.40, 0.22), 2.2, 4.8)
+
+	# Untamed — feral creatures in the eastern scrubland (~80m east)
+	var untamed_spots: Array = [
+		Vector3( 82.0, 0,  15.0), Vector3( 78.0, 0, -10.0), Vector3( 90.0, 0,  5.0),
+	]
+	for up in untamed_spots:
+		_spawn_enemy("untamed", up, "Untamed Beast", 60, 11, 35, 10,
+			Color(0.55, 0.38, 0.20), 3.0, 5.5)
+
+	# Castle Guard — patrols near the far castle ruins (280m north-west)
+	# Spawned closer to player range at 140m so they encounter them en route
+	var guard_spots: Array = [
+		Vector3(-55.0, 0, -130.0), Vector3(-70.0, 0, -140.0),
+	]
+	for gp in guard_spots:
+		_spawn_enemy("castle_guard", gp, "Fallen Castle Guard", 90, 13, 55, 18,
+			Color(0.42, 0.42, 0.52), 1.8, 3.8)
+
+	# Imperator — elite commander near the castle ruins gateway
+	_spawn_enemy("imperator", Vector3(-80.0, 0, -160.0),
+		"Imperator Rex", 200, 20, 160, 60, Color(0.65, 0.55, 0.30), 1.6, 3.5)
+
+	# Roman Soldiers — guarding the imperator
+	var roman_spots: Array = [
+		Vector3(-72.0, 0, -155.0), Vector3(-88.0, 0, -155.0),
+	]
+	for rp in roman_spots:
+		_spawn_enemy("roman_soldier", rp, "Roman Legionary", 65, 11, 40, 14,
+			Color(0.58, 0.48, 0.28), 2.0, 4.2)
+
+	# Lord of Darkness — supreme boss, deep inside the castle ruins
+	# Spawn at 220m so only dedicated explorers find them
+	_spawn_enemy("lord_darkness", Vector3(-80.0, 0, -220.0),
+		"Lord of Darkness", 650, 35, 800, 300, Color(0.12, 0.06, 0.22), 1.4, 3.0)
+
+	# Armor of the Void — guardian flanking the Lord
+	_spawn_enemy("armor_void", Vector3(-68.0, 0, -215.0),
+		"Armor of the Void", 380, 28, 450, 150, Color(0.06, 0.04, 0.18), 1.5, 3.2)
 
 # Goblin Spawn Schema (run 5) — derive per-camp population from faction
 # pressure. Read accessor: World.faction_pressure("whisperwood_goblins")
@@ -3853,7 +4411,7 @@ func _build_village_dressing_props() -> void:
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
 		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-		Vector3(14.0, 0, 4.0)]
+		                  Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
@@ -3917,7 +4475,7 @@ func _build_village_dressing_props() -> void:
 	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
 	if vases_glb:
 		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
-		Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
 			var n := Node3D.new()
 			n.name = "Vases"
 			n.position = p
@@ -4824,10 +5382,14 @@ func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: b
 	parent.add_child(sm)
 
 func _build_crystal_caves(entrance: Vector3) -> void:
-	# Phase 26: S=0.6 — visible cave entrance (~28m diameter dome, 3.3m arch).
-	# Original S=0.25 was too small (12m dome). S=1.0 engulfed the village (48m dome).
-	# S=0.6 gives a proper dungeon entrance without covering the world.
-	const S: float = 0.6
+	# FIX 2026-05-13: The old dome (radius=14m, CULL_FRONT) was a giant grey
+	# sphere visible from the overworld because CULL_FRONT only hides back-faces
+	# but the sphere still clips above ground.  New approach:
+	# - Dome is buried 8m underground (y=-8) so it never peeks above ground plane.
+	# - Radius reduced to 10m — a dungeon, not a continent.
+	# - Interior crystals at y=-8 to -18 (underground slab).
+	# - Overworld surface shows only the entrance arch (built by _build_caves_surface_entrance).
+	const S: float = 1.0  # scale reset — 1:1 now that dome is underground
 
 	var caves := Node3D.new()
 	caves.name = "CrystalCaves"
@@ -4838,43 +5400,43 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	var crystal_violet: Color = Color(0.70, 0.55, 1.00)
 	var crystal_teal:   Color = Color(0.45, 1.00, 0.85)
 
-	# ── Cavern dome (inverted interior shell) ──
+	# ── Underground cavern dome — buried so it never shows above ground ────
+	# Position y=-8 means the dome top is at y=-8+10=-2m underground.
+	# CULL_FRONT shows interior walls to the player when they descend.
 	var dome := MeshInstance3D.new()
 	var dm   := SphereMesh.new()
-	dm.radius = 24.0 * S   # → 6.0 m radius, 12 m diameter
-	dm.height = 22.0 * S   # → 5.5 m
+	dm.radius = 10.0   # 10m radius underground cavern
+	dm.height = 18.0
+	dm.rings  = 12
+	dm.radial_segments = 20
 	dome.mesh = dm
 	var dome_mat := StandardMaterial3D.new()
 	dome_mat.albedo_color = Color(0.04, 0.05, 0.10)
 	dome_mat.roughness    = 0.98
 	dome_mat.cull_mode    = BaseMaterial3D.CULL_FRONT
 	dome.material_override = dome_mat
-	dome.position = Vector3(0, 4.0 * S, 0)   # → y=1.0
+	dome.position = Vector3(0.0, -8.0, 0.0)   # fully underground
 	caves.add_child(dome)
 
-	# ── Entrance arch ──
-	for sx in [-3.2 * S, 3.2 * S]:    # → ±0.8
-		var col := MeshInstance3D.new()
-		var cm  := CylinderMesh.new()
-		cm.top_radius    = 0.7  * S   # → 0.175
-		cm.bottom_radius = 0.95 * S   # → 0.24
-		cm.height        = 5.5  * S   # → 1.4
-		col.mesh = cm
-		col.material_override = MAT_ROCK(1.5)
-		col.position = Vector3(sx, 2.75 * S, 22.0 * S)   # → (±0.8, 0.7, 5.5)
-		caves.add_child(col)
-	var cap  := MeshInstance3D.new()
-	var capm := BoxMesh.new()
-	capm.size = Vector3(8.4 * S, 1.2 * S, 1.6 * S)   # → 2.1 × 0.3 × 0.4
-	cap.mesh = capm
-	cap.material_override = MAT_ROCK(1.5)
-	cap.position = Vector3(0, 6.1 * S, 22.0 * S)     # → (0, 1.5, 5.5)
-	caves.add_child(cap)
+	# ── Underground entrance tunnel (leads down from surface) ────────────
+	# A short sloped shaft connects the surface (y=0) to the cave floor (y=-8).
+	# Rendered as a dark box below ground — players descend through it.
+	var tunnel := MeshInstance3D.new()
+	var tunm   := BoxMesh.new()
+	tunm.size = Vector3(4.0, 8.0, 4.0)
+	tunnel.mesh = tunm
+	var tun_mat := StandardMaterial3D.new()
+	tun_mat.albedo_color = Color(0.04, 0.04, 0.06)
+	tun_mat.roughness    = 0.98
+	tun_mat.cull_mode    = BaseMaterial3D.CULL_FRONT
+	tunnel.material_override = tun_mat
+	tunnel.position = Vector3(0.0, -4.0, 0.0)  # spans y=0 to y=-8
+	caves.add_child(tunnel)
 
-	# ── Entrance beacon crystal ──
+	# ── Inner beacon crystal (deep in cave) ──────────────────────────────
 	var beacon     := MeshInstance3D.new()
 	var bm         := PrismMesh.new()
-	bm.size = Vector3(1.0 * S, 2.4 * S, 1.0 * S)    # → 0.25 × 0.6 × 0.25
+	bm.size = Vector3(1.0, 2.4, 1.0)
 	beacon.mesh = bm
 	var beacon_mat := StandardMaterial3D.new()
 	beacon_mat.albedo_color            = crystal_blue
@@ -4882,83 +5444,86 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 	beacon_mat.emission                = crystal_blue
 	beacon_mat.emission_energy_multiplier = 1.2
 	beacon.material_override = beacon_mat
-	beacon.position = Vector3(0, 8.0 * S, 22.0 * S)  # → (0, 2.0, 5.5)
+	beacon.position = Vector3(0.0, -6.0, -8.0)  # inside the underground cave
 	caves.add_child(beacon)
 	var beacon_light := OmniLight3D.new()
 	beacon_light.light_color  = crystal_blue
-	beacon_light.light_energy = 1.4
-	beacon_light.omni_range   = 10.0 * S              # → 2.5 m
-	beacon_light.position     = Vector3(0, 8.0 * S, 22.0 * S)
+	beacon_light.light_energy = 2.0
+	beacon_light.omni_range   = 16.0
+	beacon_light.position     = Vector3(0.0, -6.0, -8.0)
 	caves.add_child(beacon_light)
 
 	# ── Ambient cave lights ──
 	var amb := OmniLight3D.new()
+	# All underground content is offset by -8m on Y to sit in the buried cavern.
+	const CAVE_Y: float = -8.0
+
 	amb.light_color  = crystal_blue
 	amb.light_energy = 0.62
-	amb.omni_range   = 28.0 * S                       # → 7.0 m
-	amb.position     = Vector3(0, 9.0 * S, 0)         # → y=2.25
+	amb.omni_range   = 28.0
+	amb.position     = Vector3(0, CAVE_Y + 4.0, 0)
 	caves.add_child(amb)
 	var boss_amb := OmniLight3D.new()
 	boss_amb.light_color  = crystal_violet
 	boss_amb.light_energy = 2.4
-	boss_amb.omni_range   = 24.0 * S                  # → 6.0 m
-	boss_amb.position     = Vector3(0, 4.0 * S, -16.0 * S)  # → (0, 1.0, -4.0)
+	boss_amb.omni_range   = 24.0
+	boss_amb.position     = Vector3(0, CAVE_Y + 2.0, -16.0)
 	caves.add_child(boss_amb)
 
-	# ── Stone floor disc ──
+	# ── Stone floor disc (underground) ───────────────────────────────────
 	var floor_mesh := MeshInstance3D.new()
 	var pm_floor   := CylinderMesh.new()
-	pm_floor.top_radius    = 22.0 * S    # → 5.5 m
-	pm_floor.bottom_radius = 22.0 * S
+	pm_floor.top_radius    = 10.0
+	pm_floor.bottom_radius = 10.0
 	pm_floor.height        = 0.4
 	floor_mesh.mesh = pm_floor
 	var floor_mat := StandardMaterial3D.new()
 	floor_mat.albedo_color = Color(0.12, 0.14, 0.20)
 	floor_mat.roughness    = 0.78
 	floor_mesh.material_override = floor_mat
-	floor_mesh.position = Vector3(0, 0.05, 0)
+	floor_mesh.position = Vector3(0.0, CAVE_Y + 0.2, 0.0)
 	caves.add_child(floor_mesh)
 
-	# ── Crystal formations (positions and base_scale × S) ──
+	# ── Crystal formations (all underground) ──────────────────────────────
 	var crystal_spots: Array = [
-		{"p": Vector3(-8,0, 14)*S, "s": 1.4*S, "c": crystal_blue},
-		{"p": Vector3( 9,0, 11)*S, "s": 1.2*S, "c": crystal_blue},
-		{"p": Vector3(14,0,  4)*S, "s": 1.6*S, "c": crystal_teal},
-		{"p": Vector3(-12,0, 2)*S, "s": 1.5*S, "c": crystal_blue},
-		{"p": Vector3(  4,0, -4)*S,"s": 1.0*S, "c": crystal_teal},
-		{"p": Vector3( -6,0, -8)*S,"s": 1.3*S, "c": crystal_violet},
-		{"p": Vector3( 12,0,-10)*S,"s": 1.4*S, "c": crystal_violet},
-		{"p": Vector3(-14,0,-12)*S,"s": 1.1*S, "c": crystal_blue},
-		{"p": Vector3(  0,0,-18)*S,"s": 2.2*S, "c": crystal_violet},  # boss crystal
+		{"p": Vector3(-8, CAVE_Y, 6),  "s": 1.4, "c": crystal_blue},
+		{"p": Vector3( 9, CAVE_Y, 5),  "s": 1.2, "c": crystal_blue},
+		{"p": Vector3( 7, CAVE_Y, -2), "s": 1.6, "c": crystal_teal},
+		{"p": Vector3(-6, CAVE_Y, -2), "s": 1.5, "c": crystal_blue},
+		{"p": Vector3( 4, CAVE_Y, -6), "s": 1.0, "c": crystal_teal},
+		{"p": Vector3(-5, CAVE_Y, -8), "s": 1.3, "c": crystal_violet},
+		{"p": Vector3( 6, CAVE_Y,-10), "s": 1.4, "c": crystal_violet},
+		{"p": Vector3(-7, CAVE_Y,-12), "s": 1.1, "c": crystal_blue},
+		{"p": Vector3( 0, CAVE_Y,-16), "s": 2.2, "c": crystal_violet},  # boss crystal
 	]
 	for spot in crystal_spots:
 		_make_crystal_cluster(spot["p"], spot["s"], spot["c"], caves, rng)
 
-	# ── Stalagmites and stalactites ──
+	# ── Stalagmites and stalactites (underground) ─────────────────────────
 	for i in 18:
 		var ang: float = rng.randf() * TAU
-		var r:   float = rng.randf_range(6.0, 19.0) * S
-		var pos: Vector3 = Vector3(cos(ang) * r, 0.0, sin(ang) * r)
+		var r:   float = rng.randf_range(2.0, 9.0)
+		var pos: Vector3 = Vector3(cos(ang) * r, CAVE_Y, sin(ang) * r)
 		_make_stalagmite(pos, rng.randf_range(0.4, 1.0), caves, false)
 	for i in 12:
 		var ang2: float = rng.randf() * TAU
-		var r2:   float = rng.randf_range(4.0, 18.0) * S
-		var pos2: Vector3 = Vector3(cos(ang2) * r2, 11.5 * S, sin(ang2) * r2)
+		var r2:   float = rng.randf_range(2.0, 8.0)
+		var pos2: Vector3 = Vector3(cos(ang2) * r2, CAVE_Y + 9.5, sin(ang2) * r2)
 		_make_stalagmite(pos2, rng.randf_range(0.4, 1.0), caves, true)
 
-	# ── Boss room divider pillars ──
-	for sx2 in [-6.0 * S, 6.0 * S]:    # → ±1.5
+	# ── Boss room divider pillars (underground) ───────────────────────────
+	for sx2 in [-5.0, 5.0]:
 		var pillar := MeshInstance3D.new()
 		var pillm  := CylinderMesh.new()
-		pillm.top_radius    = 0.6 * S   # → 0.15
-		pillm.bottom_radius = 0.9 * S   # → 0.225
+		pillm.top_radius    = 0.6
+		pillm.bottom_radius = 0.9
 		pillm.height        = 7.0 * S   # → 1.75
 		pillar.mesh = pillm
 		pillar.material_override = MAT_ROCK(1.5)
-		pillar.position = Vector3(sx2, 3.5 * S, -10.0 * S)  # → (±1.5, 0.9, -2.5)
+		pillar.position = Vector3(sx2, CAVE_Y + 3.5, -10.0)
 		caves.add_child(pillar)
 
-	# ── Skull pile ──
+	# ── Skull pile (underground) ──────────────────────────────────────────
 	for i in 6:
 		var skull := MeshInstance3D.new()
 		var sm2   := SphereMesh.new()
@@ -4969,16 +5534,16 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 		sklm.roughness    = 0.92
 		skull.material_override = sklm
 		skull.position = Vector3(
-			rng.randf_range(-1.4, 1.4) * S,
-			0.08,
-			-16.0 * S + rng.randf_range(-1.4, 1.4) * S)
+			rng.randf_range(-1.4, 1.4),
+			CAVE_Y + 0.08,
+			-16.0 + rng.randf_range(-1.4, 1.4))
 		caves.add_child(skull)
 
-	# ── Enemy spawns (all offsets × S) ──
+	# ── Enemy spawns — underground (Y offset by CAVE_Y) ──────────────────
 	var skel_color: Color = Color(0.95, 0.95, 0.92)
 	var skel_spots: Array = [
-		Vector3(-6,0,12)*S, Vector3(7,0,8)*S, Vector3(11,0,-2)*S,
-		Vector3(-10,0,-4)*S, Vector3(4,0,-8)*S,
+		Vector3(-6, CAVE_Y, 5), Vector3(7, CAVE_Y, 4), Vector3(8, CAVE_Y, -3),
+		Vector3(-7, CAVE_Y, -4), Vector3(4, CAVE_Y, -8),
 	]
 	for sp in skel_spots:
 		_spawn_enemy("skeleton", caves.position + sp,
@@ -4986,16 +5551,15 @@ func _build_crystal_caves(entrance: Vector3) -> void:
 
 	var elem_color: Color = Color(0.55, 0.85, 1.00)
 	var elem_spots: Array = [
-		Vector3(-12,0, 0)*S, Vector3(13,0,-6)*S, Vector3(-4,0,-12)*S,
+		Vector3(-8, CAVE_Y, 0), Vector3(8, CAVE_Y, -6), Vector3(-4, CAVE_Y, -12),
 	]
 	for ep in elem_spots:
 		_spawn_enemy("crystal_elemental", caves.position + ep,
 			"Crystal Elemental", 70, 14, 55, 14, elem_color, 1.8, 3.2)
 
-	_spawn_enemy("crystal_guardian", caves.position + Vector3(0, 0, -16.0 * S),
+	_spawn_enemy("crystal_guardian", caves.position + Vector3(0.0, CAVE_Y, -16.0),
 		"Crystal Guardian", 420, 26, 480, 200, Color(0.65, 0.85, 1.00), 1.8, 3.4)
-	# Mutant guardian — flanks the crystal guardian; creature animations via Boss.glb
-	_spawn_enemy("mutant", caves.position + Vector3(8.0 * S, 0, -14.0 * S),
+	_spawn_enemy("mutant", caves.position + Vector3(8.0, CAVE_Y, -14.0),
 		"Corrupted Mutant", 280, 22, 320, 80, Color(0.55, 0.35, 0.70), 1.6, 3.0)
 
 
@@ -8518,6 +9082,21 @@ func _build_bw_residential_ring(root: Node3D, plaza: Vector3, count: int) -> voi
 # ── Hub house (parented version of _make_building, sized 7×6m) ───────────────
 
 func _make_bw_house(pos: Vector3) -> Node3D:
+	# GLB-first: use stylized_bell_island_house_mound if loaded
+	var house_glb: PackedScene = BUILDING_MODELS.get("house", null)
+	if house_glb:
+		var inst := house_glb.instantiate() as Node3D
+		if inst:
+			inst.name = "BW_House"
+			inst.add_to_group("buildings")
+			# stylized_bell_island_house_mound.fbx exports at ~0.01 Godot units = 1cm.
+			# Target footprint ~7m wide → scale ≈ 0.022
+			inst.scale = Vector3(0.022, 0.022, 0.022)
+			inst.rotation.y = randf_range(-PI, PI)
+			inst.position = pos
+			return inst
+
+	# Procedural fallback — full hand-built house
 	var house := Node3D.new()
 	house.add_to_group("buildings")
 	house.position = pos
