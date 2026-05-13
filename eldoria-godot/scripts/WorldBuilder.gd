@@ -4443,7 +4443,7 @@ func _build_village_dressing_props() -> void:
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
 		var positions := [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-		                  Vector3(14.0, 0, 4.0)]
+		Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
@@ -4507,7 +4507,7 @@ func _build_village_dressing_props() -> void:
 	var vases_glb := _safe_load_glb(P + "stylized_rounded_vases_set.fbx")
 	if vases_glb:
 		for p in [Vector3(8.0, 0, -2.0), Vector3(-8.0, 0, -2.0),
-		          Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
+		Vector3(10.0, 0, 2.0), Vector3(-10.0, 0, 2.0)]:
 			var n := Node3D.new()
 			n.name = "Vases"
 			n.position = p
