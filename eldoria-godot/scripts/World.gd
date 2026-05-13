@@ -1171,6 +1171,8 @@ func _ready() -> void:
 	# and the HUD comes back. Both nodes are added to UI/HUD so they layer
 	# above the gameplay 3D viewport but BELOW the dialogue/inventory panels.
 	call_deferred("_build_map_system")
+	# First-time experience — check after 2s so Player._ready + load_game() finish first
+	get_tree().create_timer(2.0).timeout.connect(_maybe_show_intro)
 
 func _build_map_system() -> void:
 	# Idempotent — safe if Main.tscn ever gets a hand-placed Minimap node.
@@ -1191,6 +1193,62 @@ func _build_map_system() -> void:
 		if ui_layer2 != null:
 			ui_layer2.add_child(world_map)
 		world_map.bind_minimap(minimap)
+
+# ════════════════════════════════════════════════════════════════════════
+# FIRST-TIME EXPERIENCE — Elder Maeve intro on first play
+# Triggers 2s after _ready, only if Player has no prior save (first_play_done=false).
+# Shows a brief dialogue sequence: welcome → hint → first quest pointer.
+# On subsequent launches the check is instant-skip (flag already set).
+# ════════════════════════════════════════════════════════════════════════
+
+func _maybe_show_intro() -> void:
+	var player := get_node_or_null("Player")
+	if player == null:
+		return
+	# Skip if this player has played before — _apply_save_data sets first_play_done
+	if player.get("_loaded_save") == true:
+		# Already has a save — not first play
+		return
+	# Extra guard: if player already has XP or gold > starting amount, skip
+	if player.get("xp") != null and player.xp > 0:
+		return
+	# Safe to show intro
+	_run_maeve_intro(player)
+
+func _run_maeve_intro(player: Node) -> void:
+	# Step 1 (immediate): show toast hint
+	var toast_fn := Callable(self, "show_toast") if has_method("show_toast") else Callable()
+	if toast_fn.is_valid():
+		toast_fn.call("Welcome to Briarwood! Find Elder Maeve to begin your quest.", 4.5)
+
+	# Step 2 (1s): show Maeve intro dialogue
+	get_tree().create_timer(1.2).timeout.connect(func():
+		show_dialogue(
+			"Elder Maeve",
+			"Ah, a new hero arrives! Briarwood needs brave souls like you. " +
+			"The Whisperwood grows darker each night — wolves and goblins press ever closer. " +
+			"Speak to me when you are ready — I have a task that only the bold can complete.",
+			"elder"
+		)
+	)
+
+	# Step 3 (6s): close dialogue automatically if still open, show WASD tip
+	get_tree().create_timer(6.5).timeout.connect(func():
+		if dialogue_panel and dialogue_panel.visible:
+			dialogue_panel.visible = false
+		if toast_fn.is_valid():
+			toast_fn.call("WASD to move • Shift to sprint • E to talk • Space to jump • Click to attack", 5.0)
+	)
+
+	# Step 4 (13s): pointer toward the quest board
+	get_tree().create_timer(13.0).timeout.connect(func():
+		if toast_fn.is_valid():
+			toast_fn.call("Find the Quest Board in the village square to start your first quest!", 4.0)
+		# Flash quest board highlight if WorldBuilder exposed it
+		var wb := get_node_or_null("WorldBuilder")
+		if wb and wb.has_method("highlight_quest_board"):
+			wb.highlight_quest_board()
+	)
 
 func toggle_world_map() -> void:
 	# Player.gd KEY_N → call_group("world", "toggle_world_map").
