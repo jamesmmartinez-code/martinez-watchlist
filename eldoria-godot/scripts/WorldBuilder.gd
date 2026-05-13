@@ -1854,7 +1854,7 @@ func _build_windmill() -> void:
 			hub_y = 7.2
 			hub_z = 1.5
 			# Hide baked blades via a one-shot timer (0.1s) so GLB is fully rendered.
-			var _t := get_tree().create_timer(0.1)
+			var _t: SceneTreeTimer = get_tree().create_timer(0.1)
 			_t.timeout.connect(func(): _hide_baked_blades(mill_inst))
 
 	if not mill_used_glb:
@@ -4213,7 +4213,7 @@ func _global_scale_sweep() -> void:
 	# Anything outside band gets uniformly scaled to the target on the next tick.
 	while is_inside_tree():
 		await get_tree().create_timer(0.5).timeout
-		var root := get_tree().current_scene
+		var root: Node = get_tree().current_scene
 		if not root:
 			continue
 		# Character bodies (player + enemies + NPCs) — strict canon.
@@ -5918,7 +5918,7 @@ func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
 func _nordic_road_lantern(world_pos: Vector3) -> void:
 	# Try the existing lantern GLB first (same fallback contract as village)
 	if ResourceLoader.exists(LANTERN_GLB_PATH):
-		var sc := load(LANTERN_GLB_PATH)
+		var sc: Resource = load(LANTERN_GLB_PATH)
 		if sc is PackedScene:
 			var inst: Node3D = (sc as PackedScene).instantiate()
 			add_child(inst)
@@ -6407,7 +6407,7 @@ func _tick_nordic_interactions() -> void:
 
 
 func _get_player() -> Node3D:
-	var players := get_tree().get_nodes_in_group("player")
+	var players: Array = get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and players[0] is Node3D:
 		return players[0] as Node3D
 	return null
@@ -6836,7 +6836,7 @@ func _tick_district_streaming() -> void:
 
 
 func _get_player_for_streaming() -> Node3D:
-	var players := get_tree().get_nodes_in_group("player")
+	var players: Array = get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and players[0] is Node3D:
 		return players[0] as Node3D
 	return null
@@ -8380,7 +8380,7 @@ func _tick_quest_markers() -> void:
 
 
 func _find_first_interactable_kind(kind: String) -> Node3D:
-	var nodes := get_tree().get_nodes_in_group("world_interactables")
+	var nodes: Array = get_tree().get_nodes_in_group("world_interactables")
 	for n in nodes:
 		if n is Node3D and str(n.get_meta("interactable_kind", "")) == kind:
 			return n as Node3D
@@ -9477,7 +9477,7 @@ func _tick_town_schedule() -> void:
 
 
 func _apply_briarwood_lighting(night: bool) -> void:
-	var root := _briarwood_root if _briarwood_root and is_instance_valid(_briarwood_root) else get_tree().current_scene
+	var root: Node = _briarwood_root if _briarwood_root and is_instance_valid(_briarwood_root) else get_tree().current_scene
 	if root == null:
 		return
 	for l in root.find_children("*Lantern*", "Node3D", true, false):
