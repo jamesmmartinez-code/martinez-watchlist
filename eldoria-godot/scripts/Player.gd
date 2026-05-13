@@ -1770,11 +1770,11 @@ func _poll_cloud_load() -> void:
 			if ld is Dictionary:
 				local_ts = float(ld.get("saved_at", 0))
 	if cloud_ts > local_ts:
-		push_print("[Save] cloud save is newer (cloud=%s local=%s) — applying" % [cloud_ts, local_ts])
+		print("[Save] cloud save is newer (cloud=%s local=%s) — applying" % [cloud_ts, local_ts])
 		_apply_save_data(cloud_data)
 		_local_save()   # sync local to match cloud
 	else:
-		push_print("[Save] local save is current — cloud sync skipped")
+		print("[Save] local save is current — cloud sync skipped")
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
