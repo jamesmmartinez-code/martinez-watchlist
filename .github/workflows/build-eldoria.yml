@@ -263,6 +263,80 @@ jobs:
           # Verify game.html in R2 is the real game shell, not a redirect
           python3 .github/scripts/r2_verify.py
 
+
+      - name: Inject BGM into game.html in R2
+        if: always()
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CF_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "⚠️  Skipping BGM injection — no CF creds"
+            exit 0
+          fi
+          BUCKET="eldoria-game"
+          API="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/r2/buckets/$BUCKET/objects"
+
+          # Fetch current game.html from R2
+          echo "Fetching game.html from R2..."
+          curl -s -H "Authorization: Bearer $CF_TOKEN" \
+            "$API/game.html" -o /tmp/game.html
+          
+          SIZE=$(wc -c < /tmp/game.html)
+          echo "game.html: $SIZE bytes"
+          
+          # Check if BGM already injected or if it's a redirect page
+          if grep -q "eldoria-bgm" /tmp/game.html; then
+            echo "✅ BGM already present in game.html — no patch needed"
+            exit 0
+          fi
+          if grep -q "location.replace" /tmp/game.html; then
+            echo "⚠️  game.html is redirect page — GameHealer will restore; skipping BGM patch"
+            exit 0
+          fi
+          if [ "$SIZE" -lt 5000 ]; then
+            echo "⚠️  game.html too small ($SIZE bytes) — skipping BGM patch"
+            exit 0
+          fi
+
+          echo "Injecting BGM script..."
+          # Write BGM snippet to file (avoid shell quoting issues)
+          cat > /tmp/bgm_snippet.html << 'BGMEOF'
+<!-- Eldoria BGM - Village Consort by Kevin MacLeod (CC0) -->
+<style>
+#eldoria-bgm-btn{position:fixed;bottom:12px;right:12px;z-index:9999;background:rgba(13,13,18,.75);border:1px solid rgba(232,212,162,.4);border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#e8d4a2;transition:background .2s;user-select:none}
+#eldoria-bgm-btn:hover{background:rgba(40,30,10,.9)}
+</style>
+<audio id="eldoria-bgm" loop preload="none"><source src="/music/village_theme.mp3" type="audio/mpeg"></audio>
+<button id="eldoria-bgm-btn" title="Toggle music" aria-label="Toggle background music">🎵</button>
+<script>
+(function(){var a=document.getElementById('eldoria-bgm'),b=document.getElementById('eldoria-bgm-btn'),m=false,s=false;
+function start(){if(s)return;s=true;a.volume=0.35;a.play().catch(function(){});}
+['click','keydown','touchstart','mousedown'].forEach(function(e){document.addEventListener(e,start,{once:true,passive:true});});
+b.addEventListener('click',function(e){e.stopPropagation();if(!s){start();return;}m=!m;a.muted=m;b.textContent=m?'🔇':'🎵';});
+})();
+</script>
+BGMEOF
+
+          # Inject before </body>
+          python3 -c "
+import sys
+html = open('/tmp/game.html').read()
+snippet = open('/tmp/bgm_snippet.html').read()
+if '</body>' in html:
+    patched = html.replace('</body>', snippet + '</body>', 1)
+else:
+    patched = html + snippet
+open('/tmp/game_bgm.html', 'w').write(patched)
+print(f'Patched: {len(html)} -> {len(patched)} bytes')
+"
+          # Upload patched file
+          curl -s -X PUT \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            -H "Content-Type: text/html; charset=utf-8" \
+            --data-binary @/tmp/game_bgm.html \
+            "$API/game.html" | python3 -c "import sys,json; d=json.load(sys.stdin); print('✅ BGM injected' if d.get('success') else '❌ Upload failed: '+str(d))"
+
       - name: Overwrite GH Pages /eldoria/index.html with redirect → Cloudflare
         if: success()
         env:
