@@ -3020,7 +3020,7 @@ func _build_mid_world_pois() -> void:
 		rb.mesh = rbm
 		rb.material_override = MAT_STONE(1.0)
 		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
-		rb.global_position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
+		rb.position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
 		rb.rotation.y = randf_range(0, TAU)
 		root.add_child(rb)
 
@@ -3262,7 +3262,7 @@ func _build_mid_world_pois() -> void:
 		rock.mesh = rsm
 		rock.material_override = MAT_ROCK(1.0)
 		var ra: float = float(ri) * TAU / 6.0
-		rock.global_position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
+		rock.position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
 		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
 		root.add_child(rock)
 
@@ -3275,7 +3275,7 @@ func _build_mid_world_pois() -> void:
 		var bmat2 := StandardMaterial3D.new()
 		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
 		bone.material_override = bmat2
-		bone.global_position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
+		bone.position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
 		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
 		root.add_child(bone)
 
@@ -3390,7 +3390,7 @@ func _build_whisperwood_forest() -> void:
 			fmat.albedo_color = Color(0.15, 0.48 + rng.randf_range(0, 0.18), 0.12)
 			fmat.roughness = 0.95
 			fern.material_override = fmat
-			fern.global_position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
+			fern.position = fpos + Vector3(0, fbm.size.y * 0.5, 0)
 			root.add_child(fern)
 		else:
 			# Mushroom
@@ -3408,7 +3408,7 @@ func _build_whisperwood_forest() -> void:
 			)
 			mmat.roughness = 0.7
 			mush.material_override = mmat
-			mush.global_position = fpos + Vector3(0, mcm.height * 0.5, 0)
+			mush.position = fpos + Vector3(0, mcm.height * 0.5, 0)
 			root.add_child(mush)
 
 	# ── Firefly cluster (soft green ambient glow inside the forest) ──────────
@@ -3443,7 +3443,7 @@ func _build_whisperwood_forest() -> void:
 	fog_mat.roughness     = 1.0
 	fog_mat.cull_mode     = BaseMaterial3D.CULL_DISABLED
 	fog_plane.material_override = fog_mat
-	fog_plane.global_position   = Vector3(WW_CX, 0.35, WW_CZ)
+	fog_plane.position = Vector3(WW_CX, 0.35, WW_CZ)
 	root.add_child(fog_plane)
 
 	_dlog("Whisperwood Forest built (%d trees)" % TREE_N)
@@ -3610,7 +3610,7 @@ func _build_terrain_hills() -> void:
 		hm.roughness = 0.95
 		hill.material_override = hm
 		# Sink half the sphere underground so only the dome shows
-		hill.global_position = Vector3(h[0], -(h[3] * 0.5), h[1])
+		hill.position = Vector3(h[0], -(h[3] * 0.5), h[1])
 		root.add_child(hill)
 
 		# Small rock cluster at hill foot (every other hill)
@@ -3623,7 +3623,7 @@ func _build_terrain_hills() -> void:
 				rock.mesh = rm
 				rock.material_override = MAT_ROCK(1.0)
 				var ang: float = rng.randf() * TAU
-				rock.global_position = Vector3(
+				rock.position = Vector3(
 					h[0] + cos(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75),
 					rs * 0.35,
 					h[1] + sin(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75)
