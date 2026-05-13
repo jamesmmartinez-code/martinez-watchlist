@@ -1322,7 +1322,8 @@ func _safe_call(method_name: String, args: Array = []) -> void:
 
 func _safe_call_now(method_name: String, args: Array) -> void:
 	_dlog("-> " + method_name)
-	callv(method_name, args)
+	if has_method(method_name):
+		callv(method_name, args)
 	_dlog("OK  " + method_name)
 
 # _dlog: write to print() AND document.title AND window.WB_LOG so the
