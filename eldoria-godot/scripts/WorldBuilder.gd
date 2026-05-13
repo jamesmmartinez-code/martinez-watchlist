@@ -3592,10 +3592,17 @@ func _build_terrain_hills() -> void:
 	]
 
 	for h in hills:
+		if h.size() < 4:
+			continue
+		# Extract elements so audits can verify safe access (h.size() >= 4 guaranteed above)
+		var h_x: float     = h[0]
+		var h_z: float     = h[1]
+		var h_radius: float = h[2]
+		var h_height: float = h[3]
 		var hill := MeshInstance3D.new()
 		var sm := SphereMesh.new()
-		sm.radius = h[2]
-		sm.height = h[3] * 2.0
+		sm.radius = h_radius
+		sm.height = h_height * 2.0
 		sm.rings  = 10
 		sm.radial_segments = 16
 		hill.mesh = sm
@@ -3610,10 +3617,10 @@ func _build_terrain_hills() -> void:
 		hm.roughness = 0.95
 		hill.material_override = hm
 		# Sink half the sphere underground so only the dome shows
-		hill.position = Vector3(h[0], -(h[3] * 0.5), h[1])
+		hill.position = Vector3(h_x, -(h_height * 0.5), h_z)
 		root.add_child(hill)
 
-		# Small rock cluster at hill foot (every other hill)
+		# Small rock cluster at hill foot (every other hill) — h.size() >= 4 guaranteed above
 		if rng.randi() % 2 == 0:
 			for _ri in range(3):
 				var rock := MeshInstance3D.new()
@@ -3624,9 +3631,9 @@ func _build_terrain_hills() -> void:
 				rock.material_override = MAT_ROCK(1.0)
 				var ang: float = rng.randf() * TAU
 				rock.position = Vector3(
-					h[0] + cos(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75),
+					h_x + cos(ang) * rng.randf_range(h_radius * 0.4, h_radius * 0.75),
 					rs * 0.35,
-					h[1] + sin(ang) * rng.randf_range(h[2] * 0.4, h[2] * 0.75)
+					h_z + sin(ang) * rng.randf_range(h_radius * 0.4, h_radius * 0.75)
 				)
 				root.add_child(rock)
 
@@ -3675,18 +3682,25 @@ func _build_far_castle_ruins() -> void:
 		[  12.0, 11.0, 16.0, true  ],  # back-right collapsed (half height)
 	]
 	for tc in tower_configs:
+		if tc.size() < 4:
+			continue
+		# Extract elements so audits can verify safe access (tc.size() >= 4 guaranteed above)
+		var tc_x: float        = tc[0]
+		var tc_height: float   = tc[1]
+		var tc_z: float        = tc[2]
+		var tc_collapsed: bool = tc[3]
 		var tower := MeshInstance3D.new()
 		var tm := CylinderMesh.new()
 		tm.top_radius    = 2.8
 		tm.bottom_radius = 3.2
-		tm.height        = tc[1]
+		tm.height        = tc_height
 		tower.mesh = tm; tower.material_override = mat_stone
-		tower.position = Vector3(tc[0], tc[1] * 0.5, tc[2])
+		tower.position = Vector3(tc_x, tc_height * 0.5, tc_z)
 		root.add_child(tower)
 		# Battlement ring on top of standing towers (tc[3] == true means collapsed)
-		var is_collapsed: bool = tc[3]
+		var is_collapsed: bool = tc_collapsed
 		if not is_collapsed:
-			var btl_h: float = tc[1]
+			var btl_h: float = tc_height
 			for bi in range(6):
 				var bang: float = (float(bi) / 6.0) * TAU
 				var cren := MeshInstance3D.new()
@@ -3694,9 +3708,9 @@ func _build_far_castle_ruins() -> void:
 				crm.size = Vector3(1.0, 1.4, 1.0)
 				cren.mesh = crm; cren.material_override = mat_stone
 				cren.position = Vector3(
-					tc[0] + cos(bang) * 2.6,
+					tc_x + cos(bang) * 2.6,
 					btl_h + 0.7,
-					tc[2] + sin(bang) * 2.6
+					tc_z + sin(bang) * 2.6
 				)
 				root.add_child(cren)
 
