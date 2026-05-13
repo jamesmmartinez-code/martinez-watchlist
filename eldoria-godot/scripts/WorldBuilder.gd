@@ -8432,7 +8432,7 @@ func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrin
 		root.add_child(_make_bw_lantern_post(p))
 
 	# Bell Tower — civic landmark north-west of the plaza, visible from the gate
-	var bell_tower: Vector3 = _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
+	var bell_tower: Node3D = _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
 	root.add_child(bell_tower)
 	out["bell_tower"] = bell_tower
 
