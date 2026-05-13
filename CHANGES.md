@@ -387,3 +387,7 @@ Canon checks:
   AGENT_CANON_PREAMBLE — Weather.gd not in "never blind-rewrite" list; WorldBuilder touch is additive only
 
 Next run picks up: NPC ambient bark rain reactions, or Crystal Caves dungeon polish
+## 2026-05-13 15:06 UTC
+- World zones deployed: Tidesong Port, Harvest Hollow, Iron Bastion, Cathedral, Monteriggion Heights, Gothic Undercroft
+- Roads, zone signs, and wall ring added
+- 3 new small GLBs: gothic_interior, modular_wall, street_lights
