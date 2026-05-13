@@ -3041,8 +3041,11 @@ func _build_mid_world_pois() -> void:
 	tw_body.add_child(tw_col); tw.add_child(tw_body)
 
 	# Loot chest at base — reward for exploring
-	var chest_node: Node3D = _make_loot_chest_primitive(tw_pos + Vector3(1.8, 0.2, 1.8))
-	if chest_node: root.add_child(chest_node)
+	# Loot chest — simple inline (no _make_loot_chest_primitive helper)
+	var _lc := StaticBody3D.new()
+	_lc.name = "LootChest"
+	root.add_child(_lc)
+	_lc.global_position = tw_pos + Vector3(1.8, 0.2, 1.8)
 
 	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
 	# Seven standing stones in a ring, glowing rune in the centre.
@@ -3327,7 +3330,7 @@ func _build_whisperwood_forest() -> void:
 			for tv in TREE_VARIANTS:
 				cum += float(tv["weight"])
 				if pick_r <= cum:
-					placed = _make_glb_tree(pos, rng, tv)
+					placed = _make_glb_tree(pos, rng)
 					break
 
 		if not placed:
@@ -4425,8 +4428,8 @@ func _build_village_dressing_props() -> void:
 	# ── Wooden signs near market and entrance ────────────────────────────────
 	var sign_glb := _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx")
 	if sign_glb:
-		var positions: Vector3 = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
-		Vector3(14.0, 0, 4.0)]
+		var positions: Array = [Vector3(4.0, 0, 16.0), Vector3(-4.0, 0, 16.0),
+			Vector3(14.0, 0, 4.0)]
 		for p in positions:
 			var n := Node3D.new()
 			n.name = "WoodenSign"
