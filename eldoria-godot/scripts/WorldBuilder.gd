@@ -6929,7 +6929,7 @@ func _make_bw_townhall(pos: Vector3) -> Node3D:
 	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
 
 	# Gable roof
-	var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
 	n.add_child(_bw_gable_roof(W * 1.08, D * 1.05, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
 
 	# Collision
@@ -7152,7 +7152,7 @@ func _make_bw_inn(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
 
 	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
 
-	var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+	var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
 	n.add_child(_bw_gable_roof(W * 1.12, D * 1.08, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
 
 	# Collision
@@ -7393,7 +7393,7 @@ func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3
 		walls.material_override = _bw_mat_timber()
 		walls.position.y = BASE_H + WALL_H * 0.5
 		n.add_child(walls)
-		var pitch := randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
+		var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
 		n.add_child(_bw_gable_roof(W * 1.10, D * 1.10, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
 
 	return n
