@@ -637,6 +637,10 @@ func _input(event: InputEvent) -> void:
 		elif k == KEY_M:
 			# Mount/dismount toggle
 			get_tree().call_group("world", "toggle_mount")
+		elif k == KEY_N:
+			# World map toggle — full-screen parchment map (WorldMap.gd / World.toggle_world_map)
+			get_tree().call_group("world", "toggle_world_map")
+			get_viewport().set_input_as_handled()
 
 # ────────────────────────────────────────────────────────────────────────────
 # Skill system — three abilities on 1/2/3 (also left-click fires skill 0)
