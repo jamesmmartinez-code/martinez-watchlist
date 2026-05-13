@@ -1496,21 +1496,117 @@ func _load_class_anim_library() -> void:
 
 
 # ════════════════════════════════════════════════════════════════════════
-# SAVE / LOAD — persists to user://eldoria_save.json which Godot Web maps
-# to browser localStorage. Survives refresh, tab close, browser restart.
-# Saves on: level-up, quest complete, gold/inventory change, every 30s
-# Loads on: _ready before any other init
+# SAVE / LOAD — dual-layer: fast local (user:// → browser localStorage) +
+# async cloud sync (Cloudflare Worker KV at eldoria-api).
+#
+# Flow:
+#   load_game()  → loads local immediately, then async fetches cloud;
+#                  if cloud is newer, apply + re-save local.
+#   save_game()  → writes local synchronously, then async pushes cloud.
+#
+# Player ID stored in user://player_id.txt. First run → name-pick overlay
+# (Alden / Owen / Guest). ID persists across browser sessions via localStorage.
+#
+# Saves on: level-up, quest complete, gold/inventory change, every 30s.
 # ════════════════════════════════════════════════════════════════════════
 
-const SAVE_PATH := "user://eldoria_save.json"
-var _save_timer: float = 0.0
+const SAVE_PATH    := "user://eldoria_save.json"
+const PLAYER_ID_PATH := "user://player_id.txt"
+const WORKER_URL   := "https://eldoria-api.james-m-martinez.workers.dev"
+
+var _save_timer: float    = 0.0
 var _save_interval: float = 30.0  # autosave every 30 seconds
-var _loaded_save: bool = false
+var _loaded_save: bool    = false
+var _player_id: String    = ""    # "alden" | "owen" | "guest" | custom
+var _cloud_sync_pending: bool = false
+var _name_pick_overlay: Control = null  # shown on first run
+
+# ── Player ID ────────────────────────────────────────────────────────────────
+
+func _get_or_init_player_id() -> void:
+	# Try to load saved ID first
+	if FileAccess.file_exists(PLAYER_ID_PATH):
+		var f := FileAccess.open(PLAYER_ID_PATH, FileAccess.READ)
+		if f:
+			_player_id = f.get_as_text().strip_edges().to_lower()
+			f.close()
+	# Sanitise: alphanumeric + underscore only, max 24 chars
+	var regex := RegEx.new()
+	regex.compile("[^a-z0-9_]")
+	_player_id = regex.sub(_player_id, "", true).substr(0, 24)
+	if _player_id.length() < 2:
+		_player_id = ""  # will trigger name-pick overlay
+
+func _save_player_id(pid: String) -> void:
+	_player_id = pid.strip_edges().to_lower()
+	var f := FileAccess.open(PLAYER_ID_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(_player_id)
+		f.close()
+
+# Shows a simple 3-button overlay: Alden / Owen / Guest
+func _show_name_pick_overlay() -> void:
+	# Don't double-spawn
+	if _name_pick_overlay and is_instance_valid(_name_pick_overlay):
+		return
+	var world: Node = get_tree().get_first_node_in_group("world")
+	if world == null:
+		return
+	var ui: Node = world.get_node_or_null("UI")
+	if ui == null:
+		return
+
+	var overlay := PanelContainer.new()
+	overlay.name = "NamePickOverlay"
+	# Centre on screen
+	overlay.set_anchors_preset(Control.PRESET_CENTER)
+	overlay.custom_minimum_size = Vector2(360, 220)
+	_name_pick_overlay = overlay
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 14)
+	overlay.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "Who's playing today?"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 22)
+	vbox.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "Your progress will be saved in the cloud ☁"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(subtitle)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 12)
+	vbox.add_child(hbox)
+
+	for pid in ["alden", "owen", "guest"]:
+		var btn := Button.new()
+		btn.text = pid.capitalize()
+		btn.custom_minimum_size = Vector2(90, 44)
+		btn.pressed.connect(func():
+			_save_player_id(pid)
+			overlay.queue_free()
+			_name_pick_overlay = null
+			# Now kick off the cloud load with the chosen ID
+			_cloud_load_async()
+		)
+		hbox.add_child(btn)
+
+	ui.add_child(overlay)
+
+# ── Save data helpers ─────────────────────────────────────────────────────────
 
 func _gather_save_data() -> Dictionary:
 	var data := {
-		"version": 1,
+		"version": 2,
 		"saved_at": Time.get_unix_time_from_system(),
+		"player_id": _player_id,
 		"level": level,
 		"xp": xp,
 		"hp": hp,
@@ -1522,29 +1618,30 @@ func _gather_save_data() -> Dictionary:
 		"kills_by_kind": kills_by_kind,
 		"active_quest": active_quest,
 		"is_dead": is_dead,
+		"first_play_done": true,
 	}
 	# Inventory state
 	if inventory:
-		data["inventory_bag"] = inventory.bag.duplicate(true)
+		data["inventory_bag"]      = inventory.bag.duplicate(true)
 		data["inventory_equipped"] = inventory.equipped.duplicate(true)
 	return data
 
 func _apply_save_data(data: Dictionary) -> void:
-	level = data.get("level", 1)
-	xp = data.get("xp", 0)
-	max_hp = data.get("max_hp", 120)
-	hp = clamp(data.get("hp", max_hp), 1, max_hp)  # can't load dead
-	max_mp = data.get("max_mp", 30)
-	mp = clamp(data.get("mp", max_mp), 0, max_mp)
-	gold = data.get("gold", 50)
+	level    = data.get("level", 1)
+	xp       = data.get("xp", 0)
+	max_hp   = data.get("max_hp", 120)
+	hp       = clamp(data.get("hp", max_hp), 1, max_hp)  # can't load dead
+	max_mp   = data.get("max_mp", 30)
+	mp       = clamp(data.get("mp", max_mp), 0, max_mp)
+	gold     = data.get("gold", 50)
 	# NOTE: deliberately do NOT restore position — saves can put the player
 	# inside terrain or a tree if the world layout changes. Always spawn at
 	# the scene's default spawn point.
 	kills_by_kind = data.get("kills_by_kind", {})
-	active_quest = data.get("active_quest", {})
+	active_quest  = data.get("active_quest", {})
 	# Inventory
 	if inventory:
-		var bag = data.get("inventory_bag", [])
+		var bag      = data.get("inventory_bag", [])
 		var equipped = data.get("inventory_equipped", {})
 		if bag is Array:
 			inventory.bag = bag.duplicate(true)
@@ -1552,37 +1649,149 @@ func _apply_save_data(data: Dictionary) -> void:
 			inventory.equipped = equipped.duplicate(true)
 		inventory.inventory_changed.emit()
 		inventory.equipment_changed.emit()
-	is_dead = false  # never load dead — auto-revive on respawn
+	is_dead     = false   # never load dead — auto-revive on respawn
 	is_attacking = false
-	mounted = false
-	mount_node = null
-	velocity = Vector3.ZERO
+	mounted     = false
+	mount_node  = null
+	velocity    = Vector3.ZERO
 	stats_changed.emit()
 	_loaded_save = true
 
-func save_game() -> bool:
+# ── Local save / load ─────────────────────────────────────────────────────────
+
+func _local_save() -> bool:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if not f:
 		push_warning("[Save] could not open " + SAVE_PATH + " for write")
 		return false
-	f.store_string(JSON.stringify(_gather_save_data(), "	"))
+	f.store_string(JSON.stringify(_gather_save_data(), "\t"))
 	f.close()
 	return true
 
-func load_game() -> bool:
+func _local_load() -> bool:
 	if not FileAccess.file_exists(SAVE_PATH):
-		return false  # first run, no save yet
+		return false
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if not f:
 		return false
-	var raw := f.get_as_text()
+	var raw  := f.get_as_text()
 	f.close()
 	var data = JSON.parse_string(raw)
 	if not (data is Dictionary):
-		push_warning("[Load] save file corrupted, starting fresh")
+		push_warning("[Load] local save corrupted, starting fresh")
 		return false
 	_apply_save_data(data)
 	return true
+
+# ── Cloud save / load (Cloudflare Worker KV) ─────────────────────────────────
+
+# Uses JavaScriptBridge (available in Godot Web export) to fire an async fetch.
+# Falls back silently on non-web platforms (editor, desktop builds).
+
+func _is_web_platform() -> bool:
+	return OS.has_feature("web")
+
+func _cloud_save_async() -> void:
+	if _player_id.length() < 2:
+		return
+	if not _is_web_platform():
+		return
+	var payload := JSON.stringify(_gather_save_data())
+	var js_code := """
+(async function() {
+  try {
+    const r = await fetch('%s/api/save', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({user:'%s', slot:'main', data: %s})
+    });
+    const j = await r.json();
+    if (!j.ok) console.warn('[Eldoria] cloud save failed:', j);
+    else console.log('[Eldoria] cloud save ok, bytes=', j.bytes);
+  } catch(e) { console.warn('[Eldoria] cloud save error:', e); }
+})();
+""" % [WORKER_URL, _player_id, payload]
+	JavaScriptBridge.eval(js_code, true)
+
+func _cloud_load_async() -> void:
+	if _player_id.length() < 2:
+		return
+	if not _is_web_platform():
+		return
+	# We can't await JS promises directly in GDScript, so we poll a global variable.
+	# JS writes the result into window.__eldoria_cloud_save, GDScript reads it via
+	# a deferred timer once JS resolves.
+	var js_code := """
+(async function() {
+  window.__eldoria_cloud_save = null;
+  try {
+    const r = await fetch('%s/api/load?user=%s&slot=main');
+    const j = await r.json();
+    if (j.ok && j.data) {
+      window.__eldoria_cloud_save = JSON.stringify(j.data);
+    } else {
+      window.__eldoria_cloud_save = '__none__';
+    }
+  } catch(e) {
+    console.warn('[Eldoria] cloud load error:', e);
+    window.__eldoria_cloud_save = '__error__';
+  }
+})();
+""" % [WORKER_URL, _player_id]
+	JavaScriptBridge.eval(js_code, true)
+	# Poll after 3 seconds — fast enough for LTE, generous for slow 3G
+	get_tree().create_timer(3.0).timeout.connect(_poll_cloud_load)
+
+func _poll_cloud_load() -> void:
+	if not _is_web_platform():
+		return
+	var result = JavaScriptBridge.eval("window.__eldoria_cloud_save || '__pending__'", true)
+	if result == null or result == "__pending__":
+		# Still loading — try again in 2s
+		get_tree().create_timer(2.0).timeout.connect(_poll_cloud_load)
+		return
+	# Clear the sentinel so we don't re-apply on next poll
+	JavaScriptBridge.eval("window.__eldoria_cloud_save = null;", true)
+	if result == "__none__" or result == "__error__":
+		# No cloud save yet or fetch failed — local save is authoritative
+		return
+	var cloud_data = JSON.parse_string(str(result))
+	if not (cloud_data is Dictionary):
+		push_warning("[Load] cloud save JSON parse failed")
+		return
+	# Apply cloud data only if it is NEWER than current local state
+	var cloud_ts: float = float(cloud_data.get("saved_at", 0))
+	var local_ts: float = 0.0
+	if FileAccess.file_exists(SAVE_PATH):
+		var lf := FileAccess.open(SAVE_PATH, FileAccess.READ)
+		if lf:
+			var ld = JSON.parse_string(lf.get_as_text())
+			lf.close()
+			if ld is Dictionary:
+				local_ts = float(ld.get("saved_at", 0))
+	if cloud_ts > local_ts:
+		push_print("[Save] cloud save is newer (cloud=%s local=%s) — applying" % [cloud_ts, local_ts])
+		_apply_save_data(cloud_data)
+		_local_save()   # sync local to match cloud
+	else:
+		push_print("[Save] local save is current — cloud sync skipped")
+
+# ── Public API ────────────────────────────────────────────────────────────────
+
+func save_game() -> bool:
+	var ok := _local_save()
+	_cloud_save_async()   # fire-and-forget background push
+	return ok
+
+func load_game() -> void:
+	_get_or_init_player_id()
+	var local_ok := _local_load()
+	if not local_ok and _player_id.length() < 2:
+		# True first run: show name picker, which will trigger cloud load after choice
+		call_deferred("_show_name_pick_overlay")
+	elif _player_id.length() >= 2:
+		# Known player — start cloud sync in background
+		_cloud_load_async()
 
 # Title setter — called by World._apply_title_to_player when an
 # achievement unlocks a higher-priority title. Empty string hides.
@@ -1673,3 +1882,7 @@ func reset_save() -> void:
 	# For "New Game" button later
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
+	if FileAccess.file_exists(PLAYER_ID_PATH):
+		DirAccess.remove_absolute(PLAYER_ID_PATH)
+	_player_id = ""
+	_loaded_save = false
