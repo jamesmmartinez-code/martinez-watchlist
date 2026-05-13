@@ -12,7 +12,8 @@ class_name WorldBuilder
 # WorldBuilder hardening 2026-05-06: switched const+preload() → var+load()
 # so a missing or 0-byte GLB no longer takes the entire script offline. Empty
 # world reports trace back to preload-of-missing-file aborting script compile.
-var NPC_MODELS: Dictionary = {}  # populated in _ready
+var NPC_MODELS: Dictionary = {}       # populated in _ready
+var BUILDING_MODELS: Dictionary = {}  # populated in _ready
 
 func _safe_load_glb(path: String) -> PackedScene:
 	if not ResourceLoader.exists(path):
@@ -37,6 +38,23 @@ func _populate_npc_models() -> void:
 		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
 		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 	}
+
+func _populate_building_models() -> void:
+	# Stylized KayKit FBX buildings — loaded lazily with safe fallback.
+	# If a file fails to import in CI, _safe_load_glb() returns null and
+	# _bw_build_kind() falls through to procedural BoxMesh — world still loads.
+	const P := "res://assets/models/props/"
+	BUILDING_MODELS = {
+		"house":      _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
+		"shopfront":  _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
+		"forge":      _safe_load_glb(P + "stylized_forge_station.fbx"),
+		"bell_tower": _safe_load_glb(P + "stylized_bell_tower.fbx"),
+		"porch":      _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
+		"flag_pole":  _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
+	}
+	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
+	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
+
 # Per-NPC scale tweak — different sources have different native heights.
 const NPC_SCALES := {
 	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
@@ -1115,7 +1133,8 @@ func _ready() -> void:
 	_buildings_built = true
 	_dlog("_ready START")
 	_populate_npc_models()
-	_dlog("NPC_MODELS=%d" % NPC_MODELS.size())
+	_populate_building_models()
+	_dlog("NPC_MODELS=%d BUILDING_MODELS=%d" % [NPC_MODELS.size(), BUILDING_MODELS.size()])
 	# Phase 26: chunked async path lets the browser breathe between heavy phases,
 	# eliminating the single 86 s "Script Evaluation" block on the main thread.
 	# Set chunk_build_enabled = false in the inspector to revert to sync (editor use).
@@ -7661,6 +7680,21 @@ func _make_bw_house(pos: Vector3) -> Node3D:
 
 
 func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
+	# Use KayKit forge GLB when available, fallback to procedural
+	var forge_glb := BUILDING_MODELS.get("forge")
+	if forge_glb:
+		var n := forge_glb.instantiate() as Node3D
+		if n:
+			n.name = "Smithy"
+			n.rotation.y = atan2(facing.x, facing.z)
+			n.scale = Vector3(1.3, 1.3, 1.3)
+			# NOTE: position set by caller or set directly here (smithy spawned differently)
+			n.position = pos
+			# Add signboard as a child so it's visible
+			_bw_add_signboard(n, Vector3(0.0, 0.0, 3.5), "BLACKSMITH")
+			return n
+
+	# Procedural fallback
 	var n := Node3D.new()
 	n.name = "Smithy"
 	n.position = pos
@@ -11220,12 +11254,47 @@ func _bw_setback_for_kind(kind: String) -> float:
 
 func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 		rng: RandomNumberGenerator) -> Node3D:
+	# Try GLB building first — falls through to procedural if asset missing.
 	match kind:
-		"shopfront": return _bw_build_shopfront(pos, facing, rng)
-		"large":     return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
-		"medium":    return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
-		"corner":    return _bw_build_corner_house(pos, facing, rng)
-		_:           return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2, false, true,  rng)
+		"shopfront":
+			var glb := BUILDING_MODELS.get("shopfront")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(1.2, 1.2, 1.2))
+			return _bw_build_shopfront(pos, facing, rng)
+		"large":
+			var glb := BUILDING_MODELS.get("house")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
+			return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
+		"medium":
+			var glb := BUILDING_MODELS.get("house")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
+			return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
+		"corner":
+			var glb := BUILDING_MODELS.get("house")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(1.25, 1.25, 1.25))
+			return _bw_build_corner_house(pos, facing, rng)
+		_:   # small
+			var glb := BUILDING_MODELS.get("house")
+			if glb:
+				return _place_building_glb(glb, pos, facing, Vector3(0.9, 0.9, 0.9))
+			return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2, false, true,  rng)
+
+# Instantiate a GLB building scene, set rotation to face the road, scale it.
+# Position is set by caller AFTER add_child() — never set global_position on orphan.
+func _place_building_glb(scene: PackedScene, pos: Vector3, facing: Vector3,
+		scale_v: Vector3) -> Node3D:
+	var n := scene.instantiate() as Node3D
+	if n == null:
+		# Instantiation failed — return a safe empty node so caller never gets null
+		return Node3D.new()
+	n.name = "BW_Building"
+	n.rotation.y = atan2(facing.x, facing.z)
+	n.scale = scale_v
+	# NOTE: caller sets global_position AFTER add_child()
+	return n
 
 
 func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
