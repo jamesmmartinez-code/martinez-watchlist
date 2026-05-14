@@ -13039,7 +13039,7 @@ func _add_glb_collision(node: Node3D) -> void:
 	if aabb.size.length() < 0.1:
 		return
 	# Clamp to sane building size range
-	var sz := aabb.size.clamp(Vector3(1, 1, 1), Vector3(60, 30, 60))
+	var sz: Vector3 = aabb.size.clamp(Vector3(1, 1, 1), Vector3(60, 30, 60))
 	var body := StaticBody3D.new()
 	var cshape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
