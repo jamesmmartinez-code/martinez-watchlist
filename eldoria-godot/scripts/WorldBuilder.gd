@@ -95,6 +95,7 @@ func _populate_building_models() -> void:
 		"castle_village":  _safe_load_glb(B + "castle_village.glb"),
 		"sea_keep":        _safe_load_glb(B + "sea_keep.glb"),
 		"gothic_interior": _safe_load_glb(B + "gothic_interior.glb"),
+		"medieval_village": _safe_load_glb("res://assets/models/scenery/medieval_village.glb"),
 		# ── Real tree GLBs (trees/ dir, all confirmed) ────────────────────
 		"oak_tree":    _safe_load_glb(T + "oak_tree.glb"),
 		"pine_tree":   _safe_load_glb(T + "pine_tree.glb"),
@@ -8416,6 +8417,39 @@ func _build_briarwood_hub() -> void:
 	add_child(_briarwood_root)
 	_briarwood_root.global_position = briarwood_origin
 
+	# ── Village core GLB — place castle_village.glb once as the town center ──
+	# Native size of castle_village.glb is ~600-800 units (exported in cm from Blender).
+	# Scale 0.055 puts it at ~35-44m wide — fits inside the 72m palisade radius.
+	# Offset slightly south of plaza so the gate road leads into it naturally.
+	var cv_scene: PackedScene = BUILDING_MODELS.get("castle_village")
+	if cv_scene:
+		var cv_node := cv_scene.instantiate() as Node3D
+		if cv_node:
+			cv_node.name = "CastleVillageCore"
+			cv_node.scale = Vector3(0.055, 0.055, 0.055)
+			cv_node.add_to_group("buildings")
+			cv_node.set_meta("skin_locked", true)
+			_briarwood_root.add_child(cv_node)
+			cv_node.global_position = briarwood_origin + Vector3(0, 0, 16)
+			call_deferred("_add_glb_collision", cv_node)
+			_dlog("CastleVillageCore placed at " + str(cv_node.global_position))
+	else:
+		_dlog("WARN: castle_village GLB missing — falling back to procedural village")
+
+	# ── Market district GLB — place medieval_village.glb at the market offset ──
+	var mv_scene: PackedScene = BUILDING_MODELS.get("medieval_village")
+	if mv_scene:
+		var mv_node := mv_scene.instantiate() as Node3D
+		if mv_node:
+			mv_node.name = "MedievalVillageMarket"
+			mv_node.scale = Vector3(0.048, 0.048, 0.048)
+			mv_node.add_to_group("buildings")
+			mv_node.set_meta("skin_locked", true)
+			_briarwood_root.add_child(mv_node)
+			mv_node.global_position = briarwood_origin + Vector3(28, 0, 22)
+			call_deferred("_add_glb_collision", mv_node)
+			_dlog("MedievalVillageMarket placed at " + str(mv_node.global_position))
+
 	var plaza    := briarwood_origin + bw_plaza_offset
 	var gate     := briarwood_origin + bw_gate_offset
 	var market   := briarwood_origin + bw_market_offset
@@ -12970,19 +13004,14 @@ func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 				return _place_building_glb(glb, pos, facing, Vector3(1.2, 1.2, 1.2))
 			return _bw_build_shopfront(pos, facing, rng)
 		"large":
-			# Rotate between log_building and castle_village for variety
-			var glb: PackedScene = BUILDING_MODELS.get("log_building")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.022, 0.022, 0.022))
-			glb = BUILDING_MODELS.get("house")
+			# Use house FBX (KayKit stylized_bell_island_house_mound) — correct scale ~1.3
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
 			return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
 		"medium":
-			var glb: PackedScene = BUILDING_MODELS.get("medieval_town")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.016, 0.016, 0.016))
-			glb = BUILDING_MODELS.get("house")
+			# Use house FBX at slightly smaller scale
+			var glb: PackedScene = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
 			return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
