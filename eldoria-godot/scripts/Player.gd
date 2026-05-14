@@ -156,7 +156,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 0.5, 0)   # Plaza centre — Briarwood village crossroads.
+const SAFE_SPAWN := Vector3(0, 0.5, -8)   # South of Briarwood gate — open ground clear of all buildings.
 # Scale fix 2026-05-11: buildings grew from 3.6 m to 6.0 m footprint.
 #   Old (10,2,3): building (10,0,0) north wall is now at z=+3.0 exactly — capsule
 #   radius 0.4 put the player INSIDE the wall → physics ejection → stuck on roof. WRONG.
