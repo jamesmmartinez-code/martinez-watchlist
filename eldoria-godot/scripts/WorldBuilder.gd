@@ -1301,7 +1301,6 @@ func _build_world_sync() -> void:
 		)
 	if tutorial_enabled:
 		_safe_call("_init_tutorial_polish")
-	_safe_call("_add_missing_collision")
 	build_progress.emit("Done", 1.0)
 	build_complete.emit()
 	_dlog("sync build DONE — children=%d" % get_child_count())
@@ -3493,6 +3492,7 @@ func _build_whisperwood_forest() -> void:
 # full cave interior is chunked-deferred.  Visible from Briarwood gate.
 # ============================================================================
 func _build_caves_surface_entrance() -> void:
+	return  # DISABLED: cave geometry shows as ceiling. Re-enable when dungeon is ready.
 	var root := Node3D.new()
 	root.name = "CavesSurfaceEntrance"
 	root.position = Vector3(-50.0, -200.0, -40.0)
@@ -5431,6 +5431,7 @@ func _make_stalagmite(pos: Vector3, height: float, parent: Node3D, point_down: b
 	parent.add_child(sm)
 
 func _build_crystal_caves(entrance: Vector3) -> void:
+	return  # DISABLED: dome visible as dark ceiling. Re-enable when dungeon ready.
 	# FIX 2026-05-13: The old dome (radius=14m, CULL_FRONT) was a giant grey
 	# sphere visible from the overworld because CULL_FRONT only hides back-faces
 	# but the sphere still clips above ground.  New approach:
@@ -5657,6 +5658,9 @@ func _global_scale_sweep() -> void:
 	# Anything outside band gets uniformly scaled to the target on the next tick.
 	while is_inside_tree():
 		await get_tree().create_timer(0.5).timeout
+		# FIX: player must always be visible — sweep must never occlude them
+		var _pn := get_tree().get_first_node_in_group("player")
+		if _pn is Node3D: (_pn as Node3D).visible = true
 		var root := get_tree().current_scene
 		if not root:
 			continue
