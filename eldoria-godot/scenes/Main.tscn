@@ -350,6 +350,168 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "Close"
 
+[node name="SkillHotbar" type="Panel" parent="UI/HUD"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -90.0
+offset_right = 220.0
+offset_bottom = -8.0
+theme_override_styles/panel = null
+
+[node name="HBoxSlots" type="HBoxContainer" parent="UI/HUD/SkillHotbar"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 6
+
+[node name="Slot1" type="Panel" parent="UI/HUD/SkillHotbar/HBoxSlots"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(96, 74)
+
+[node name="KeyLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot1"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 28.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.85, 0.40, 1)
+text = "1"
+
+[node name="NameLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot1"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 22.0
+offset_right = 92.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+horizontal_alignment = 1
+text = "Slash"
+
+[node name="CooldownBar" type="ProgressBar" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot1"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 54.0
+offset_right = 92.0
+offset_bottom = 70.0
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="Slot2" type="Panel" parent="UI/HUD/SkillHotbar/HBoxSlots"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(96, 74)
+
+[node name="KeyLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot2"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 28.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.85, 0.40, 1)
+text = "2"
+
+[node name="NameLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot2"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 22.0
+offset_right = 92.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+horizontal_alignment = 1
+text = "Heavy Strike"
+
+[node name="CooldownBar" type="ProgressBar" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot2"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 54.0
+offset_right = 92.0
+offset_bottom = 70.0
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="Slot3" type="Panel" parent="UI/HUD/SkillHotbar/HBoxSlots"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(96, 74)
+
+[node name="KeyLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot3"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 28.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.85, 0.40, 1)
+text = "3"
+
+[node name="NameLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot3"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 22.0
+offset_right = 92.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+horizontal_alignment = 1
+text = "Dash Attack"
+
+[node name="CooldownBar" type="ProgressBar" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot3"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 54.0
+offset_right = 92.0
+offset_bottom = 70.0
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="Slot4" type="Panel" parent="UI/HUD/SkillHotbar/HBoxSlots"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(96, 74)
+
+[node name="KeyLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot4"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 28.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(1, 0.85, 0.40, 1)
+text = "4"
+
+[node name="NameLabel" type="Label" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot4"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 22.0
+offset_right = 92.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+horizontal_alignment = 1
+text = "Fireball"
+
+[node name="CooldownBar" type="ProgressBar" parent="UI/HUD/SkillHotbar/HBoxSlots/Slot4"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 54.0
+offset_right = 92.0
+offset_bottom = 70.0
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
 [node name="HoverInspector" type="CanvasLayer" parent="."]
 script = ExtResource("20_hover")
 
