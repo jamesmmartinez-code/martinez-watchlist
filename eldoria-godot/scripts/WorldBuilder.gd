@@ -37,12 +37,13 @@ func _populate_npc_models() -> void:
 		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
 		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
-		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
+		# noble_craftsman.glb has no .import file → not in .pck → use warrior as stand-in
+		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/warrior.glb"),
 		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
 		# Warlocks reuse existing NPC GLBs (Actorcore packs not in repo yet)
 		"Warlock F":            _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
 		"Warlock M":            _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
-		"Noble Craftsman Alt":  _safe_load_glb("res://assets/models/npcs/noble_craftsman.glb"),
+		"Noble Craftsman Alt":  _safe_load_glb("res://assets/models/npcs/warrior.glb"),
 	}
 
 func _populate_building_models() -> void:
@@ -5633,6 +5634,11 @@ func _normalize_npc_scale(model: Node) -> void:
 	# Clamp so we never blow tiny models up to 10x or shrink huge ones to dust
 	s = clamp(s, 0.1, 3.0)
 	model.scale = Vector3(s, s, s)
+	# Mark as normalized so _global_scale_sweep never rescales this model again.
+	# Repeatedly changing .scale on a GLB MeshInstance3D resets surface materials
+	# to white in Godot 4 web exports — one-time normalization is enough.
+	if model is Node:
+		(model as Node).set_meta("skin_locked", true)
 
 
 # ════════════════════════════════════════════════════════════════════════
@@ -5679,6 +5685,13 @@ func _global_scale_sweep() -> void:
 					or body.is_in_group("enemies") or body.is_in_group("pets"))
 			var in_boss_group := body.is_in_group("bosses")
 			if not (in_char_group or in_boss_group):
+				continue
+			# Skip models already normalized at spawn — repeatedly rescaling a GLB
+			# resets surface materials to white on Godot 4 web exports.
+			if body.has_meta("skin_locked"):
+				continue
+			# NPC roots are StaticBody3D; their GLB child carries skin_locked. Skip both.
+			if body.is_in_group("npcs"):
 				continue
 			var aabb := _measure_aabb(body)
 			var cap: float = 4.0 if in_boss_group else 2.5
