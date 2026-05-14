@@ -5422,12 +5422,12 @@ func _build_nordic_village_glb() -> void:
 	var pine_sc: PackedScene = load("res://assets/models/trees/pine_tree.glb")
 	if pine_sc:
 		for i in 8:
-			var angle := rng.randf() * TAU
-			var dist  := rng.randf_range(30.0, 55.0)
+			var angle: float = rng.randf() * TAU
+			var dist: float = rng.randf_range(30.0, 55.0)
 			var t := pine_sc.instantiate() as Node3D
 			t.position = ORIGIN + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 			t.rotation.y = rng.randf() * TAU
-			var s := rng.randf_range(0.55, 0.95)
+			var s: float = rng.randf_range(0.55, 0.95)
 			t.scale = Vector3(s, s, s)
 			t.set_meta("skin_locked", true)
 			root.add_child(t)
