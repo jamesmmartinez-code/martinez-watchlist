@@ -15,399 +15,8 @@ class_name WorldBuilder
 var NPC_MODELS: Dictionary = {}       # populated in _ready
 var BUILDING_MODELS: Dictionary = {}  # populated in _ready
 
-func _safe_load_glb(path: String) -> PackedScene:
-	if not ResourceLoader.exists(path):
-		push_warning("[WorldBuilder] missing GLB: " + path)
-		return null
-	var res: Resource = load(path)
-	if res is PackedScene:
-		return res as PackedScene
-	push_warning("[WorldBuilder] not a scene: " + path)
-	return null
 
-func _populate_npc_models() -> void:
-	NPC_MODELS = {
-		# ── Confirmed in repo (>100KB, real files) ────────────────────────
-		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
-		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
-		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
-		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
-		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
-		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
-		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
-		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
-		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
-		# noble_craftsman.glb has no .import file → not in .pck → use warrior as stand-in
-		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/warrior.glb"),
-		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
-		# Warlocks reuse existing NPC GLBs (Actorcore packs not in repo yet)
-		"Warlock F":            _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
-		"Warlock M":            _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
-		"Noble Craftsman Alt":  _safe_load_glb("res://assets/models/npcs/warrior.glb"),
-	}
 
-func _populate_building_models() -> void:
-	# CONFIRMED REAL FILES (verified 2026-05-13 against GitHub contents API):
-	# props/ — all FBX files present and >100KB (real assets, not LFS stubs)
-	# buildings/ — only these GLBs are real (>1MB): tavern_troll, medieval_town,
-	#              log_building, castle_wall_kit, castle_village, sea_keep, gothic_interior
-	# 133/134-byte files are broken Git LFS pointers — DO NOT load them.
-	# trees/ — oak_tree, pine_tree, bush, dead_tree all confirmed real.
-	const P  := "res://assets/models/props/"
-	const B  := "res://assets/models/buildings/"
-	const T  := "res://assets/models/trees/"
-	BUILDING_MODELS = {
-		# ── KayKit FBX props (all in props/, all confirmed real) ──────────
-		"house":        _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
-		"shopfront":    _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
-		"forge":        _safe_load_glb(P + "stylized_forge_station.fbx"),
-		"bell_tower":   _safe_load_glb(P + "stylized_bell_tower.fbx"),
-		"porch":        _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
-		"flag_pole":    _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
-		"fence":        _safe_load_glb(P + "stylized_regular_fence_set.fbx"),
-		"sign":         _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx"),
-		"chimney_a":    _safe_load_glb(P + "stylized_curved_pipe_chimney.fbx"),
-		"chimney_b":    _safe_load_glb(P + "stylized_straight_pipe_chimney.fbx"),
-		"staircase":    _safe_load_glb(P + "stylized_bifurcated_wood_staircase.fbx"),
-		"rocks_large":  _safe_load_glb(P + "stylized_edged_rocks_set.fbx"),
-		"rocks_small":  _safe_load_glb(P + "stylized_small_rocks_set.fbx"),
-		"flowers":      _safe_load_glb(P + "stylized_flower_clump.fbx"),
-		"vases":        _safe_load_glb(P + "stylized_rounded_vases_set.fbx"),
-		"forge_pot":    _safe_load_glb(P + "stylized_large_forge_pot.fbx"),
-		"cymbal":       _safe_load_glb(P + "stylized_standing_cymbal.fbx"),
-		"dock":         _safe_load_glb(P + "stylized_old_sea_dock.fbx"),
-		"rect_flag":    _safe_load_glb(P + "stylized_rectangle_flags_pole.fbx"),
-		# Props already in props/ as GLBs ─────────────────────────────────
-		"campfire":     _safe_load_glb(P + "campfire.glb"),
-		"lantern":      _safe_load_glb(P + "lantern.glb"),
-		"barrel":       _safe_load_glb(P + "wooden_barrel.glb"),
-		"chest":        _safe_load_glb(P + "chest.glb"),
-		"well":         _safe_load_glb(P + "stone_well.glb"),
-		"boulder":      _safe_load_glb(P + "boulder.glb"),
-		"fern":         _safe_load_glb(P + "fern.glb"),
-		"mushroom":     _safe_load_glb(P + "mushroom_red.glb"),
-		"windmill":     _safe_load_glb(P + "windmill.glb"),
-		# ── Sketchfab building GLBs (confirmed real, >1MB) ────────────────
-		"tavern":          _safe_load_glb(B + "tavern_troll.glb"),
-		"medieval_town":   _safe_load_glb(B + "medieval_town.glb"),
-		"log_building":    _safe_load_glb(B + "log_building.glb"),
-		"castle_wall":     _safe_load_glb(B + "castle_wall_kit.glb"),
-		"castle_village":  _safe_load_glb(B + "castle_village.glb"),
-		"sea_keep":        _safe_load_glb(B + "sea_keep.glb"),
-		"gothic_interior": _safe_load_glb(B + "gothic_interior.glb"),
-		# ── Real tree GLBs (trees/ dir, all confirmed) ────────────────────
-		"oak_tree":    _safe_load_glb(T + "oak_tree.glb"),
-		"pine_tree":   _safe_load_glb(T + "pine_tree.glb"),
-		"bush":        _safe_load_glb(T + "bush.glb"),
-		"dead_tree":   _safe_load_glb(T + "dead_tree.glb"),
-	}
-	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
-	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
-
-# Per-NPC scale tweak — different sources have different native heights.
-const NPC_SCALES := {
-	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
-	"Smith Edda":          Vector3(1.05, 1.05, 1.05),
-	"Mara the Merchant":   Vector3(1.10, 1.10, 1.10),
-	"Herbalist Lyra":      Vector3(1.30, 1.30, 1.30),
-	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
-	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
-	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
-	"Village Guard":        Vector3(1.05, 1.05, 1.05),
-	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
-	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
-	# Actorcore NPCs — same native unit scale as the existing Actorcore set
-	"Warlock F":            Vector3(1.05, 1.05, 1.05),
-	"Warlock M":            Vector3(1.05, 1.05, 1.05),
-	"Noble Craftsman":      Vector3(1.05, 1.05, 1.05),
-}
-@export var npc_script: Script = preload("res://scripts/NPC.gd")
-
-# Phase 26 — Chunked async world build (web-perf: stops 86s main-thread block)
-signal build_progress(phase: String, pct: float)
-signal build_complete()
-@export var chunk_build_enabled: bool = true
-
-var _buildings_built: bool = false
-var _briarwood_root: Node3D = null
-var _qb_layer: CanvasLayer = null
-var _qb_panel: Panel = null
-var _qb_player: Node3D = null
-var _qb_list_root: VBoxContainer = null
-var _qb_detail: RichTextLabel = null
-var _qb_selected_id: String = ""
-
-var _quest_marker_timer: Timer = null
-var _quest_markers: Dictionary = {}
-
-var _qh_layer: CanvasLayer = null
-var _qh_panel: Panel = null
-var _qh_label: RichTextLabel = null
-
-var _bw_life_root: Node3D = null
-var _bw_life_timer: Timer = null
-var _bw_life_npcs: Array = []
-
-var _shop_layer: CanvasLayer = null
-var _shop_panel: Panel = null
-var _shop_player: Node3D = null
-var _shop_kind: String = ""
-var _shop_gold_label: Label = null
-var _shop_shop_list: VBoxContainer = null
-var _shop_inv_list: VBoxContainer = null
-var _shop_detail: RichTextLabel = null
-
-var _craft_layer: CanvasLayer = null
-var _craft_panel: Panel = null
-var _craft_player: Node3D = null
-var _craft_list: VBoxContainer = null
-var _craft_detail: RichTextLabel = null
-
-var _interior_root: Node3D = null
-var _interior_kind: String = ""
-var _exterior_return_pos: Vector3 = Vector3.ZERO
-
-var _schedule_timer: Timer = null
-var _last_night_state: bool = false
-var _town_time: float = 0.35
-
-var _dlg_layer: CanvasLayer = null
-var _dlg_panel: Panel = null
-var _dlg_player: Node3D = null
-var _dlg_title: Label = null
-var _dlg_text: RichTextLabel = null
-var _dlg_choices: VBoxContainer = null
-
-var _fade_layer: CanvasLayer = null
-var _fade_rect: ColorRect = null
-var _fade_tween: Tween = null
-
-var _music_player: AudioStreamPlayer = null
-var _current_music_id: String = ""
-
-var _tutorial_step: int = 0
-var _tutorial_done: bool = false
-var _mayor_intro_ran: bool = false   # Phase 21 — mayor intro fires exactly once
-
-# Phase 22 — tutorial polish
-var _tutorial_last_progress_time: float = 0.0
-var _tutorial_tick_timer: Timer = null
-var _arrow_root: Node3D = null
-var _arrow_label: Label3D = null
-var _arrow_mesh: MeshInstance3D = null
-var _arrow_target: Node3D = null
-var _bark_cd: Dictionary = {}   # "bark|<key>" -> next_allowed_time (secs)
-# Phase 24 — cached MultiMesh-ready meshes (lazy-init via getters)
-var _bw_fence_post_mesh: CylinderMesh = null
-var _bw_bench_mesh: BoxMesh = null
-var _bw_crate_mesh: BoxMesh = null
-var _bw_barrel_mesh: CylinderMesh = null
-var _bw_woodpile_mesh: BoxMesh = null
-var _trail_root: Node3D = null
-var _trail_last_update: float = 0.0
-
-# ─── THEME §1, §11, §12 — Whisperwood asset wire-up ──────────────────────────
-# Sketchfab CC-BY tree GLBs (oak / pine / bush / dead) replacing the procedural
-# blob trees that previously made every tree look like the same lumpy sphere
-# stack. Variants are picked by weight per scatter pass; if `load()` returns
-# null (asset not importable yet, missing on disk, etc.) `_make_glb_tree`
-# returns false and `_make_tree` falls through to the legacy procedural path
-# so the world NEVER spawns empty.
-const TREE_VARIANTS: Array = [
-	{"path": "res://assets/models/trees/oak_tree.glb",  "weight": 0.45,
-		"scale_min": 0.55, "scale_max": 0.95, "kind": "oak"},
-	{"path": "res://assets/models/trees/pine_tree.glb", "weight": 0.30,
-		"scale_min": 0.60, "scale_max": 1.05, "kind": "pine"},
-	{"path": "res://assets/models/trees/bush.glb",      "weight": 0.20,
-		"scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
-	{"path": "res://assets/models/trees/dead_tree.glb", "weight": 0.05,
-		"scale_min": 0.50, "scale_max": 0.85, "kind": "dead"},
-]
-# Sketchfab CC-BY boulder GLB used by `_scatter_rocks` in place of the lumpy
-# sphere primitives. Same fallback contract as TREE_VARIANTS above.
-const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
-
-# ─── THEME §12 — Whisperwood undergrowth + village dressing GLBs ────────────
-# Three currently-unused CC-BY GLBs that bring the world from "open lawn with
-# trees" to "lived-in fantasy forest". Loaded the same way as TREE_VARIANTS:
-# any missing asset is silently skipped so the world never crashes.
-const FERN_GLB_PATH: String     = "res://assets/models/props/fern.glb"
-const MUSHROOM_GLB_PATH: String = "res://assets/models/props/mushroom_red.glb"
-const BARREL_GLB_PATH: String   = "res://assets/models/props/wooden_barrel.glb"
-# Phase 26 fix: lantern.glb was a mis-placed witch-hat model — disabled until
-# a real lantern GLB is imported. Empty string → procedural fallback always fires.
-const LANTERN_GLB_PATH: String  = ""  # was "res://assets/models/props/lantern.glb"
-# Env: 2026-05-06 — wire up two more CC-BY GLBs that were sitting unused on
-# disk. Same fallback contract: if the asset isn't loadable the legacy
-# procedural primitive path runs, so the village never spawns without a
-# hearth or well. (THEME §1, §11)
-const CAMPFIRE_GLB_PATH: String = "res://assets/models/props/campfire.glb"
-const WELL_GLB_PATH: String     = "res://assets/models/props/stone_well.glb"
-# Env: 2026-05-06 — wire the last unused prop GLB. The procedural
-# windmill (cone-stack tower + box blades) reads as a primitive next
-# to the new GLB-bodied campfire/well/lantern. Same fallback contract:
-# any missing asset silently falls through to the procedural primitive
-# path so the village always has its mill. (THEME §1, §11, §12)
-const WINDMILL_GLB_PATH: String = "res://assets/models/props/windmill.glb"
-
-# ─── PBR material cache ──────────────────────────────────────────────────────
-var _mat_cache: Dictionary = {}
-var _sub_cache: Dictionary = {}  # Substance .tres material cache
-
-func _pbr_mat(albedo_path: String, normal_path: String = "", rough_path: String = "",
-		uv_scale: Vector3 = Vector3(1, 1, 1), tint: Color = Color(1, 1, 1)) -> StandardMaterial3D:
-	var key := albedo_path + "|" + normal_path + "|" + rough_path + "|" + str(uv_scale) + "|" + str(tint)
-	if _mat_cache.has(key):
-		return _mat_cache[key]
-	var m := StandardMaterial3D.new()
-	if ResourceLoader.exists(albedo_path):
-		m.albedo_texture = load(albedo_path)
-	m.albedo_color = tint
-	if normal_path != "" and ResourceLoader.exists(normal_path):
-		m.normal_enabled = true
-		m.normal_texture = load(normal_path)
-		m.normal_scale = 1.0
-	if rough_path != "" and ResourceLoader.exists(rough_path):
-		m.roughness_texture = load(rough_path)
-	else:
-		m.roughness = 0.85
-	m.uv1_scale = uv_scale
-	m.metallic = 0.0
-	m.metallic_specular = 0.4
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	_mat_cache[key] = m
-	return m
-
-# Loads a Substance .tres StandardMaterial3D, duplicates it, and applies the
-# requested UV scale. Falls back to null so callers can chain _pbr_mat().
-func _sub_mat(tres_path: String, uv: float = 2.0) -> StandardMaterial3D:
-	var key := tres_path + "|" + str(uv)
-	if _sub_cache.has(key):
-		return _sub_cache[key]
-	if not ResourceLoader.exists(tres_path):
-		push_warning("[WorldBuilder] _sub_mat: missing " + tres_path)
-		return null
-	var base = ResourceLoader.load(tres_path, "StandardMaterial3D")
-	if not (base is StandardMaterial3D):
-		push_warning("[WorldBuilder] _sub_mat: not StandardMaterial3D at " + tres_path)
-		return null
-	var m: StandardMaterial3D = base.duplicate()
-	# Guard: albedo_texture null means images aren't in the .pck yet
-	# (missing .import sidecars) — fall back to _pbr_mat() instead of
-	# serving a textureless white material.
-	if m.albedo_texture == null:
-		push_warning("[WorldBuilder] _sub_mat: albedo null (images not imported?) at " + tres_path)
-		return null
-	m.uv1_scale = Vector3(uv, uv, 1.0)
-	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	_sub_cache[key] = m
-	return m
-
-# Convenience accessors
-func MAT_GRASS(uv := 30.0) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/terrain/plateau_grass/plateau_grass.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/grass/grass_diff.jpg",
-		"res://assets/textures/grass/grass_norm.jpg",
-		"res://assets/textures/grass/grass_rough.jpg",
-		Vector3(uv, uv, 1))
-
-func MAT_WOOD(uv := 1.5) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/arch/wood_beam/wood_beam.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/wood/wood_diff.jpg",
-		"res://assets/textures/wood/wood_norm.jpg",
-		"res://assets/textures/wood/wood_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.85, 0.66, 0.45))
-
-func MAT_DARK_WOOD(uv := 1.5) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/arch/wood_flooring/wood_flooring.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/wood/wood_diff.jpg",
-		"res://assets/textures/wood/wood_norm.jpg",
-		"res://assets/textures/wood/wood_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.35, 0.22, 0.13))
-
-func MAT_ROOF(uv := 2.5) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/arch/roof_moss_tiles/roof_moss_tiles.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/thatch/shingle_diff.jpg",
-		"res://assets/textures/thatch/shingle_norm.jpg",
-		"",
-		Vector3(uv, uv, 1), Color(0.7, 0.42, 0.32))
-
-func MAT_STONE(uv := 2.0) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/arch/curtain_wall_stone/curtain_wall_stone.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
-		"res://assets/textures/stone/stone_norm.jpg",
-		"res://assets/textures/stone/stone_rough.jpg",
-		Vector3(uv, uv, 1))
-
-func MAT_PATH(uv := 4.0) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/terrain/briarwood_path/briarwood_path.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
-		"res://assets/textures/stone/stone_norm.jpg",
-		"res://assets/textures/stone/stone_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.72, 0.68, 0.62))
-
-func MAT_FOUNDATION(uv := 2.0) -> StandardMaterial3D:
-	var m = _sub_mat("res://assets/textures/arch/house_foundation/house_foundation.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
-		"res://assets/textures/stone/stone_norm.jpg",
-		"res://assets/textures/stone/stone_rough.jpg",
-		Vector3(uv, uv, 1))
-
-func MAT_PLASTER(uv := 3.0) -> StandardMaterial3D:
-	# Whitewashed plaster for building wall surfaces — half-timbered look
-	# when combined with MAT_DARK_WOOD corner beams.
-	var m = _sub_mat("res://assets/textures/arch/whitewashed_plaster/whitewashed_plaster.tres", uv)
-	if m: return m
-	return _pbr_mat("res://assets/textures/stone/stone_diff.jpg",
-		"res://assets/textures/stone/stone_norm.jpg",
-		"",
-		Vector3(uv, uv, 1), Color(0.94, 0.91, 0.84))
-
-func MAT_BARK(uv := 2.0) -> StandardMaterial3D:
-	return _pbr_mat("res://assets/textures/bark/bark_diff.jpg",
-		"res://assets/textures/bark/bark_norm.jpg",
-		"",
-		Vector3(uv, uv, 1))
-
-func MAT_ROCK(uv := 1.0) -> StandardMaterial3D:
-	return _pbr_mat("res://assets/textures/rock/rock_diff.jpg",
-		"res://assets/textures/rock/rock_norm.jpg",
-		"",
-		Vector3(uv, uv, 1))
-
-func MAT_SNOW(uv := 1.0) -> StandardMaterial3D:
-	return _pbr_mat("res://assets/textures/snow/snow_diff.jpg",
-		"res://assets/textures/snow/snow_norm.jpg",
-		"",
-		Vector3(uv, uv, 1), Color(0.95, 0.96, 1.0))
-
-func MAT_LEAF(tint: Color) -> StandardMaterial3D:
-	# Stylized leaves — slight subsurface look
-	var m := StandardMaterial3D.new()
-	m.albedo_color = tint
-	m.roughness = 0.78
-	m.metallic = 0.0
-	# Simulate sub-surface scattering with rim emission
-	m.rim_enabled = true
-	m.rim = 0.4
-	m.rim_tint = 0.6
-	return m
-
-# ─── Village NPCs ────────────────────────────────────────────────────────────
-# REFINE: each NPC now carries 4 mood-dependent dialogue variants
-# (morning / midday / evening / night). The single `line` is kept as a
-# fallback for systems that haven't been taught the variant lookup yet.
-# Personality details: Maeve fears the wolves, Edda wishes the dew lasted,
-# Mara grudges miscounters, Lyra remembers her mother's garden, Bram has a
-# catchphrase about three valleys, Roan trusts horses over men, Hala says
-# strength is loud and mastery is quiet.
 const NPCS = [
 	{"name":"Elder Maeve",       "role":"quest",   "pos":Vector3(  6,  0,  3), "tint":Color(0.6,0.4,0.85),
 		"line":"Trouble brews in the Whisperwood. Seek out the Goblin Warlord.",
@@ -1001,118 +610,6 @@ const NPCS = [
 		"bark_min":20.0, "bark_max":38.0},
 ]
 
-# ── Briarwood Hub exports (Briarwood Hub Builder v1) ─────────────────────────
-@export var briarwood_hub_enabled: bool = true
-@export var briarwood_origin: Vector3 = Vector3(0, 0, 0)
-
-@export var bw_plaza_offset: Vector3     = Vector3(0,   0, 20)
-@export var bw_gate_offset: Vector3      = Vector3(0,   0, -8)
-@export var bw_market_offset: Vector3    = Vector3(30,  0, 24)
-@export var bw_craft_offset: Vector3     = Vector3(-30, 0, 24)
-@export var bw_shrine_offset: Vector3    = Vector3(-10, 0, 14)
-@export var bw_townhall_offset: Vector3  = Vector3(0,   0, 42)
-
-@export var bw_house_count: int = 28
-@export var bw_market_stall_count: int = 14
-@export var bw_npc_count: int = 16
-@export var bw_prop_density: float = 1.0
-
-@export var briarwood_npc_scene: PackedScene       # optional; null = no crowd spawns
-@export var briarwood_questboard_enabled: bool = true
-@export var briarwood_quest_refresh_sec: float = 0.0  # 0 = static list
-@export var quest_marker_enabled: bool = true
-@export var quest_marker_tick: float = 0.5
-@export var quest_hud_enabled: bool = true
-@export var quest_hud_corner: Vector2 = Vector2(18, 18)
-@export var briarwood_life_enabled: bool = true
-@export var briarwood_life_tick: float = 1.8
-@export var briarwood_atmosphere_enabled: bool = true
-@export var sfx_bw_birds_loop: AudioStream
-@export var sfx_bw_wind_loop: AudioStream
-@export var sfx_bw_tavern_loop: AudioStream
-@export var sfx_bw_hammer_loop: AudioStream
-@export var sfx_bw_forge_loop: AudioStream
-@export var bw_smoke_enabled: bool = true
-@export var bw_flag_enabled: bool = true
-@export var bw_lantern_sway_enabled: bool = true
-# Phase 23 — Briarwood visual style pass
-@export var bw_style_enabled: bool = true
-@export var bw_window_energy_day: float = 0.35
-@export var bw_window_energy_night: float = 1.7
-@export var bw_roof_pitch_min: float = 22.0
-@export var bw_roof_pitch_max: float = 34.0
-@export var bw_roof_overhang: float = 0.45
-@export var bw_chimney_enabled: bool = true
-@export var bw_porch_enabled: bool = true
-# Phase 24 — Street dressing
-@export var bw_dressing_enabled: bool = true
-@export var bw_dressing_density: float = 0.5
-@export var bw_multimesh_enabled: bool = true
-@export var bw_mm_fences: bool = true
-@export var bw_mm_benches: bool = true
-@export var bw_mm_clutter: bool = true
-# Phase 24 — Real village layout
-@export var bw_real_village_enabled: bool = true
-@export var bw_palisade_radius_x: float = 72.0
-@export var bw_palisade_radius_z: float = 60.0
-@export var bw_gate_width: float = 9.0
-@export var bw_inner_loop_scale: float = 0.70
-@export var bw_house_setback: float = 6.5
-@export var bw_yard_depth: float = 6.0
-@export var bw_farm_enabled: bool = true
-# Phase 24 — House type weights
-@export var bw_house_small_weight: float = 0.55
-@export var bw_house_medium_weight: float = 0.30
-@export var bw_house_large_weight: float = 0.10
-@export var bw_house_corner_weight: float = 0.05
-@export var bw_shopfront_weight_market: float = 0.35
-# Phase 25 — Street alignment + auto yards
-@export var bw_align_enabled: bool = true
-@export var bw_setback_small: float = 6.0
-@export var bw_setback_medium: float = 7.0
-@export var bw_setback_large: float = 8.5
-@export var bw_setback_shop: float = 5.2
-@export var bw_setback_corner: float = 6.8
-@export var bw_yard_fence_enabled: bool = true
-@export var bw_yard_width_min: float = 6.0
-@export var bw_yard_width_max: float = 10.0
-@export var bw_shops_enabled: bool = true
-@export var shop_stock_rotation_enabled: bool = true
-@export var shop_day_length_real_seconds: float = 0.0
-@export var shop_global_seed: int = 7331
-@export var town_schedule_enabled: bool = true
-@export var day_length_seconds: float = 420.0
-@export var night_start: float = 0.72
-@export var night_end: float = 0.20
-@export var briarwood_inn_interior: PackedScene
-@export var briarwood_shop_interior: PackedScene
-@export var briarwood_smith_interior: PackedScene
-@export var festival_enabled: bool = true
-@export var festival_day_mod: int = 7
-@export var interior_fallback_builders_enabled: bool = true
-@export var transitions_enabled: bool = true
-@export var transition_fade_time: float = 0.25
-@export var interior_audio_enabled: bool = true
-@export var music_inn: AudioStream
-@export var music_shop: AudioStream
-@export var music_smith: AudioStream
-@export var music_outside: AudioStream
-@export var minimap_markers_enabled: bool = true
-@export var tutorial_enabled: bool = true
-@export var tutorial_gating_enabled: bool = true   # Phase 21 — lock boat/upgrade behind tutorial steps
-@export var mayor_intro_enabled: bool = true       # Phase 21 — Mayor greeting on first load
-@export var mayor_intro_delay: float = 0.8         # Phase 21 — seconds after spawn before intro fires
-@export var tutorial_arrow_enabled: bool = true    # Phase 22 — floating objective arrow
-@export var tutorial_barks_enabled: bool = true    # Phase 22 — NPC proximity one-liners
-@export var tutorial_failsafe_enabled: bool = true # Phase 22 — hint + auto-help if stuck
-@export var tutorial_hint_after_sec: float = 120.0 # Phase 22 — seconds idle before hint
-@export var tutorial_autofix_after_sec: float = 300.0 # Phase 22 — seconds idle before auto-help
-@export var tutorial_trail_enabled: bool = true      # Phase 22B — sparkle breadcrumb trail
-@export var tutorial_trail_step: float = 1.6         # metres between sparkle pips
-@export var tutorial_trail_count: int = 9            # pips placed ahead of player
-@export var tutorial_trail_update_sec: float = 0.6   # seconds between trail rebuilds
-@export var tutorial_trail_height: float = 0.06      # metres above ground
-
 const BRIARWOOD_QUESTS := [
 	{
 		"id": "bw_kill_goblins",
@@ -1152,69 +649,244 @@ const BRIARWOOD_QUESTS := [
 	},
 ]
 
-const BUILDINGS = [
-	Vector3( 6, 0,  6), Vector3(-6, 0,  6),
-	Vector3(10, 0,  0), Vector3(-10, 0,  0),
-	Vector3( 6, 0, -8), Vector3(-6, 0, -8),
+func _safe_load_glb(path: String) -> PackedScene:
+	if not ResourceLoader.exists(path):
+		push_warning("[WorldBuilder] missing GLB: " + path)
+		return null
+	var res: Resource = load(path)
+	if res is PackedScene:
+		return res as PackedScene
+	push_warning("[WorldBuilder] not a scene: " + path)
+	return null
+
+func _populate_npc_models() -> void:
+	NPC_MODELS = {
+		# ── Confirmed in repo (>100KB, real files) ────────────────────────
+		"Elder Maeve":         _safe_load_glb("res://assets/models/npcs/elder_maeve.glb"),
+		"Smith Edda":          _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
+		"Mara the Merchant":   _safe_load_glb("res://assets/models/npcs/mushroom_merchant.glb"),
+		"Herbalist Lyra":      _safe_load_glb("res://assets/models/npcs/herbalist_lyra.glb"),
+		"Innkeeper Bram":      _safe_load_glb("res://assets/models/npcs/innkeeper_bram.glb"),
+		"Stablemaster Roan":   _safe_load_glb("res://assets/models/npcs/stablemaster_roan.glb"),
+		"Trainer Hala":        _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
+		"Village Guard":        _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+		"Farm Worker":          _safe_load_glb("res://assets/models/npcs/worker_girl.glb"),
+		# noble_craftsman.glb has no .import file → not in .pck → use warrior as stand-in
+		"Noble Craftsman":      _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+		"Wandering Herbalist":  _safe_load_glb("res://assets/models/npcs/maeve.glb"),
+		# Warlocks reuse existing NPC GLBs (Actorcore packs not in repo yet)
+		"Warlock F":            _safe_load_glb("res://assets/models/npcs/trainer_hala.glb"),
+		"Warlock M":            _safe_load_glb("res://assets/models/npcs/smith_edda.glb"),
+		"Noble Craftsman Alt":  _safe_load_glb("res://assets/models/npcs/warrior.glb"),
+	}
+
+func _populate_building_models() -> void:
+	# CONFIRMED REAL FILES (verified 2026-05-13 against GitHub contents API):
+	# props/ — all FBX files present and >100KB (real assets, not LFS stubs)
+	# buildings/ — only these GLBs are real (>1MB): tavern_troll, medieval_town,
+	#              log_building, castle_wall_kit, castle_village, sea_keep, gothic_interior
+	# 133/134-byte files are broken Git LFS pointers — DO NOT load them.
+	# trees/ — oak_tree, pine_tree, bush, dead_tree all confirmed real.
+	const P  := "res://assets/models/props/"
+	const B  := "res://assets/models/buildings/"
+	const T  := "res://assets/models/trees/"
+	BUILDING_MODELS = {
+		# ── KayKit FBX props (all in props/, all confirmed real) ──────────
+		"house":        _safe_load_glb(P + "stylized_bell_island_house_mound.fbx"),
+		"shopfront":    _safe_load_glb(P + "stylized_wood_kiosk.fbx"),
+		"forge":        _safe_load_glb(P + "stylized_forge_station.fbx"),
+		"bell_tower":   _safe_load_glb(P + "stylized_bell_tower.fbx"),
+		"porch":        _safe_load_glb(P + "stylized_large_wood_porch.fbx"),
+		"flag_pole":    _safe_load_glb(P + "stylized_multi_flags_pole.fbx"),
+		"fence":        _safe_load_glb(P + "stylized_regular_fence_set.fbx"),
+		"sign":         _safe_load_glb(P + "stylized_bell_island_wooden_sign.fbx"),
+		"chimney_a":    _safe_load_glb(P + "stylized_curved_pipe_chimney.fbx"),
+		"chimney_b":    _safe_load_glb(P + "stylized_straight_pipe_chimney.fbx"),
+		"staircase":    _safe_load_glb(P + "stylized_bifurcated_wood_staircase.fbx"),
+		"rocks_large":  _safe_load_glb(P + "stylized_edged_rocks_set.fbx"),
+		"rocks_small":  _safe_load_glb(P + "stylized_small_rocks_set.fbx"),
+		"flowers":      _safe_load_glb(P + "stylized_flower_clump.fbx"),
+		"vases":        _safe_load_glb(P + "stylized_rounded_vases_set.fbx"),
+		"forge_pot":    _safe_load_glb(P + "stylized_large_forge_pot.fbx"),
+		"cymbal":       _safe_load_glb(P + "stylized_standing_cymbal.fbx"),
+		"dock":         _safe_load_glb(P + "stylized_old_sea_dock.fbx"),
+		"rect_flag":    _safe_load_glb(P + "stylized_rectangle_flags_pole.fbx"),
+		# Props already in props/ as GLBs ─────────────────────────────────
+		"campfire":     _safe_load_glb(P + "campfire.glb"),
+		"lantern":      _safe_load_glb(P + "lantern.glb"),
+		"barrel":       _safe_load_glb(P + "wooden_barrel.glb"),
+		"chest":        _safe_load_glb(P + "chest.glb"),
+		"well":         _safe_load_glb(P + "stone_well.glb"),
+		"boulder":      _safe_load_glb(P + "boulder.glb"),
+		"fern":         _safe_load_glb(P + "fern.glb"),
+		"mushroom":     _safe_load_glb(P + "mushroom_red.glb"),
+		"windmill":     _safe_load_glb(P + "windmill.glb"),
+		# ── Sketchfab building GLBs (confirmed real, >1MB) ────────────────
+		"tavern":          _safe_load_glb(B + "tavern_troll.glb"),
+		"medieval_town":   _safe_load_glb(B + "medieval_town.glb"),
+		"log_building":    _safe_load_glb(B + "log_building.glb"),
+		"castle_wall":     _safe_load_glb(B + "castle_wall_kit.glb"),
+		"castle_village":  _safe_load_glb(B + "castle_village.glb"),
+		"sea_keep":        _safe_load_glb(B + "sea_keep.glb"),
+		"gothic_interior": _safe_load_glb(B + "gothic_interior.glb"),
+		# ── Real tree GLBs (trees/ dir, all confirmed) ────────────────────
+		"oak_tree":    _safe_load_glb(T + "oak_tree.glb"),
+		"pine_tree":   _safe_load_glb(T + "pine_tree.glb"),
+		"bush":        _safe_load_glb(T + "bush.glb"),
+		"dead_tree":   _safe_load_glb(T + "dead_tree.glb"),
+	}
+	var loaded := BUILDING_MODELS.values().filter(func(v): return v != null).size()
+	_dlog("[WorldBuilder] building models loaded: %d / %d" % [loaded, BUILDING_MODELS.size()])
+
+# Per-NPC scale tweak — different sources have different native heights.
+const NPC_SCALES := {
+	"Elder Maeve":         Vector3(1.10, 1.10, 1.10),
+	"Smith Edda":          Vector3(1.05, 1.05, 1.05),
+	"Mara the Merchant":   Vector3(1.10, 1.10, 1.10),
+	"Herbalist Lyra":      Vector3(1.30, 1.30, 1.30),
+	"Innkeeper Bram":      Vector3(1.20, 1.20, 1.20),
+	"Stablemaster Roan":   Vector3(1.05, 1.05, 1.05),
+	"Trainer Hala":        Vector3(1.10, 1.10, 1.10),
+	"Village Guard":        Vector3(1.05, 1.05, 1.05),
+	"Farm Worker":          Vector3(1.00, 1.00, 1.00),
+	"Wandering Herbalist":  Vector3(1.10, 1.10, 1.10),
+	# Actorcore NPCs — same native unit scale as the existing Actorcore set
+	"Warlock F":            Vector3(1.05, 1.05, 1.05),
+	"Warlock M":            Vector3(1.05, 1.05, 1.05),
+	"Noble Craftsman":      Vector3(1.05, 1.05, 1.05),
+}
+@export var npc_script: Script = preload("res://scripts/NPC.gd")
+
+# Phase 26 — Chunked async world build (web-perf: stops 86s main-thread block)
+signal build_progress(phase: String, pct: float)
+signal build_complete()
+@export var chunk_build_enabled: bool = true
+
+var _buildings_built: bool = false
+var _briarwood_root: Node3D = null
+var _qb_layer: CanvasLayer = null
+var _qb_panel: Panel = null
+var _qb_player: Node3D = null
+var _qb_list_root: VBoxContainer = null
+var _qb_detail: RichTextLabel = null
+var _qb_selected_id: String = ""
+
+var _quest_marker_timer: Timer = null
+var _quest_markers: Dictionary = {}
+
+var _qh_layer: CanvasLayer = null
+var _qh_panel: Panel = null
+var _qh_label: RichTextLabel = null
+
+var _bw_life_root: Node3D = null
+var _bw_life_timer: Timer = null
+var _bw_life_npcs: Array = []
+
+var _shop_layer: CanvasLayer = null
+var _shop_panel: Panel = null
+var _shop_player: Node3D = null
+var _shop_kind: String = ""
+var _shop_gold_label: Label = null
+var _shop_shop_list: VBoxContainer = null
+var _shop_inv_list: VBoxContainer = null
+var _shop_detail: RichTextLabel = null
+
+var _craft_layer: CanvasLayer = null
+var _craft_panel: Panel = null
+var _craft_player: Node3D = null
+var _craft_list: VBoxContainer = null
+var _craft_detail: RichTextLabel = null
+
+var _interior_root: Node3D = null
+var _interior_kind: String = ""
+var _exterior_return_pos: Vector3 = Vector3.ZERO
+
+var _schedule_timer: Timer = null
+var _last_night_state: bool = false
+var _town_time: float = 0.35
+
+var _dlg_layer: CanvasLayer = null
+var _dlg_panel: Panel = null
+var _dlg_player: Node3D = null
+var _dlg_title: Label = null
+var _dlg_text: RichTextLabel = null
+var _dlg_choices: VBoxContainer = null
+
+var _fade_layer: CanvasLayer = null
+var _fade_rect: ColorRect = null
+var _fade_tween: Tween = null
+
+var _music_player: AudioStreamPlayer = null
+var _current_music_id: String = ""
+
+var _tutorial_step: int = 0
+var _tutorial_done: bool = false
+var _mayor_intro_ran: bool = false   # Phase 21 — mayor intro fires exactly once
+
+# Phase 22 — tutorial polish
+var _tutorial_last_progress_time: float = 0.0
+var _tutorial_tick_timer: Timer = null
+var _arrow_root: Node3D = null
+var _arrow_label: Label3D = null
+var _arrow_mesh: MeshInstance3D = null
+var _arrow_target: Node3D = null
+var _bark_cd: Dictionary = {}   # "bark|<key>" -> next_allowed_time (secs)
+# Phase 24 — cached MultiMesh-ready meshes (lazy-init via getters)
+var _bw_fence_post_mesh: CylinderMesh = null
+var _bw_bench_mesh: BoxMesh = null
+var _bw_crate_mesh: BoxMesh = null
+var _bw_barrel_mesh: CylinderMesh = null
+var _bw_woodpile_mesh: BoxMesh = null
+var _trail_root: Node3D = null
+var _trail_last_update: float = 0.0
+
+# ─── THEME §1, §11, §12 — Whisperwood asset wire-up ──────────────────────────
+# Sketchfab CC-BY tree GLBs (oak / pine / bush / dead) replacing the procedural
+# blob trees that previously made every tree look like the same lumpy sphere
+# stack. Variants are picked by weight per scatter pass; if `load()` returns
+# null (asset not importable yet, missing on disk, etc.) `_make_glb_tree`
+# returns false and `_make_tree` falls through to the legacy procedural path
+# so the world NEVER spawns empty.
+const TREE_VARIANTS: Array = [
+	{"path": "res://assets/models/trees/oak_tree.glb",  "weight": 0.45,
+		"scale_min": 0.55, "scale_max": 0.95, "kind": "oak"},
+	{"path": "res://assets/models/trees/pine_tree.glb", "weight": 0.30,
+		"scale_min": 0.60, "scale_max": 1.05, "kind": "pine"},
+	{"path": "res://assets/models/trees/bush.glb",      "weight": 0.20,
+		"scale_min": 0.55, "scale_max": 0.95, "kind": "bush"},
+	{"path": "res://assets/models/trees/dead_tree.glb", "weight": 0.05,
+		"scale_min": 0.50, "scale_max": 0.85, "kind": "dead"},
 ]
-# Builder run 24 — Player Home (Backlog #10). North of the plaza, clear of all
-# existing buildings and the path network terminus at z=12. THEME §13: y=0.
-const HOME_POS: Vector3 = Vector3(0.0, 0.0, 14.0)
-const HOME_SCRIPT: Script = preload("res://scripts/PlayerHome.gd")
+# Sketchfab CC-BY boulder GLB used by `_scatter_rocks` in place of the lumpy
+# sphere primitives. Same fallback contract as TREE_VARIANTS above.
+const BOULDER_GLB_PATH: String = "res://assets/models/props/boulder.glb"
 
-# ── Phase 14: Shop catalogs ───────────────────────────────────────────────────
-const SHOP_ITEMS := {
-	"merchant": [
-		{"id":"hp_potion_s","name":"Health Potion (S)","price":18,"sell":9},
-		{"id":"hp_potion_l","name":"Health Potion (L)","price":45,"sell":22},
-		{"id":"mp_potion_s","name":"Mana Potion (S)",  "price":22,"sell":11},
-		{"id":"herb",       "name":"Herb Bundle",      "price":10,"sell":5},
-		{"id":"wood",       "name":"Wood Bundle",      "price":8, "sell":4},
-		{"id":"rope",       "name":"Rope Coil",        "price":12,"sell":6},
-		{"id":"torch",      "name":"Torch",            "price":6, "sell":3},
-	],
-	"smith": [
-		{"id":"iron_ingot","name":"Iron Ingot",      "price":25, "sell":12},
-		{"id":"leather",   "name":"Leather Roll",    "price":18, "sell":9},
-		{"id":"sword_1",   "name":"Iron Sword",      "price":120,"sell":60},
-		{"id":"axe_1",     "name":"Iron Axe",        "price":110,"sell":55},
-		{"id":"helm_1",    "name":"Iron Helm",       "price":90, "sell":45},
-		{"id":"chest_1",   "name":"Iron Chestpiece", "price":160,"sell":80},
-	],
-}
+# ─── THEME §12 — Whisperwood undergrowth + village dressing GLBs ────────────
+# Three currently-unused CC-BY GLBs that bring the world from "open lawn with
+# trees" to "lived-in fantasy forest". Loaded the same way as TREE_VARIANTS:
+# any missing asset is silently skipped so the world never crashes.
+const FERN_GLB_PATH: String     = "res://assets/models/props/fern.glb"
+const MUSHROOM_GLB_PATH: String = "res://assets/models/props/mushroom_red.glb"
+const BARREL_GLB_PATH: String   = "res://assets/models/props/wooden_barrel.glb"
+# Phase 26 fix: lantern.glb was a mis-placed witch-hat model — disabled until
+# a real lantern GLB is imported. Empty string → procedural fallback always fires.
+const LANTERN_GLB_PATH: String  = ""  # was "res://assets/models/props/lantern.glb"
+# Env: 2026-05-06 — wire up two more CC-BY GLBs that were sitting unused on
+# disk. Same fallback contract: if the asset isn't loadable the legacy
+# procedural primitive path runs, so the village never spawns without a
+# hearth or well. (THEME §1, §11)
+const CAMPFIRE_GLB_PATH: String = "res://assets/models/props/campfire.glb"
+const WELL_GLB_PATH: String     = "res://assets/models/props/stone_well.glb"
+# Env: 2026-05-06 — wire the last unused prop GLB. The procedural
+# windmill (cone-stack tower + box blades) reads as a primitive next
+# to the new GLB-bodied campfire/well/lantern. Same fallback contract:
+# any missing asset silently falls through to the procedural primitive
+# path so the village always has its mill. (THEME §1, §11, §12)
+const WINDMILL_GLB_PATH: String = "res://assets/models/props/windmill.glb"
 
-# ── Phase 15: Display database (icons + names + slots) ───────────────────────
-const ITEM_DB := {
-	"hp_potion_s": {"icon":"🧪","name":"Health Potion (S)","type":"consumable"},
-	"hp_potion_l": {"icon":"🧪","name":"Health Potion (L)","type":"consumable"},
-	"mp_potion_s": {"icon":"✨","name":"Mana Potion (S)",  "type":"consumable"},
-	"herb":        {"icon":"🌿","name":"Herb Bundle",      "type":"material"},
-	"wood":        {"icon":"🪵","name":"Wood Bundle",      "type":"material"},
-	"rope":        {"icon":"🪢","name":"Rope Coil",        "type":"material"},
-	"torch":       {"icon":"🔥","name":"Torch",            "type":"tool"},
-	"iron_ingot":  {"icon":"⛓️","name":"Iron Ingot",       "type":"material"},
-	"leather":     {"icon":"🟤","name":"Leather Roll",     "type":"material"},
-	"sword_1":     {"icon":"🗡️","name":"Iron Sword",       "type":"weapon","slot":"weapon"},
-	"axe_1":       {"icon":"🪓","name":"Iron Axe",         "type":"weapon","slot":"weapon"},
-	"helm_1":      {"icon":"🪖","name":"Iron Helm",        "type":"armor", "slot":"helm"},
-	"chest_1":     {"icon":"🛡️","name":"Iron Chestpiece",  "type":"armor", "slot":"chest"},
-	"supply_crate":{"icon":"📦","name":"Supply Crate",     "type":"quest"},
-}
-
-# ── Phase 16: Stock pools + craft recipes ────────────────────────────────────
-const SHOP_POOLS := {
-	"merchant": ["hp_potion_s","mp_potion_s","torch","rope","herb","wood","hp_potion_l"],
-	"smith":    ["iron_ingot","leather","sword_1","axe_1","helm_1","chest_1"],
-}
-
-const CRAFT_RECIPES := [
-	{"id":"craft_hp_potion_s","name":"Brew Health Potion (S)",
-		"inputs":[{"id":"herb","qty":2}],"outputs":[{"id":"hp_potion_s","qty":1}]},
-	{"id":"craft_mp_potion_s","name":"Brew Mana Potion (S)",
-		"inputs":[{"id":"herb","qty":1},{"id":"rope","qty":1}],"outputs":[{"id":"mp_potion_s","qty":1}]},
-	{"id":"craft_iron_bundle","name":"Forge Iron Ingot",
-		"inputs":[{"id":"wood","qty":2}],"outputs":[{"id":"iron_ingot","qty":1}]},
-]
+# ─── PBR material cache ──────────────────────────────────────────────────────
+var _mat_cache: Dictionary = {}
+var _sub_cache: Dictionary = {}  # Substance .tres material cache
 
 func _ready() -> void:
 	if _buildings_built: return
@@ -1236,57 +908,57 @@ func _ready() -> void:
 # Original _ready body. Each _safe_call defers to next frame but they all
 # flush in one batch — fine for desktop, brutal on the web main thread.
 func _build_world_sync() -> void:
+	# Clean world build: real GLB assets only, no procedural geometry.
+	# Ground + paths
 	_safe_call("_build_ground_overlay")
 	_safe_call("_build_path_network")
-	if briarwood_hub_enabled:
-		_safe_call("_build_briarwood_hub")  # Briarwood Hub Builder v1
-	else:
-		_safe_call("_build_village")        # legacy 6-house fallback
-	_safe_call("_scatter_trees", [40])
-	_safe_call("_scatter_rocks", [36])
-	_safe_call("_scatter_ferns", [20])
-	_safe_call("_scatter_mushrooms", [10])
-	_safe_call("_build_village_barrels")
-	_safe_call("_build_mountain_ring")
-	_safe_call("_build_market_stalls")
+	# Briarwood hub — always use GLB hub
+	_safe_call("_build_briarwood_hub")
+	# Sparse natural scatter (real GLBs: oak/pine/bush/dead, boulder, fern, mushroom)
+	_safe_call("_scatter_trees", [30])
+	_safe_call("_scatter_rocks", [20])
+	_safe_call("_scatter_ferns", [15])
+	_safe_call("_scatter_mushrooms", [8])
+	# Village props (windmill, lanterns, well — all real GLBs)
 	_safe_call("_build_windmill")
 	_safe_call("_build_lanterns")
-	_safe_call("_build_banners")
+	_safe_call("_build_well")
+	_safe_call("_build_village_barrels")
+	# Atmosphere (fireflies, leaves, birds — particle systems, no geometry gen)
+	_safe_call("_build_firefly_particles")
+	_safe_call("_build_falling_leaves")
+	_safe_call("_build_bird_flocks")
+	_safe_call("_build_god_rays")
+	_safe_call("_build_smoke_chimneys")
+	# NPCs
 	_safe_call("_build_npcs")
-	_safe_call("_build_grass_tufts", [80])
-	_safe_call("_build_far_world_scatter")
-	_safe_call("_build_mid_world_pois")
+	_safe_call("_build_grass_tufts", [60])
+	# World zones (GLB-based: whisperwood trees, cave entrance, terrain, castle)
 	_safe_call("_build_whisperwood_forest")
 	_safe_call("_build_caves_surface_entrance")
 	_safe_call("_build_terrain_hills")
 	_safe_call("_build_far_castle_ruins")
+	# Village props + campfire (real GLBs)
 	_safe_call("_build_village_props")
-	_safe_call("_build_well")
-	_safe_call("_build_pond")
-	_safe_call("_build_firefly_particles")
-	_safe_call("_build_falling_leaves")
-	_safe_call("_build_butterflies")
-	_safe_call("_build_bird_flocks")
-	_safe_call("_build_god_rays")
-	_safe_call("_build_smoke_chimneys")
 	_safe_call("_build_campfire")
+	# Enemies, pets, loot
 	_safe_call("_build_enemies")
 	_safe_call("_build_pet")
 	_safe_call("_build_stable_horse")
 	_safe_call("_build_loot_chests")
+	# Tavern + boss arena (GLB placements)
 	_safe_call("_build_tavern")
 	_safe_call("_build_dragon_boss")
 	_safe_call("_build_world_props_new")
 	_safe_call("_build_village_dressing_props")
 	call_deferred("_global_scale_sweep")
+	# Player home, weather, crystal caves
 	_safe_call("_build_player_home")
 	_safe_call("_build_weather")
 	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
-	_safe_call("_build_nordic_fishing_village")
-	_safe_call("_build_nordic_road")
-	_safe_call("_build_nordic_ambient_audio")
-	if nordic_dock_life_enabled:
-		_safe_call("_build_nordic_dock_life")
+	# Nordic village — GLB-based replacement (sea_keep + log_building)
+	_safe_call("_build_nordic_village_glb")
+	# Game systems
 	if district_streaming_enabled:
 		_safe_call("_init_district_streaming")
 	if quest_marker_enabled:
@@ -1342,99 +1014,85 @@ func _build_world_async() -> void:
 	_safe_call_now("_build_ground_overlay", [])
 	_safe_call_now("_build_path_network",   [])
 
-	# ── Briarwood hub (heaviest single chunk) ─────────────────────────────────
+	# ── Briarwood hub (real GLB) ──────────────────────────────────────────────
 	build_progress.emit("Briarwood", 0.05)
 	await get_tree().process_frame
 	_wb_crash_report("Ground")
-	if briarwood_hub_enabled:
-		_safe_call_now("_build_briarwood_hub", [])
-	else:
-		_safe_call_now("_build_village",       [])
+	_safe_call_now("_build_briarwood_hub", [])
 
-	# ── Trees + rocks ─────────────────────────────────────────────────────────
-	build_progress.emit("Trees & Rocks", 0.22)
+	# ── Trees + rocks (real GLBs) ─────────────────────────────────────────────
+	build_progress.emit("Trees & Rocks", 0.20)
 	await get_tree().process_frame
 	_wb_crash_report("Briarwood")
-	_safe_call_now("_scatter_trees", [40])
-	_safe_call_now("_scatter_rocks", [36])
+	_safe_call_now("_scatter_trees", [30])
+	_safe_call_now("_scatter_rocks", [20])
 
-	# ── Ground cover ──────────────────────────────────────────────────────────
-	build_progress.emit("Ground Cover", 0.30)
+	# ── Ground cover (real GLBs) ──────────────────────────────────────────────
+	build_progress.emit("Ground Cover", 0.28)
 	await get_tree().process_frame
 	_wb_crash_report("Trees+Rocks")
-	_safe_call_now("_scatter_ferns",     [20])
-	_safe_call_now("_scatter_mushrooms", [10])
+	_safe_call_now("_scatter_ferns",     [15])
+	_safe_call_now("_scatter_mushrooms", [8])
 
-	# ── Village props ─────────────────────────────────────────────────────────
-	build_progress.emit("Village Props", 0.36)
+	# ── Village props (real GLBs) ─────────────────────────────────────────────
+	build_progress.emit("Village Props", 0.35)
 	await get_tree().process_frame
 	_wb_crash_report("GroundCover")
-	_safe_call_now("_build_village_barrels", [])
-	_safe_call_now("_build_mountain_ring",   [])
-	_safe_call_now("_build_market_stalls",   [])
 	_safe_call_now("_build_windmill",        [])
 	_safe_call_now("_build_lanterns",        [])
-	_safe_call_now("_build_banners",         [])
+	_safe_call_now("_build_well",            [])
+	_safe_call_now("_build_village_barrels", [])
 
-	# ── NPCs + grass ──────────────────────────────────────────────────────────
-	build_progress.emit("Characters", 0.46)
+	# ── NPCs + atmosphere ─────────────────────────────────────────────────────
+	build_progress.emit("Characters", 0.44)
 	await get_tree().process_frame
 	_wb_crash_report("VillageProps")
-	_safe_call_now("_build_npcs",        [])
-	_safe_call_now("_build_grass_tufts", [80])
-	_safe_call_now("_build_far_world_scatter", [])
-	_safe_call_now("_build_mid_world_pois",   [])
-	_safe_call_now("_build_whisperwood_forest", [])
-	_safe_call_now("_build_caves_surface_entrance", [])
-	_safe_call_now("_build_terrain_hills",    [])
-	_safe_call_now("_build_far_castle_ruins", [])
-	_safe_call_now("_build_village_props",    [])
-
-	# ── Water, particles, atmosphere ──────────────────────────────────────────
-	build_progress.emit("Water & FX", 0.54)
-	await get_tree().process_frame
-	_wb_crash_report("Characters")
-	_safe_call_now("_build_well",              [])
-	_safe_call_now("_build_pond",              [])
+	_safe_call_now("_build_npcs",              [])
+	_safe_call_now("_build_grass_tufts",       [60])
 	_safe_call_now("_build_firefly_particles", [])
 	_safe_call_now("_build_falling_leaves",    [])
-	_safe_call_now("_build_butterflies",       [])
 	_safe_call_now("_build_bird_flocks",       [])
 	_safe_call_now("_build_god_rays",          [])
 	_safe_call_now("_build_smoke_chimneys",    [])
-	_safe_call_now("_build_campfire",          [])
+
+	# ── World zones ───────────────────────────────────────────────────────────
+	build_progress.emit("World Zones", 0.52)
+	await get_tree().process_frame
+	_wb_crash_report("Characters")
+	_safe_call_now("_build_whisperwood_forest",     [])
+	_safe_call_now("_build_caves_surface_entrance", [])
+	_safe_call_now("_build_terrain_hills",          [])
+	_safe_call_now("_build_far_castle_ruins",       [])
+	_safe_call_now("_build_village_props",          [])
+	_safe_call_now("_build_campfire",               [])
 
 	# ── Creatures, loot, scale pass ───────────────────────────────────────────
-	build_progress.emit("Creatures & Loot", 0.64)
+	build_progress.emit("Creatures & Loot", 0.62)
 	await get_tree().process_frame
-	_wb_crash_report("Water+FX")
-	_safe_call_now("_build_enemies",      [])
-	_safe_call_now("_build_pet",          [])
-	_safe_call_now("_build_stable_horse",     [])
-	_safe_call_now("_build_loot_chests",      [])
-	_safe_call_now("_build_tavern",                  [])
-	_safe_call_now("_build_dragon_boss",             [])
-	_safe_call_now("_build_world_props_new",         [])
-	_safe_call_now("_build_village_dressing_props",  [])
+	_wb_crash_report("WorldZones")
+	_safe_call_now("_build_enemies",               [])
+	_safe_call_now("_build_pet",                   [])
+	_safe_call_now("_build_stable_horse",          [])
+	_safe_call_now("_build_loot_chests",           [])
+	_safe_call_now("_build_tavern",                [])
+	_safe_call_now("_build_dragon_boss",           [])
+	_safe_call_now("_build_world_props_new",       [])
+	_safe_call_now("_build_village_dressing_props",[])
 	call_deferred("_global_scale_sweep")
 
 	# ── Home, weather, caves ──────────────────────────────────────────────────
 	build_progress.emit("Home & Weather", 0.72)
 	await get_tree().process_frame
 	_wb_crash_report("Creatures+Loot")
-	_safe_call_now("_build_player_home",    [])
-	_safe_call_now("_build_weather",        [])
-	_safe_call_now("_build_crystal_caves",  [Vector3(-50, 0, -40)])
+	_safe_call_now("_build_player_home",   [])
+	_safe_call_now("_build_weather",       [])
+	_safe_call_now("_build_crystal_caves", [Vector3(-50, 0, -40)])
 
-	# ── Nordic district (second-heaviest chunk) ───────────────────────────────
-	build_progress.emit("Nordic District", 0.80)
+	# ── Nordic village (GLB-based) ────────────────────────────────────────────
+	build_progress.emit("Nordic Village", 0.80)
 	await get_tree().process_frame
 	_wb_crash_report("Home+Weather")
-	_safe_call_now("_build_nordic_fishing_village", [])
-	_safe_call_now("_build_nordic_road",            [])
-	_safe_call_now("_build_nordic_ambient_audio",   [])
-	if nordic_dock_life_enabled:
-		_safe_call_now("_build_nordic_dock_life", [])
+	_safe_call_now("_build_nordic_village_glb", [])
 
 	# ── Game systems ──────────────────────────────────────────────────────────
 	build_progress.emit("Systems", 0.90)
@@ -1460,6 +1118,7 @@ func _build_world_async() -> void:
 	build_complete.emit()
 	_dlog("async build DONE — children=%d" % get_child_count())
 
+
 # _ready bisect helper. Logs entry/exit for each spawn call. If a call halts
 # the script (runtime error), we'll see [WB] -> X without a matching [WB] OK X.
 # Godot's print() goes to stdout which the Web export pipes to console.log.
@@ -1475,6 +1134,78 @@ func _safe_call(method_name: String, args: Array = []) -> void:
 	call_deferred("_safe_call_now", method_name, args)
 
 var _wb_last_builder: String = ""
+
+# ── Briarwood Hub ──────────────────────────────────────────────────────────────
+@export var briarwood_hub_enabled: bool = true
+@export var briarwood_origin: Vector3 = Vector3(0, 0, 0)
+@export var bw_plaza_offset: Vector3     = Vector3(0,   0, 20)
+@export var bw_gate_offset: Vector3      = Vector3(0,   0, -8)
+@export var bw_market_offset: Vector3    = Vector3(30,  0, 24)
+@export var bw_craft_offset: Vector3     = Vector3(-30, 0, 24)
+@export var bw_shrine_offset: Vector3    = Vector3(-10, 0, 14)
+@export var bw_townhall_offset: Vector3  = Vector3(0,   0, 42)
+@export var bw_house_count: int = 28
+@export var bw_npc_count: int = 16
+@export var bw_prop_density: float = 1.0
+@export var briarwood_npc_scene: PackedScene
+@export var briarwood_questboard_enabled: bool = true
+@export var quest_marker_enabled: bool = true
+@export var quest_marker_tick: float = 0.5
+@export var quest_hud_enabled: bool = true
+@export var quest_hud_corner: Vector2 = Vector2(18, 18)
+@export var briarwood_life_enabled: bool = true
+@export var briarwood_life_tick: float = 1.8
+@export var briarwood_atmosphere_enabled: bool = true
+@export var sfx_bw_birds_loop: AudioStream
+@export var sfx_bw_wind_loop: AudioStream
+@export var sfx_bw_tavern_loop: AudioStream
+@export var sfx_bw_hammer_loop: AudioStream
+@export var sfx_bw_forge_loop: AudioStream
+@export var bw_smoke_enabled: bool = true
+@export var bw_flag_enabled: bool = true
+@export var bw_lantern_sway_enabled: bool = true
+@export var bw_dressing_enabled: bool = true
+@export var bw_dressing_density: float = 0.5
+@export var bw_shops_enabled: bool = true
+@export var shop_stock_rotation_enabled: bool = true
+@export var shop_day_length_real_seconds: float = 0.0
+@export var shop_global_seed: int = 7331
+# ── Town schedule ─────────────────────────────────────────────────────────────
+@export var town_schedule_enabled: bool = true
+@export var day_length_seconds: float = 420.0
+@export var night_start: float = 0.72
+@export var night_end: float = 0.20
+# ── Interior / music ──────────────────────────────────────────────────────────
+@export var briarwood_inn_interior: PackedScene
+@export var briarwood_shop_interior: PackedScene
+@export var briarwood_smith_interior: PackedScene
+@export var interior_fallback_builders_enabled: bool = true
+@export var transitions_enabled: bool = true
+@export var transition_fade_time: float = 0.25
+@export var interior_audio_enabled: bool = true
+@export var music_inn: AudioStream
+@export var music_shop: AudioStream
+@export var music_smith: AudioStream
+@export var music_outside: AudioStream
+@export var minimap_markers_enabled: bool = true
+# ── Tutorial ──────────────────────────────────────────────────────────────────
+@export var tutorial_enabled: bool = true
+@export var tutorial_gating_enabled: bool = true
+@export var mayor_intro_enabled: bool = true
+@export var mayor_intro_delay: float = 0.8
+@export var tutorial_arrow_enabled: bool = true
+@export var tutorial_barks_enabled: bool = true
+@export var tutorial_failsafe_enabled: bool = true
+@export var tutorial_hint_after_sec: float = 120.0
+@export var tutorial_autofix_after_sec: float = 300.0
+@export var tutorial_trail_enabled: bool = true
+@export var tutorial_trail_step: float = 1.6
+@export var tutorial_trail_count: int = 9
+@export var tutorial_trail_update_sec: float = 0.6
+@export var tutorial_trail_height: float = 0.06
+# ── District streaming ────────────────────────────────────────────────────────
+@export var district_streaming_enabled: bool = true
+
 func _safe_call_now(method_name: String, args: Array) -> void:
 	if not has_method(method_name):
 		_dlog("MISSING " + method_name)
@@ -1561,145 +1292,6 @@ func _build_path_network() -> void:
 # ============================================================================
 # Buildings — timber-framed wood walls, shingled roof, lit window, chimney
 # ============================================================================
-func _build_village() -> void:
-	for pos in BUILDINGS:
-		_make_building(pos)
-
-func _make_building(pos: Vector3) -> void:
-	var house := Node3D.new()
-	house.position = pos
-	house.add_to_group("buildings")
-	add_child(house)
-
-	# Stone foundation (1m tall around the base)
-	var foundation := MeshInstance3D.new()
-	var fm := BoxMesh.new()
-	fm.size = Vector3(4.0, 0.5, 4.0)
-	foundation.mesh = fm
-	foundation.material_override = MAT_FOUNDATION(2)
-	foundation.position.y = 0.25
-	house.add_child(foundation)
-
-	# Walls (whitewashed plaster — half-timbered look with dark wood corner beams)
-	var wall := MeshInstance3D.new()
-	var wall_mesh := BoxMesh.new()
-	wall_mesh.size = Vector3(3.6, 2.6, 3.6)
-	wall.mesh = wall_mesh
-	wall.material_override = MAT_PLASTER(3)
-	wall.position.y = 1.3 + 0.5
-	house.add_child(wall)
-
-	# Wall collision — covers foundation + walls up to eave.
-	var body := StaticBody3D.new()
-	var col := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(3.6, 3.4, 3.6)
-	col.shape = box
-	col.position.y = 1.7
-	body.add_child(col)
-	house.add_child(body)
-
-	# Corner timber beams (dark wood)
-	for dx in [-1.7, 1.7]:
-		for dz in [-1.7, 1.7]:
-			var beam := MeshInstance3D.new()
-			var bm := BoxMesh.new()
-			bm.size = Vector3(0.22, 2.6, 0.22)
-			beam.mesh = bm
-			beam.material_override = MAT_DARK_WOOD(0.5)
-			beam.position = Vector3(dx, 1.3 + 0.5, dz)
-			house.add_child(beam)
-	# Horizontal cross beams
-	for dy in [0.5 + 0.6, 0.5 + 1.6, 0.5 + 2.5]:
-		for dx in [0.0]:
-			for dz in [-1.81, 1.81]:
-				var crossbeam := MeshInstance3D.new()
-				var bm := BoxMesh.new()
-				bm.size = Vector3(3.6, 0.16, 0.16)
-				crossbeam.mesh = bm
-				crossbeam.material_override = MAT_DARK_WOOD(0.5)
-				crossbeam.position = Vector3(dx, dy, dz)
-				house.add_child(crossbeam)
-
-	# Eave
-	var eave := MeshInstance3D.new()
-	var em := BoxMesh.new()
-	em.size = Vector3(4.0, 0.18, 4.0)
-	eave.mesh = em
-	eave.material_override = MAT_DARK_WOOD(0.5)
-	eave.position.y = 3.18
-	house.add_child(eave)
-
-	# Roof — pyramid (tiled shingle)
-	var roof := MeshInstance3D.new()
-	var pyr := PrismMesh.new()
-	pyr.left_to_right = 0.5
-	pyr.size = Vector3(4.4, 1.9, 4.4)
-	roof.mesh = pyr
-	roof.material_override = MAT_ROOF(2.0)
-	roof.position.y = 4.13
-	house.add_child(roof)
-	# Walkable roof collision — trimesh from the actual mesh so the slope is
-	# a proper surface. Player can land here and walk around; floor_max_angle
-	# is 65° so the ~41° pitch is fully walkable without sliding off.
-	var roof_body := StaticBody3D.new()
-	var roof_col  := CollisionShape3D.new()
-	roof_col.shape = pyr.create_trimesh_shape()
-	roof_body.add_child(roof_col)
-	roof.add_child(roof_body)
-
-	# Window with warm light
-	var win_mat := StandardMaterial3D.new()
-	win_mat.albedo_color = Color(0.95, 0.6, 0.25)
-	win_mat.emission_enabled = true
-	win_mat.emission = Color(1.0, 0.7, 0.3)
-	win_mat.emission_energy_multiplier = 1.2
-	win_mat.metallic = 0.0
-	win_mat.roughness = 0.4
-	var win := MeshInstance3D.new()
-	var qm := QuadMesh.new()
-	qm.size = Vector2(0.7, 0.6)
-	win.mesh = qm
-	win.material_override = win_mat
-	win.position = Vector3(0, 2.1, 1.81)
-	house.add_child(win)
-
-	# Window frame
-	var fr_mat := MAT_DARK_WOOD(0.4)
-	for off in [Vector2(-0.4, 0), Vector2(0.4, 0), Vector2(0, 0.35), Vector2(0, -0.35)]:
-		var f := MeshInstance3D.new()
-		var fm2 := BoxMesh.new()
-		if abs(off.x) > 0:
-			fm2.size = Vector3(0.06, 0.7, 0.05)
-		else:
-			fm2.size = Vector3(0.85, 0.06, 0.05)
-		f.mesh = fm2
-		f.material_override = fr_mat
-		f.position = Vector3(off.x, 2.1 + off.y, 1.83)
-		house.add_child(f)
-
-	# Door
-	var door := MeshInstance3D.new()
-	var dm := BoxMesh.new()
-	dm.size = Vector3(0.9, 1.6, 0.08)
-	door.mesh = dm
-	door.material_override = MAT_DARK_WOOD(0.6)
-	door.position = Vector3(-1.0, 1.3, 1.85)
-	house.add_child(door)
-
-	# Chimney
-	var chim := MeshInstance3D.new()
-	var cm := BoxMesh.new()
-	cm.size = Vector3(0.5, 1.5, 0.5)
-	chim.mesh = cm
-	chim.material_override = MAT_STONE(1)
-	chim.position = Vector3(1.2, 4.6, 1.0)
-	chim.name = "Chimney"
-	house.add_child(chim)
-
-# ============================================================================
-# Trees — bark-textured trunk + multi-tier stylized foliage with rim lighting
-# ============================================================================
 func _scatter_trees(count: int) -> void:
 	# Env: 2026-05-06 — trees RE-ENABLED. Whisperwood was bare because the
 	# previous emergency shutoff ("big-trees-stupid") never lifted, but the
@@ -1770,146 +1362,6 @@ func _scatter_rocks(count: int) -> void:
 
 # ============================================================================
 # Mountain ring with rock texture + snow caps (snow texture)
-# ============================================================================
-func _build_mountain_ring() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	# Inner ring
-	for i in 36:
-		var ang: float = (float(i) / 36.0) * TAU + rng.randf_range(-0.05, 0.05)
-		var r: float = 220.0 + rng.randf_range(-15, 15)  # 2026-05-06 [CANON-APPROVED: SIZE_STANDARDS.md §6 — was 90m, mountain ring must be 200m+]
-		var pos: Vector3 = Vector3(cos(ang) * r, 0, sin(ang) * r)
-		var h: float = rng.randf_range(20, 40)
-		var base_r: float = rng.randf_range(8, 14)
-		var mt := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.0
-		cm.bottom_radius = base_r
-		cm.height = h
-		cm.radial_segments = 8
-		mt.mesh = cm
-		mt.material_override = MAT_ROCK(2.0)
-		mt.position = pos + Vector3(0, h/2 - 2, 0)
-		mt.rotation.y = rng.randf() * TAU
-		add_child(mt)
-		# Snow cap
-		if rng.randf() < 0.7:
-			var cap := MeshInstance3D.new()
-			var ccm := CylinderMesh.new()
-			ccm.top_radius = 0.0
-			ccm.bottom_radius = base_r * 0.55
-			ccm.height = h * 0.32
-			ccm.radial_segments = 8
-			cap.mesh = ccm
-			cap.material_override = MAT_SNOW(1.0)
-			cap.position = pos + Vector3(0, h - h*0.16 - 2, 0)
-			cap.rotation.y = mt.rotation.y
-			add_child(cap)
-	# Outer ring (taller, further)
-	for i in 28:
-		var ang: float = (float(i) / 28.0) * TAU + rng.randf_range(-0.1, 0.1)
-		var r: float = 320.0 + rng.randf_range(-25, 25)  # 2026-05-06 [CANON-APPROVED: outer ring pushed back from 160m to 320m so it reads as horizon]
-		var pos: Vector3 = Vector3(cos(ang) * r, 0, sin(ang) * r)
-		var h: float = rng.randf_range(45, 80)
-		var base_r: float = rng.randf_range(15, 25)
-		var mt := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.0
-		cm.bottom_radius = base_r
-		cm.height = h
-		cm.radial_segments = 7
-		mt.mesh = cm
-		mt.material_override = MAT_ROCK(3.5)
-		mt.position = pos + Vector3(0, h/2 - 5, 0)
-		mt.rotation.y = rng.randf() * TAU
-		add_child(mt)
-		# Snow cap on outer ring (always)
-		var cap := MeshInstance3D.new()
-		var ccm := CylinderMesh.new()
-		ccm.top_radius = 0.0
-		ccm.bottom_radius = base_r * 0.6
-		ccm.height = h * 0.42
-		ccm.radial_segments = 7
-		cap.mesh = ccm
-		cap.material_override = MAT_SNOW(1.5)
-		cap.position = pos + Vector3(0, h - h*0.21 - 5, 0)
-		cap.rotation.y = mt.rotation.y
-		add_child(cap)
-
-# ============================================================================
-# Market stalls
-# ============================================================================
-func _build_market_stalls() -> void:
-	var spots = [Vector3(4.0, 0, -8.0), Vector3(-4.0, 0, -8.0)]
-	for spot in spots:
-		_make_stall(spot)
-
-func _make_stall(pos: Vector3) -> void:
-	var stall := Node3D.new()
-	stall.position = pos
-	add_child(stall)
-	var counter := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(1.8, 0.8, 0.8)
-	counter.mesh = bm
-	counter.material_override = MAT_DARK_WOOD(1.5)
-	counter.position.y = 0.4
-	stall.add_child(counter)
-	for dx in [-0.8, 0.8]:
-		var post := MeshInstance3D.new()
-		var pm := CylinderMesh.new()
-		pm.top_radius = 0.05; pm.bottom_radius = 0.05; pm.height = 1.6
-		post.mesh = pm
-		post.material_override = MAT_DARK_WOOD(0.5)
-		post.position = Vector3(dx, 1.2, -0.3)
-		stall.add_child(post)
-	# Awning (red striped cloth) — THEME §12: cloth must FLAP.
-	# Env: 2026-05-06 — was a static angled box. Wrap in a pivot Node3D at
-	# the back-post line and join group "stall_awnings" so _process() can
-	# pitch the cloth around X (front lip lifting/falling in wind) plus a
-	# small Z-sway. Per-stall phase metadata keeps adjacent stalls from
-	# flapping in unison. Base pitch (0.4 rad) preserved as set_meta so the
-	# canopy keeps its painted-stylized downward slope between flaps.
-	var awn_pivot := Node3D.new()
-	awn_pivot.position = Vector3(0, 1.95, -0.3)  # top of back posts
-	awn_pivot.set_meta("phase", randf() * TAU)
-	awn_pivot.set_meta("base_pitch", 0.4)
-	awn_pivot.add_to_group("stall_awnings")
-	stall.add_child(awn_pivot)
-	var awn_mat := StandardMaterial3D.new()
-	awn_mat.albedo_color = Color(0.78, 0.22, 0.18)
-	awn_mat.roughness = 0.7
-	awn_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var awn := MeshInstance3D.new()
-	var am := BoxMesh.new()
-	am.size = Vector3(2.2, 0.05, 1.2)
-	awn.mesh = am
-	awn.material_override = awn_mat
-	# Cloth offset forward of the pivot — pivot lives at the back edge so
-	# rotation.x reads as the front lip lifting in the breeze.
-	awn.position = Vector3(0, 0.05, 0.4)
-	awn_pivot.add_child(awn)
-	# Wares (potions)
-	var rng := RandomNumberGenerator.new(); rng.randomize()
-	var ware_colors = [Color(0.95, 0.3, 0.25), Color(0.95, 0.85, 0.3), Color(0.3, 0.75, 0.4), Color(0.65, 0.3, 0.85)]
-	for i in 4:
-		var ware_mat := StandardMaterial3D.new()
-		ware_mat.albedo_color = ware_colors[i]
-		ware_mat.roughness = 0.25
-		ware_mat.metallic = 0.1
-		ware_mat.emission_enabled = true
-		ware_mat.emission = ware_colors[i]
-		ware_mat.emission_energy_multiplier = 0.25
-		var w := MeshInstance3D.new()
-		var sm := SphereMesh.new()
-		sm.radius = 0.10
-		w.mesh = sm
-		w.material_override = ware_mat
-		w.position = Vector3(-0.65 + i * 0.4, 0.92, 0)
-		stall.add_child(w)
-
-# ============================================================================
-# Windmill
 # ============================================================================
 func _build_windmill() -> void:
 	var pos: Vector3 = Vector3(0, 0, 12)
@@ -2174,65 +1626,6 @@ const BANNER_COLORS: Array[Color] = [
 	Color(0.55, 0.34, 0.12),  # bronze-tabard
 ]
 
-func _build_banners() -> void:
-	# THEME §8 — Briarwood banner poles ring the central plaza. Doubled count
-	# from 2 → 6 so the village reads as inhabited rather than half-built.
-	var spots: Array = [
-		Vector3(-14, 0,   0),
-		Vector3( 14, 0,   0),
-		Vector3(  0, 0,  14),
-		Vector3(  0, 0, -14),
-		Vector3( 10, 0,  10),
-		Vector3(-10, 0, -10),
-	]
-	var rng := RandomNumberGenerator.new(); rng.randomize()
-	for i in spots.size():
-		var p: Vector3 = spots[i]
-		var pole := Node3D.new()
-		pole.position = p
-		pole.rotation.y = rng.randf() * TAU  # random facing so flap directions differ
-		pole.add_to_group("banner_poles")
-		add_child(pole)
-		var post := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius = 0.06; cm.bottom_radius = 0.06; cm.height = 4.5
-		post.mesh = cm
-		post.material_override = MAT_DARK_WOOD(0.3)
-		post.position.y = 2.25
-		pole.add_child(post)
-		# Crossbar at top — gives the banner something to hang from visually
-		var bar := MeshInstance3D.new()
-		var bcm := CylinderMesh.new()
-		bcm.top_radius = 0.04; bcm.bottom_radius = 0.04; bcm.height = 1.6
-		bar.mesh = bcm
-		bar.material_override = MAT_DARK_WOOD(0.3)
-		bar.rotation.z = PI * 0.5
-		bar.position = Vector3(0.7, 4.35, 0)
-		pole.add_child(bar)
-		# Pivot Node3D at top of pole — rotated by `_process` to flap the cloth.
-		# Cloth is offset along +X from pivot, so Y-rotation sweeps it through
-		# the wind and Z-rotation gives a subtle billow.
-		var pivot := Node3D.new()
-		pivot.position = Vector3(0, 4.35, 0)
-		pivot.add_to_group("banner_cloths")
-		pivot.set_meta("phase", rng.randf() * TAU)
-		pole.add_child(pivot)
-		var ban_mat := StandardMaterial3D.new()
-		ban_mat.albedo_color = BANNER_COLORS[i % BANNER_COLORS.size()]
-		ban_mat.roughness = 0.85
-		ban_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		var ban := MeshInstance3D.new()
-		var qm := QuadMesh.new()
-		qm.size = Vector2(1.4, 0.85)
-		ban.mesh = qm
-		ban.material_override = ban_mat
-		# Cloth pivots from its TOP edge so it hangs naturally
-		ban.position = Vector3(0.7, -0.45, 0)
-		pivot.add_child(ban)
-
-# ============================================================================
-# Stone well
-# ============================================================================
 func _build_well() -> void:
 	var well := Node3D.new()
 	well.position = Vector3(0, 0, 6)
@@ -2321,54 +1714,6 @@ func _build_well() -> void:
 
 # ============================================================================
 # Pond — small reflective water plane
-# ============================================================================
-func _build_pond() -> void:
-	var pond := Node3D.new()
-	pond.position = Vector3(-18, 0, 14)
-	add_child(pond)
-	var water_mat := StandardMaterial3D.new()
-	water_mat.albedo_color = Color(0.08, 0.22, 0.30)
-	water_mat.metallic = 0.65
-	water_mat.roughness = 0.08
-	water_mat.emission_enabled = true
-	water_mat.emission = Color(0.15, 0.40, 0.55)
-	water_mat.emission_energy_multiplier = 0.18
-	var w := MeshInstance3D.new()
-	var pm := PlaneMesh.new()
-	pm.size = Vector2(8.0, 6.0)
-	w.mesh = pm
-	w.material_override = water_mat
-	w.position.y = 0.04
-	w.add_to_group("water_planes")  # THEME §12 — animated by _process
-	w.set_meta("rest_y", 0.04)
-	w.set_meta("ripple_amp", 0.035)
-	w.set_meta("ripple_freq", 0.9)
-	pond.add_child(w)
-	# Reeds along edge
-	var rng := RandomNumberGenerator.new(); rng.randomize()
-	for i in 24:
-		var ang: float = rng.randf() * TAU
-		var rx: float = cos(ang) * (3.5 + rng.randf() * 0.5)
-		var rz: float = sin(ang) * (2.5 + rng.randf() * 0.5)
-		var reed := MeshInstance3D.new()
-		var rcm := CylinderMesh.new()
-		rcm.top_radius = 0.0; rcm.bottom_radius = 0.04
-		rcm.height = 0.6 + rng.randf() * 0.4
-		reed.mesh = rcm
-		var rm := StandardMaterial3D.new()
-		rm.albedo_color = Color(0.35, 0.5, 0.18)
-		rm.roughness = 0.85
-		reed.material_override = rm
-		reed.position = Vector3(rx, 0.3, rz)
-		# Env: 2026-05-06 — reeds were static; added to "reeds" group with a
-		# per-reed phase so _process() can sway them like the ferns/grass tufts
-		# (THEME §12 — every visible thing must move).
-		reed.add_to_group("reeds")
-		reed.set_meta("phase", rng.randf() * TAU)
-		pond.add_child(reed)
-
-# ============================================================================
-# Floating fireflies — GPUParticles3D
 # ============================================================================
 func _build_firefly_particles() -> void:
 	# Env: 2026-05-06 — re-enabled with soft radial alpha (THEME §12)
@@ -2909,431 +2254,6 @@ const CHEST_SCRIPT = preload("res://scripts/Chest.gd")
 # to fill the vast empty ground and prevent the "flat black void" look.
 # Lightweight: uses only built-in meshes (no GLB loads) so it never stalls.
 # ============================================================================
-func _build_far_world_scatter() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 54321
-	var root := Node3D.new()
-	root.name = "FarWorldScatter"
-	add_child(root)
-
-	# ── Distant tree silhouettes (rings from 120m to 500m) ──────────────────
-	# Trees: kept at true scale (h=4-8m) but pushed to 180m+ so they read as
-	# background forest silhouettes, not foreground giants.
-	var tree_count := 60
-	for i in range(tree_count):
-		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(180.0, 500.0)
-		var pos: Vector3 = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
-		var h: float = rng.randf_range(4.0, 8.0)
-		# Trunk — thin and tall
-		var trunk_m := CylinderMesh.new()
-		trunk_m.top_radius    = rng.randf_range(0.10, 0.18)
-		trunk_m.bottom_radius = rng.randf_range(0.14, 0.24)
-		trunk_m.height        = h * 0.55
-		var trunk := MeshInstance3D.new()
-		trunk.mesh = trunk_m
-		trunk.material_override = MAT_DARK_WOOD(0.5)
-		root.add_child(trunk)
-		trunk.global_position = pos + Vector3(0, h * 0.55 * 0.5, 0)
-		# Canopy — tight sphere or narrow cone (not wide blobs)
-		var canopy := MeshInstance3D.new()
-		if rng.randi() % 2 == 0:
-			var sm := SphereMesh.new()
-			sm.radius = rng.randf_range(0.8, 1.6)  # was 1.4-2.8
-			sm.height = sm.radius * 2.0
-			canopy.mesh = sm
-		else:
-			var prm := PrismMesh.new()
-			prm.size = Vector3(rng.randf_range(1.2, 2.2), h * 0.55, rng.randf_range(1.2, 2.2))  # was 2.2-4.0
-			canopy.mesh = prm
-		var cm := StandardMaterial3D.new()
-		var green_mix: float = rng.randf()
-		if green_mix < 0.6:
-			cm.albedo_color = Color(0.15 + rng.randf_range(0, 0.12), 0.32 + rng.randf_range(0, 0.14), 0.10)
-		elif green_mix < 0.8:
-			cm.albedo_color = Color(0.28, 0.22, 0.08)  # autumn brown
-		else:
-			cm.albedo_color = Color(0.08, 0.22, 0.14)  # dark pine
-		cm.roughness = 0.95
-		canopy.material_override = cm
-		root.add_child(canopy)
-		canopy.global_position = pos + Vector3(0, h * 0.55 + h * 0.28, 0)
-
-	# ── Boulder clusters (100m to 350m) ────────────────────────────────────
-	for i in range(60):
-		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(100.0, 350.0)
-		var pos: Vector3 = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
-		var boulder := MeshInstance3D.new()
-		var sm := SphereMesh.new()
-		var s: float = rng.randf_range(0.8, 2.5)
-		sm.radius = s
-		sm.height = s * rng.randf_range(0.6, 1.0)
-		boulder.mesh = sm
-		boulder.material_override = MAT_ROCK(1.0)
-		boulder.scale = Vector3(
-			rng.randf_range(0.7, 1.3),
-			rng.randf_range(0.5, 0.9),
-			rng.randf_range(0.7, 1.3)
-		)
-		root.add_child(boulder)
-		boulder.global_position = pos + Vector3(0, s * 0.4, 0)
-
-	# ── Distant hill mounds (low spheres that break flat horizon) ───────────
-	for i in range(20):
-		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(200.0, 500.0)
-		var pos: Vector3 = Vector3(cos(angle) * dist, -2.0, sin(angle) * dist)
-		var hill  := MeshInstance3D.new()
-		var sm    := SphereMesh.new()
-		sm.radius = rng.randf_range(15.0, 35.0)
-		sm.height = rng.randf_range(4.0, 10.0)
-		sm.rings  = 8
-		sm.radial_segments = 12
-		hill.mesh = sm
-		var hm := StandardMaterial3D.new()
-		hm.albedo_color = Color(0.28 + rng.randf_range(0, 0.1), 0.40 + rng.randf_range(0, 0.1), 0.20)
-		hm.roughness = 0.95
-		hill.material_override = hm
-		root.add_child(hill)
-		hill.global_position = pos
-
-# ============================================================================
-# MID-WORLD POIs — fills the 60–160m dead zone around Briarwood
-# Six distinct landmarks that give players destinations to discover in every
-# direction.  All are primitive-based for zero-asset-dependency.
-# ============================================================================
-
-func _build_mid_world_pois() -> void:
-	var root := Node3D.new()
-	root.name = "MidWorldPOIs"
-	add_child(root)
-
-	# ── 1. Ruined Watchtower (east, 95m) ────────────────────────────────────
-	# Collapsed medieval watchtower — broken top, vine-covered stones, chest inside.
-	var tw_pos: Vector3 = Vector3(95.0, 0.0, 30.0)
-	var tw     := Node3D.new()
-	tw.name    = "RuinedWatchtower"
-	root.add_child(tw)
-	tw.global_position = tw_pos
-
-	# Main shaft (broken — shorter than a full tower)
-	var tw_shaft := MeshInstance3D.new()
-	var tw_cm    := CylinderMesh.new()
-	tw_cm.top_radius    = 1.5
-	tw_cm.bottom_radius = 2.0
-	tw_cm.height        = 8.0
-	tw_shaft.mesh = tw_cm
-	tw_shaft.material_override = MAT_STONE(2.0)
-	tw_shaft.position.y = 4.0
-	tw.add_child(tw_shaft)
-
-	# Broken top — angled BoxMesh chunks to read as crumbled masonry
-	for i in range(5):
-		var chunk := MeshInstance3D.new()
-		var cbm   := BoxMesh.new()
-		cbm.size = Vector3(
-			1.0 + float(i) * 0.3,
-			0.6 + float(i) * 0.2,
-			0.8 + float(i) * 0.25
-		)
-		chunk.mesh = cbm
-		chunk.material_override = MAT_STONE(1.5)
-		var ang: float = float(i) * 1.25
-		chunk.position = Vector3(cos(ang) * 1.2, 8.0 + float(i) * 0.3, sin(ang) * 1.2)
-		chunk.rotation = Vector3(randf_range(-0.3, 0.3), ang, randf_range(-0.2, 0.2))
-		tw.add_child(chunk)
-
-	# Scatter rubble at base
-	for i in range(8):
-		var rb := MeshInstance3D.new()
-		var rbm := BoxMesh.new()
-		rbm.size = Vector3(randf_range(0.3, 0.8), randf_range(0.2, 0.5), randf_range(0.3, 0.8))
-		rb.mesh = rbm
-		rb.material_override = MAT_STONE(1.0)
-		var rba: float = float(i) * TAU / 8.0 + randf_range(-0.4, 0.4)
-		rb.position = tw_pos + Vector3(cos(rba) * randf_range(1.5, 3.5), 0.15, sin(rba) * randf_range(1.5, 3.5))
-		rb.rotation.y = randf_range(0, TAU)
-		root.add_child(rb)
-
-	# Torch glow at top — ruins feel inhabited by someone
-	var tw_light := OmniLight3D.new()
-	tw_light.light_color  = Color(1.0, 0.65, 0.25)
-	tw_light.light_energy = 1.8
-	tw_light.omni_range   = 20.0
-	tw_light.position     = tw_pos + Vector3(0, 9.0, 0)
-	root.add_child(tw_light)
-
-	# Collision
-	var tw_body := StaticBody3D.new()
-	var tw_col  := CollisionShape3D.new()
-	var tw_cyl  := CylinderShape3D.new()
-	tw_cyl.radius = 2.0; tw_cyl.height = 8.0
-	tw_col.shape = tw_cyl; tw_col.position.y = 4.0
-	tw_body.add_child(tw_col); tw.add_child(tw_body)
-
-	# Loot chest at base — reward for exploring
-	# Inline chest — _make_loot_chest_primitive removed; build directly
-	var chest_node := StaticBody3D.new()
-	chest_node.set_script(CHEST_SCRIPT)
-	chest_node.position = tw_pos + Vector3(1.8, 0.2, 1.8)
-	chest_node.rotation.y = randf_range(-PI, PI) * 0.3
-	root.add_child(chest_node)
-
-	# ── 2. Druid Stone Circle (south-west, 110m) ──────────────────────────────
-	# Seven standing stones in a ring, glowing rune in the centre.
-	var sc_pos: Vector3 = Vector3(-80.0, 0.0, -70.0)
-	var sc     := Node3D.new()
-	sc.name    = "DruidStoneCircle"
-	root.add_child(sc)
-	sc.global_position = sc_pos
-
-	var stone_count := 7
-	var circle_r    := 7.0
-	for i in range(stone_count):
-		var sang : float = TAU * float(i) / float(stone_count)
-		var spos: Vector3 = Vector3(cos(sang) * circle_r, 0.0, sin(sang) * circle_r)
-		var stone := MeshInstance3D.new()
-		var sbm   := BoxMesh.new()
-		sbm.size = Vector3(
-			0.6 + sin(float(i)) * 0.3,
-			2.4 + sin(float(i) * 1.7) * 0.8,
-			0.5 + cos(float(i)) * 0.2
-		)
-		stone.mesh = sbm
-		stone.material_override = MAT_ROCK(1.5)
-		stone.position = spos + Vector3(0, sbm.size.y * 0.5, 0)
-		stone.rotation.y = sang + randf_range(-0.2, 0.2)
-		stone.rotation.z = randf_range(-0.06, 0.06)
-		sc.add_child(stone)
-
-		# Rune glow — faint green emission on face of each stone
-		var rune := MeshInstance3D.new()
-		var rqm  := QuadMesh.new()
-		rqm.size = Vector2(0.3, 0.5)
-		rune.mesh = rqm
-		var rm   := StandardMaterial3D.new()
-		rm.albedo_color = Color(0.3, 1.0, 0.5, 0.8)
-		rm.emission_enabled = true
-		rm.emission = Color(0.2, 1.0, 0.4)
-		rm.emission_energy_multiplier = 1.2
-		rm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		rune.material_override = rm
-		rune.position = spos + Vector3(0, sbm.size.y * 0.55, sin(sang + PI) * 0.3)
-		rune.rotation.y = sang + PI
-		sc.add_child(rune)
-
-	# Central altar slab
-	var altar := MeshInstance3D.new()
-	var abm   := BoxMesh.new()
-	abm.size  = Vector3(1.8, 0.35, 1.2)
-	altar.mesh = abm
-	altar.material_override = MAT_STONE(2.0)
-	altar.position.y = 0.18
-	sc.add_child(altar)
-
-	# Pulsing centre light (green-teal druid magic)
-	var sc_light := OmniLight3D.new()
-	sc_light.light_color  = Color(0.35, 1.0, 0.55)
-	sc_light.light_energy = 1.5
-	sc_light.omni_range   = 18.0
-	sc_light.position     = Vector3(0, 1.0, 0)
-	sc.add_child(sc_light)
-
-	# ── 3. Abandoned Caravan (north-east road, 75m) ──────────────────────────
-	# Overturned wagon, scattered crates, campfire embers — feels like a story.
-	var cv_pos: Vector3 = Vector3(60.0, 0.0, 75.0)
-	var cv     := Node3D.new()
-	cv.name    = "AbandonedCaravan"
-	root.add_child(cv)
-	cv.global_position = cv_pos
-
-	# Wagon body — long box, slightly tilted
-	var wagon := MeshInstance3D.new()
-	var wbm   := BoxMesh.new()
-	wbm.size  = Vector3(2.0, 1.2, 4.5)
-	wagon.mesh = wbm
-	wagon.material_override = MAT_DARK_WOOD(1.5)
-	wagon.position = Vector3(0, 0.6, 0)
-	wagon.rotation = Vector3(0.0, 0.35, 0.18)  # tilted/overturned
-	cv.add_child(wagon)
-
-	# Wheels (2 visible, lying flat)
-	for wi in range(2):
-		var wheel := MeshInstance3D.new()
-		var wcm   := CylinderMesh.new()
-		wcm.top_radius = 0.65; wcm.bottom_radius = 0.65; wcm.height = 0.18
-		wheel.mesh = wcm
-		wheel.material_override = MAT_DARK_WOOD(1.0)
-		wheel.position = Vector3(float(wi) * 2.2 - 1.1, 0.1, 1.5)
-		wheel.rotation.x = PI * 0.5
-		cv.add_child(wheel)
-
-	# Scattered crates
-	for ci in range(4):
-		var crate := MeshInstance3D.new()
-		var cbm2  := BoxMesh.new()
-		cbm2.size = Vector3(0.7, 0.6, 0.7)
-		crate.mesh = cbm2
-		crate.material_override = MAT_WOOD(1.0)
-		var ca: float = float(ci) * 1.5
-		crate.position = Vector3(cos(ca) * 2.5, 0.3, sin(ca) * 2.5 + 1.0)
-		crate.rotation.y = ca
-		cv.add_child(crate)
-
-	# Cold campfire remnant
-	var fire_ring := MeshInstance3D.new()
-	var frm       := CylinderMesh.new()
-	frm.top_radius = 0.45; frm.bottom_radius = 0.55; frm.height = 0.08
-	fire_ring.mesh = frm
-	fire_ring.material_override = MAT_STONE(1.0)
-	fire_ring.position = Vector3(-2.5, 0.04, -1.5)
-	cv.add_child(fire_ring)
-
-	# Faint ember glow (just barely alive)
-	var ember := OmniLight3D.new()
-	ember.light_color  = Color(1.0, 0.4, 0.1)
-	ember.light_energy = 0.6
-	ember.omni_range   = 5.0
-	ember.position     = cv_pos + Vector3(-2.5, 0.3, -1.5)
-	root.add_child(ember)
-
-	# ── 4. Roadside Waypoint Shrine (north road to Nordic, 55m) ─────────────
-	# Stone marker with a small offering bowl — gives players a rest point
-	# on the long run to the Nordic village.
-	var ws_pos: Vector3 = Vector3(4.0, 0.0, 58.0)
-	var ws     := Node3D.new()
-	ws.name    = "WaypointShrine"
-	root.add_child(ws)
-	ws.global_position = ws_pos
-
-	# Stone obelisk
-	var ob := MeshInstance3D.new()
-	var om := BoxMesh.new()
-	om.size = Vector3(0.5, 3.5, 0.5)
-	ob.mesh = om
-	ob.material_override = MAT_STONE(2.0)
-	ob.position.y = 1.75
-	ws.add_child(ob)
-
-	# Cap stone (slightly wider)
-	var obc := MeshInstance3D.new()
-	var ocm2 := BoxMesh.new()
-	ocm2.size = Vector3(0.75, 0.35, 0.75)
-	obc.mesh = ocm2
-	obc.material_override = MAT_STONE(2.0)
-	obc.position.y = 3.68
-	ws.add_child(obc)
-
-	# Offering bowl (small disc on a plinth)
-	var plinth := MeshInstance3D.new()
-	var plm    := CylinderMesh.new()
-	plm.top_radius = 0.35; plm.bottom_radius = 0.4; plm.height = 0.55
-	plinth.mesh = plm
-	plinth.material_override = MAT_STONE(1.5)
-	plinth.position = Vector3(0.6, 0.28, 0.0)
-	ws.add_child(plinth)
-
-	var bowl := MeshInstance3D.new()
-	var blm  := SphereMesh.new()
-	blm.radius = 0.22; blm.height = 0.22
-	bowl.mesh = blm
-	var bwm := StandardMaterial3D.new()
-	bwm.albedo_color = Color(0.65, 0.50, 0.20)
-	bwm.metallic = 0.6; bwm.roughness = 0.3
-	bowl.material_override = bwm
-	bowl.position = Vector3(0.6, 0.6, 0.0)
-	ws.add_child(bowl)
-
-	# Soft golden shrine glow
-	var ws_light := OmniLight3D.new()
-	ws_light.light_color  = Color(1.0, 0.88, 0.55)
-	ws_light.light_energy = 1.0
-	ws_light.omni_range   = 10.0
-	ws_light.position     = Vector3(0, 2.5, 0)
-	ws.add_child(ws_light)
-
-	# ── 5. Ancient Standing Stones Arch (south, 90m) ─────────────────────────
-	# A dramatic natural arch of two leaning megaliths — a pure silhouette moment.
-	var arch_pos: Vector3 = Vector3(-15.0, 0.0, -95.0)
-	var ar       := Node3D.new()
-	ar.name      = "MegalithArch"
-	root.add_child(ar)
-	ar.global_position = arch_pos
-
-	for si in range(2):
-		var lean_sign := 1.0 if si == 0 else -1.0
-		var stn := MeshInstance3D.new()
-		var scm2 := BoxMesh.new()
-		scm2.size = Vector3(1.0, 7.0, 1.2)
-		stn.mesh = scm2
-		stn.material_override = MAT_ROCK(1.5)
-		stn.position = Vector3(float(si) * 4.0 - 2.0, 3.5, 0.0)
-		stn.rotation.z = lean_sign * 0.14  # lean inward
-		ar.add_child(stn)
-
-	# Capstone resting on top
-	var capstone := MeshInstance3D.new()
-	var csm      := BoxMesh.new()
-	csm.size     = Vector3(5.5, 0.8, 1.4)
-	capstone.mesh = csm
-	capstone.material_override = MAT_ROCK(1.5)
-	capstone.position = Vector3(0, 7.2, 0)
-	ar.add_child(capstone)
-
-	# ── 6. Wolf Den (west tree-line, 70m) ────────────────────────────────────
-	# A rocky outcrop den with bones and glowing eyes — warns players of wolves.
-	var wd_pos: Vector3 = Vector3(-70.0, 0.0, 10.0)
-	var wd     := Node3D.new()
-	wd.name    = "WolfDen"
-	root.add_child(wd)
-	wd.global_position = wd_pos
-
-	# Rock pile entrance
-	for ri in range(6):
-		var rock := MeshInstance3D.new()
-		var rsm  := SphereMesh.new()
-		var rs: float = randf_range(0.8, 2.2)
-		rsm.radius = rs; rsm.height = rs * randf_range(0.5, 0.8)
-		rock.mesh = rsm
-		rock.material_override = MAT_ROCK(1.0)
-		var ra: float = float(ri) * TAU / 6.0
-		rock.position = wd_pos + Vector3(cos(ra) * randf_range(1.0, 2.8), rs * 0.35, sin(ra) * randf_range(0.8, 2.5))
-		rock.scale = Vector3(randf_range(0.8, 1.3), randf_range(0.6, 1.0), randf_range(0.8, 1.3))
-		root.add_child(rock)
-
-	# Scattered bones (small white cylinders)
-	for bi2 in range(5):
-		var bone := MeshInstance3D.new()
-		var bcm  := CylinderMesh.new()
-		bcm.top_radius = 0.05; bcm.bottom_radius = 0.06; bcm.height = randf_range(0.3, 0.7)
-		bone.mesh = bcm
-		var bmat2 := StandardMaterial3D.new()
-		bmat2.albedo_color = Color(0.88, 0.85, 0.78); bmat2.roughness = 0.9
-		bone.material_override = bmat2
-		bone.position = wd_pos + Vector3(randf_range(-2.5, 2.5), 0.15, randf_range(-2.5, 2.5))
-		bone.rotation = Vector3(randf_range(-0.5, 0.5), randf_range(0, TAU), randf_range(-0.3, 0.3))
-		root.add_child(bone)
-
-	# Glowing amber eyes inside the den
-	var eye_light := OmniLight3D.new()
-	eye_light.light_color  = Color(1.0, 0.50, 0.05)
-	eye_light.light_energy = 1.2
-	eye_light.omni_range   = 8.0
-	eye_light.position     = wd_pos + Vector3(0, 0.8, 0)
-	root.add_child(eye_light)
-
-	_dlog("Mid-world POIs built (6 landmarks)")
-
-
-# ============================================================================
-# WHISPERWOOD FOREST — dense tree zone 60–120m west of Briarwood
-# The forest that NPCs constantly reference in dialogue.  Uses GLB trees
-# where available, procedural fallback always fires.  Includes ambient
-# fog tint, firefly cluster, and places the goblin camp INSIDE the forest
-# so players actually have to venture in to complete quests.
-# ============================================================================
-
 func _build_whisperwood_forest() -> void:
 	var root := Node3D.new()
 	root.name = "WhisperwoodForest"
@@ -6448,1128 +5368,82 @@ const BOAT_DESTS := [
 @export var nordic_stream_unload_dist: float = 240.0  # free when player beyond this range
 @export var nordic_stream_tick: float = 0.8           # seconds between proximity checks
 
-func MAT_WATER() -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	m.albedo_color        = Color(0.10, 0.28, 0.45, 0.82)
-	m.transparency        = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.roughness           = 0.12
-	m.metallic            = 0.05
-	m.emission_enabled    = true
-	m.emission            = Color(0.04, 0.12, 0.22)
-	m.emission_energy_multiplier = 0.35
-	return m
-
-func MAT_PLANK(uv := 1.5) -> StandardMaterial3D:
-	return _pbr_mat(
-		"res://assets/textures/wood/wood_diff.jpg",
-		"res://assets/textures/wood/wood_norm.jpg",
-		"res://assets/textures/wood/wood_rough.jpg",
-		Vector3(uv, uv, 1), Color(0.72, 0.64, 0.52))
-
-func MAT_DARKPOST() -> StandardMaterial3D:
-	return _pbr_mat(
-		"res://assets/textures/wood/wood_diff.jpg",
-		"res://assets/textures/wood/wood_norm.jpg",
-		"",
-		Vector3(1, 1, 1), Color(0.22, 0.15, 0.10))
-
-# ── Entry point ─────────────────────────────────────────────────────────────
-func _build_nordic_fishing_village() -> void:
-	_nrng = RandomNumberGenerator.new()
-	_nrng.seed = NORDIC_SEED
-
-	# Init shared pier meshes for MultiMesh batching (Builder run 26 perf pass)
-	_pier_post_mesh = CylinderMesh.new()
-	_pier_post_mesh.top_radius    = 0.11
-	_pier_post_mesh.bottom_radius = 0.14
-	_pier_post_mesh.height        = 3.0
-	_pier_rail_mesh = BoxMesh.new()
-	_pier_rail_mesh.size = Vector3(0.10, 0.08, 3.0)  # seg_len is always 3.0
-
-	var origin := NORDIC_ORIGIN
-
-	# Water plane — pushed 28 m seaward so near edge is at z≈92, clear of
-	# shore houses (which sit at z=108–112). FIX: was z=-10, intruded into
-	# shore house band.
-	var water := MeshInstance3D.new()
-	var wpm   := PlaneMesh.new()
-	wpm.size  = Vector2(90.0, 70.0)
-	water.mesh              = wpm
-	water.material_override = MAT_WATER()
-	water.position          = origin + Vector3(0.0, NORDIC_WATER_Y - 0.02, -25.0)
-	water.name              = "NordicHarbour"
-	add_child(water)
-
-	var pier_dir: Vector3 = Vector3(0, 0, -1)
-	var shore_dir: Vector3 = Vector3(1, 0,  0)
-
-	# Main pier
-	var pier_start: Vector3 = origin + pier_dir * 6.0
-	pier_start.y   = NORDIC_WATER_Y + 0.15
-	_nordic_pier_spine(pier_start, pier_dir, NORDIC_PIER_LEN)
-
-	# Branch piers — store bases so dressing can use same offsets
-	var branch_dirs  : Array[Vector3] = []
-	var branch_bases : Array[Vector3] = []
-	for i in range(NORDIC_BRANCH_T.size()):
-		var t: float = NORDIC_BRANCH_T[i]
-		var bp: Vector3 = pier_start + pier_dir * (NORDIC_PIER_LEN * t)
-		bp.y    = NORDIC_WATER_Y + 0.15
-		var side := (1.0 if i % 2 == 0 else -1.0)
-		var bd  : Vector3 = pier_dir.rotated(Vector3.UP, side * PI * 0.5)
-		branch_dirs.append(bd)
-		branch_bases.append(bp)
-		var bl: float = _nrng.randf_range(14.0, 22.0)
-		_nordic_pier_branch(bp, bd, bl)
-
-	# Landmarks
-	var lh_pos: Vector3 = origin + shore_dir * 18.0 + Vector3(0, 0, 6.0)
-	lh_pos.y   = origin.y
-	_nordic_longhouse(lh_pos, shore_dir)
-
-	var sh_pos: Vector3 = origin + shore_dir * -16.0 + pier_dir * 8.0
-	sh_pos.y   = origin.y
-	_nordic_smokehouse(sh_pos, shore_dir)
-
-	# Beacon at pier terminus (not 8 m past it). FIX: was NORDIC_PIER_LEN+8.
-	var lp_pos: Vector3 = pier_start + pier_dir * (NORDIC_PIER_LEN - 2.0)
-	lp_pos.y   = NORDIC_WATER_Y + 0.15
-	_nordic_beacon(lp_pos)
-
-	# Shore stilt houses — skip slot near longhouse to avoid overlap.
-	# FIX (review nice-to-have): reserve gap at x≈18 m.
-	_nordic_shore_houses(origin, shore_dir, pier_dir, 16)
-
-	# Pier-arm stilt houses (one per branch that has room)
-	for i in range(mini(branch_bases.size(), branch_dirs.size())):  # FIX: minf→mini
-		var hpos: Vector3 = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(8.0, 16.0) \
-					+ _nordic_side(branch_dirs[i]) * _nrng.randf_range(2.5, 4.5)
-		hpos.y   = NORDIC_WATER_Y + 0.15
-		_nordic_stilt_house(hpos, -branch_dirs[i], Vector2(6.5, 6.0))
-
-	# Dressing
-	_nordic_dock_dressing(pier_start, pier_dir, branch_dirs, branch_bases)
-	_nordic_shore_dressing(origin, shore_dir, pier_dir)
-
-	# Dock NPCs
-	_nordic_dock_npcs(origin, pier_start, pier_dir, shore_dir)
-
-	# Shrink all MultiMesh instance counts to actual usage, then clear batch dict
-	_mm_finalize()
-
-	_dlog("Nordic fishing village built (rev2) at " + str(origin))
-
-# Road is split into its own _safe_call so a road crash never kills the village.
-func _build_nordic_road() -> void:
-	var origin := NORDIC_ORIGIN
-	var road_end: Vector3 = origin + Vector3(0, 0, 8)
-	_nordic_cobble_road(Vector3(0, 0, 12), road_end)
-	# Harbor gate arch sits at the road's northern terminus, facing south (dir = +Z)
-	_nordic_harbor_gate(road_end + Vector3(0, 0, 4), Vector3(0, 0, 1))
-	_dlog("Nordic cobble road + harbor gate built")
-
-# ── Harbor ambient audio — Builder run 25 ────────────────────────────────────
-# All three streams are optional — assign in the Inspector to activate.
-# Suggested CC0 sources: freesound.org ("ocean waves loop", "dock creak", "seagull cry")
-# Audio zones use Godot's built-in 3D distance attenuation — no extra code needed.
-func _build_nordic_ambient_audio() -> void:
-	if sfx_waves_loop == null and sfx_dock_creak_loop == null and sfx_gulls_one_shot == null:
-		_dlog("Nordic audio: no streams assigned — skipping")
-		return
-
+# ── Nordic Village — GLB placement (replaces 800-line procedural pier builder) ─
+# Uses real GLB assets: sea_keep.glb as the main hall, log_building.glb as
+# dock houses, tavern_troll.glb as the harbormaster inn. Placed at fixed world
+# positions matching the SVG map (Nordic Village at world XZ 0, -250).
+func _build_nordic_village_glb() -> void:
+	const ORIGIN := Vector3(0.0, 0.0, -250.0)
 	var root := Node3D.new()
-	root.name = "NordicAmbientAudio"
+	root.name = "NordicVillage"
 	add_child(root)
 
-	var origin := NORDIC_ORIGIN
-
-	# Ocean waves — large radius, centred on the harbour water plane
-	if sfx_waves_loop != null:
-		var waves := AudioStreamPlayer3D.new()
-		waves.name          = "WavesLoop"
-		waves.stream        = sfx_waves_loop
-		waves.max_distance  = 130.0
-		waves.unit_size     = 1.0
-		waves.volume_db     = sfx_waves_volume_db
-		waves.autoplay      = true
-		root.add_child(waves)
-		waves.global_position = origin + Vector3(0, 0, -20)  # over the water
-
-	# Dock creak — tighter radius, right at the pier head where ropes + posts are
-	if sfx_dock_creak_loop != null:
-		var creak := AudioStreamPlayer3D.new()
-		creak.name          = "DockCreakLoop"
-		creak.stream        = sfx_dock_creak_loop
-		creak.max_distance  = 55.0
-		creak.unit_size     = 1.0
-		creak.volume_db     = sfx_creak_volume_db
-		creak.autoplay      = true
-		root.add_child(creak)
-		creak.global_position = origin + Vector3(0, 0.15, 6)  # pier start
-
-	# Gulls — random one-shots on a timer, scattered across the harbour airspace
-	if sfx_gulls_one_shot != null:
-		var gull_timer := Timer.new()
-		gull_timer.name      = "GullTimer"
-		gull_timer.wait_time = sfx_gulls_interval_min
-		gull_timer.one_shot  = false
-		gull_timer.autostart = true
-		gull_timer.timeout.connect(func(): _play_nordic_gull(root))
-		root.add_child(gull_timer)
-
-	_dlog("Nordic ambient audio built")
-
-func _play_nordic_gull(audio_root: Node3D) -> void:
-	if sfx_gulls_one_shot == null:
-		return
-	if not is_instance_valid(audio_root):
-		return
-
-	# Use _nrng for position scatter — consistent with the rest of Nordic
-	var origin := NORDIC_ORIGIN
-	var p: Vector3 = origin + Vector3(
-		_nrng.randf_range(-30.0, 30.0),
-		_nrng.randf_range(3.0, 10.0),
-		_nrng.randf_range(-20.0, 40.0)
-	)
-
-	var gull := AudioStreamPlayer3D.new()
-	gull.stream      = sfx_gulls_one_shot
-	gull.max_distance = 140.0
-	gull.volume_db   = _nrng.randf_range(-14.0, -7.0)
-	gull.pitch_scale = _nrng.randf_range(0.88, 1.14)
-	audio_root.add_child(gull)
-	gull.global_position = p
-	gull.play()
-
-	# Self-cleanup: free the player node when the cry finishes (~3 s max)
-	var cleanup := Timer.new()
-	cleanup.wait_time = 3.5
-	cleanup.one_shot  = true
-	cleanup.autostart = true
-	cleanup.timeout.connect(func():
-		if is_instance_valid(gull):
-			gull.queue_free()
-		cleanup.queue_free()
-	)
-	audio_root.add_child(cleanup)
-
-	# Randomise next gull interval
-	var gull_timer := audio_root.find_child("GullTimer", false, false) as Timer
-	if gull_timer and is_instance_valid(gull_timer):
-		gull_timer.wait_time = _nrng.randf_range(sfx_gulls_interval_min, sfx_gulls_interval_max)
-
-# ── Utilities ────────────────────────────────────────────────────────────────
-func _nordic_side(dir: Vector3) -> Vector3:
-	var s: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-	return s if _nrng.randf() < 0.5 else -s  # FIX: was randi()%2 (modulo bias)
-
-# ── Pier spine — with single batched collision body ──────────────────────────
-func _nordic_pier_spine(start: Vector3, dir: Vector3, length: float) -> void:
-	var seg_len := 3.0
-	var count: float = int(ceil(length / seg_len))
-	for i in range(count):
-		var seg_pos := start + dir * (float(i) * seg_len)
-		seg_pos.y   = start.y
-		_nordic_pier_segment(seg_pos, dir, seg_len)
-	# FIX: single collision body spanning the full pier deck
-	_nordic_pier_collision(start, dir, length)
-
-# ── Pier branch — with batched collision + end platform ──────────────────────
-func _nordic_pier_branch(start: Vector3, dir: Vector3, length: float) -> void:
-	var seg_len := 3.0
-	var count: float = int(ceil(length / seg_len))
-	for i in range(count):
-		var seg_pos := start + dir * (float(i) * seg_len)
-		seg_pos.y   = start.y
-		_nordic_pier_segment(seg_pos, dir, seg_len)
-	_nordic_pier_collision(start, dir, length)
-	# End platform — FIX: wrapped in Node3D so it uses global_position
-	var plat_root := Node3D.new()
-	plat_root.name = "PierEndPlat"
-	add_child(plat_root)
-	plat_root.global_position = start + dir * (length + 1.6)
-	plat_root.global_position.y = start.y
-	plat_root.rotation.y = atan2(dir.x, dir.z)
-	var plat  := MeshInstance3D.new()
-	var pm    := BoxMesh.new()
-	pm.size   = Vector3(NORDIC_PIER_W + 1.4, 0.22, 3.6)
-	plat.mesh = pm
-	plat.material_override = MAT_PLANK(2.0)
-	plat_root.add_child(plat)
-	# End-platform collision
-	var pb   := StaticBody3D.new()
-	var pc   := CollisionShape3D.new()
-	var ps   := BoxShape3D.new()
-	ps.size  = Vector3(NORDIC_PIER_W + 1.4, 0.22, 3.6)
-	pc.shape = ps
-	pb.add_child(pc)
-	plat_root.add_child(pb)
-
-# FIX: one StaticBody3D per pier call, sized to full deck length (not per segment)
-func _nordic_pier_collision(start: Vector3, dir: Vector3, length: float) -> void:
-	var mid := start + dir * (length * 0.5)
-	var body := StaticBody3D.new()
-	body.name = "PierCollision"
-	add_child(body)
-	body.global_position = mid
-	body.global_position.y = start.y
-	body.rotation.y = atan2(dir.x, dir.z)
-	var col   := CollisionShape3D.new()
-	var box   := BoxShape3D.new()
-	box.size  = Vector3(NORDIC_PIER_W, 0.22, length)
-	col.shape = box
-	body.add_child(col)
-
-# ── MultiMesh batching helpers (Builder run 26 — perf pass) ─────────────────
-func _mm_key(mesh: Mesh, mat: Material) -> String:
-	return "%s|%s" % [str(mesh.get_rid()), str(mat.get_rid()) if mat != null else "null"]
-
-func _mm_add(parent: Node, mesh: Mesh, mat: Material, xform: Transform3D, reserve: int = 64) -> void:
-	var key := _mm_key(mesh, mat)
-	if not _mm_batches.has(key) or not is_instance_valid(_mm_batches[key].mmi):
-		var mmi := MultiMeshInstance3D.new()
-		var mm  := MultiMesh.new()
-		mm.mesh = mesh
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.instance_count = reserve
-		mmi.multimesh = mm
-		if mat != null:
-			mmi.material_override = mat
-		parent.add_child(mmi)
-		_mm_batches[key] = {"mmi": mmi, "mm": mm, "next": 0}
-	var d: Dictionary = _mm_batches[key]
-	if d.next >= d.mm.instance_count:
-		d.mm.instance_count += reserve
-	d.mm.set_instance_transform(d.next, xform)
-	d.next += 1
-	_mm_batches[key] = d
-
-func _mm_finalize() -> void:
-	for key in _mm_batches:
-		var d: Dictionary = _mm_batches[key]
-		if d.mm and d.next > 0:
-			d.mm.instance_count = d.next
-	_mm_batches.clear()
-
-# ── Single pier segment: visuals only (collision handled by _nordic_pier_collision)
-func _nordic_pier_segment(world_pos: Vector3, dir: Vector3, seg_len: float) -> Node3D:
-	var seg := Node3D.new()
-	seg.name = "PierSeg"
-	add_child(seg)
-	seg.global_position = world_pos
-	seg.rotation.y = atan2(dir.x, dir.z)
-
-	var deck := MeshInstance3D.new()
-	var dm   := BoxMesh.new()
-	dm.size  = Vector3(NORDIC_PIER_W, 0.20, seg_len)
-	deck.mesh = dm
-	deck.material_override = MAT_PLANK(2.0)
-	deck.position = Vector3(0, 0.0, seg_len * 0.5)
-	seg.add_child(deck)
-
-	var y_rot     := atan2(dir.x, dir.z)
-	var seg_basis := Basis(Vector3.UP, y_rot)
-
-	# Posts — MultiMesh batch path; else branch preserved for per-node debugging
-	if _pier_post_mesh != null:
-		for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
-			var post_local: Vector3 = Vector3(sx, -1.5, seg_len * 0.18)
-			var post_world := world_pos + seg_basis * post_local
-			_mm_add(seg.get_parent(), _pier_post_mesh, MAT_DARKPOST(),
-					Transform3D(Basis.IDENTITY, post_world))
-	else:
-		for sx in [-(NORDIC_PIER_W * 0.44), NORDIC_PIER_W * 0.44]:
-			var post := MeshInstance3D.new()
-			var cm   := CylinderMesh.new()
-			cm.top_radius    = 0.11
-			cm.bottom_radius = 0.14
-			cm.height        = 3.0
-			post.mesh        = cm
-			post.material_override = MAT_DARKPOST()
-			post.position    = Vector3(sx, -1.5, seg_len * 0.18)
-			seg.add_child(post)
-
-	# Rails — MultiMesh batch path; else branch preserved for per-node debugging
-	if _nrng.randf() < 0.70:
-		if _pier_rail_mesh != null:
-			for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
-				var rail_local: Vector3 = Vector3(sx, 1.0, seg_len * 0.5)
-				var rail_world := world_pos + seg_basis * rail_local
-				_mm_add(seg.get_parent(), _pier_rail_mesh, MAT_PLANK(1.0),
-						Transform3D(seg_basis, rail_world))
-		else:
-			for sx in [-(NORDIC_PIER_W * 0.47), NORDIC_PIER_W * 0.47]:
-				var rail := MeshInstance3D.new()
-				var rm   := BoxMesh.new()
-				rm.size  = Vector3(0.10, 0.08, seg_len)
-				rail.mesh = rm
-				rail.material_override = MAT_PLANK(1.0)
-				rail.position = Vector3(sx, 1.0, seg_len * 0.5)
-				seg.add_child(rail)
-
-	return seg
-
-# ── Stilt house ───────────────────────────────────────────────────────────────
-func _nordic_stilt_house(world_pos: Vector3, facing: Vector3, footprint: Vector2) -> Node3D:
-	var house  := Node3D.new()
-	house.name = "NordicHouse"
-	add_child(house)
-	house.global_position = world_pos
-	house.rotation.y = atan2(facing.x, facing.z)
-
-	var w      := footprint.x
-	var d      := footprint.y
-	var wall_h := 3.0
-	var rpeak: float = _nrng.randf_range(2.2, 3.0)
-	var deck_y: float = _nrng.randf_range(0.5, 1.6)
-	var stilt_h := deck_y + 0.25
-
-	for sx in [-w * 0.44, w * 0.44]:
-		for sz in [-d * 0.44, d * 0.44]:
-			var post := MeshInstance3D.new()
-			var cm   := CylinderMesh.new()
-			cm.top_radius    = 0.09
-			cm.bottom_radius = 0.12
-			cm.height        = stilt_h
-			post.mesh = cm
-			post.material_override = MAT_DARKPOST()
-			post.position = Vector3(sx, stilt_h * 0.5, sz)
-			house.add_child(post)
-
-	var deck := MeshInstance3D.new()
-	var ddm  := BoxMesh.new()
-	ddm.size = Vector3(w, 0.22, d)
-	deck.mesh = ddm
-	deck.material_override = MAT_PLANK(1.5)
-	deck.position.y = deck_y
-	house.add_child(deck)
-
-	var walls := MeshInstance3D.new()
-	var wm    := BoxMesh.new()
-	wm.size   = Vector3(w * 0.88, wall_h, d * 0.88)
-	walls.mesh = wm
-	walls.material_override = MAT_PLASTER(3)
-	walls.position.y = deck_y + 0.11 + wall_h * 0.5
-	house.add_child(walls)
-
-	for bx in [-w * 0.42, w * 0.42]:
-		for bz in [-d * 0.42, d * 0.42]:
-			var beam := MeshInstance3D.new()
-			var bm   := BoxMesh.new()
-			bm.size  = Vector3(0.18, wall_h, 0.18)
-			beam.mesh = bm
-			beam.material_override = MAT_DARK_WOOD(0.5)
-			beam.position = Vector3(bx, deck_y + 0.11 + wall_h * 0.5, bz)
-			house.add_child(beam)
-
-	var roof  := MeshInstance3D.new()
-	var pyr   := PrismMesh.new()
-	pyr.left_to_right = 0.5
-	pyr.size  = Vector3(w * 1.06, rpeak, d * 1.06)
-	roof.mesh = pyr
-	roof.material_override = MAT_ROOF(2.0)
-	roof.position.y = deck_y + 0.11 + wall_h + rpeak * 0.5
-	house.add_child(roof)
-
-	# Window — FIX: cull_mode disabled so visible from both sides
-	var wwin := StandardMaterial3D.new()
-	wwin.albedo_color             = Color(0.95, 0.60, 0.25)
-	wwin.emission_enabled         = true
-	wwin.emission                 = Color(1.0, 0.70, 0.3)
-	wwin.emission_energy_multiplier = 1.0
-	wwin.cull_mode                = BaseMaterial3D.CULL_DISABLED
-	var win  := MeshInstance3D.new()
-	var qm   := QuadMesh.new()
-	qm.size  = Vector2(0.55, 0.45)
-	win.mesh = qm
-	win.material_override = wwin
-	win.position = Vector3(0, deck_y + 0.11 + wall_h * 0.55, d * 0.445)
-	house.add_child(win)
-
-	if _nrng.randf() < 0.60:
-		var porch := MeshInstance3D.new()
-		var pm    := BoxMesh.new()
-		pm.size   = Vector3(w * 0.38, 0.16, 1.5)
-		porch.mesh = pm
-		porch.material_override = MAT_PLANK(1.0)
-		porch.position = Vector3(0, deck_y + 0.08, d * 0.54)
-		house.add_child(porch)
-
-	# FIX: collision matches walls only (not the under-deck gap)
-	var body  := StaticBody3D.new()
-	var col   := CollisionShape3D.new()
-	var box   := BoxShape3D.new()
-	box.size  = Vector3(w * 0.88, wall_h + 0.22, d * 0.88)
-	col.shape = box
-	col.position.y = deck_y + 0.11 + wall_h * 0.5
-	body.add_child(col)
-	house.add_child(body)
-
-	return house
-
-# ── Longhouse ─────────────────────────────────────────────────────────────────
-func _nordic_longhouse(world_pos: Vector3, facing: Vector3) -> void:
-	var b     := Node3D.new()
-	b.name    = "NordicLonghouse"
-	add_child(b)
-	b.global_position = world_pos
-	b.rotation.y = atan2(facing.x, facing.z)
-
-	var w := 8.0; var d := 20.0; var wh := 4.2
-
-	var base := MeshInstance3D.new()
-	var bsm  := BoxMesh.new()
-	bsm.size = Vector3(w, 0.65, d)
-	base.mesh = bsm
-	base.material_override = MAT_STONE(2.0)
-	base.position.y = 0.32
-	b.add_child(base)
-
-	var walls := MeshInstance3D.new()
-	var wm    := BoxMesh.new()
-	wm.size   = Vector3(w * 0.92, wh, d * 0.92)
-	walls.mesh = wm
-	walls.material_override = MAT_PLASTER(3)
-	walls.position.y = 0.65 + wh * 0.5
-	b.add_child(walls)
-
-	for bx in [-w * 0.44, w * 0.44]:
-		for bz in [-d * 0.44, d * 0.44]:
-			var beam := MeshInstance3D.new()
-			var bm   := BoxMesh.new()
-			bm.size  = Vector3(0.25, wh, 0.25)
-			beam.mesh = bm
-			beam.material_override = MAT_DARK_WOOD(0.5)
-			beam.position = Vector3(bx, 0.65 + wh * 0.5, bz)
-			b.add_child(beam)
-
-	var eave  := MeshInstance3D.new()
-	var em    := BoxMesh.new()
-	em.size   = Vector3(w + 1.0, 0.22, d + 1.0)
-	eave.mesh = em
-	eave.material_override = MAT_DARK_WOOD(0.5)
-	eave.position.y = 0.65 + wh + 0.11
-	b.add_child(eave)
-
-	var roof  := MeshInstance3D.new()
-	var pyr   := PrismMesh.new()
-	pyr.left_to_right = 0.5
-	pyr.size  = Vector3(w + 1.2, 4.0, d + 1.2)
-	roof.mesh = pyr
-	roof.material_override = MAT_ROOF(2.5)
-	roof.position.y = 0.65 + wh + 2.2
-	b.add_child(roof)
-
-	var sign  := MeshInstance3D.new()
-	var sm    := BoxMesh.new()
-	sm.size   = Vector3(2.0, 0.55, 0.10)
-	sign.mesh = sm
-	sign.material_override = MAT_DARK_WOOD(1.0)
-	sign.position = Vector3(0, 2.4, d * 0.50)
-	b.add_child(sign)
-
-	# FIX: collision sized to wall footprint (was full w×d, now w*0.92 × d*0.92)
-	var body  := StaticBody3D.new()
-	var col   := CollisionShape3D.new()
-	var box   := BoxShape3D.new()
-	box.size  = Vector3(w * 0.92, wh + 0.65, d * 0.92)
-	col.shape = box
-	col.position.y = (wh + 0.65) * 0.5
-	body.add_child(col)
-	b.add_child(body)
-
-	_register_interactable(b, "inn")
-
-# ── Smokehouse ────────────────────────────────────────────────────────────────
-func _nordic_smokehouse(world_pos: Vector3, facing: Vector3) -> void:
-	var b     := Node3D.new()
-	b.name    = "NordicSmokehouse"
-	add_child(b)
-	b.global_position = world_pos
-	b.rotation.y = atan2(facing.x, facing.z)
-
-	var w := 5.5; var d := 5.5; var wh := 3.0
-
-	var base := MeshInstance3D.new()
-	var bsm  := BoxMesh.new()
-	bsm.size = Vector3(w, 0.5, d)
-	base.mesh = bsm
-	base.material_override = MAT_STONE(2.0)
-	base.position.y = 0.25
-	b.add_child(base)
-
-	var walls := MeshInstance3D.new()
-	var wm    := BoxMesh.new()
-	wm.size   = Vector3(w * 0.90, wh, d * 0.90)
-	walls.mesh = wm
-	walls.material_override = MAT_WOOD(1.5)
-	walls.position.y = 0.5 + wh * 0.5
-	b.add_child(walls)
-
-	# FIX: roof added (was missing entirely)
-	var roof  := MeshInstance3D.new()
-	var pyr   := PrismMesh.new()
-	pyr.left_to_right = 0.5
-	pyr.size  = Vector3(w * 1.05, 1.6, d * 1.05)
-	roof.mesh = pyr
-	roof.material_override = MAT_ROOF(2.0)
-	roof.position.y = 0.5 + wh + 0.85
-	b.add_child(roof)
-
-	# FIX: chimney base pinned to wall top + small offset into roof
-	var ch_h: float = _nrng.randf_range(3.5, 5.2)
-	var ch   := MeshInstance3D.new()
-	var cm   := CylinderMesh.new()
-	cm.top_radius    = 0.38
-	cm.bottom_radius = 0.48
-	cm.height        = ch_h
-	ch.mesh  = cm
-	ch.material_override = MAT_STONE(1.0)
-	ch.position = Vector3(w * 0.18, 0.5 + wh - 0.3 + ch_h * 0.5, -d * 0.08)
-	b.add_child(ch)
-
-	var body  := StaticBody3D.new()
-	var col   := CollisionShape3D.new()
-	var box   := BoxShape3D.new()
-	box.size  = Vector3(w, wh + 0.5, d)
-	col.shape = box
-	col.position.y = (wh + 0.5) * 0.5
-	body.add_child(col)
-	b.add_child(body)
-
-# ── Lighthouse beacon ─────────────────────────────────────────────────────────
-func _nordic_beacon(world_pos: Vector3) -> void:
-	var b     := Node3D.new()
-	b.name    = "NordicBeacon"
-	add_child(b)
-	b.global_position = world_pos
-
-	var tower := MeshInstance3D.new()
-	var cm    := CylinderMesh.new()
-	cm.top_radius    = 1.1
-	cm.bottom_radius = 1.55
-	cm.height        = 10.0
-	tower.mesh = cm
-	tower.material_override = MAT_STONE(1.5)
-	tower.position.y = 5.0
-	b.add_child(tower)
-
-	var cap  := MeshInstance3D.new()
-	var capm := BoxMesh.new()
-	capm.size = Vector3(2.2, 1.6, 2.2)
-	cap.mesh  = capm
-	cap.material_override = MAT_DARK_WOOD(0.5)
-	cap.position.y = 10.8
-	b.add_child(cap)
-
-	var light := OmniLight3D.new()
-	light.light_color  = Color(1.0, 0.82, 0.42)
-	light.light_energy = 3.5
-	light.omni_range   = 40.0
-	light.position     = Vector3(0, 11.6, 0)
-	b.add_child(light)
-
-	var body  := StaticBody3D.new()
-	var col   := CollisionShape3D.new()
-	var cyl   := CylinderShape3D.new()
-	cyl.radius = 1.55
-	cyl.height = 10.0
-	col.shape  = cyl
-	col.position.y = 5.0
-	body.add_child(col)
-	b.add_child(body)
-
-# ── Shore houses ─────────────────────────────────────────────────────────────
-func _nordic_shore_houses(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3, count: int) -> void:
-	var spacing := 9.0
-	for i in range(count):
-		var t   := float(i) - float(count) * 0.5
-		# FIX: skip slot near longhouse (at shore_dir * 18 m) to avoid overlap
-		if abs(t * spacing - 18.0) < 7.0:
-			continue
-		var pos := origin + shore_dir * (t * spacing) \
-					+ pier_dir * _nrng.randf_range(4.0, 12.0) \
-					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 3.5)
-		pos.y   = origin.y
-		var fp: Vector2 = Vector2(_nrng.randf_range(6.0, 8.0), _nrng.randf_range(5.5, 7.0))
-		_nordic_stilt_house(pos, -pier_dir, fp)
-
-# ── Fish rack ─────────────────────────────────────────────────────────────────
-func _nordic_fish_rack(world_pos: Vector3, facing: Vector3) -> void:
-	var n     := Node3D.new()
-	n.name    = "FishRack"
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	for sx in [-1.1, 1.1]:
-		for sz in [-0.5, 0.5]:
-			var post := MeshInstance3D.new()
-			var cm   := CylinderMesh.new()
-			cm.top_radius    = 0.055
-			cm.bottom_radius = 0.07
-			cm.height        = 1.55
-			post.mesh = cm
-			post.material_override = MAT_DARKPOST()
-			post.position = Vector3(sx, 0.77, sz)
-			n.add_child(post)
-
-	var bar  := MeshInstance3D.new()
-	var bm   := BoxMesh.new()
-	bm.size  = Vector3(2.6, 0.07, 0.10)
-	bar.mesh = bm
-	bar.material_override = MAT_PLANK(1.0)
-	bar.position.y = 1.42
-	n.add_child(bar)
-
-	_register_interactable(n, "fish_rack")
-
-# ── Clutter (barrel / crate) ──────────────────────────────────────────────────
-func _nordic_clutter(world_pos: Vector3) -> void:
-	var n := Node3D.new()
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = _nrng.randf_range(-PI, PI)
-
-	# GLB fast-path: use wooden_barrel.glb when wired in the Inspector.
-	# AABB scaler ensures correct height regardless of GLB source scale.
-	if glb_barrel != null and _nrng.randf() < 0.55:
-		var inst: Node3D = glb_barrel.instantiate() as Node3D
-		n.add_child(inst)
-		_scale_node_to_height(inst, _nrng.randf_range(0.55, 0.80))
-		return
-	# Primitive fallback (also used for crates when glb_crate is null)
-	var mi := MeshInstance3D.new()
-	if _nrng.randf() < 0.55:
-		var cm := CylinderMesh.new()
-		cm.top_radius    = 0.22
-		cm.bottom_radius = 0.25
-		cm.height        = _nrng.randf_range(0.5, 0.80)
-		mi.mesh  = cm
-		mi.material_override = MAT_DARK_WOOD(0.5)
-		mi.position.y = cm.height * 0.5
-	else:
-		var bx := BoxMesh.new()
-		bx.size = Vector3(_nrng.randf_range(0.38, 0.70),
-							_nrng.randf_range(0.28, 0.52),
-							_nrng.randf_range(0.38, 0.70))
-		mi.mesh = bx
-		mi.material_override = MAT_WOOD(1.0)
-		mi.position.y = bx.size.y * 0.5
-	n.add_child(mi)
-
-# ── Boat ─────────────────────────────────────────────────────────────────────
-func _nordic_boat(world_pos: Vector3, facing: Vector3) -> void:
-	var n := Node3D.new()
-	n.name = "NordicBoat"
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	var hull := MeshInstance3D.new()
-	var bm   := BoxMesh.new()
-	bm.size  = Vector3(_nrng.randf_range(1.7, 2.4), 0.65, _nrng.randf_range(4.5, 7.5))
-	hull.mesh = bm
-	hull.material_override = MAT_DARK_WOOD(1.5)
-	hull.position.y = 0.32
-	n.add_child(hull)
-
-	if _nrng.randf() < 0.50:
-		var mast := MeshInstance3D.new()
-		var cm   := CylinderMesh.new()
-		cm.top_radius    = 0.06
-		cm.bottom_radius = 0.09
-		cm.height        = _nrng.randf_range(4.0, 6.5)
-		mast.mesh = cm
-		mast.material_override = MAT_DARKPOST()
-		mast.position = Vector3(0, 0.65 + cm.height * 0.5, -bm.size.z * 0.12)
-		n.add_child(mast)
-
-	_register_interactable(n, "boat_travel")
-
-# ── Woodpile ─────────────────────────────────────────────────────────────────
-func _nordic_woodpile(world_pos: Vector3) -> void:
-	var n  := Node3D.new()
-	n.name = "Woodpile"
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = _nrng.randf_range(-PI, PI)
-
-	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(_nrng.randf_range(0.9, 1.8),
-						_nrng.randf_range(0.35, 0.65),
-						_nrng.randf_range(0.55, 1.1))
-	mi.mesh = bm
-	mi.material_override = MAT_DARK_WOOD(1.0)
-	mi.position.y = bm.size.y * 0.5
-	n.add_child(mi)
-
-# ── Dock dressing ─────────────────────────────────────────────────────────────
-func _nordic_dock_dressing(pier_start: Vector3, pier_dir: Vector3, branch_dirs: Array[Vector3], branch_bases: Array[Vector3]) -> void:
-	# Fish racks
-	for i in range(10):
-		var z: float = _nrng.randf_range(5.0, NORDIC_PIER_LEN * 0.65)
-		var x: float = (-1.0 if _nrng.randf() < 0.5 else 1.0) * _nrng.randf_range(3.0, 7.0)
-		var p: Vector3 = pier_start + pier_dir * z + pier_dir.rotated(Vector3.UP, PI * 0.5) * x
-		p.y   = NORDIC_WATER_Y + 0.15
-		_nordic_fish_rack(p, -pier_dir)
-
-	# Clutter
-	for i in range(38):
-		var p: Vector3 = pier_start + pier_dir * _nrng.randf_range(2.0, NORDIC_PIER_LEN) \
-					+ pier_dir.rotated(Vector3.UP, PI * 0.5) * _nrng.randf_range(-6.0, 6.0)
-		p.y   = NORDIC_WATER_Y + 0.15
-		_nordic_clutter(p)
-
-	# FIX: boats use NORDIC_BRANCH_T offsets to match actual branch positions
-	for i in range(branch_dirs.size()):
-		if _nrng.randf() < 0.75:
-			var bp: Vector3 = branch_bases[i] + branch_dirs[i] * _nrng.randf_range(12.0, 20.0)
-			bp    += _nordic_side(branch_dirs[i]) * 4.2
-			bp.y  = NORDIC_WATER_Y - 0.06
-			_nordic_boat(bp, -branch_dirs[i])
-
-	# Two boats alongside main pier
-	for i in range(2):
-		var bp: Vector3 = pier_start + pier_dir * _nrng.randf_range(15.0, 35.0)
-		bp    += pier_dir.rotated(Vector3.UP, PI * 0.5) * ((-1.0 if _nrng.randf() < 0.5 else 1.0) * 4.5)
-		bp.y  = NORDIC_WATER_Y - 0.06
-		_nordic_boat(bp, -pier_dir)
-
-# ── Shore dressing ────────────────────────────────────────────────────────────
-func _nordic_shore_dressing(origin: Vector3, shore_dir: Vector3, pier_dir: Vector3) -> void:
-	for i in range(50):
-		var p: Vector3 = origin + shore_dir * _nrng.randf_range(-55.0, 55.0) \
-					+ pier_dir * _nrng.randf_range(3.0, 18.0) \
-					+ _nordic_side(shore_dir) * _nrng.randf_range(0.0, 5.0)
-		p.y   = origin.y
-		if _nrng.randf() < 0.40:
-			_nordic_woodpile(p)
-		elif _nrng.randf() < 0.55:
-			_nordic_clutter(p)
-		else:
-			_nordic_fish_rack(p, shore_dir)
-
-# ── Dock NPCs (Upgrade 2) ─────────────────────────────────────────────────────
-# Uses same _make_npc() pipeline as Briarwood — NPC.gd handles dialogue + scale.
-func _nordic_dock_npcs(origin: Vector3, pier_start: Vector3, pier_dir: Vector3, shore_dir: Vector3) -> void:
-	var npc_defs := [
-		{
-			"name": "Fisherman Torben",
-			"role": "dock_fisher",
-			"pos":  pier_start + pier_dir * 38.0 + shore_dir * 1.2,
-			"line": "The sea gives, and the sea takes. Today she gives — look at this catch!",
-			"lines": [
-				"Cast your line past the big rock. That's where the big ones hide.",
-				"Storm's coming. I can smell it on the wind.",
-				"My father fished this pier. His father too.",
-			],
-			"bark_lines": ["Hm… the tide is turning.", "Fine day for it!", "Almost full. Almost."],
-			"bark_min": 18.0, "bark_max": 35.0,
-			"tint": Color(0.8, 0.75, 0.65),
-			"schedule": [
-				pier_start + pier_dir * 38.0 + shore_dir * 1.2,
-				pier_start + pier_dir * 32.0,
-				pier_start + pier_dir * 42.0 - shore_dir * 1.5,
-			],
-		},
-		{
-			"name": "Net-mender Sigrid",
-			"role": "dock_mender",
-			"pos":  origin + shore_dir * -14.0 + pier_dir * 6.0,
-			"line": "These nets don't mend themselves, you know.",
-			"lines": [
-				"A good net is the difference between a feast and an empty table.",
-				"The longhouse is warm tonight. Come by when you're done exploring.",
-				"I've heard strange lights out past the rocks at night. Be careful.",
-			],
-			"bark_lines": ["Loop, knot, pull…", "Almost done with this one.", "The old ways hold best."],
-			"bark_min": 22.0, "bark_max": 40.0,
-			"tint": Color(0.75, 0.72, 0.68),
-			"schedule": [
-				origin + shore_dir * -14.0 + pier_dir * 6.0,
-				origin + shore_dir * -10.0 + pier_dir * 4.0,
-			],
-		},
-		{
-			"name": "Harbormaster Bjorn",
-			"role": "dock_master",
-			"pos":  origin + shore_dir * 16.0 + Vector3(0, 0, 3.0),
-			"line": "Welcome to Northhaven. Mind the ropes — they'll catch your feet.",
-			"lines": [
-				"Every ship that leaves here carries a piece of this village.",
-				"You're looking for adventure? Ha. It usually finds you first.",
-				"The lighthouse has kept ships safe for three generations. Don't touch it.",
-			],
-			"bark_lines": ["Tide's right on schedule.", "Watch those barrels!", "Morning!"],
-			"bark_min": 25.0, "bark_max": 45.0,
-			"tint": Color(0.7, 0.68, 0.62),
-			"schedule": [
-				origin + shore_dir * 16.0 + Vector3(0, 0, 3.0),
-				origin + shore_dir * 12.0 + pier_dir * 5.0,
-				pier_start + shore_dir * 2.0,
-			],
-		},
-	]
-	for d in npc_defs:
-		_make_npc(d)
-
-# ── Cobble road Briarwood → Nordic (Upgrade 3) ───────────────────────────────
-func _nordic_cobble_road(road_start: Vector3, road_end: Vector3) -> void:
-	var dir  := road_end - road_start
-	dir.y    = 0.0
-	var dist: float = dir.length()
-	if dist < 1.0:
-		return
-	dir = dir.normalized()
-	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-	var steps := int(dist / 2.2)
-	var p     := road_start
-
-	# Seed from main _rng (road uses world rng for wobble, not _nrng)
+	# ── Main hall (sea_keep) ──────────────────────────────────────────────────
+	var keep_sc := BUILDING_MODELS.get("sea_keep")
+	if keep_sc:
+		var keep := keep_sc.instantiate() as Node3D
+		keep.name = "SeaKeep"
+		keep.position = ORIGIN + Vector3(0, 0, 0)
+		keep.rotation.y = 0.0
+		keep.scale = Vector3(0.018, 0.018, 0.018)
+		keep.set_meta("skin_locked", true)
+		root.add_child(keep)
+
+	# ── Dock houses (log_building) ────────────────────────────────────────────
+	var log_sc := BUILDING_MODELS.get("log_building")
+	if log_sc:
+		var offsets := [
+			Vector3(-18, 0,  8),
+			Vector3( 18, 0,  8),
+			Vector3(-18, 0, -12),
+		]
+		for i in offsets.size():
+			var b := log_sc.instantiate() as Node3D
+			b.name = "LogBuilding_%d" % i
+			b.position = ORIGIN + offsets[i]
+			b.rotation.y = PI * 0.5 * (i % 2)
+			b.scale = Vector3(0.016, 0.016, 0.016)
+			b.set_meta("skin_locked", true)
+			root.add_child(b)
+
+	# ── Harbormaster inn (tavern_troll) ───────────────────────────────────────
+	var tav_sc := BUILDING_MODELS.get("tavern")
+	if tav_sc:
+		var tav := tav_sc.instantiate() as Node3D
+		tav.name = "HarbormasterInn"
+		tav.position = ORIGIN + Vector3(28, 0, -8)
+		tav.rotation.y = -PI * 0.5
+		tav.scale = Vector3(0.018, 0.018, 0.018)
+		tav.set_meta("skin_locked", true)
+		root.add_child(tav)
+
+	# ── A few trees around the village ────────────────────────────────────────
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 9988
+	rng.seed = 9823
+	var pine_sc: PackedScene = load("res://assets/models/trees/pine_tree.glb")
+	if pine_sc:
+		for i in 8:
+			var angle := rng.randf() * TAU
+			var dist  := rng.randf_range(30.0, 55.0)
+			var t := pine_sc.instantiate() as Node3D
+			t.position = ORIGIN + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+			t.rotation.y = rng.randf() * TAU
+			var s := rng.randf_range(0.55, 0.95)
+			t.scale = Vector3(s, s, s)
+			t.set_meta("skin_locked", true)
+			root.add_child(t)
 
-	for i in range(steps + 1):
-		var t      := float(i) / float(maxi(1, steps))
-		# Gentle meander that fades to straight near both ends
-		var wobble: float = sin(t * PI * 3.0) * 1.1 + rng.randf_range(-0.3, 0.3)
-		# Widen near the Nordic plaza
-		var width: float = lerp(2.8, 4.8, smoothstep(0.75, 1.0, t))
+	# ── Campfire near the dock ────────────────────────────────────────────────
+	var fire_sc: PackedScene = load("res://assets/models/props/campfire.glb")
+	if fire_sc:
+		var fire := fire_sc.instantiate() as Node3D
+		fire.position = ORIGIN + Vector3(6, 0, 6)
+		fire.scale = Vector3(0.7, 0.7, 0.7)
+		root.add_child(fire)
 
-		var seg    := MeshInstance3D.new()
-		var bm     := BoxMesh.new()
-		bm.size    = Vector3(width, 0.16, 2.3)
-		seg.mesh   = bm
-		seg.material_override = MAT_PATH(3.0)
-		add_child(seg)
-		seg.global_position = p + side * wobble + Vector3(0, 0.02, 0)
-		seg.rotation.y = atan2(dir.x, dir.z)
-		seg.name   = "RoadSeg"
+	_dlog("[WorldBuilder] Nordic GLB village built at %s" % str(ORIGIN))
 
-		# Lantern post every ~16 m
-		if i % 7 == 0 and i > 0:
-			for lx in [-width * 0.6, width * 0.6]:
-				_nordic_road_lantern(p + side * (wobble + lx) + Vector3(0, 0, 0))
 
-		# Story prop every ~30 m (rune stone, broken cart)
-		if i % 14 == 7:
-			_nordic_road_prop(p + side * (wobble + rng.randf_range(2.5, 4.0)))
-
-		p += dir * 2.2
-
-	# Signpost at start (Briarwood end) and 60% along road
-	_nordic_signpost(road_start + dir * 3.0 + side * 2.2, -dir,
-						"Northhaven Docks →", "← Briarwood Village")
-	_nordic_signpost(road_start + dir * (dist * 0.60) + side * 2.5, dir,
-						"← Briarwood", "Northhaven →")
-
-# ── Road lantern post ─────────────────────────────────────────────────────────
-func _nordic_road_lantern(world_pos: Vector3) -> void:
-	# Try the existing lantern GLB first (same fallback contract as village)
-	if ResourceLoader.exists(LANTERN_GLB_PATH):
-		var sc := load(LANTERN_GLB_PATH)
-		if sc is PackedScene:
-			var inst: Node3D = (sc as PackedScene).instantiate()
-			add_child(inst)
-			inst.global_position = world_pos
-			return
-	# Primitive fallback
-	var n    := Node3D.new()
-	n.name   = "RoadLantern"
-	add_child(n)
-	n.global_position = world_pos
-	var post := MeshInstance3D.new()
-	var cm   := CylinderMesh.new()
-	cm.top_radius    = 0.05
-	cm.bottom_radius = 0.07
-	cm.height        = 2.4
-	post.mesh = cm
-	post.material_override = MAT_DARKPOST()
-	post.position.y = 1.2
-	n.add_child(post)
-	var lamp := MeshInstance3D.new()
-	var bm   := BoxMesh.new()
-	bm.size  = Vector3(0.22, 0.22, 0.22)
-	lamp.mesh = bm
-	var lmat := StandardMaterial3D.new()
-	lmat.albedo_color = Color(0.95, 0.8, 0.35)
-	lmat.emission_enabled = true
-	lmat.emission = Color(1.0, 0.85, 0.4)
-	lmat.emission_energy_multiplier = 1.5
-	lamp.material_override = lmat
-	lamp.position.y = 2.52
-	n.add_child(lamp)
-	var omni := OmniLight3D.new()
-	omni.light_energy = 1.2
-	omni.light_color  = Color(1.0, 0.82, 0.42)
-	omni.omni_range   = 8.0
-	omni.position.y   = 2.52
-	n.add_child(omni)
-
-# ── Road story prop (rune stone / broken cart) ────────────────────────────────
-func _nordic_road_prop(world_pos: Vector3) -> void:
-	var n  := Node3D.new()
-	n.name = "RoadProp"
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = _nrng.randf_range(-PI, PI)
-	# Rune stone — tall thin boulder with a carved-looking dark face
-	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(0.45, _nrng.randf_range(0.9, 1.5), 0.22)
-	mi.mesh = bm
-	mi.material_override = MAT_STONE(1.0)
-	mi.position.y = bm.size.y * 0.5
-	n.add_child(mi)
-	# Dark inscription face
-	var face := MeshInstance3D.new()
-	var fm   := QuadMesh.new()
-	fm.size  = Vector2(0.30, bm.size.y * 0.65)
-	face.mesh = fm
-	var fmat := StandardMaterial3D.new()
-	fmat.albedo_color = Color(0.12, 0.10, 0.08)
-	fmat.cull_mode    = BaseMaterial3D.CULL_DISABLED
-	face.material_override = fmat
-	face.position = Vector3(0, bm.size.y * 0.5, 0.115)
-	n.add_child(face)
-
-# ── Directional signpost ──────────────────────────────────────────────────────
-func _nordic_signpost(world_pos: Vector3, facing: Vector3, top_text: String, bot_text: String) -> void:
-	var n  := Node3D.new()
-	n.name = "Signpost"
-	add_child(n)
-	n.global_position = world_pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	# Post
-	var post := MeshInstance3D.new()
-	var cm   := CylinderMesh.new()
-	cm.top_radius    = 0.055
-	cm.bottom_radius = 0.07
-	cm.height        = 2.2
-	post.mesh = cm
-	post.material_override = MAT_DARKPOST()
-	post.position.y = 1.1
-	n.add_child(post)
-
-	# Two sign boards
-	for i in range(2):
-		var board := MeshInstance3D.new()
-		var bm    := BoxMesh.new()
-		bm.size   = Vector3(1.1, 0.22, 0.08)
-		board.mesh = bm
-		board.material_override = MAT_DARK_WOOD(1.0)
-		board.position = Vector3(0.5, 1.9 - float(i) * 0.30, 0)
-		board.rotation.z = deg_to_rad(_nrng.randf_range(-4.0, 4.0))
-		n.add_child(board)
-
-	# Labels (billboarded for readability from any angle)
-	var texts := [top_text, bot_text]
-	for i in range(2):
-		if texts[i].is_empty():
-			continue
-		var lbl := Label3D.new()
-		lbl.text       = texts[i]
-		lbl.font_size  = 22
-		lbl.outline_size = 5
-		lbl.outline_modulate = Color(0, 0, 0)
-		lbl.modulate   = Color(1.0, 0.92, 0.68)
-		lbl.billboard  = BaseMaterial3D.BILLBOARD_ENABLED
-		lbl.position   = Vector3(0.5, 1.96 - float(i) * 0.30, 0.1)
-		n.add_child(lbl)
-
-# ── Harbor gate arch — marks the northern road terminus into Northhaven ───────
-# Stone post × 2 + crossbeam + "NORTHHAVEN" banner label.
-# Facing dir = which way players are travelling THROUGH the gate (into harbor).
-func _nordic_harbor_gate(world_pos: Vector3, facing: Vector3) -> void:
-	var root := Node3D.new()
-	root.name = "HarborGate"
-	add_child(root)
-	root.global_position = world_pos
-	root.rotation.y = atan2(facing.x, facing.z)
-
-	var post_h   : float = 4.2
-	var post_w   : float = 0.55
-	var gate_w   : float = 5.0   # clear passage width between post centres
-	var beam_h   : float = 0.50
-	var beam_overhang : float = 0.65
-
-	# Left and right stone pillars
-	for side in [-1.0, 1.0]:
-		var pillar := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(post_w, post_h, post_w)
-		pillar.mesh = bm
-		pillar.material_override = MAT_STONE(1.5)
-		pillar.position = Vector3(side * (gate_w * 0.5), post_h * 0.5, 0.0)
-		root.add_child(pillar)
-		# Collision for each pillar so players can't walk through the posts
-		var body := StaticBody3D.new()
-		var col  := CollisionShape3D.new()
-		var box  := BoxShape3D.new()
-		box.size = Vector3(post_w, post_h, post_w)
-		col.shape = box
-		col.position = pillar.position
-		body.add_child(col)
-		root.add_child(body)
-		# Stone cap on top
-		var cap := MeshInstance3D.new()
-		var cm  := BoxMesh.new()
-		cm.size = Vector3(post_w + 0.2, 0.28, post_w + 0.2)
-		cap.mesh = cm
-		cap.material_override = MAT_STONE(1.0)
-		cap.position = Vector3(side * (gate_w * 0.5), post_h + 0.14, 0.0)
-		root.add_child(cap)
-
-	# Crossbeam spanning both pillars
-	var beam := MeshInstance3D.new()
-	var bbm  := BoxMesh.new()
-	bbm.size = Vector3(gate_w + post_w * 2.0 + beam_overhang * 2.0, beam_h, post_w * 0.80)
-	beam.mesh = bbm
-	beam.material_override = MAT_DARK_WOOD(0.5)
-	beam.position = Vector3(0.0, post_h + beam_h * 0.5 + 0.28, 0.0)
-	root.add_child(beam)
-
-	# Banner board centred on the beam
-	var banner := MeshInstance3D.new()
-	var sbm    := BoxMesh.new()
-	sbm.size   = Vector3(gate_w * 0.70, 0.60, 0.12)
-	banner.mesh = sbm
-	banner.material_override = MAT_DARK_WOOD(0.8)
-	banner.position = Vector3(0.0, post_h + 0.28 + beam_h * 0.5 - 0.35, post_w * 0.45)
-	root.add_child(banner)
-
-	# "NORTHHAVEN" label — fixed (not billboarded) so it reads as a real sign
-	var lbl := Label3D.new()
-	lbl.text             = "NORTHHAVEN"
-	lbl.font_size        = 52
-	lbl.outline_size     = 8
-	lbl.outline_modulate = Color(0.0, 0.0, 0.0)
-	lbl.modulate         = Color(1.0, 0.88, 0.55)
-	lbl.billboard        = BaseMaterial3D.BILLBOARD_DISABLED
-	lbl.pixel_size       = 0.003
-	lbl.position         = banner.position + Vector3(0.0, 0.05, 0.07)
-	root.add_child(lbl)
-
-	# Ambient torch lights on each pillar top — same warm amber as road lanterns
-	for side in [-1.0, 1.0]:
-		var torch := OmniLight3D.new()
-		torch.light_color  = Color(1.0, 0.78, 0.40)
-		torch.light_energy = 2.8
-		torch.omni_range   = 14.0
-		torch.position     = Vector3(side * (gate_w * 0.5), post_h + 0.5, 0.0)
-		root.add_child(torch)
-
-# ============================================================================
-# GLB AABB SCALER — Builder run 25 (ported from WorldBuilder_patched.gd)
-# Used by _nordic_clutter() for barrel GLB, and available for any future
-# GLB prop that needs to be normalised to a target world-space dimension.
-# ============================================================================
-
-## Scale node so its tallest visual axis (Y) equals target_h metres.
 func _scale_node_to_height(n: Node3D, target_h: float) -> void:
 	var aabb := _visual_aabb(n)
 	if aabb.size.y <= 0.0001:
@@ -7615,247 +5489,12 @@ var _nordic_life_root: Node3D = null
 var _nordic_life_dock_npcs: Array = []
 var _nordic_life_timer: Timer = null
 
-func _build_nordic_dock_life() -> void:
-	if not nordic_dock_life_enabled:
-		return
-	if nordic_dock_npc_scene == null:
-		return
-
-	if _nordic_life_root and is_instance_valid(_nordic_life_root):
-		_nordic_life_root.queue_free()
-
-	_nordic_life_root = Node3D.new()
-	_nordic_life_root.name = "NordicDockLife"
-	add_child(_nordic_life_root)
-
-	_nordic_life_dock_npcs.clear()
-
-	var anchor := NORDIC_ORIGIN
-
-	var fisher := _spawn_dock_npc(_nordic_life_root, "Fisherman",    anchor + nordic_fisherman_offset)
-	var mend   := _spawn_dock_npc(_nordic_life_root, "NetMender",    anchor + nordic_netmender_offset)
-	var master := _spawn_dock_npc(_nordic_life_root, "HarborMaster", anchor + nordic_harbormaster_offset)
-
-	if fisher: _nordic_life_dock_npcs.append(fisher)
-	if mend:   _nordic_life_dock_npcs.append(mend)
-	if master: _nordic_life_dock_npcs.append(master)
-
-	if _nordic_life_dock_npcs.is_empty():
-		return
-
-	_configure_dock_route(fisher, [
-		anchor + nordic_fisherman_offset,
-		anchor + nordic_fisherman_offset + Vector3(0, 0, 14),
-		anchor + nordic_fisherman_offset + Vector3(-3, 0, 8),
-		anchor + nordic_fisherman_offset + Vector3(2, 0, 4),
-	], true)
-
-	_configure_dock_route(mend, [
-		anchor + nordic_netmender_offset + Vector3(-0.8, 0, -0.8),
-		anchor + nordic_netmender_offset + Vector3(0.8, 0, -0.6),
-		anchor + nordic_netmender_offset + Vector3(0.6, 0, 0.9),
-		anchor + nordic_netmender_offset + Vector3(-0.7, 0, 0.7),
-	], false)
-
-	_configure_dock_route(master, [
-		anchor + nordic_harbormaster_offset + Vector3(-2.2, 0, 0.4),
-		anchor + nordic_harbormaster_offset + Vector3(2.0, 0, 0.2),
-		anchor + nordic_harbormaster_offset + Vector3(1.0, 0, -1.2),
-		anchor + nordic_harbormaster_offset + Vector3(-1.4, 0, -1.0),
-	], true)
-
-	_nordic_life_timer = Timer.new()
-	_nordic_life_timer.name = "NordicLifeTick"
-	_nordic_life_timer.wait_time = max(0.4, nordic_dock_life_tick)
-	_nordic_life_timer.one_shot = false
-	_nordic_life_timer.autostart = true
-	_nordic_life_timer.timeout.connect(_tick_nordic_dock_life)
-	_nordic_life_root.add_child(_nordic_life_timer)
-
-	_tick_nordic_dock_life()
-
-
-func _spawn_dock_npc(parent: Node3D, role: String, pos: Vector3) -> Node3D:
-	var npc := nordic_dock_npc_scene.instantiate() as Node3D
-	if npc == null:
-		return null
-
-	parent.add_child(npc)
-	npc.name = "DockNPC_%s" % role
-	npc.global_position = pos
-	npc.set_meta("dock_role", role)
-
-	if has_method("_scale_node_to_height"):
-		_scale_node_to_height(npc, nordic_dock_npc_height)
-
-	_try_play_anim(npc, "idle")
-
-	npc.set_meta("dock_route", [])
-	npc.set_meta("dock_idx", 0)
-	npc.set_meta("dock_idle_until", 0.0)
-	npc.set_meta("dock_is_patroller", true)
-
-	# Register harbor master as an interactable (Phase 6)
-	if role == "HarborMaster":
-		_register_interactable(npc, "harbor_master")
-
-	return npc
-
-
-func _configure_dock_route(npc: Node3D, points: Array, patroller: bool) -> void:
-	if npc == null or not is_instance_valid(npc):
-		return
-	npc.set_meta("dock_route", points)
-	npc.set_meta("dock_idx", 0)
-	npc.set_meta("dock_is_patroller", patroller)
-	npc.set_meta("dock_idle_until", 0.0)
-
-
-func _tick_nordic_dock_life() -> void:
-	if _nordic_life_dock_npcs.is_empty():
-		return
-
-	var now := Time.get_ticks_msec() / 1000.0
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-
-	for npc in _nordic_life_dock_npcs:
-		if npc == null or not is_instance_valid(npc):
-			continue
-
-		var route: Array = npc.get_meta("dock_route", [])
-		if route.is_empty():
-			continue
-
-		var idle_until: float = float(npc.get_meta("dock_idle_until", 0.0))
-		if now < idle_until:
-			if rng.randf() < 0.55:
-				npc.rotation.y += rng.randf_range(-0.5, 0.5)
-			continue
-
-		var idx: int = int(npc.get_meta("dock_idx", 0))
-		idx = clamp(idx, 0, route.size() - 1)
-		var target: Vector3 = route[idx]
-
-		var dist: float = npc.global_position.distance_to(target)
-		if dist < 0.9:
-			var role := str(npc.get_meta("dock_role", "Worker"))
-			var wait := 0.0
-			match role:
-				"Fisherman":    wait = rng.randf_range(1.0, 2.4)
-				"NetMender":    wait = rng.randf_range(1.8, 4.0)
-				"HarborMaster": wait = rng.randf_range(0.8, 1.8)
-				_:              wait = rng.randf_range(0.8, 2.2)
-
-			npc.set_meta("dock_idle_until", now + wait)
-			_try_play_anim(npc, "idle")
-			idx = (idx + 1) % route.size()
-			npc.set_meta("dock_idx", idx)
-			continue
-
-		_try_play_anim(npc, "walk")
-		_npc_go_to(npc, target)
-
-
-func _npc_go_to(npc: Node3D, target: Vector3) -> void:
-	if npc.has_method("walk_to"):
-		npc.call("walk_to", target)
-		return
-
-	var agent: Node = npc.find_child("Agent", true, false)
-	if agent == null:
-		agent = npc.find_child("NavigationAgent3D", true, false)
-	if agent and agent is NavigationAgent3D:
-		(agent as NavigationAgent3D).target_position = target
-		return
-
-	# Tween fallback — kills any in-progress tween to avoid stacking
-	if npc.has_meta("dock_tween"):
-		var old = npc.get_meta("dock_tween")
-		if old is Tween and is_instance_valid(old):
-			(old as Tween).kill()
-
-	var t := npc.create_tween()
-	npc.set_meta("dock_tween", t)
-
-	var role := str(npc.get_meta("dock_role", "Worker"))
-	var speed := 2.0
-	match role:
-		"Fisherman":    speed = 2.6
-		"HarborMaster": speed = 2.2
-		"NetMender":    speed = 1.4
-
-	var dist: float = npc.global_position.distance_to(target)
-	var dur: float = clamp(dist / max(0.1, speed), 0.4, 6.0)
-
-	var dir := target - npc.global_position
-	dir.y = 0
-	if dir.length() > 0.001:
-		npc.rotation.y = atan2(dir.x, dir.z)
-
-	t.tween_property(npc, "global_position", target, dur)\
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
-
-func _try_play_anim(npc: Node3D, logical: String) -> void:
-	var aps := npc.find_children("*", "AnimationPlayer", true, false)
-	if aps.is_empty():
-		return
-	var ap := aps[0] as AnimationPlayer
-	if ap == null:
-		return
-
-	var candidates: Dictionary = {
-		"idle": ["idle", "Idle", "humanoid/idle", "humanoid/Idle"],
-		"walk": ["walk", "Walk", "humanoid/walk", "humanoid/Walk", "run", "Run"],
-	}
-	var list: Array = candidates.get(logical, [logical])
-	for anim_name in list:
-		if ap.has_animation(anim_name):
-			if ap.current_animation != anim_name:
-				ap.play(anim_name)
-			return
-
-
-# ============================================================================
-# PHASE 6 — Harbor Interactions
-# ============================================================================
-
-var _nordic_interactables: Array = []
-var _nordic_interact_cd: Dictionary = {}
-
 func _register_interactable(node: Node3D, kind: String) -> void:
 	if node == null or not is_instance_valid(node):
 		return
 	node.set_meta("interactable_kind", kind)
 	node.add_to_group("world_interactables")
 	_nordic_interactables.append(node)
-
-
-func _tick_nordic_interactions() -> void:
-	var player := _get_player()
-	if player == null:
-		return
-
-	var best: Node3D = null
-	var best_d2 := 999999.0
-	var player_pos: Vector3 = player.global_position
-
-	for n in _nordic_interactables:
-		if n == null or not is_instance_valid(n):
-			continue
-		var d2 := player_pos.distance_squared_to(n.global_position)
-		if d2 < best_d2:
-			best_d2 = d2
-			best = n
-
-	if best == null or best_d2 > (2.6 * 2.6):
-		return
-
-	_show_interact_hint(best)
-
-	if Input.is_action_just_pressed("interact"):
-		_handle_interaction(best, player)
 
 
 func _get_player() -> Node3D:
@@ -8053,159 +5692,6 @@ var _boat_ui_panel: Panel = null
 var _boat_ui_player: Node3D = null
 
 
-func _ensure_boat_ui() -> void:
-	if _boat_ui_layer and is_instance_valid(_boat_ui_layer):
-		return
-
-	_boat_ui_layer = CanvasLayer.new()
-	_boat_ui_layer.name = "BoatTravelUI"
-	add_child(_boat_ui_layer)
-
-	_boat_ui_panel = Panel.new()
-	_boat_ui_panel.name = "Panel"
-	_boat_ui_panel.visible = false
-	_boat_ui_panel.size = Vector2(520, 260)
-	_boat_ui_panel.position = (get_viewport().get_visible_rect().size * 0.5) \
-								- (_boat_ui_panel.size * 0.5)
-	_boat_ui_layer.add_child(_boat_ui_panel)
-
-	var root := VBoxContainer.new()
-	root.name = "Root"
-	root.anchor_right = 1.0
-	root.anchor_bottom = 1.0
-	root.offset_left = 18
-	root.offset_top = 18
-	root.offset_right = -18
-	root.offset_bottom = -18
-	_boat_ui_panel.add_child(root)
-
-	var title := Label.new()
-	title.text = "Choose Destination"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
-	root.add_child(title)
-
-	root.add_child(_ui_spacer(10))
-
-	# Dynamic destination buttons — built from BOAT_DESTS table (Phase 8)
-	for d in BOAT_DESTS:
-		var dest_id := str(d.get("id", ""))
-		if dest_id == "":
-			continue
-		var dest_name := str(d.get("name", dest_id))
-		var cost      := int(d.get("cost", 0))
-		var requires  := bool(d.get("requires_discovery", false))
-		var unlocked  := not requires or bool(_discovered_places.get(dest_id, false))
-
-		var btn := Button.new()
-		btn.text     = dest_name + ("  —  %d gold" % cost if cost > 0 else "")
-		btn.disabled = not unlocked
-		btn.pressed.connect(func(did := dest_id): _boat_ui_go(did))
-		root.add_child(btn)
-
-		if not unlocked:
-			var hint := Label.new()
-			hint.text     = "Locked — discover this place first."
-			hint.modulate = Color(0.8, 0.8, 0.8)
-			root.add_child(hint)
-
-	root.add_child(_ui_spacer(8))
-
-	var btn_cancel := Button.new()
-	btn_cancel.text = "Cancel"
-	btn_cancel.pressed.connect(func(): _hide_boat_travel_ui())
-	root.add_child(btn_cancel)
-
-	_boat_ui_layer.process_mode = Node.PROCESS_MODE_ALWAYS
-
-
-func _ui_spacer(h: float) -> Control:
-	var c := Control.new()
-	c.custom_minimum_size = Vector2(0, h)
-	return c
-
-
-func _show_boat_travel_ui(player: Node3D) -> void:
-	_ensure_boat_ui()
-	_boat_ui_player = player
-	_boat_ui_panel.visible = true
-
-	if _boat_ui_player and _boat_ui_player.has_method("set_cinematic_lock"):
-		_boat_ui_player.call("set_cinematic_lock", true)
-
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	_try_toast("Boat ready.")
-
-
-func _hide_boat_travel_ui() -> void:
-	if _boat_ui_panel and is_instance_valid(_boat_ui_panel):
-		_boat_ui_panel.visible = false
-
-	if _boat_ui_player and is_instance_valid(_boat_ui_player):
-		if _boat_ui_player.has_method("set_cinematic_lock"):
-			_boat_ui_player.call("set_cinematic_lock", false)
-
-	_boat_ui_player = null
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
-
-func _boat_ui_go(dest_id: String) -> void:
-	if _boat_ui_player == null or not is_instance_valid(_boat_ui_player):
-		_hide_boat_travel_ui()
-		return
-
-	# Look up in BOAT_DESTS table (Phase 8)
-	var dest := {}
-	for d in BOAT_DESTS:
-		if str(d.get("id", "")) == dest_id:
-			dest = d
-			break
-	if dest.is_empty():
-		_try_toast("Unknown destination.")
-		_hide_boat_travel_ui()
-		return
-
-	# Unlock gate
-	var requires := bool(dest.get("requires_discovery", false))
-	if requires and not bool(_discovered_places.get(dest_id, false)):
-		_try_toast("Locked — discover it first.")
-		return
-
-	# Cost gate
-	var cost := int(dest.get("cost", 0))
-	if cost > 0 and ("gold" in _boat_ui_player):
-		if int(_boat_ui_player.gold) < cost:
-			_try_toast("Need %d gold." % cost)
-			return
-		_boat_ui_player.gold -= cost
-		if _boat_ui_player.has_signal("stats_changed"):
-			_boat_ui_player.stats_changed.emit()
-
-	var target: Vector3 = Vector3(dest.get("pos", Vector3.ZERO))
-	var label  := str(dest.get("name", dest_id))
-
-	# Lock player movement while traveling
-	if _boat_ui_player.has_method("set_cinematic_lock"):
-		_boat_ui_player.call("set_cinematic_lock", true)
-
-	# Force-load destination district if streaming is on (Phase 9/10)
-	_ensure_destination_loaded(dest_id)
-	var district_id := _district_id_for_destination(dest_id)
-	if district_streaming_enabled and district_id != "":
-		_try_toast("Preparing route…")
-		var max_frames := 90  # ~1.5 s at 60 fps
-		while max_frames > 0 and not _is_district_loaded(district_id):
-			await get_tree().process_frame
-			max_frames -= 1
-
-	# Close UI before teleport so it doesn't flash on arrival
-	_hide_boat_travel_ui()
-
-	_teleport_player_to(target, _boat_ui_player)
-	_call_world_sfx("boat")
-	_try_toast("Boat ride… %s!" % label)
-
-
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
@@ -8305,29 +5791,6 @@ func _ensure_district_loaded(id: String) -> void:
 			_safe_call("_build_nordic_streamed")
 		_:
 			_district_building[id] = false
-
-
-func _build_nordic_streamed() -> void:
-	# Creates a district root so all Nordic nodes can be freed as a group.
-	# IMPORTANT: to make unloading work, Nordic build functions must call
-	# _add_to_build_root() instead of add_child() for their top-level nodes.
-	# Until that refactor is done, nodes go to WorldBuilder root as usual,
-	# but the streaming load/build trigger still works correctly.
-	var root := Node3D.new()
-	root.name = "District_Nordic"
-	add_child(root)
-	_set_build_root(root)
-
-	_build_nordic_fishing_village()
-	_build_nordic_road()
-	if has_method("_build_nordic_ambient_audio"):
-		_build_nordic_ambient_audio()
-	if nordic_dock_life_enabled and has_method("_build_nordic_dock_life"):
-		_build_nordic_dock_life()
-
-	_clear_build_root()
-	_district_roots["nordic"] = root
-	_district_building["nordic"] = false
 
 
 func _set_build_root(n: Node) -> void:
@@ -8440,956 +5903,6 @@ func _build_briarwood_hub() -> void:
 
 
 # ── Civic core ────────────────────────────────────────────────────────────────
-
-func _build_bw_civic_core(root: Node3D, plaza: Vector3, townhall: Vector3, shrine: Vector3) -> Dictionary:
-	var out := {}
-
-	# Well — landmark at plaza centre
-	var well := MeshInstance3D.new()
-	well.name = "PlazaWell"
-	var wm := CylinderMesh.new()
-	wm.top_radius    = 1.2
-	wm.bottom_radius = 1.35
-	wm.height        = 0.9
-	well.mesh = wm
-	well.material_override = MAT_STONE(2.0)
-	root.add_child(well)
-	well.global_position = plaza + Vector3(0, 0.45, 0)
-	out["well"] = well
-
-	# Quest board
-	var board: Node3D = _make_bw_quest_board(plaza + Vector3(2.6, 0, -1.2))
-	root.add_child(board)
-	out["quest_board"] = board
-
-	# Town hall
-	var hall := _make_bw_townhall(townhall)
-	root.add_child(hall)
-	out["townhall"] = hall
-
-	# Shrine
-	var sh := _make_bw_shrine(shrine)
-	root.add_child(sh)
-	out["shrine"] = sh
-
-	# Lantern ring (10 posts around plaza)
-	for i in range(10):
-		var ang := TAU * float(i) / 10.0
-		var p: Vector3 = plaza + Vector3(cos(ang), 0, sin(ang)) * 10.0
-		root.add_child(_make_bw_lantern_post(p))
-
-	# Bell Tower — civic landmark north-west of the plaza, visible from the gate
-	var bell_tower: Node3D = _make_bw_bell_tower(plaza + Vector3(-14.0, 0.0, -8.0))
-	root.add_child(bell_tower)
-	out["bell_tower"] = bell_tower
-
-	return out
-
-
-# ============================================================================
-# Phase 23 — Briarwood Style Kit (timber + stone + warm windows)
-# ============================================================================
-
-func _bw_mat_stone() -> StandardMaterial3D:
-	return MAT_STONE(1.0)
-
-func _bw_mat_timber() -> StandardMaterial3D:
-	# Plaster wall infill between dark-wood timbers — half-timbered "Tudor" look
-	return MAT_PLASTER(2.0)
-
-func _bw_mat_darkwood() -> StandardMaterial3D:
-	return MAT_DARK_WOOD(0.72)
-
-func _bw_mat_roof() -> StandardMaterial3D:
-	return MAT_ROOF(1.8)
-
-func _bw_window_material(energy: float) -> StandardMaterial3D:
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color            = Color(1.0, 0.88, 0.60, 0.90)
-	mat.emission_enabled        = true
-	mat.emission                = Color(1.0, 0.75, 0.45)
-	mat.emission_energy_multiplier = energy
-	mat.transparency            = BaseMaterial3D.TRANSPARENCY_ALPHA
-	return mat
-
-func _bw_add_warm_window(parent: Node3D, local_pos: Vector3, side_sign: float, energy: float) -> void:
-	var win := Node3D.new()
-	win.name = "Window"
-	win.position = local_pos
-	parent.add_child(win)
-
-	var frame := MeshInstance3D.new()
-	var fm := BoxMesh.new()
-	fm.size = Vector3(0.08, 0.62, 0.92)
-	frame.mesh = fm
-	frame.material_override = _bw_mat_darkwood()
-	win.add_child(frame)
-
-	var glass := MeshInstance3D.new()
-	var gm := BoxMesh.new()
-	gm.size = Vector3(0.03, 0.52, 0.80)
-	glass.mesh = gm
-	glass.name = "WindowGlass"
-	glass.position = Vector3(side_sign * 0.04, 0.0, 0.0)
-	glass.material_override = _bw_window_material(energy)
-	win.add_child(glass)
-
-func _bw_gable_roof(w: float, d: float, base_y: float, pitch_deg: float, overhang: float) -> Node3D:
-	var n := Node3D.new()
-	n.name = "BWRoof"
-	n.position.y = base_y
-
-	var pitch    := deg_to_rad(pitch_deg)
-	var roof_mat := _bw_mat_roof()
-	var half     := (w * 0.5 + overhang)
-	var plen     := (d + overhang * 2.0)
-
-	for sx in [-1.0, 1.0]:
-		var plane := MeshInstance3D.new()
-		var bm := BoxMesh.new()
-		bm.size = Vector3(half, 0.18, plen)
-		plane.mesh = bm
-		plane.material_override = roof_mat
-		plane.position = Vector3(sx * half * 0.5, 0.0, 0.0)
-		plane.rotation.z = sx * pitch
-		n.add_child(plane)
-
-	var ridge := MeshInstance3D.new()
-	var rb := BoxMesh.new()
-	rb.size = Vector3(0.18, 0.18, plen)
-	ridge.mesh = rb
-	ridge.material_override = _bw_mat_darkwood()
-	ridge.position = Vector3(0.0, 0.55, 0.0)
-	n.add_child(ridge)
-
-	return n
-
-func _bw_add_timber_frame(parent: Node3D, w: float, d: float, wall_h: float, base_y: float) -> void:
-	var beam_mat := _bw_mat_darkwood()
-	# Corner posts
-	for sx in [-w * 0.40, w * 0.40]:
-		for sz in [-d * 0.40, d * 0.40]:
-			var post := MeshInstance3D.new()
-			var pm := BoxMesh.new()
-			pm.size = Vector3(0.16, wall_h, 0.16)
-			post.mesh = pm
-			post.position = Vector3(sx, base_y + wall_h * 0.5, sz)
-			post.material_override = beam_mat
-			parent.add_child(post)
-
-	# Horizontal mid-bands front and back
-	var band_mesh := BoxMesh.new()
-	band_mesh.size = Vector3(w * 0.92, 0.14, 0.14)
-	for z in [-d * 0.40, d * 0.40]:
-		var band := MeshInstance3D.new()
-		band.mesh = band_mesh
-		band.position = Vector3(0.0, base_y + 1.5, z)
-		band.material_override = beam_mat
-		parent.add_child(band)
-
-func _bw_add_chimney(parent: Node3D, local_pos: Vector3, height: float) -> void:
-	if not bw_chimney_enabled:
-		return
-	var chim := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius    = 0.35
-	cm.bottom_radius = 0.45
-	cm.height        = height
-	chim.mesh = cm
-	chim.position = local_pos + Vector3(0.0, height * 0.5, 0.0)
-	chim.material_override = _bw_mat_stone()
-	parent.add_child(chim)
-
-func _bw_add_signboard(parent: Node3D, local_pos: Vector3, text: String) -> void:
-	var sign := Node3D.new()
-	sign.name = "SignBoard"
-	sign.position = local_pos
-	parent.add_child(sign)
-
-	var board := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(1.9, 0.55, 0.08)
-	board.mesh = bm
-	board.material_override = _bw_mat_darkwood()
-	board.position = Vector3(0.0, 2.2, 0.0)
-	sign.add_child(board)
-
-	var label := Label3D.new()
-	label.text            = text
-	label.billboard       = BaseMaterial3D.BILLBOARD_ENABLED
-	label.no_depth_test   = true
-	label.pixel_size      = 0.0034
-	label.font_size       = 34
-	label.outline_size    = 8
-	label.outline_modulate = Color(0, 0, 0, 1)
-	label.modulate        = Color(1.0, 0.88, 0.55)
-	label.position        = Vector3(0.0, 2.2, 0.06)
-	sign.add_child(label)
-
-
-# ============================================================================
-# Phase 23 — Briarwood landmark builders
-# ============================================================================
-
-func _make_bw_townhall(pos: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.name = "TownHall"
-	n.position = pos
-
-	const W      := 10.0
-	const D      := 20.0
-	const WALL_H := 4.2
-	const BASE_H := 0.7
-
-	# Stone foundation
-	var base := MeshInstance3D.new()
-	var bsm := BoxMesh.new()
-	bsm.size = Vector3(W, BASE_H, D)
-	base.mesh = bsm
-	base.position.y = BASE_H * 0.5
-	base.material_override = _bw_mat_stone()
-	n.add_child(base)
-
-	# Plaster walls
-	var walls := MeshInstance3D.new()
-	var wm := BoxMesh.new()
-	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
-	walls.mesh = wm
-	walls.position.y = BASE_H + WALL_H * 0.5
-	walls.material_override = _bw_mat_timber()
-	n.add_child(walls)
-
-	# Timber frame
-	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
-
-	# Gable roof
-	var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
-	n.add_child(_bw_gable_roof(W * 1.08, D * 1.05, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
-
-	# Collision
-	var body := StaticBody3D.new()
-	var col  := CollisionShape3D.new()
-	var box  := BoxShape3D.new()
-	box.size = Vector3(W, BASE_H + WALL_H + 3.6, D)
-	col.shape = box
-	col.position.y = box.size.y * 0.5
-	body.add_child(col)
-	n.add_child(body)
-
-	# Entrance steps
-	var steps := MeshInstance3D.new()
-	var sm := BoxMesh.new()
-	sm.size = Vector3(4.6, 0.35, 2.4)
-	steps.mesh = sm
-	steps.position = Vector3(0.0, 0.18, D * 0.52)
-	steps.material_override = _bw_mat_stone()
-	n.add_child(steps)
-
-	# Flag pole
-	var pole := MeshInstance3D.new()
-	var pcm := CylinderMesh.new()
-	pcm.top_radius    = 0.06
-	pcm.bottom_radius = 0.08
-	pcm.height        = 6.2
-	pole.mesh = pcm
-	pole.material_override = _bw_mat_darkwood()
-	pole.position = Vector3(-W * 0.32, BASE_H + WALL_H - 0.4, D * 0.40)
-	n.add_child(pole)
-
-	# Warm windows (4 side windows + 2 front gable)
-	_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.9, -3.0),  1.0, bw_window_energy_day)
-	_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.9,  3.0),  1.0, bw_window_energy_day)
-	_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.9, -3.0), -1.0, bw_window_energy_day)
-	_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.9,  3.0), -1.0, bw_window_energy_day)
-
-	# Signboard + chimney
-	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.3), "TOWN HALL")
-	_bw_add_chimney(n, Vector3(W * 0.28, BASE_H + WALL_H + 0.2, -D * 0.10), 6.2)
-
-	return n
-
-
-func _make_bw_shrine(pos: Vector3) -> Node3D:
-	var shrine := Node3D.new()
-	shrine.name = "Shrine"
-	shrine.position = pos
-
-	var base := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(4.0, 0.6, 4.0)
-	base.mesh = bm
-	base.material_override = MAT_STONE(2.0)
-	base.position.y = 0.3
-	shrine.add_child(base)
-
-	var pillar := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius    = 0.35
-	cm.bottom_radius = 0.45
-	cm.height        = 4.2
-	pillar.mesh = cm
-	pillar.material_override = MAT_STONE(1.0)
-	pillar.position.y = 0.6 + 2.1
-	shrine.add_child(pillar)
-
-	# Emissive top sphere — "spirit light"
-	var orb := MeshInstance3D.new()
-	var sm := SphereMesh.new()
-	sm.radius = 0.38
-	sm.height = 0.76
-	orb.mesh = sm
-	var orb_mat := StandardMaterial3D.new()
-	orb_mat.albedo_color = Color(0.6, 0.85, 1.0)
-	orb_mat.emission_enabled = true
-	orb_mat.emission = Color(0.5, 0.8, 1.0)
-	orb_mat.emission_energy_multiplier = 1.4
-	orb.material_override = orb_mat
-	orb.position.y = 0.6 + 4.2 + 0.38
-	shrine.add_child(orb)
-
-	return shrine
-
-
-func _make_bw_quest_board(pos: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.name = "QuestBoard"
-	n.position = pos
-
-	var post := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius    = 0.10
-	cm.bottom_radius = 0.12
-	cm.height        = 2.2
-	post.mesh = cm
-	post.material_override = MAT_DARK_WOOD(0.5)
-	post.position.y = 1.1
-	n.add_child(post)
-
-	var board := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(2.2, 1.2, 0.12)
-	board.mesh = bm
-	board.material_override = MAT_DARK_WOOD(1.5)
-	board.position = Vector3(0, 1.6, 0.06)
-	n.add_child(board)
-
-	# Warm notice-light
-	var light := OmniLight3D.new()
-	light.light_color  = Color(1.0, 0.85, 0.55)
-	light.light_energy = 0.8
-	light.omni_range   = 5.0
-	light.position     = Vector3(0, 2.4, 0.3)
-	n.add_child(light)
-
-	return n
-
-
-func _make_bw_lantern_post(pos: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.add_to_group("lanterns")
-
-	var shaft := MeshInstance3D.new()
-	var cm := CylinderMesh.new()
-	cm.top_radius    = 0.05
-	cm.bottom_radius = 0.07
-	cm.height        = 3.0
-	shaft.mesh = cm
-	shaft.material_override = MAT_DARK_WOOD(0.5)
-	shaft.position.y = 1.5
-	n.add_child(shaft)
-
-	var globe := MeshInstance3D.new()
-	var sm := SphereMesh.new()
-	sm.radius = 0.22
-	sm.height = 0.44
-	globe.mesh = sm
-	var gm := StandardMaterial3D.new()
-	gm.albedo_color = Color(1.0, 0.9, 0.6)
-	gm.emission_enabled = true
-	gm.emission = Color(1.0, 0.75, 0.3)
-	gm.emission_energy_multiplier = 1.0
-	globe.material_override = gm
-	globe.position.y = 3.1
-	n.add_child(globe)
-
-	var light := OmniLight3D.new()
-	light.name = "OmniLight3D"
-	light.light_color  = Color(1.0, 0.78, 0.40)
-	light.light_energy = 1.4
-	light.omni_range   = 10.0
-	light.position.y   = 3.1
-	n.add_child(light)
-
-	n.position = pos
-	return n
-
-
-# ── Bell Tower — civic landmark ───────────────────────────────────────────────
-# Tries the stylized_bell_tower.fbx GLB first (real art asset).
-# Falls back to a hand-crafted primitive tower so the plaza always has one.
-func _make_bw_bell_tower(pos: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.name = "BellTower"
-	n.position = pos
-
-	# ── Try the FBX asset first ───────────────────────────────────────────────
-	var bt_scene: PackedScene = BUILDING_MODELS.get("bell_tower", null)
-	if bt_scene != null:
-		var bt_inst: Node3D = bt_scene.instantiate()
-		# Scale: FBX assets are often in cm; target ~16m tall tower.
-		# If it comes in at 1 world-unit = 1 cm the raw height ≈ 0.16m — scale ×100.
-		# If it already matches Godot metres (height ~1.6 wu) scale ×10.
-		# A short ShapeCast or AABB check could auto-correct; use safe ×10 for now.
-		bt_inst.scale = Vector3(10.0, 10.0, 10.0)
-		bt_inst.name  = "BellTowerGLB"
-		n.add_child(bt_inst)
-
-		# Collision box around the whole tower footprint
-		var body  := StaticBody3D.new()
-		var col   := CollisionShape3D.new()
-		var box   := BoxShape3D.new()
-		box.size  = Vector3(4.0, 18.0, 4.0)
-		col.shape = box
-		col.position.y = 9.0
-		body.add_child(col)
-		n.add_child(body)
-		return n
-
-	# ── Fallback: procedural stone tower ─────────────────────────────────────
-	# Stone plinth
-	var plinth := MeshInstance3D.new()
-	var ppm    := BoxMesh.new()
-	ppm.size   = Vector3(5.0, 0.8, 5.0)
-	plinth.mesh = ppm
-	plinth.material_override = MAT_STONE(2.0)
-	plinth.position.y = 0.4
-	n.add_child(plinth)
-
-	# Main tower shaft (tapers slightly)
-	var shaft := MeshInstance3D.new()
-	var scm   := CylinderMesh.new()
-	scm.top_radius    = 1.6
-	scm.bottom_radius = 2.0
-	scm.height        = 14.0
-	shaft.mesh = scm
-	shaft.material_override = MAT_STONE(3.0)
-	shaft.position.y = 0.8 + 7.0
-	n.add_child(shaft)
-
-	# Upper belfry level (dark wood)
-	var belfry := MeshInstance3D.new()
-	var bfm    := CylinderMesh.new()
-	bfm.top_radius    = 1.9
-	bfm.bottom_radius = 1.7
-	bfm.height        = 2.8
-	belfry.mesh = bfm
-	belfry.material_override = MAT_DARK_WOOD(1.5)
-	belfry.position.y = 0.8 + 14.0 + 1.4
-	n.add_child(belfry)
-
-	# Conical roof cap
-	var cap := MeshInstance3D.new()
-	var rpm := CylinderMesh.new()
-	rpm.top_radius    = 0.05
-	rpm.bottom_radius = 2.1
-	rpm.height        = 4.0
-	cap.mesh = rpm
-	cap.material_override = MAT_ROOF(2.5)
-	cap.position.y = 0.8 + 14.0 + 2.8 + 2.0
-	n.add_child(cap)
-
-	# Bell silhouette (dark sphere, visible from distance)
-	var bell := MeshInstance3D.new()
-	var bsm  := SphereMesh.new()
-	bsm.radius = 0.55
-	bsm.height = 0.9
-	bell.mesh  = bsm
-	var bmat := StandardMaterial3D.new()
-	bmat.albedo_color = Color(0.60, 0.50, 0.20)
-	bmat.metallic     = 0.85
-	bmat.roughness    = 0.25
-	bell.material_override = bmat
-	bell.position.y = 0.8 + 14.0 + 0.6   # hangs inside the belfry opening
-	n.add_child(bell)
-
-	# OmniLight at the belfry — warm glow at dusk, matches lantern palette
-	var light := OmniLight3D.new()
-	light.name         = "TowerLight"
-	light.light_color  = Color(1.0, 0.80, 0.40)
-	light.light_energy = 2.5
-	light.omni_range   = 28.0
-	light.position.y   = 0.8 + 14.0 + 1.4
-	n.add_child(light)
-
-	# Collision
-	var body  := StaticBody3D.new()
-	var col   := CollisionShape3D.new()
-	var cyl   := CylinderShape3D.new()
-	cyl.radius = 2.0
-	cyl.height = 14.8
-	col.shape  = cyl
-	col.position.y = 7.4
-	body.add_child(col)
-	n.add_child(body)
-
-	return n
-
-
-# ── Market street ─────────────────────────────────────────────────────────────
-
-func _build_bw_market_street(root: Node3D, market: Vector3, plaza: Vector3) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 1234
-
-	var dir: Vector3 = (plaza - market); dir.y = 0.0; dir = dir.normalized()
-	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-
-	# Inn frontage anchor — styled inn replaces the generic house
-	var inn_bldg := _make_bw_inn(market + dir * -6.0, -dir)
-	root.add_child(inn_bldg)
-
-	# Stall row
-	for i in range(bw_market_stall_count):
-		var t  := float(i) - float(bw_market_stall_count) * 0.5
-		var p: Vector3 = market + side * (t * 3.2) + dir * rng.randf_range(-1.5, 1.5)
-		root.add_child(_make_bw_stall(p, -dir))
-
-	# Clutter scatter
-	var clutter_n := int(40.0 * bw_prop_density)
-	for i in range(clutter_n):
-		var p: Vector3 = market + side * rng.randf_range(-18.0, 18.0) \
-					+ dir * rng.randf_range(-7.0, 10.0)
-		root.add_child(_make_bw_clutter(p, rng))
-
-	# Market lanterns on a line
-	for i in range(6):
-		var t := float(i) - 2.5
-		var p := market + side * (t * 4.0)
-		root.add_child(_make_bw_lantern_post(p))
-
-
-func _make_bw_inn(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
-	var n := Node3D.new()
-	n.name = "Inn"
-	n.position = pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	const W      := 11.0
-	const D      := 16.0
-	const WALL_H := 4.0
-	const BASE_H := 0.7
-
-	var base := MeshInstance3D.new()
-	var bsm := BoxMesh.new()
-	bsm.size = Vector3(W, BASE_H, D)
-	base.mesh = bsm
-	base.position.y = BASE_H * 0.5
-	base.material_override = _bw_mat_stone()
-	n.add_child(base)
-
-	var walls := MeshInstance3D.new()
-	var wm := BoxMesh.new()
-	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
-	walls.mesh = wm
-	walls.position.y = BASE_H + WALL_H * 0.5
-	walls.material_override = _bw_mat_timber()
-	n.add_child(walls)
-
-	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
-
-	var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
-	n.add_child(_bw_gable_roof(W * 1.12, D * 1.08, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
-
-	# Collision
-	var body := StaticBody3D.new()
-	var col  := CollisionShape3D.new()
-	var box  := BoxShape3D.new()
-	box.size = Vector3(W, BASE_H + WALL_H + 3.6, D)
-	col.shape = box
-	col.position.y = box.size.y * 0.5
-	body.add_child(col)
-	n.add_child(body)
-
-	# Porch
-	if bw_porch_enabled:
-		var porch := MeshInstance3D.new()
-		var pm := BoxMesh.new()
-		pm.size = Vector3(6.0, 0.22, 2.4)
-		porch.mesh = pm
-		porch.position = Vector3(0.0, BASE_H + 0.11, D * 0.52)
-		porch.material_override = _bw_mat_darkwood()
-		n.add_child(porch)
-
-	# Signboard + chimney
-	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.2), "THE OAK & ALE")
-	_bw_add_chimney(n, Vector3(W * 0.30, BASE_H + WALL_H + 0.2, -D * 0.15), 6.0)
-
-	# Warm windows (3 per long side)
-	for wz in [-4.0, 0.0, 4.0]:
-		_bw_add_warm_window(n, Vector3( W * 0.44, BASE_H + 1.8, wz),  1.0, bw_window_energy_day)
-		_bw_add_warm_window(n, Vector3(-W * 0.44, BASE_H + 1.8, wz), -1.0, bw_window_energy_day)
-
-	return n
-
-
-func _make_bw_stall(pos: Vector3, facing: Vector3) -> Node3D:
-	var stall := Node3D.new()
-	stall.position = pos
-	stall.rotation.y = atan2(facing.x, facing.z)
-
-	var counter := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(1.8, 0.8, 0.8)
-	counter.mesh = bm
-	counter.material_override = MAT_DARK_WOOD(1.5)
-	counter.position.y = 0.4
-	stall.add_child(counter)
-
-	for dx in [-0.8, 0.8]:
-		var post := MeshInstance3D.new()
-		var pm := CylinderMesh.new()
-		pm.top_radius    = 0.05
-		pm.bottom_radius = 0.05
-		pm.height        = 1.6
-		post.mesh = pm
-		post.material_override = MAT_DARK_WOOD(0.5)
-		post.position = Vector3(dx, 1.2, -0.3)
-		stall.add_child(post)
-
-	# Awning with flap animation (same rig as the Briarwood market stalls)
-	var awn_pivot := Node3D.new()
-	awn_pivot.position = Vector3(0, 1.95, -0.3)
-	awn_pivot.set_meta("phase", randf() * TAU)
-	awn_pivot.set_meta("base_pitch", 0.4)
-	awn_pivot.add_to_group("stall_awnings")
-	stall.add_child(awn_pivot)
-
-	var awn_mat := StandardMaterial3D.new()
-	awn_mat.albedo_color = Color(0.62, 0.18, 0.14)
-	awn_mat.roughness    = 0.7
-	awn_mat.cull_mode    = BaseMaterial3D.CULL_DISABLED
-	var awn := MeshInstance3D.new()
-	var am := BoxMesh.new()
-	am.size = Vector3(2.2, 0.05, 1.2)
-	awn.mesh = am
-	awn.material_override = awn_mat
-	awn.position = Vector3(0, 0.05, 0.4)
-	awn_pivot.add_child(awn)
-
-	return stall
-
-
-# ── Craft row ─────────────────────────────────────────────────────────────────
-
-func _build_bw_craft_row(root: Node3D, craft: Vector3, plaza: Vector3) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5678
-
-	var dir: Vector3 = (plaza - craft); dir.y = 0.0; dir = dir.normalized()
-	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-
-	# Smith building — styled smithy replaces the generic house + standalone chimney
-	var smithy := _make_bw_smithy(craft, -dir)
-	root.add_child(smithy)
-
-	# Chimney smoke light (warm glow above smithy chimney)
-	var smoke_light := OmniLight3D.new()
-	smoke_light.light_color  = Color(1.0, 0.55, 0.2)
-	smoke_light.light_energy = 1.2
-	smoke_light.omni_range   = 8.0
-	root.add_child(smoke_light)
-	smoke_light.global_position = craft + Vector3(2.2, 8.0, -1.6)
-
-	# Two more buildings along craft row
-	root.add_child(_make_bw_house(craft + side * 9.0))
-	root.add_child(_make_bw_house(craft + side * -9.0))
-
-	# Yard clutter (log piles + barrels)
-	var yard_n := int(40.0 * bw_prop_density)
-	for i in range(yard_n):
-		var p: Vector3 = craft + side * rng.randf_range(-12.0, 12.0) \
-					+ dir * rng.randf_range(-5.0, 7.0)
-		root.add_child(_make_bw_clutter(p, rng))
-
-	# Fence posts along craft yard front
-	for i in range(12):
-		var t  := float(i) - 5.5
-		var p  := craft + side * (t * 1.8) + dir * 4.5
-		var fp := MeshInstance3D.new()
-		var fcm := CylinderMesh.new()
-		fcm.top_radius    = 0.07
-		fcm.bottom_radius = 0.09
-		fcm.height        = 1.2
-		fp.mesh = fcm
-		fp.material_override = MAT_DARK_WOOD(0.5)
-		root.add_child(fp)
-		fp.global_position = p + Vector3(0, 0.6, 0)
-
-
-# ── Residential ring ─────────────────────────────────────────────────────────
-
-func _build_bw_residential_ring(root: Node3D, plaza: Vector3, count: int) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7331
-
-	var ring_r := 28.0
-	for i in range(count):
-		var ang := (TAU * float(i) / float(maxi(1, count))) \
-					+ rng.randf_range(-0.18, 0.18)
-		var r: float = rng.randf_range(ring_r * 0.85, ring_r * 1.15)
-		var p: Vector3 = plaza + Vector3(cos(ang) * r, 0.0, sin(ang) * r)
-		root.add_child(_make_bw_house(p))
-
-
-# ── Hub house (parented version of _make_building, sized 7×6m) ───────────────
-
-func _make_bw_house(pos: Vector3) -> Node3D:
-	# GLB-first: use stylized_bell_island_house_mound if loaded
-	var house_glb: PackedScene = BUILDING_MODELS.get("house", null)
-	if house_glb:
-		var inst := house_glb.instantiate() as Node3D
-		if inst:
-			inst.name = "BW_House"
-			inst.add_to_group("buildings")
-			# stylized_bell_island_house_mound.fbx exports at ~0.01 Godot units = 1cm.
-			# Target footprint ~7m wide → scale ≈ 0.022
-			inst.scale = Vector3(0.022, 0.022, 0.022)
-			inst.set_meta("skin_locked", true)  # prevent sweep from rescaling
-			inst.rotation.y = randf_range(-PI, PI)
-			inst.position = pos
-			# Add box collider so player cannot walk through GLB house
-			var _hbody := StaticBody3D.new()
-			var _hcol  := CollisionShape3D.new()
-			var _hbox  := BoxShape3D.new()
-			_hbox.size = Vector3(6.5, 4.5, 5.5)
-			_hcol.shape = _hbox
-			_hcol.position.y = 2.25
-			_hbody.add_child(_hcol)
-			inst.add_child(_hbody)
-			return inst
-
-	# Procedural fallback — full hand-built house
-	var house := Node3D.new()
-	house.add_to_group("buildings")
-	house.position = pos
-
-	# Slight random yaw so the ring doesn't look drilled
-	house.rotation.y = randf_range(-PI, PI)
-
-	var w := 7.0; var d := 6.0; var wh := 3.2
-
-	# Foundation
-	var foundation := MeshInstance3D.new()
-	var fm := BoxMesh.new()
-	fm.size = Vector3(w, 0.5, d)
-	foundation.mesh = fm
-	foundation.material_override = MAT_FOUNDATION(2)
-	foundation.position.y = 0.25
-	house.add_child(foundation)
-
-	# Walls
-	var wall := MeshInstance3D.new()
-	var wm := BoxMesh.new()
-	wm.size = Vector3(w * 0.94, wh, d * 0.94)
-	wall.mesh = wm
-	wall.material_override = MAT_PLASTER(3)
-	wall.position.y = 0.5 + wh * 0.5
-	house.add_child(wall)
-
-	# Collision (foundation + walls height)
-	var body := StaticBody3D.new()
-	var col  := CollisionShape3D.new()
-	var box  := BoxShape3D.new()
-	box.size = Vector3(w * 0.94, 0.5 + wh, d * 0.94)
-	col.shape = box
-	col.position.y = (0.5 + wh) * 0.5
-	body.add_child(col)
-	house.add_child(body)
-
-	# Corner timber beams
-	for dx in [-(w * 0.45), w * 0.45]:
-		for dz in [-(d * 0.45), d * 0.45]:
-			var beam := MeshInstance3D.new()
-			var bm := BoxMesh.new()
-			bm.size = Vector3(0.22, wh, 0.22)
-			beam.mesh = bm
-			beam.material_override = MAT_DARK_WOOD(0.5)
-			beam.position = Vector3(dx, 0.5 + wh * 0.5, dz)
-			house.add_child(beam)
-
-	# Eave
-	var eave := MeshInstance3D.new()
-	var em := BoxMesh.new()
-	em.size = Vector3(w + 0.3, 0.18, d + 0.3)
-	eave.mesh = em
-	eave.material_override = MAT_DARK_WOOD(0.5)
-	eave.position.y = 0.5 + wh
-	house.add_child(eave)
-
-	# Gable roof
-	var roof := MeshInstance3D.new()
-	var pyr := PrismMesh.new()
-	pyr.left_to_right = 0.5
-	pyr.size = Vector3(w + 0.4, 2.6, d + 0.4)
-	roof.mesh = pyr
-	roof.material_override = MAT_ROOF(2.0)
-	roof.position.y = 0.5 + wh + 1.3
-	house.add_child(roof)
-
-	# Chimney
-	var chim := MeshInstance3D.new()
-	var cm := BoxMesh.new()
-	cm.size = Vector3(0.5, 1.8, 0.5)
-	chim.mesh = cm
-	chim.material_override = MAT_STONE(1)
-	chim.name = "Chimney"
-	chim.position = Vector3(w * 0.28, 0.5 + wh + 0.9, d * 0.3)
-	house.add_child(chim)
-
-	# Emissive window
-	var win_mat := StandardMaterial3D.new()
-	win_mat.albedo_color = Color(0.95, 0.6, 0.25)
-	win_mat.emission_enabled = true
-	win_mat.emission = Color(1.0, 0.7, 0.3)
-	win_mat.emission_energy_multiplier = 1.0
-	var win := MeshInstance3D.new()
-	var qm := QuadMesh.new()
-	qm.size = Vector2(0.85, 0.7)
-	win.mesh = qm
-	win.material_override = win_mat
-	win.position = Vector3(0, 0.5 + wh * 0.72, d * 0.471)
-	house.add_child(win)
-
-	# Door
-	var door := MeshInstance3D.new()
-	var dm := BoxMesh.new()
-	dm.size = Vector3(0.9, 2.1, 0.08)
-	door.mesh = dm
-	door.material_override = MAT_DARK_WOOD(0.6)
-	door.position = Vector3(-w * 0.2, 0.5 + 1.05, d * 0.471)
-	house.add_child(door)
-
-	return house
-
-
-func _make_bw_smithy(pos: Vector3, facing: Vector3 = Vector3(0, 0, -1)) -> Node3D:
-	# Use KayKit forge GLB when available, fallback to procedural
-	var forge_glb: PackedScene = BUILDING_MODELS.get("forge")
-	if forge_glb:
-		var n := forge_glb.instantiate() as Node3D
-		if n:
-			n.name = "Smithy"
-			n.rotation.y = atan2(facing.x, facing.z)
-			n.scale = Vector3(1.3, 1.3, 1.3)
-			# NOTE: position set by caller or set directly here (smithy spawned differently)
-			n.position = pos
-			# Add signboard as a child so it's visible
-			_bw_add_signboard(n, Vector3(0.0, 0.0, 3.5), "BLACKSMITH")
-			return n
-
-	# Procedural fallback
-	var n := Node3D.new()
-	n.name = "Smithy"
-	n.position = pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	const W      := 9.0
-	const D      := 12.0
-	const WALL_H := 3.6
-	const BASE_H := 0.6
-
-	var base := MeshInstance3D.new()
-	var bsm := BoxMesh.new()
-	bsm.size = Vector3(W, BASE_H, D)
-	base.mesh = bsm
-	base.position.y = BASE_H * 0.5
-	base.material_override = _bw_mat_stone()
-	n.add_child(base)
-
-	var walls := MeshInstance3D.new()
-	var wm := BoxMesh.new()
-	wm.size = Vector3(W * 0.92, WALL_H, D * 0.92)
-	walls.mesh = wm
-	walls.position.y = BASE_H + WALL_H * 0.5
-	walls.material_override = _bw_mat_timber()
-	n.add_child(walls)
-
-	_bw_add_timber_frame(n, W, D, WALL_H, BASE_H)
-
-	var pitch: float = randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
-	n.add_child(_bw_gable_roof(W * 1.10, D * 1.10, BASE_H + WALL_H + 0.25, pitch, bw_roof_overhang))
-
-	# Collision
-	var body := StaticBody3D.new()
-	var col  := CollisionShape3D.new()
-	var box  := BoxShape3D.new()
-	box.size = Vector3(W, BASE_H + WALL_H + 3.2, D)
-	col.shape = box
-	col.position.y = box.size.y * 0.5
-	body.add_child(col)
-	n.add_child(body)
-
-	# Tall chimney (primary visual read: "this is the smith")
-	_bw_add_chimney(n, Vector3(W * 0.25, BASE_H + WALL_H + 0.2, -D * 0.12), 7.2)
-
-	# Signboard + one warm front window
-	_bw_add_signboard(n, Vector3(0.0, 0.0, D * 0.52 + 0.2), "BLACKSMITH")
-	_bw_add_warm_window(n, Vector3(W * 0.44, BASE_H + 1.7, 0.0), 1.0, bw_window_energy_day)
-
-	return n
-
-
-# ── Clutter prop (barrel or crate — replaces missing _make_woodpile) ─────────
-
-func _make_bw_clutter(pos: Vector3, rng: RandomNumberGenerator) -> Node3D:
-	var n := Node3D.new()
-	n.position = pos
-	n.rotation.y = rng.randf_range(-PI, PI)
-	n.add_to_group("village_barrels")
-
-	var mi := MeshInstance3D.new()
-	if rng.randf() < 0.55:
-		var cm := CylinderMesh.new()
-		cm.top_radius    = 0.22
-		cm.bottom_radius = 0.25
-		cm.height        = rng.randf_range(0.5, 0.82)
-		mi.mesh = cm
-		mi.material_override = MAT_DARK_WOOD(0.5)
-		mi.position.y = cm.height * 0.5
-	else:
-		var bx := BoxMesh.new()
-		bx.size = Vector3(rng.randf_range(0.38, 0.70),
-							rng.randf_range(0.28, 0.52),
-							rng.randf_range(0.38, 0.70))
-		mi.mesh = bx
-		mi.material_override = MAT_WOOD(1.0)
-		mi.position.y = bx.size.y * 0.5
-	n.add_child(mi)
-	return n
-
-
-# ── Palisade edge read ────────────────────────────────────────────────────────
-
-func _build_bw_edge_read(root: Node3D, plaza: Vector3) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 4242
-	var r := 44.0
-	var post_count := 70
-	for i in range(post_count):
-		var ang := TAU * float(i) / float(post_count)
-		var p: Vector3 = plaza + Vector3(cos(ang), 0, sin(ang)) * r
-		var post := MeshInstance3D.new()
-		var cm := CylinderMesh.new()
-		cm.top_radius    = 0.12
-		cm.bottom_radius = 0.16
-		cm.height        = rng.randf_range(2.2, 3.2)
-		post.mesh = cm
-		post.material_override = MAT_DARK_WOOD(0.5)
-		root.add_child(post)
-		post.global_position = p + Vector3(0, cm.height * 0.5, 0)
-
-
-# ── NPC crowd ─────────────────────────────────────────────────────────────────
 
 func _spawn_bw_npcs(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector3, gate: Vector3) -> void:
 	if briarwood_npc_scene == null:
@@ -12092,962 +8605,3 @@ func _make_sparkle_pip(pos: Vector3, size: float) -> Node3D:
 
 # ── Material wrappers (bw_mat_stone already in Phase 23 kit) ─────────────────
 
-func _bw_mat_fence() -> StandardMaterial3D:
-	return MAT_DARK_WOOD(0.65)
-
-func _bw_mat_clutter() -> StandardMaterial3D:
-	return MAT_DARK_WOOD(0.55)
-
-
-# ── Lazy-init mesh getters ────────────────────────────────────────────────────
-
-func _bw_get_fence_post_mesh() -> CylinderMesh:
-	if _bw_fence_post_mesh == null:
-		_bw_fence_post_mesh = CylinderMesh.new()
-		_bw_fence_post_mesh.top_radius    = 0.10
-		_bw_fence_post_mesh.bottom_radius = 0.13
-		_bw_fence_post_mesh.height        = 1.55
-	return _bw_fence_post_mesh
-
-func _bw_get_bench_mesh() -> BoxMesh:
-	if _bw_bench_mesh == null:
-		_bw_bench_mesh = BoxMesh.new()
-		_bw_bench_mesh.size = Vector3(1.8, 0.45, 0.55)
-	return _bw_bench_mesh
-
-func _bw_get_crate_mesh() -> BoxMesh:
-	if _bw_crate_mesh == null:
-		_bw_crate_mesh = BoxMesh.new()
-		_bw_crate_mesh.size = Vector3(0.6, 0.45, 0.6)
-	return _bw_crate_mesh
-
-func _bw_get_barrel_mesh() -> CylinderMesh:
-	if _bw_barrel_mesh == null:
-		_bw_barrel_mesh = CylinderMesh.new()
-		_bw_barrel_mesh.top_radius    = 0.22
-		_bw_barrel_mesh.bottom_radius = 0.26
-		_bw_barrel_mesh.height        = 0.80
-	return _bw_barrel_mesh
-
-func _bw_get_woodpile_mesh() -> BoxMesh:
-	if _bw_woodpile_mesh == null:
-		_bw_woodpile_mesh = BoxMesh.new()
-		_bw_woodpile_mesh.size = Vector3(1.3, 0.55, 0.9)
-	return _bw_woodpile_mesh
-
-
-# ── Main dressing entry point ─────────────────────────────────────────────────
-
-func _dress_briarwood_v2(root: Node3D, plaza: Vector3, market: Vector3, craft: Vector3, gate: Vector3) -> void:
-	_build_bw_plaza_furniture(root, plaza,  int(6  * bw_dressing_density))
-	_build_bw_market_dressing(root, market, plaza, int(5 * bw_dressing_density))
-	_build_bw_craft_dressing(root,  craft,  plaza, int(8 * bw_dressing_density))
-	_build_bw_residential_dressing(root, plaza, int(18 * bw_dressing_density))
-	_build_bw_gate_dressing(root, gate, plaza)
-
-
-# ── Plaza furniture ───────────────────────────────────────────────────────────
-
-func _build_bw_plaza_furniture(root: Node3D, plaza: Vector3, count: int) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-
-	for i in range(count):
-		var ang    := TAU * float(i) / float(maxi(1, count))
-		var p: Vector3 = plaza + Vector3(cos(ang), 0.0, sin(ang)) * 8.8
-		var facing: Vector3 = (plaza - p); facing.y = 0.0; facing = facing.normalized()
-		var rot    := Basis(Vector3.UP, atan2(facing.x, facing.z))
-		var xf: Transform3D = Transform3D(rot, p + Vector3(0.0, 0.22, 0.0))
-
-		if bw_multimesh_enabled and bw_mm_benches:
-			_mm_add(root, _bw_get_bench_mesh(), _bw_mat_fence(), xf, 64)
-		else:
-			root.add_child(_make_bw_bench_node(p, facing))
-
-	# Stone planters scattered across plaza
-	for i in range(int(4 * bw_dressing_density)):
-		var p2: Vector3 = plaza + Vector3(rng.randf_range(-6.0, 6.0), 0.0, rng.randf_range(-6.0, 6.0))
-		var pot := MeshInstance3D.new()
-		var cm  := CylinderMesh.new()
-		cm.top_radius    = 0.75
-		cm.bottom_radius = 0.85
-		cm.height        = 0.55
-		pot.mesh = cm
-		pot.material_override = _bw_mat_stone()
-		root.add_child(pot)
-		pot.global_position = p2 + Vector3(0.0, 0.28, 0.0)
-
-
-func _make_bw_bench_node(pos: Vector3, facing: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.name = "Bench"
-	n.position = pos
-	n.rotation.y = atan2(facing.x, facing.z)
-	var m := MeshInstance3D.new()
-	m.mesh = _bw_get_bench_mesh()
-	m.position.y = 0.22
-	m.material_override = _bw_mat_fence()
-	n.add_child(m)
-	return n
-
-
-# ── Market dressing ───────────────────────────────────────────────────────────
-
-func _build_bw_market_dressing(root: Node3D, market: Vector3, plaza: Vector3, count: int) -> void:
-	var rng  := RandomNumberGenerator.new()
-	rng.randomize()
-	var dir: Vector3 = (plaza - market); dir.y = 0.0; dir = dir.normalized()
-	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-
-	# Carts parked near market
-	for i in range(count):
-		var p: Vector3 = market + side * rng.randf_range(-12.0, 12.0) + dir * rng.randf_range(-3.0, 7.0)
-		root.add_child(_make_bw_cart(p, -dir))
-
-	# Free-standing hanging signboards
-	for i in range(int(6 * bw_dressing_density)):
-		var p2: Vector3 = market + side * rng.randf_range(-14.0, 14.0) + dir * rng.randf_range(-5.0, 5.0)
-		var post := Node3D.new()
-		root.add_child(post)
-		post.global_position = p2
-		_bw_add_signboard(post, Vector3.ZERO, "MARKET" if rng.randf() < 0.5 else "GOODS")
-
-	# Extra clutter scatter over market area
-	for i in range(int(20 * bw_dressing_density)):
-		var p3: Vector3 = market + side * rng.randf_range(-18.0, 18.0) + dir * rng.randf_range(-8.0, 10.0)
-		_bw_place_clutter(root, p3, rng)
-
-
-func _make_bw_cart(pos: Vector3, facing: Vector3) -> Node3D:
-	var n := Node3D.new()
-	n.name = "Cart"
-	n.position = pos
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	var bed := MeshInstance3D.new()
-	var bm  := BoxMesh.new()
-	bm.size = Vector3(1.6, 0.5, 2.4)
-	bed.mesh = bm
-	bed.position.y = 0.25
-	bed.material_override = _bw_mat_fence()
-	n.add_child(bed)
-
-	for sx in [-0.85, 0.85]:
-		for sz in [-1.0, 1.0]:
-			var w   := MeshInstance3D.new()
-			var wcm := CylinderMesh.new()
-			wcm.top_radius    = 0.26
-			wcm.bottom_radius = 0.26
-			wcm.height        = 0.14
-			w.mesh = wcm
-			w.rotation_degrees.x = 90.0
-			w.position = Vector3(sx, 0.26, sz)
-			w.material_override = _bw_mat_fence()
-			n.add_child(w)
-
-	return n
-
-
-# ── Craft yard dressing ───────────────────────────────────────────────────────
-
-func _build_bw_craft_dressing(root: Node3D, craft: Vector3, plaza: Vector3, count: int) -> void:
-	var rng  := RandomNumberGenerator.new()
-	rng.randomize()
-	var dir: Vector3 = (plaza - craft); dir.y = 0.0; dir = dir.normalized()
-	var side: Vector3 = dir.rotated(Vector3.UP, PI * 0.5)
-
-	# Fence line defining yard boundary
-	_build_bw_fence_line(root, craft + side * 8.0 + dir * -4.0,
-								craft + side * 8.0 + dir *  10.0)
-
-	# Yard clutter scatter
-	for i in range(count):
-		var p: Vector3 = craft + side * rng.randf_range(-10.0, 10.0) + dir * rng.randf_range(-6.0, 10.0)
-		_bw_place_clutter(root, p, rng)
-
-	# Chopping block (log stump)
-	var block := MeshInstance3D.new()
-	var bcm   := CylinderMesh.new()
-	bcm.top_radius    = 0.55
-	bcm.bottom_radius = 0.60
-	bcm.height        = 0.55
-	block.mesh = bcm
-	block.material_override = _bw_mat_fence()
-	root.add_child(block)
-	block.global_position = craft + Vector3(5.0, 0.28, 6.0)
-
-
-# ── Residential dressing ──────────────────────────────────────────────────────
-
-func _build_bw_residential_dressing(root: Node3D, plaza: Vector3, count: int) -> void:
-	var rng    := RandomNumberGenerator.new()
-	rng.randomize()
-	var ring_r := 30.0
-
-	for i in range(count):
-		var ang    := TAU * float(i) / float(maxi(1, count))
-		var center: Vector3 = plaza + Vector3(cos(ang), 0.0, sin(ang)) * ring_r
-
-		# Small yard fence segment
-		var a: Vector3 = center + Vector3(rng.randf_range(-3.0, 3.0), 0.0, rng.randf_range(-3.0, 3.0))
-		var b: Vector3 = a + Vector3(rng.randf_range(4.0, 8.0), 0.0, rng.randf_range(-2.0, 2.0))
-		_build_bw_fence_line(root, a, b)
-
-		# Laundry line (35% chance)
-		if rng.randf() < 0.35:
-			_build_bw_laundry_line(root, a + Vector3(0.0, 0.0, 2.0),
-											a + Vector3(3.5, 0.0, 2.5), rng)
-
-		# Yard clutter (55% chance)
-		if rng.randf() < 0.55:
-			_bw_place_clutter(root, center + Vector3(rng.randf_range(-4.0, 4.0), 0.0,
-														rng.randf_range(-4.0, 4.0)), rng)
-
-
-func _build_bw_laundry_line(root: Node3D, a: Vector3, b: Vector3, rng: RandomNumberGenerator) -> void:
-	var mat := _bw_mat_fence()
-
-	# Posts at each end
-	for p in [a, b]:
-		var post := MeshInstance3D.new()
-		var pcm  := CylinderMesh.new()
-		pcm.top_radius    = 0.07
-		pcm.bottom_radius = 0.09
-		pcm.height        = 1.9
-		post.mesh = pcm
-		post.material_override = mat
-		root.add_child(post)
-		post.global_position = p + Vector3(0.0, 0.95, 0.0)
-
-	# Horizontal line beam
-	var mid := (a + b) * 0.5
-	var len: float = Vector2(b.x - a.x, b.z - a.z).length()
-	var line := MeshInstance3D.new()
-	var lbm  := BoxMesh.new()
-	lbm.size = Vector3(0.05, 0.05, len)
-	line.mesh = lbm
-	line.material_override = mat
-	root.add_child(line)
-	line.global_position = mid + Vector3(0.0, 1.65, 0.0)
-	line.rotation.y = atan2(b.x - a.x, b.z - a.z)
-
-	# Cloth pieces hanging from line
-	var cloth_n: int = rng.randi_range(2, 5)
-	for i in range(cloth_n):
-		var t   := float(i + 1) / float(cloth_n + 1)
-		var cp: Vector3 = a.lerp(b, t) + Vector3(0.0, 1.55, 0.0)
-		var cl  := MeshInstance3D.new()
-		var cbm := BoxMesh.new()
-		cbm.size = Vector3(0.35, 0.25, 0.03)
-		cl.mesh = cbm
-		var cm := StandardMaterial3D.new()
-		cm.albedo_color = Color(rng.randf_range(0.4, 1.0),
-								rng.randf_range(0.4, 1.0),
-								rng.randf_range(0.4, 1.0))
-		cl.material_override = cm
-		root.add_child(cl)
-		cl.global_position = cp
-		cl.rotation.y = rng.randf_range(-PI, PI)
-
-
-# ── Fence line builder (MultiMesh preferred) ──────────────────────────────────
-
-func _build_bw_fence_line(root: Node3D, a: Vector3, b: Vector3) -> void:
-	var mat := _bw_mat_fence()
-	var dir := b - a; dir.y = 0.0
-	var len: float = dir.length()
-	if len < 0.5:
-		return
-	dir = dir.normalized()
-
-	var post_spacing := 1.6
-	var posts: int = int(ceil(len / post_spacing)) + 1
-
-	for i in range(posts):
-		var p  := a + dir * (float(i) * post_spacing)
-		var xf: Transform3D = Transform3D(Basis.IDENTITY, p + Vector3(0.0, 0.78, 0.0))
-		if bw_multimesh_enabled and bw_mm_fences:
-			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 256)
-		else:
-			var post := MeshInstance3D.new()
-			post.mesh = _bw_get_fence_post_mesh()
-			post.material_override = mat
-			root.add_child(post)
-			post.global_position = p + Vector3(0.0, 0.78, 0.0)
-
-	# Two rails spanning the whole segment
-	var rail_mesh := BoxMesh.new()
-	rail_mesh.size = Vector3(0.10, 0.10, len)
-	var mid := (a + b) * 0.5
-	var yaw := atan2(b.x - a.x, b.z - a.z)
-	var rot := Basis(Vector3.UP, yaw)
-	for rail_y in [0.55, 1.05]:
-		var xf2: Transform3D = Transform3D(rot, mid + Vector3(0.0, rail_y, 0.0))
-		if bw_multimesh_enabled and bw_mm_fences:
-			_mm_add(root, rail_mesh, mat, xf2, 128)
-		else:
-			var rail := MeshInstance3D.new()
-			rail.mesh = rail_mesh
-			rail.material_override = mat
-			root.add_child(rail)
-			rail.global_position = mid + Vector3(0.0, rail_y, 0.0)
-			rail.rotation.y = yaw
-
-
-# ── Generic clutter placer (MultiMesh preferred) ──────────────────────────────
-
-func _bw_place_clutter(root: Node3D, p: Vector3, rng: RandomNumberGenerator) -> void:
-	var mat  := _bw_mat_clutter()
-	var kind: float = rng.randf()
-	var rot: Basis = Basis(Vector3.UP, rng.randf_range(-PI, PI))
-
-	if bw_multimesh_enabled and bw_mm_clutter:
-		if kind < 0.45:
-			_mm_add(root, _bw_get_barrel_mesh(),  mat, Transform3D(rot, p + Vector3(0.0, 0.40, 0.0)),  256)
-		elif kind < 0.80:
-			_mm_add(root, _bw_get_crate_mesh(),   mat, Transform3D(rot, p + Vector3(0.0, 0.225, 0.0)), 256)
-		else:
-			_mm_add(root, _bw_get_woodpile_mesh(), mat, Transform3D(rot, p + Vector3(0.0, 0.275, 0.0)), 128)
-		return
-
-	# Fallback node path
-	var m := MeshInstance3D.new()
-	m.material_override = mat
-	m.rotation.y = rng.randf_range(-PI, PI)
-	if kind < 0.45:
-		m.mesh = _bw_get_barrel_mesh()
-		m.position = p + Vector3(0.0, 0.40, 0.0)
-	elif kind < 0.80:
-		m.mesh = _bw_get_crate_mesh()
-		m.position = p + Vector3(0.0, 0.225, 0.0)
-	else:
-		m.mesh = _bw_get_woodpile_mesh()
-		m.position = p + Vector3(0.0, 0.275, 0.0)
-	root.add_child(m)
-
-
-# ── Gate dressing ─────────────────────────────────────────────────────────────
-
-func _build_bw_gate_dressing(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
-	# Signpost beside the gate arch
-	var sp := Node3D.new()
-	root.add_child(sp)
-	sp.global_position = gate + Vector3(2.4, 0.0, 1.4)
-	_bw_add_signboard(sp, Vector3.ZERO, "BRIARWOOD")
-
-	# Two flanking lantern posts
-	root.add_child(_make_bw_lantern_post(gate + Vector3(-3.0, 0.0, 2.0)))
-	root.add_child(_make_bw_lantern_post(gate + Vector3( 3.0, 0.0, 2.0)))
-
-
-# ============================================================================
-# Phase 24B — Real Village Layout (palisade, loop roads, farms)
-# ============================================================================
-
-func _build_bw_real_layout(root: Node3D, plaza: Vector3, gate: Vector3,
-		market: Vector3, craft: Vector3, _townhall: Vector3) -> void:
-	# 1. Elliptical palisade with gate gap + towers
-	_build_bw_palisade(root, plaza, gate)
-
-	# 2. Two loop roads
-	var outer := _bw_loop_points(plaza,
-		bw_palisade_radius_x * 0.84, bw_palisade_radius_z * 0.84, 28)
-	var inner := _bw_loop_points(plaza,
-		bw_palisade_radius_x * bw_inner_loop_scale,
-		bw_palisade_radius_z * bw_inner_loop_scale, 22)
-
-	for i in range(outer.size() - 1):
-		_build_bw_cobble_strip(outer[i], outer[i + 1], root)
-	for i in range(inner.size() - 1):
-		_build_bw_cobble_strip(inner[i], inner[i + 1], root)
-
-	# 3. Houses along both loop roads, facing the road
-	_place_houses_along_loop(root, outer, 14, "residential")
-	_place_houses_along_loop(root, inner, 12, "residential")
-
-	# 4. Yard fence segments behind houses
-	_build_bw_yards(root, outer)
-	_build_bw_yards(root, inner)
-
-	# 5. Farms outside the gate
-	if bw_farm_enabled:
-		_build_bw_farms(root, gate, plaza)
-
-
-func _bw_loop_points(center: Vector3, rx: float, rz: float, n: int) -> Array[Vector3]:
-	var pts: Array[Vector3] = []
-	for i in range(n + 1):
-		var t := TAU * float(i) / float(n)
-		pts.append(center + Vector3(cos(t) * rx, 0.0, sin(t) * rz))
-	return pts
-
-
-# ── Cobble road strip (lightweight Briarwood version) ─────────────────────────
-
-func _build_bw_cobble_strip(a: Vector3, b: Vector3, parent: Node3D) -> void:
-	var dir := b - a; dir.y = 0.0
-	var dist: float = dir.length()
-	if dist < 0.5:
-		return
-	dir = dir.normalized()
-	var steps := int(dist / 2.0)
-	for i in range(steps + 1):
-		var p   := a + dir * float(i) * 2.0
-		var seg := MeshInstance3D.new()
-		var bm  := BoxMesh.new()
-		bm.size = Vector3(3.0, 0.12, 2.1)
-		seg.mesh = bm
-		seg.material_override = MAT_PATH(3.0)
-		parent.add_child(seg)
-		seg.global_position = p + Vector3(0.0, 0.02, 0.0)
-		seg.rotation.y = atan2(dir.x, dir.z)
-
-
-# ── Palisade with gate gap + towers ──────────────────────────────────────────
-
-func _build_bw_palisade(root: Node3D, center: Vector3, gate: Vector3) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7331
-
-	var mat       := _bw_mat_fence()
-	var gate_dir: Vector3 = (gate - center); gate_dir.y = 0.0; gate_dir = gate_dir.normalized()
-	var gate_yaw  := atan2(gate_dir.x, gate_dir.z)
-	var half_gap  := (bw_gate_width / maxf(1.0, bw_palisade_radius_z)) * 0.5
-
-	var post_n := 120
-	for i in range(post_n):
-		var t := TAU * float(i) / float(post_n)
-		var p: Vector3 = center + Vector3(cos(t) * bw_palisade_radius_x,
-									0.0,
-									sin(t) * bw_palisade_radius_z)
-
-		var yaw      := atan2((p - center).x, (p - center).z)
-		var ang_diff: float = absf(wrapf(yaw - gate_yaw, -PI, PI))
-		if ang_diff < half_gap:
-			continue   # gate gap
-
-		var h: float = rng.randf_range(2.4, 3.4)
-		var xf: Transform3D = Transform3D(Basis.IDENTITY.scaled(Vector3(1.0, h / 1.55, 1.0)),
-								p + Vector3(0.0, h * 0.5, 0.0))
-		if bw_multimesh_enabled and bw_mm_fences:
-			_mm_add(root, _bw_get_fence_post_mesh(), mat, xf, 512)
-		else:
-			var post := MeshInstance3D.new()
-			var pcm  := CylinderMesh.new()
-			pcm.top_radius    = 0.12
-			pcm.bottom_radius = 0.16
-			pcm.height        = h
-			post.mesh = pcm
-			post.material_override = mat
-			root.add_child(post)
-			post.global_position = p + Vector3(0.0, h * 0.5, 0.0)
-
-	_build_bw_gate_towers(root, gate, gate_dir)
-
-
-func _build_bw_gate_towers(root: Node3D, gate: Vector3, forward: Vector3) -> void:
-	# ── Upgraded gate: two flanking stone towers + portcullis arch + battlements ──
-	var side: Vector3 = forward.rotated(Vector3.UP, PI * 0.5)
-	var rot_y := atan2(forward.x, forward.z)
-
-	for s in [-1.0, 1.0]:
-		var p: Vector3 = gate + side * (bw_gate_width * 0.6 * float(s))
-		var t := Node3D.new()
-		t.name = "GateTower"
-		root.add_child(t)
-		t.global_position = p
-
-		# Main tower shaft — stone, 10m tall
-		var shaft := MeshInstance3D.new()
-		var scm   := CylinderMesh.new()
-		scm.top_radius    = 1.8
-		scm.bottom_radius = 2.2
-		scm.height        = 10.0
-		shaft.mesh = scm
-		shaft.material_override = _bw_mat_stone()
-		shaft.position.y = 5.0
-		t.add_child(shaft)
-
-		# Battlement ring — dark wood crenellations on top
-		var bat_count := 8
-		for bi in range(bat_count):
-			var bang := TAU * float(bi) / float(bat_count)
-			var bpos: Vector3 = Vector3(cos(bang) * 1.6, 10.5, sin(bang) * 1.6)
-			var crenel := MeshInstance3D.new()
-			var cbm := BoxMesh.new()
-			cbm.size = Vector3(0.55, 1.0, 0.55)
-			crenel.mesh = cbm
-			crenel.material_override = _bw_mat_stone()
-			crenel.position = bpos
-			t.add_child(crenel)
-
-		# Cap (conical stone roof)
-		var cap := MeshInstance3D.new()
-		var cpm := CylinderMesh.new()
-		cpm.top_radius    = 0.05
-		cpm.bottom_radius = 2.0
-		cpm.height        = 3.0
-		cap.mesh = cpm
-		cap.material_override = _bw_mat_roof()
-		cap.position.y = 11.5
-		t.add_child(cap)
-
-		# Torch bracket light on each tower
-		var torch_light := OmniLight3D.new()
-		torch_light.light_color  = Color(1.0, 0.72, 0.35)
-		torch_light.light_energy = 2.0
-		torch_light.omni_range   = 18.0
-		torch_light.position     = Vector3(float(s) * -1.5, 6.0, 1.8)
-		t.add_child(torch_light)
-
-		# Collision
-		var body := StaticBody3D.new()
-		var col  := CollisionShape3D.new()
-		var cyl  := CylinderShape3D.new()
-		cyl.radius = 2.2
-		cyl.height = 10.0
-		col.shape  = cyl
-		col.position.y = 5.0
-		body.add_child(col)
-		t.add_child(body)
-
-	# ── Portcullis arch spanning the gate gap ─────────────────────────────────
-	var arch := Node3D.new()
-	arch.name = "GateArch"
-	root.add_child(arch)
-	arch.global_position = gate
-	arch.rotation.y = rot_y
-
-	# Left pillar
-	var lp := MeshInstance3D.new()
-	var lbm := BoxMesh.new()
-	lbm.size = Vector3(1.4, 8.0, 1.4)
-	lp.mesh = lbm
-	lp.material_override = _bw_mat_stone()
-	lp.position = Vector3(-(bw_gate_width * 0.5), 4.0, 0.0)
-	arch.add_child(lp)
-
-	# Right pillar
-	var rp := MeshInstance3D.new()
-	var rbm := BoxMesh.new()
-	rbm.size = Vector3(1.4, 8.0, 1.4)
-	rp.mesh = rbm
-	rp.material_override = _bw_mat_stone()
-	rp.position = Vector3(bw_gate_width * 0.5, 4.0, 0.0)
-	arch.add_child(rp)
-
-	# Lintel (cross beam over the gate)
-	var lintel := MeshInstance3D.new()
-	var lim := BoxMesh.new()
-	lim.size = Vector3(bw_gate_width + 2.8, 1.4, 1.4)
-	lintel.mesh = lim
-	lintel.material_override = _bw_mat_stone()
-	lintel.position = Vector3(0.0, 8.0, 0.0)
-	arch.add_child(lintel)
-
-	# Portcullis bars (dark wood grid — visual only)
-	var bar_count := 5
-	for bi in range(bar_count):
-		var bx: float = lerp(-(bw_gate_width * 0.5) + 1.0, (bw_gate_width * 0.5) - 1.0, float(bi) / float(bar_count - 1))
-		var bar := MeshInstance3D.new()
-		var bbm := BoxMesh.new()
-		bbm.size = Vector3(0.18, 7.0, 0.18)
-		bar.mesh = bbm
-		bar.material_override = _bw_mat_darkwood()
-		bar.position = Vector3(bx, 4.0, 0.0)
-		arch.add_child(bar)
-
-	# Gate lantern hanging from lintel centre
-	var gate_light := OmniLight3D.new()
-	gate_light.light_color  = Color(1.0, 0.82, 0.42)
-	gate_light.light_energy = 2.8
-	gate_light.omni_range   = 22.0
-	gate_light.position     = Vector3(0.0, 7.0, 0.0)
-	arch.add_child(gate_light)
-
-
-# ── Houses along loop roads ───────────────────────────────────────────────────
-
-func _place_houses_along_loop(root: Node3D, pts: Array[Vector3], count: int, zone: String = "residential") -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-
-	for i in range(count):
-		var idx: int = int(rng.randi_range(0, pts.size() - 2))
-		var a   := pts[idx]
-		var b   := pts[idx + 1]
-
-		# Tangent along road segment
-		var road_dir := (b - a)
-		road_dir.y = 0.0
-		if road_dir.length() < 0.01:
-			continue
-		road_dir = road_dir.normalized()
-
-		# Pick a point along segment (avoid endpoints)
-		var mid: Vector3 = a.lerp(b, rng.randf_range(0.22, 0.78))
-
-		# Choose which side of road
-		var outward: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
-		if rng.randf() < 0.5:
-			outward = -outward
-
-		# Decide house kind first so setback depends on it
-		var kind    := _bw_pick_house_kind(zone, rng)
-		var setback := _bw_setback_for_kind(kind)
-
-		# Plot center offset from road by setback
-		var plot_center := mid + outward * setback
-
-		# Facing: toward road (inward = -outward)
-		var facing := -outward
-
-		# Build house
-		var house := _bw_build_kind(kind, plot_center, facing, rng)
-		root.add_child(house)
-		house.global_position = plot_center  # set AFTER add_child — orphan global_position crashes
-
-		# Auto yard behind house
-		if bw_yard_fence_enabled:
-			_bw_auto_yard_for_house(root, house, plot_center, road_dir, outward, kind, zone, rng)
-
-
-# ── Yard fence segments ───────────────────────────────────────────────────────
-
-func _build_bw_yards(root: Node3D, pts: Array[Vector3]) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-
-	var i := 0
-	while i < pts.size() - 1:
-		var a        := pts[i]
-		var b        := pts[i + 1]
-		var mid      := (a + b) * 0.5
-		var road_dir: Vector3 = (b - a); road_dir.y = 0.0; road_dir = road_dir.normalized()
-		var back: Vector3 = road_dir.rotated(Vector3.UP, PI * 0.5)
-
-		var p1 := mid + back * (bw_house_setback + 2.0)
-		var p2: Vector3 = p1 + road_dir * rng.randf_range(6.0, 10.0)
-		_build_bw_fence_line(root, p1, p2)
-
-		if rng.randf() < 0.25:
-			_build_bw_laundry_line(root, p1, p1 + Vector3(3.5, 0.0, 1.0), rng)
-
-		i += 2   # step by 2 so fence runs are spaced
-
-
-# ── Farm fields outside gate ──────────────────────────────────────────────────
-
-func _build_bw_farms(root: Node3D, gate: Vector3, plaza: Vector3) -> void:
-	var rng     := RandomNumberGenerator.new()
-	rng.seed    = 7331
-	var forward := (gate - plaza); forward.y = 0.0
-	if forward.length_squared() > 0.001:
-		forward = forward.normalized()
-	else:
-		forward = Vector3(0.0, 0.0, 1.0)
-
-	var base := gate + forward * 18.0
-
-	for i in range(4):
-		var fw: float = rng.randf_range(8.0, 14.0)
-		var fd: float = rng.randf_range(10.0, 16.0)
-		var p: Vector3 = base + Vector3(rng.randf_range(-14.0, 14.0), 0.0, rng.randf_range(6.0, 18.0))
-
-		var field := MeshInstance3D.new()
-		var bm    := BoxMesh.new()
-		bm.size = Vector3(fw, 0.08, fd)
-		field.mesh = bm
-		var fm := StandardMaterial3D.new()
-		fm.albedo_color = Color(0.22, 0.35, 0.16)
-		field.material_override = fm
-		root.add_child(field)
-		field.global_position = p + Vector3(0.0, 0.04, 0.0)
-
-		# Fence along front edge
-		_build_bw_fence_line(root,
-			p + Vector3(-fw * 0.5, 0.0, -fd * 0.5),
-			p + Vector3( fw * 0.5, 0.0, -fd * 0.5))
-
-
-# ============================================================================
-# Phase 24C — House Types + Variants
-# ============================================================================
-
-func _make_bw_house_variant(pos: Vector3, facing: Vector3, zone: String) -> Node3D:
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-
-	var t: float = rng.randf()
-	var kind := "small"
-
-	if zone == "market" and t < bw_shopfront_weight_market:
-		kind = "shopfront"
-	else:
-		var sum := bw_house_small_weight + bw_house_medium_weight \
-					+ bw_house_large_weight + bw_house_corner_weight
-		var r := t * sum
-		if r < bw_house_small_weight:
-			kind = "small"
-		elif r < bw_house_small_weight + bw_house_medium_weight:
-			kind = "medium"
-		elif r < bw_house_small_weight + bw_house_medium_weight + bw_house_large_weight:
-			kind = "large"
-		else:
-			kind = "corner"
-
-	match kind:
-		"shopfront": return _bw_build_shopfront(pos, facing, rng)
-		"large":     return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0,  true,  true,  rng)
-		"medium":    return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4,  true,  true,  rng)
-		"corner":    return _bw_build_corner_house(pos, facing, rng)
-		_:           return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2,  false, true,  rng)
-
-
-func _bw_build_house(pos: Vector3, facing: Vector3, footprint: Vector2, wall_h: float,
-		chimney: bool, porch: bool, rng: RandomNumberGenerator) -> Node3D:
-	var n := Node3D.new()
-	n.name = "BW_House"
-	# NOTE: position + rotation set by caller AFTER add_child (global_position on orphan crashes)
-	n.rotation.y = atan2(facing.x, facing.z)
-
-	var w      := footprint.x
-	var d      := footprint.y
-	var base_h := 0.55
-
-	# Stone base
-	var base := MeshInstance3D.new()
-	var bsm  := BoxMesh.new()
-	bsm.size = Vector3(w, base_h, d)
-	base.mesh = bsm
-	base.position.y = base_h * 0.5
-	base.material_override = _bw_mat_stone()
-	n.add_child(base)
-
-	# Plaster walls
-	var walls := MeshInstance3D.new()
-	var wm    := BoxMesh.new()
-	wm.size = Vector3(w * 0.92, wall_h, d * 0.92)
-	walls.mesh = wm
-	walls.position.y = base_h + wall_h * 0.5
-	walls.material_override = _bw_mat_timber()
-	n.add_child(walls)
-
-	# Timber frame + gable roof
-	_bw_add_timber_frame(n, w, d, wall_h, base_h)
-	var pitch: float = rng.randf_range(bw_roof_pitch_min, bw_roof_pitch_max)
-	n.add_child(_bw_gable_roof(w * 1.10, d * 1.08, base_h + wall_h + 0.25, pitch, bw_roof_overhang))
-
-	# Collision
-	var body := StaticBody3D.new()
-	var col  := CollisionShape3D.new()
-	var box  := BoxShape3D.new()
-	box.size = Vector3(w, base_h + wall_h + 2.8, d)
-	col.shape = box
-	col.position.y = box.size.y * 0.5
-	body.add_child(col)
-	n.add_child(body)
-
-	# Optional porch slab (front-facing)
-	if porch and bw_porch_enabled and rng.randf() < 0.75:
-		var pm  := MeshInstance3D.new()
-		var pbm := BoxMesh.new()
-		pbm.size = Vector3(w * 0.42, 0.18, 1.8)
-		pm.mesh = pbm
-		pm.position = Vector3(0.0, base_h + 0.09, d * 0.52)
-		pm.material_override = _bw_mat_darkwood()
-		n.add_child(pm)
-
-	# 2–4 warm windows on random sides
-	var win_count: int = rng.randi_range(2, 4)
-	for _i in range(win_count):
-		var side: float = -1.0 if rng.randf() < 0.5 else 1.0
-		var z: float = rng.randf_range(-d * 0.25, d * 0.25)
-		_bw_add_warm_window(n, Vector3(side * w * 0.44, base_h + 1.7, z), side, bw_window_energy_day)
-
-	# Optional chimney
-	if chimney and bw_chimney_enabled and rng.randf() < 0.70:
-		_bw_add_chimney(n, Vector3(w * 0.28, base_h + wall_h + 0.2, -d * 0.15),
-						rng.randf_range(5.6, 7.0))
-
-	return n
-
-
-func _bw_build_corner_house(pos: Vector3, facing: Vector3, rng: RandomNumberGenerator) -> Node3D:
-	var n := _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true, true, rng)
-	n.name = "BW_CornerHouse"
-
-	# Lean-to wing on one side
-	var wing := MeshInstance3D.new()
-	var wbm  := BoxMesh.new()
-	wbm.size = Vector3(3.2, 2.4, 4.0)
-	wing.mesh = wbm
-	wing.material_override = _bw_mat_timber()
-	wing.position = Vector3(4.2, 0.55 + 1.2, -1.0)
-	n.add_child(wing)
-
-	# Shed roof over lean-to
-	var shed := MeshInstance3D.new()
-	var sbm  := BoxMesh.new()
-	sbm.size = Vector3(3.36, 0.16, 4.2)
-	shed.mesh = sbm
-	shed.material_override = _bw_mat_roof()
-	shed.position = Vector3(4.2, 0.55 + 2.5, -1.0)
-	shed.rotation_degrees.z = 18.0
-	n.add_child(shed)
-
-	return n
-
-
-func _bw_build_shopfront(pos: Vector3, facing: Vector3, rng: RandomNumberGenerator) -> Node3D:
-	var n := _bw_build_house(pos, facing, Vector2(8.0, 6.0), 3.4, true, true, rng)
-	n.name = "BW_Shopfront"
-
-	# Forward-tilted awning
-	var awn := MeshInstance3D.new()
-	var abm := BoxMesh.new()
-	abm.size = Vector3(4.0, 0.14, 2.0)
-	awn.mesh = abm
-	awn.material_override = _bw_mat_darkwood()
-	awn.position = Vector3(0.0, 0.55 + 2.4, 3.4)
-	awn.rotation_degrees.x = -12.0
-	n.add_child(awn)
-
-	# Signboard
-	_bw_add_signboard(n, Vector3(0.0, 0.0, 3.4), "SHOP" if rng.randf() < 0.5 else "TRADER")
-	return n
-
-
-# ============================================================================
-# Phase 25 — Street Alignment helpers
-# ============================================================================
-
-func _bw_pick_house_kind(zone: String, rng: RandomNumberGenerator) -> String:
-	if zone == "market" and rng.randf() < bw_shopfront_weight_market:
-		return "shopfront"
-
-	var w_small  := bw_house_small_weight
-	var w_med    := bw_house_medium_weight
-	var w_large  := bw_house_large_weight
-	var w_corner := bw_house_corner_weight
-	var sum      := w_small + w_med + w_large + w_corner
-
-	var t: float = rng.randf() * sum
-	if t < w_small:
-		return "small"
-	elif t < w_small + w_med:
-		return "medium"
-	elif t < w_small + w_med + w_large:
-		return "large"
-	else:
-		return "corner"
-
-
-func _bw_setback_for_kind(kind: String) -> float:
-	match kind:
-		"small":     return bw_setback_small
-		"medium":    return bw_setback_medium
-		"large":     return bw_setback_large
-		"shopfront": return bw_setback_shop
-		"corner":    return bw_setback_corner
-		_:           return bw_setback_medium
-
-
-func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
-		rng: RandomNumberGenerator) -> Node3D:
-	# Try GLB building first — falls through to procedural if asset missing.
-	match kind:
-		"shopfront":
-			var glb: PackedScene = BUILDING_MODELS.get("shopfront")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(1.2, 1.2, 1.2))
-			return _bw_build_shopfront(pos, facing, rng)
-		"large":
-			# Rotate between log_building and castle_village for variety
-			var glb: PackedScene = BUILDING_MODELS.get("log_building")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.018, 0.018, 0.018))
-			glb = BUILDING_MODELS.get("house")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
-			return _bw_build_house(pos, facing, Vector2(9.0, 7.0), 4.0, true,  true,  rng)
-		"medium":
-			var glb: PackedScene = BUILDING_MODELS.get("medieval_town")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.012, 0.012, 0.012))
-			glb = BUILDING_MODELS.get("house")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
-			return _bw_build_house(pos, facing, Vector2(7.0, 6.0), 3.4, true,  true,  rng)
-		"corner":
-			var glb: PackedScene = BUILDING_MODELS.get("house")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(1.25, 1.25, 1.25))
-			return _bw_build_corner_house(pos, facing, rng)
-		_:   # small
-			var glb: PackedScene = BUILDING_MODELS.get("house")
-			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.9, 0.9, 0.9))
-			return _bw_build_house(pos, facing, Vector2(6.0, 5.0), 3.2, false, true,  rng)
-
-# Instantiate a GLB building scene, set rotation to face the road, scale it.
-# Position is set by caller AFTER add_child() — never set global_position on orphan.
-func _place_building_glb(scene: PackedScene, pos: Vector3, facing: Vector3,
-		scale_v: Vector3) -> Node3D:
-	var n := scene.instantiate() as Node3D
-	if n == null:
-		# Instantiation failed — return a safe empty node so caller never gets null
-		return Node3D.new()
-	n.name = "BW_Building"
-	n.rotation.y = atan2(facing.x, facing.z)
-	n.scale = scale_v
-	# NOTE: caller sets global_position AFTER add_child()
-	return n
-
-
-func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
-		road_dir: Vector3, outward: Vector3, kind: String, zone: String,
-		rng: RandomNumberGenerator) -> void:
-	# Yard dimensions vary by house type
-	var yard_w: float = rng.randf_range(bw_yard_width_min, bw_yard_width_max)
-	match kind:
-		"large":     yard_w *= 1.15
-		"small":     yard_w *= 0.90
-
-	var yard_d := bw_yard_depth
-	if kind == "shopfront":
-		yard_d *= 0.55   # shops have little/no backyard
-
-	# Yard is behind the house = further away from road
-	var back_dir := outward
-	var side_dir := road_dir
-
-	var yard_center := plot_center + back_dir * (yard_d * 0.55)
-
-	var half_w := yard_w * 0.5
-	var half_d := yard_d * 0.5
-
-	# Rectangle corners
-	var p1 := yard_center - side_dir * half_w - back_dir * half_d
-	var p2 := yard_center + side_dir * half_w - back_dir * half_d
-	var p3 := yard_center + side_dir * half_w + back_dir * half_d
-	var p4 := yard_center - side_dir * half_w + back_dir * half_d
-
-	# Fence 3 sides — front (road-facing) stays open
-	_build_bw_fence_line(root, p1, p2)   # back edge
-	_build_bw_fence_line(root, p2, p3)   # right side
-	_build_bw_fence_line(root, p4, p1)   # left side
-
-	# Yard clutter
-	if rng.randf() < 0.65 and kind != "shopfront":
-		var clutter_p: Vector3 = yard_center + Vector3(
-			rng.randf_range(-half_w * 0.6, half_w * 0.6),
-			0.0,
-			rng.randf_range(-half_d * 0.6, half_d * 0.6))
-		_bw_place_clutter(root, clutter_p, rng)
-
-	# Laundry (residential only, occasional)
-	if zone == "residential" and rng.randf() < 0.22:
-		var la := yard_center - side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
-		var lb := yard_center + side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
-		_build_bw_laundry_line(root, la, lb, rng)
