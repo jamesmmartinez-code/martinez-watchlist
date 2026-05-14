@@ -1281,7 +1281,7 @@ func _build_world_sync() -> void:
 	call_deferred("_global_scale_sweep")
 	_safe_call("_build_player_home")
 	_safe_call("_build_weather")
-	_safe_call("_build_crystal_caves", [Vector3(-50, 0, -40)])
+	_safe_call("_build_crystal_caves", [Vector3(-50, -200, -40)])
 	_safe_call("_build_nordic_fishing_village")
 	_safe_call("_build_nordic_road")
 	_safe_call("_build_nordic_ambient_audio")
@@ -1424,7 +1424,7 @@ func _build_world_async() -> void:
 	_wb_crash_report("Creatures+Loot")
 	_safe_call_now("_build_player_home",    [])
 	_safe_call_now("_build_weather",        [])
-	_safe_call_now("_build_crystal_caves",  [Vector3(-50, 0, -40)])
+	_safe_call_now("_build_crystal_caves",  [Vector3(-50, -200, -40)])
 
 	# ── Nordic district (second-heaviest chunk) ───────────────────────────────
 	build_progress.emit("Nordic District", 0.80)
@@ -3494,7 +3494,7 @@ func _build_whisperwood_forest() -> void:
 func _build_caves_surface_entrance() -> void:
 	var root := Node3D.new()
 	root.name = "CavesSurfaceEntrance"
-	root.position = Vector3(-50.0, 0.0, -40.0)
+	root.position = Vector3(-50.0, -200.0, -40.0)
 	add_child(root)
 
 	# ── Two massive stone pillars flanking the cave mouth ──────────────────
@@ -4289,7 +4289,7 @@ func _build_pet() -> void:
 	# Spawn the player's fox companion next to the spawn point
 	var pet := CharacterBody3D.new()
 	pet.set_script(PET_SCRIPT)
-	pet.position = Vector3(2, 1.0, 2)
+	pet.position = Vector3(2, 0.0, 2)  # FIX: y=0 so fox lands on ground, not mid-air
 	add_child(pet)
 
 # ============================================================================
@@ -6001,6 +6001,13 @@ func _make_glb_tree(pos: Vector3, rng: RandomNumberGenerator) -> bool:
 	var s: float = rng.randf_range(s_min, s_max)
 	if inst is Node3D:
 		(inst as Node3D).scale = Vector3(s, s, s)
+	# FIX: apply immediate scale cap so tree never flashes at giant size
+	if inst is Node3D:
+		var n3d := inst as Node3D
+		# Measure native height (before deferred clamp) — GLBs vary wildly
+		# Use a conservative cap: if scale > 0.05 the GLB is likely human-scale,
+		# if scale < 0.01 it may be a giant exported in cm. Cap final world height.
+		n3d.scale = Vector3(min(s, 0.04), min(s, 0.04), min(s, 0.04))
 	# Trunk-shaped capsule collider per kind. Bushes are walk-through cover.
 	var radius: float = 0.55 * s
 	var height: float = 3.0 * s
@@ -6037,14 +6044,16 @@ func _make_glb_tree(pos: Vector3, rng: RandomNumberGenerator) -> bool:
 # instantiated tree's visual AABB and uniformly scales it down to ≤14m if it
 # came in as a giant. No-op if already in spec.
 func _clamp_tree_at_spawn(holder: Node, inst: Node) -> void:
+	# FIX: hard cap at 3.0m — player is ~1.8m, trees must not obscure them.
+	const MAX_TREE_H: float = 3.0
 	if not is_instance_valid(holder):
 		return
 	var aabb := _measure_aabb(holder)
-	if aabb.size.y <= 4.5 or aabb.size.y <= 0.001:
+	if aabb.size.y <= MAX_TREE_H or aabb.size.y <= 0.001:
 		return
 	if inst is Node3D:
 		var n3d: Node3D = inst as Node3D
-		var shrink: float = clamp(4.5 / aabb.size.y, 0.001, 1.0)  # 2026-05-06: dropped from 14.0 — trees were still too big to see character past
+		var shrink: float = clamp(MAX_TREE_H / aabb.size.y, 0.001, 1.0)
 		n3d.scale = n3d.scale * shrink
 
 # Instances the boulder GLB at `pos` with randomized rotation, scale, and a
