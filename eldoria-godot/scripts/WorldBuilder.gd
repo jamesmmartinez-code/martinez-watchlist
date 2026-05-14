@@ -5363,7 +5363,6 @@ const BOAT_DESTS := [
 @export var boat_dest_nordic: Vector3 = Vector3(0, 0, 120)
 
 # ── Phase 9: District Streaming ──────────────────────────────────────────────
-@export var district_streaming_enabled: bool = true
 @export var nordic_stream_load_dist: float = 180.0    # build when player within this range
 @export var nordic_stream_unload_dist: float = 240.0  # free when player beyond this range
 @export var nordic_stream_tick: float = 0.8           # seconds between proximity checks
