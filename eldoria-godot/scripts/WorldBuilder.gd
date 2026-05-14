@@ -4326,15 +4326,8 @@ func _build_tavern() -> void:
 	var inst := glb.instantiate() as Node3D
 	if inst:
 		tavern.add_child(inst)
-	# Collision box
-	var body := StaticBody3D.new()
-	var col := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(9.0, 6.0, 9.0)
-	col.shape = box
-	col.position.y = 3.0
-	body.add_child(col)
-	tavern.add_child(body)
+		inst.set_meta("skin_locked", true)
+		call_deferred("_add_glb_collision", tavern)
 	# Nameplate
 	var label := Label3D.new()
 	label.text = "The Drunk Troll"
@@ -12980,7 +12973,7 @@ func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 			# Rotate between log_building and castle_village for variety
 			var glb: PackedScene = BUILDING_MODELS.get("log_building")
 			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.018, 0.018, 0.018))
+				return _place_building_glb(glb, pos, facing, Vector3(0.022, 0.022, 0.022))
 			glb = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.4, 1.4, 1.4))
@@ -12988,7 +12981,7 @@ func _bw_build_kind(kind: String, pos: Vector3, facing: Vector3,
 		"medium":
 			var glb: PackedScene = BUILDING_MODELS.get("medieval_town")
 			if glb:
-				return _place_building_glb(glb, pos, facing, Vector3(0.012, 0.012, 0.012))
+				return _place_building_glb(glb, pos, facing, Vector3(0.016, 0.016, 0.016))
 			glb = BUILDING_MODELS.get("house")
 			if glb:
 				return _place_building_glb(glb, pos, facing, Vector3(1.1, 1.1, 1.1))
@@ -13010,13 +13003,51 @@ func _place_building_glb(scene: PackedScene, pos: Vector3, facing: Vector3,
 		scale_v: Vector3) -> Node3D:
 	var n := scene.instantiate() as Node3D
 	if n == null:
-		# Instantiation failed — return a safe empty node so caller never gets null
 		return Node3D.new()
 	n.name = "BW_Building"
+	n.add_to_group("buildings")
 	n.rotation.y = atan2(facing.x, facing.z)
 	n.scale = scale_v
+	n.set_meta("skin_locked", true)
+	# Generate collision from mesh geometry so player can't walk through buildings
+	call_deferred("_add_glb_collision", n)
 	# NOTE: caller sets global_position AFTER add_child()
 	return n
+
+# Generate a StaticBody3D with a BoxShape sized to the GLB's AABB.
+# Called deferred so the node is in the tree and AABB is valid.
+func _add_glb_collision(node: Node3D) -> void:
+	if not is_instance_valid(node):
+		return
+	# Skip if already has collision
+	if not node.find_children("*", "StaticBody3D", true).is_empty():
+		return
+	# Measure AABB in local space
+	var aabb := AABB()
+	for mesh_inst in node.find_children("*", "MeshInstance3D", true):
+		var mi := mesh_inst as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		var local_aabb := mi.get_aabb()
+		# Transform to node local space
+		var xform := node.global_transform.inverse() * mi.global_transform
+		var transformed := xform * local_aabb
+		if aabb.size == Vector3.ZERO:
+			aabb = transformed
+		else:
+			aabb = aabb.merge(transformed)
+	if aabb.size.length() < 0.1:
+		return
+	# Clamp to sane building size range
+	var sz := aabb.size.clamp(Vector3(1, 1, 1), Vector3(60, 30, 60))
+	var body := StaticBody3D.new()
+	var cshape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = sz
+	cshape.shape = box
+	cshape.position = aabb.get_center()
+	body.add_child(cshape)
+	node.add_child(body)
 
 
 func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
