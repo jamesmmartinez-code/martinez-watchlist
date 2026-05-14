@@ -29,6 +29,15 @@ class_name World
 @onready var quest_label: Label = $UI/QuestPanel/QuestLabel
 @onready var death_overlay: ColorRect = $UI/DeathOverlay
 @onready var death_label: Label = $UI/DeathOverlay/DeathLabel
+@onready var skill_hotbar: Panel = $UI/HUD/SkillHotbar
+@onready var skill_slot_1: Panel = $UI/HUD/SkillHotbar/HBoxSlots/Slot1
+@onready var skill_slot_2: Panel = $UI/HUD/SkillHotbar/HBoxSlots/Slot2
+@onready var skill_slot_3: Panel = $UI/HUD/SkillHotbar/HBoxSlots/Slot3
+@onready var skill_slot_4: Panel = $UI/HUD/SkillHotbar/HBoxSlots/Slot4
+@onready var skill_cd_1: ProgressBar = $UI/HUD/SkillHotbar/HBoxSlots/Slot1/CooldownBar
+@onready var skill_cd_2: ProgressBar = $UI/HUD/SkillHotbar/HBoxSlots/Slot2/CooldownBar
+@onready var skill_cd_3: ProgressBar = $UI/HUD/SkillHotbar/HBoxSlots/Slot3/CooldownBar
+@onready var skill_cd_4: ProgressBar = $UI/HUD/SkillHotbar/HBoxSlots/Slot4/CooldownBar
 
 var time_of_day: float = 9.5  # 9:30am — warm morning start
 # Run 16 (Builder): integer day-counter that increments every time `time_of_day`
@@ -1340,7 +1349,7 @@ func _process(delta: float) -> void:
 		_zone_check_timer = 1.5
 		_check_zone_music()
 	# Day/night — full cycle in ~6 minutes
-	time_of_day = fposmod(time_of_day + delta * (24.0 / 900.0), 24.0)  # 15-min day cycle
+	time_of_day = fposmod(time_of_day + delta * (24.0 / 3600.0), 24.0)  # 60-min day cycle
 	# Run 16 (Builder): increment world_day when time_of_day wraps. The
 	# fposmod above means a forward step of `delta * 24/360` (~0.067 sec
 	# of in-game time per real second) NEVER overshoots a full day in one
@@ -2031,6 +2040,32 @@ func _refresh_hud() -> void:
 	if renown_label:
 		renown_label.text = "Renown: %d" % player_renown
 	_update_quest_label()
+	_refresh_skill_bar()
+
+# ════════════════════════════════════════════════════════════════════════
+# Skill hotbar
+# ════════════════════════════════════════════════════════════════════════
+func _refresh_skill_bar() -> void:
+	if not skill_hotbar: return
+	var player := get_node_or_null("Player")
+	if not player: return
+	# SKILLS array and _skill_timers are readable (var, not @export)
+	var slots := [skill_slot_1, skill_slot_2, skill_slot_3, skill_slot_4]
+	var cdbars := [skill_cd_1, skill_cd_2, skill_cd_3, skill_cd_4]
+	var timers: Array = player._skill_timers if "SKILLS" in player else [0.0, 0.0, 0.0, 0.0]
+	var skills: Array = player.SKILLS if "SKILLS" in player else []
+	for i in range(4):
+		var slot: Panel = slots[i]
+		if not slot: continue
+		var cdbar: ProgressBar = cdbars[i]
+		var unlocked: bool = player._is_skill_unlocked(i) if player.has_method("_is_skill_unlocked") else true
+		# Dim locked slots
+		slot.modulate = Color(1, 1, 1, 1.0) if unlocked else Color(0.5, 0.5, 0.5, 0.7)
+		if cdbar and i < timers.size() and i < skills.size():
+			var cd_max: float = float(skills[i].get("cooldown", 1.0))
+			var cd_rem: float = timers[i]
+			cdbar.max_value = cd_max
+			cdbar.value = cd_rem
 
 # ════════════════════════════════════════════════════════════════════════
 # Death overlay
