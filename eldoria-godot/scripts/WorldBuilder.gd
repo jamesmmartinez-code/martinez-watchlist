@@ -5706,6 +5706,8 @@ func _global_scale_sweep() -> void:
 		for body in root.find_children("*", "Node3D", true):
 			if not body.is_in_group("buildings"):
 				continue
+			if body.has_meta("skin_locked"):
+				continue  # GLB building already scaled
 			_clamp_max_height(body, 7.0)
 		# scale-eng 2026-05-05: mountain meshes spawn as bare MeshInstance3D
 		# (not StaticBody3D), so the static-body branch above with the "mountain"
@@ -9152,8 +9154,18 @@ func _make_bw_house(pos: Vector3) -> Node3D:
 			# stylized_bell_island_house_mound.fbx exports at ~0.01 Godot units = 1cm.
 			# Target footprint ~7m wide → scale ≈ 0.022
 			inst.scale = Vector3(0.022, 0.022, 0.022)
+			inst.set_meta("skin_locked", true)  # prevent sweep from rescaling
 			inst.rotation.y = randf_range(-PI, PI)
 			inst.position = pos
+			# Add box collider so player cannot walk through GLB house
+			var _hbody := StaticBody3D.new()
+			var _hcol  := CollisionShape3D.new()
+			var _hbox  := BoxShape3D.new()
+			_hbox.size = Vector3(6.5, 4.5, 5.5)
+			_hcol.shape = _hbox
+			_hcol.position.y = 2.25
+			_hbody.add_child(_hcol)
+			inst.add_child(_hbody)
 			return inst
 
 	# Procedural fallback — full hand-built house
