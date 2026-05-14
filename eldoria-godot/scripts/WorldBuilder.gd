@@ -1301,6 +1301,7 @@ func _build_world_sync() -> void:
 		)
 	if tutorial_enabled:
 		_safe_call("_init_tutorial_polish")
+	_safe_call("_add_missing_collision")
 	build_progress.emit("Done", 1.0)
 	build_complete.emit()
 	_dlog("sync build DONE — children=%d" % get_child_count())
@@ -13060,3 +13061,41 @@ func _bw_auto_yard_for_house(root: Node3D, _house: Node3D, plot_center: Vector3,
 		var la := yard_center - side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
 		var lb := yard_center + side_dir * (half_w * 0.45) + back_dir * (half_d * 0.20)
 		_build_bw_laundry_line(root, la, lb, rng)
+
+
+# ── Auto-collision pass ───────────────────────────────────────────────────────
+# Walks all Node3D children. For any GLB instance that has no StaticBody3D
+# child (walk-through objects), wraps it in a StaticBody3D with a box collider
+# sized to its AABB. Called once after world build completes.
+# Skips: CharacterBody3D subtrees, nodes already containing a StaticBody3D,
+# very small props (AABB < 0.3m — grass tufts etc.), and sky/particle nodes.
+func _add_missing_collision() -> void:
+	var added := 0
+	for child in get_children():
+		if not child is Node3D:
+			continue
+		# Skip character bodies — they handle their own collision
+		if child is CharacterBody3D:
+			continue
+		# Skip if already has a StaticBody3D somewhere inside
+		if not child.find_children("*", "StaticBody3D", true).is_empty():
+			continue
+		# Skip particle / sky nodes by name hint
+		var n: String = child.name.to_lower()
+		if "particle" in n or "sky" in n or "sun" in n or "fog" in n or "rain" in n:
+			continue
+		# Measure AABB — skip tiny decorative pieces
+		var aabb := _measure_aabb(child as Node3D)
+		if aabb.size.length() < 0.3:
+			continue
+		# Build a StaticBody3D + BoxShape sized to the AABB
+		var body := StaticBody3D.new()
+		var cshape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = aabb.size.clamp(Vector3(0.1, 0.1, 0.1), Vector3(80, 80, 80))
+		cshape.shape = box
+		cshape.position = aabb.get_center() - child.position
+		body.add_child(cshape)
+		child.add_child(body)
+		added += 1
+	_dlog("_add_missing_collision: added %d static bodies" % added)
