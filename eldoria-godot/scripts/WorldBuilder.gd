@@ -1045,7 +1045,7 @@ const NPCS = [
 @export var bw_porch_enabled: bool = true
 # Phase 24 — Street dressing
 @export var bw_dressing_enabled: bool = true
-@export var bw_dressing_density: float = 1.0
+@export var bw_dressing_density: float = 0.5
 @export var bw_multimesh_enabled: bool = true
 @export var bw_mm_fences: bool = true
 @export var bw_mm_benches: bool = true
@@ -1241,10 +1241,10 @@ func _build_world_sync() -> void:
 		_safe_call("_build_briarwood_hub")  # Briarwood Hub Builder v1
 	else:
 		_safe_call("_build_village")        # legacy 6-house fallback
-	_safe_call("_scatter_trees", [140])
+	_safe_call("_scatter_trees", [40])
 	_safe_call("_scatter_rocks", [36])
-	_safe_call("_scatter_ferns", [48])
-	_safe_call("_scatter_mushrooms", [24])
+	_safe_call("_scatter_ferns", [20])
+	_safe_call("_scatter_mushrooms", [10])
 	_safe_call("_build_village_barrels")
 	_safe_call("_build_mountain_ring")
 	_safe_call("_build_market_stalls")
@@ -1252,7 +1252,7 @@ func _build_world_sync() -> void:
 	_safe_call("_build_lanterns")
 	_safe_call("_build_banners")
 	_safe_call("_build_npcs")
-	_safe_call("_build_grass_tufts", [220])
+	_safe_call("_build_grass_tufts", [80])
 	_safe_call("_build_far_world_scatter")
 	_safe_call("_build_mid_world_pois")
 	_safe_call("_build_whisperwood_forest")
@@ -1354,15 +1354,15 @@ func _build_world_async() -> void:
 	build_progress.emit("Trees & Rocks", 0.22)
 	await get_tree().process_frame
 	_wb_crash_report("Briarwood")
-	_safe_call_now("_scatter_trees", [140])
+	_safe_call_now("_scatter_trees", [40])
 	_safe_call_now("_scatter_rocks", [36])
 
 	# ── Ground cover ──────────────────────────────────────────────────────────
 	build_progress.emit("Ground Cover", 0.30)
 	await get_tree().process_frame
 	_wb_crash_report("Trees+Rocks")
-	_safe_call_now("_scatter_ferns",     [48])
-	_safe_call_now("_scatter_mushrooms", [24])
+	_safe_call_now("_scatter_ferns",     [20])
+	_safe_call_now("_scatter_mushrooms", [10])
 
 	# ── Village props ─────────────────────────────────────────────────────────
 	build_progress.emit("Village Props", 0.36)
@@ -1380,7 +1380,7 @@ func _build_world_async() -> void:
 	await get_tree().process_frame
 	_wb_crash_report("VillageProps")
 	_safe_call_now("_build_npcs",        [])
-	_safe_call_now("_build_grass_tufts", [220])
+	_safe_call_now("_build_grass_tufts", [80])
 	_safe_call_now("_build_far_world_scatter", [])
 	_safe_call_now("_build_mid_world_pois",   [])
 	_safe_call_now("_build_whisperwood_forest", [])
@@ -2918,7 +2918,7 @@ func _build_far_world_scatter() -> void:
 	# ── Distant tree silhouettes (rings from 120m to 500m) ──────────────────
 	# Trees: kept at true scale (h=4-8m) but pushed to 180m+ so they read as
 	# background forest silhouettes, not foreground giants.
-	var tree_count := 160
+	var tree_count := 60
 	for i in range(tree_count):
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(180.0, 500.0)
@@ -3346,7 +3346,7 @@ func _build_whisperwood_forest() -> void:
 	const WW_CZ   : float = 0.0
 	const WW_W    : float = 120.0
 	const WW_D    : float = 80.0
-	const TREE_N  : int   = 220   # dense — Whisperwood should feel dark and thick
+	const TREE_N  : int   = 60    # 2026-05-13: reduced from 220 — was visually overwhelming
 
 	# ── Tree canopy ───────────────────────────────────────────────────────────
 	for i in range(TREE_N):
