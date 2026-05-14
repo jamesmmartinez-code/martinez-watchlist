@@ -185,13 +185,13 @@ func _draw() -> void:
 		draw_colored_polygon(screen, col)
 
 	# 2. Faint world grid (every 20m).
-	for gx in range(-80, 81, 20):
-		var p1: Vector2 = _world_xz_to_face(Vector2(float(gx), -80.0), face)
-		var p2: Vector2 = _world_xz_to_face(Vector2(float(gx),  80.0), face)
+	for gx in range(-280, 281, 50):
+		var p1: Vector2 = _world_xz_to_face(Vector2(float(gx), -280.0), face)
+		var p2: Vector2 = _world_xz_to_face(Vector2(float(gx),  280.0), face)
 		draw_line(p1, p2, Color(0.30, 0.22, 0.15, 0.18), 1.0, true)
-	for gz in range(-80, 81, 20):
-		var p3: Vector2 = _world_xz_to_face(Vector2(-80.0, float(gz)), face)
-		var p4: Vector2 = _world_xz_to_face(Vector2( 80.0, float(gz)), face)
+	for gz in range(-280, 281, 50):
+		var p3: Vector2 = _world_xz_to_face(Vector2(-280.0, float(gz)), face)
+		var p4: Vector2 = _world_xz_to_face(Vector2( 280.0, float(gz)), face)
 		draw_line(p3, p4, Color(0.30, 0.22, 0.15, 0.18), 1.0, true)
 
 	# 3. Static landmarks.
