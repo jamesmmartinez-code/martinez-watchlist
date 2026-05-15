@@ -65,6 +65,8 @@ const KIND_MODEL_PATHS: Dictionary = {
 	"castle_guard":      "res://assets/models/enemies/bandit.glb",
 	"imperator":         "res://assets/models/enemies/bandit.glb",
 	"roman_soldier":     "res://assets/models/enemies/bandit.glb",
+	"dragon":            "res://assets/models/enemies/prowler_dragon.glb",
+	"crystal_guardian":  "res://assets/models/enemies/skeleton.glb",
 }
 
 func _get_kind_model(kind: String) -> PackedScene:
@@ -73,6 +75,7 @@ func _get_kind_model(kind: String) -> PackedScene:
 	# a missing path aborts the entire script parse in Godot 4.x.
 	# bandit_captain reuses the bandit rig until a dedicated GLB ships
 	var resolved_kind: String = "bandit" if kind == "bandit_captain" else kind
+	# dragon keeps its own mapping
 	var path: String = KIND_MODEL_PATHS.get(resolved_kind, "")
 	if path.is_empty():
 		return null
