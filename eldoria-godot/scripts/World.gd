@@ -1417,6 +1417,25 @@ func _process(delta: float) -> void:
 		# 2026-05-07 jm-fix v2: 0.02+0.04 was too dim; restored toward known-good
 		# (0.10+0.18) but kept slightly under to avoid the brown-haze return.
 		e.volumetric_fog_emission_energy = 0.06 + dusk_w2 * 0.10
+		# Animate ProceduralSkyMaterial with time_of_day so sky is blue at morning,
+		# orange at dusk, and dark at night — matches sun/light cycle.
+		var day_w2: float = clamp(1.0 - dusk_w2 - night_w2, 0.0, 1.0)
+		if e.sky and e.sky.sky_material is ProceduralSkyMaterial:
+			var sm: ProceduralSkyMaterial = e.sky.sky_material
+			# Sky top: deep blue day → orange dusk → near-black night
+			var sky_top_day   := Color(0.20, 0.45, 0.82, 1.0)
+			var sky_top_dusk  := Color(0.55, 0.28, 0.18, 1.0)
+			var sky_top_night := Color(0.04, 0.04, 0.12, 1.0)
+			sm.sky_top_color = sky_top_day * day_w2 + sky_top_dusk * dusk_w2 + sky_top_night * night_w2
+			# Horizon: light blue day → warm orange dusk → dark blue night
+			var sky_hor_day   := Color(0.68, 0.84, 0.96, 1.0)
+			var sky_hor_dusk  := Color(0.88, 0.52, 0.22, 1.0)
+			var sky_hor_night := Color(0.08, 0.10, 0.22, 1.0)
+			sm.sky_horizon_color = sky_hor_day * day_w2 + sky_hor_dusk * dusk_w2 + sky_hor_night * night_w2
+			# Ground horizon mirrors sky horizon slightly darker
+			sm.ground_horizon_color = sm.sky_horizon_color * 0.65
+			# Ambient light energy tracks daylight
+			e.ambient_light_energy = 0.30 + day_w2 * 0.55 + dusk_w2 * 0.25
 
 	# Builder run 23 — god-rays through canopy: fade shafts with daylight.
 	# amount_ratio=0 disables emission without removing the node; amount_ratio=1
