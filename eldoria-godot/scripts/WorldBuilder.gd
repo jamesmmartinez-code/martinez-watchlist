@@ -4363,7 +4363,7 @@ func _build_dragon_boss() -> void:
 		# Play any available idle animation
 		_play_anim_recursive(inst, ["Idle", "idle", "Fly", "fly", "Stand", "stand"])
 	# Spawn as a powerful enemy NPC near dragon
-	_spawn_enemy("dragon", Vector3(65.0, 0.0, -55.0),
+	_spawn_enemy("dragon", Vector3(65.0, 1.0, -55.0),  # Y=1 so capsule on ground
 		"Prowler Dragon", 800, 45, 500, 120,
 		Color(0.7, 0.15, 0.15), 1.5, 3.0)
 	_dlog("dragon boss placed")
@@ -6147,6 +6147,7 @@ const GOD_RAY_SPOTS: Array = [
 ]
 
 func _build_god_rays() -> void:
+	return  # DISABLED: rogue cyan beam visible - shaft emitter orientation broken
 	# THEME §1, §12, §13 — warm canopy shafts with motion. See block comment above.
 	for entry in GOD_RAY_SPOTS:
 		var world_pos: Vector3 = entry["pos"]
@@ -8417,12 +8418,11 @@ func _build_briarwood_hub() -> void:
 	add_child(_briarwood_root)
 	_briarwood_root.global_position = briarwood_origin
 
-	# ── Village core GLB — place castle_village.glb once as the town center ──
-	# Native size of castle_village.glb is ~600-800 units (exported in cm from Blender).
-	# Scale 0.055 puts it at ~35-44m wide — fits inside the 72m palisade radius.
-	# Offset slightly south of plaza so the gate road leads into it naturally.
+	# ── Village core GLB — DISABLED: interior ceiling mesh renders as dark dome overhead ──
+	# castle_village.glb has internal geometry that appears as a large dark sphere/ceiling
+	# visible from outside. Using procedural buildings only until a clean exterior-only GLB is available.
 	var cv_scene: PackedScene = BUILDING_MODELS.get("castle_village")
-	if cv_scene:
+	if false and cv_scene:
 		var cv_node := cv_scene.instantiate() as Node3D
 		if cv_node:
 			cv_node.name = "CastleVillageCore"
@@ -8438,7 +8438,7 @@ func _build_briarwood_hub() -> void:
 
 	# ── Market district GLB — place medieval_village.glb at the market offset ──
 	var mv_scene: PackedScene = BUILDING_MODELS.get("medieval_village")
-	if mv_scene:
+	if false and mv_scene:  # DISABLED: same interior-ceiling issue
 		var mv_node := mv_scene.instantiate() as Node3D
 		if mv_node:
 			mv_node.name = "MedievalVillageMarket"
