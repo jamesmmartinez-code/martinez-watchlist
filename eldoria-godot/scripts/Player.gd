@@ -156,7 +156,7 @@ var mount_node: Node3D = null
 
 const DAMAGE_NUMBER_SCRIPT = preload("res://scripts/DamageNumber.gd")
 const FIREBALL_SCRIPT      = preload("res://scripts/Fireball.gd")
-const SAFE_SPAWN := Vector3(0, 0.5, -8)   # South of Briarwood gate — open ground clear of all buildings.
+const SAFE_SPAWN := Vector3(0, 1.5, -8)   # South of Briarwood gate — Y=1.5 so capsule bottom clears ground plane.
 # Scale fix 2026-05-11: buildings grew from 3.6 m to 6.0 m footprint.
 #   Old (10,2,3): building (10,0,0) north wall is now at z=+3.0 exactly — capsule
 #   radius 0.4 put the player INSIDE the wall → physics ejection → stuck on roof. WRONG.
@@ -757,7 +757,7 @@ func use_skill(idx: int) -> void:
 		var eff_range := attack_range + float(sk["range_bonus"])
 		var eff_arc   := attack_arc_deg + float(sk["arc_bonus"])
 		var arc_rad   := deg_to_rad(eff_arc) * 0.5
-		var fwd := -global_transform.basis.z
+		var fwd := global_transform.basis.z  # +Z = visual forward (Hero GLB is 180Y rotated)
 		fwd.y = 0
 		fwd = fwd.normalized()
 
@@ -990,7 +990,7 @@ func _echo_strike_secondary(base_dmg: int) -> void:
 	var eff_range  := attack_range + float(SKILLS[0]["range_bonus"])
 	var eff_arc    := attack_arc_deg + float(SKILLS[0]["arc_bonus"])
 	var arc_rad    := deg_to_rad(eff_arc) * 0.5
-	var fwd        := -global_transform.basis.z
+	var fwd        := global_transform.basis.z  # +Z = visual forward
 	fwd.y = 0; fwd = fwd.normalized()
 	var secondary_hits := 0
 	for enemy in get_tree().get_nodes_in_group("enemies"):
